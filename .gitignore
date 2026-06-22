@@ -1,0 +1,21 @@
+# OS / editor
+Thumbs.db
+Desktop.ini
+.DS_Store
+*~
+
+# Node (falls später ein Build/Framework dazukommt)
+node_modules/
+dist/
+build/
+.cache/
+*.log
+npm-debug.log*
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Claude Code local settings
+.claude/settings.local.json
