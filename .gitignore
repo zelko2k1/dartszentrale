@@ -7,6 +7,7 @@ Desktop.ini
 # Node (falls später ein Build/Framework dazukommt)
 node_modules/
 dist/
+dev-dist/
 build/
 .cache/
 *.log

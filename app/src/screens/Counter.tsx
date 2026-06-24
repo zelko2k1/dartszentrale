@@ -1,0 +1,652 @@
+import { useEffect, useState } from 'react';
+import { useStore } from '../store/useStore';
+import { avatar } from '../data/constants';
+import { accentFg } from '../store/selectors';
+import {
+  scores, progress, currentIdx, currentLeg, average, first9, lastThrow, scoreList,
+  countAtLeast, checkoutSuggestion, canCheckout, finishStats, matchOver, winner, type CounterSlice,
+} from '../store/counter';
+import { IconBack, IconUndo, IconRefresh, IconX } from '../lib/icons';
+import { useDevice } from '../lib/useIsPhone';
+
+export function Counter() {
+  const s = useStore();
+  const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
+  const accent = s.settings.accent;
+  const accFg = accentFg(accent);
+  const cfg = s.settings;
+
+  const sc = scores(slice);
+  const prog = progress(slice);
+  const curIdx = currentIdx(slice);
+  const over = matchOver(slice);
+  const leg = currentLeg(slice);
+  const isTablet = cfg.device !== 'desktop';
+
+  // keyboard
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const st = useStore.getState();
+      if (st.screen !== 'counter') return;
+      // modifier combos (Strg/Alt/⌘ + …) are handled by global shortcuts, not score entry
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (st.newConfirm) return; // confirm dialog owns the keyboard (Esc handled globally)
+      // rest-entry box owns the keyboard while open
+      if (st.restEntry) { if (e.key === 'Escape') { e.preventDefault(); st.closeRestEntry(); } return; }
+      if (st.pendingStart) {
+        const n = st.gamePlayers.length;
+        if (e.key >= '1' && e.key <= String(n)) { e.preventDefault(); st.chooseStarter(parseInt(e.key, 10) - 1); }
+        else if (e.key.toLowerCase() === 'b') { e.preventDefault(); st.openBullOff(); }
+        else if (e.key.toLowerCase() === 'z') { e.preventDefault(); st.spinStarter(); }
+        else if (e.key === 'Escape' && st.bullMode) { e.preventDefault(); st.closeBullOff(); }
+        return;
+      }
+      if (matchOver({ gamePlayers: st.gamePlayers, allThrows: st.allThrows, startOffset: st.startOffset, settings: st.settings }) || st.abortConfirm || st.hint) return;
+      // function keys F1–F12
+      const fk = /^F(\d{1,2})$/.exec(e.key);
+      if (fk) {
+        e.preventDefault();
+        const n = parseInt(fk[1], 10);
+        const keys = st.settings.fkeys || [];
+        if (n >= 1 && n <= 8) { const v = keys[n - 1]; if (typeof v === 'number') st.quick(v); return; }
+        if (st.settings.device !== 'desktop') return; // F9–F12 desktop only
+        const sl: CounterSlice = { gamePlayers: st.gamePlayers, allThrows: st.allThrows, startOffset: st.startOffset, settings: st.settings };
+        const cp = st.gamePlayers[currentIdx(sl)]; if (!cp) return;
+        const remNow = scores(sl)[cp.id];
+        if (n === 9) { st.openRestEntry(); return; }
+        if (n >= 10 && n <= 12) { const darts = n - 9; if (canCheckout(st.settings, remNow, darts).ok) st.apply(remNow, darts); }
+        return;
+      }
+      if (e.key >= '0' && e.key <= '9') st.pressDigit(e.key);
+      else if (e.key === 'Enter') st.pressEnter();
+      else if (e.key === 'Backspace') st.pressDel();
+      else if (e.key === 'Escape') useStore.setState({ input: '' });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  // phone mode: portrait → stacked minimal layout, landscape → scores | keypad split
+  const { isPhonePortrait, isPhoneLandscape } = useDevice();
+  const isPhone = isPhonePortrait || isPhoneLandscape;
+
+  // resizable score area (score band vs throws band)
+  const startResize = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const board = e.currentTarget.parentElement;
+    const h = board ? board.getBoundingClientRect().height : window.innerHeight * 0.55;
+    const startY = e.clientY;
+    const startArea = useStore.getState().settings.scoreArea || 58;
+    const move = (ev: PointerEvent) => {
+      const area = startArea + ((ev.clientY - startY) / h) * 100;
+      useStore.getState().setSetting('scoreArea', Math.round(Math.max(35, Math.min(85, area))));
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  };
+
+  const outLabel = cfg.outMode === 'master' ? 'Master Out' : cfg.outMode === 'single' ? 'Single Out' : 'Double Out';
+  const gameTitle = `X01 · ${cfg.startScore} · ${outLabel}`;
+  const matchInfo = cfg.unit === 'sets' ? `Satz · Best of ${cfg.bestOfSets}` : `Leg ${leg} · Best of ${cfg.bestOf}`;
+
+  const activePlayer = s.gamePlayers[curIdx];
+  const activeRem = activePlayer ? sc[activePlayer.id] : 0;
+  const activeCheckout = activePlayer ? checkoutSuggestion(cfg, activeRem) : null;
+  const inputDisplay = s.input === '' ? '—' : s.input;
+
+  const headBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 13px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' };
+
+  // colours are chosen per light/dark mode (cfg.accent / scoreColor / legColor are already the
+  // effective values for the active mode), so we use them directly.
+  const accentInk = accent;
+  const legInk = cfg.legColor || accent;
+  const scoreInk = cfg.scoreColor;
+  const coInk = cfg.mode === 'light' ? '#8a5e00' : '#F2B829';
+  // crisp outline for the big score, immer aktiv und je nach Hell-/Dunkelmodus (stroke hinter der Füllung)
+  const scoreOutline: React.CSSProperties = { WebkitTextStroke: `1.5px ${cfg.mode === 'light' ? 'rgba(0,0,0,.45)' : 'rgba(0,0,0,.6)'}`, paintOrder: 'stroke fill' as React.CSSProperties['paintOrder'] };
+
+  const keypad = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+  // Quick-Scores spiegeln die Funktionstasten F1–F8 wider
+  const quickChips = (cfg.fkeys && cfg.fkeys.length ? cfg.fkeys : [180, 140, 100, 95, 85, 60, 45, 40]).slice(0, 8);
+
+  // auto-scroll throw-history columns to the newest entry
+  useEffect(() => {
+    document.querySelectorAll('.dh-history-scroll').forEach((el) => { (el as HTMLElement).scrollTop = el.scrollHeight; });
+  }, [s.allThrows.length]);
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', background: cfg.mode === 'light' ? 'var(--bg)' : '#0c0e11', fontFamily: 'inherit' }}>
+      {isPhone ? (
+        <PhoneCounter landscape={isPhoneLandscape} />
+      ) : (
+        <>
+      {/* header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)', backdropFilter: 'blur(6px)', flexShrink: 0 }}>
+        <button onClick={() => s.go('dashboard')} style={headBtn}><IconBack size={15} sw={2} />Zurück</button>
+        <div style={{ textAlign: 'center', flexShrink: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '.02em', whiteSpace: 'nowrap' }}>{gameTitle}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>{matchInfo}</div>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => s.undo()} style={headBtn}><IconUndo size={15} />Undo</button>
+          <button onClick={() => s.newMatch()} style={headBtn}><IconRefresh size={15} />Neu</button>
+          <button onClick={() => s.abortGame()} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />Abbrechen</button>
+        </div>
+      </div>
+
+      {/* board */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 12, minHeight: 0 }}>
+        {/* SCORE band */}
+        <div style={{ flex: cfg.showHistory ? cfg.scoreArea : 100, display: 'flex', gap: 12, minHeight: 0 }}>
+          {s.gamePlayers.map((p, i) => {
+            const av = avatar(p.av); const isActive = i === curIdx && !over;
+            const rem = sc[p.id];
+            const co = checkoutSuggestion(cfg, rem);
+            const turnLabel = isActive ? 'AM WURF' : '';
+            const pips = Array.from({ length: prog.legsToWinSet }, (_, k) => k < (prog.legsSet[p.id] || 0));
+            return (
+              <div key={p.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRadius: 16, background: isActive ? `color-mix(in srgb, ${accent} 9%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${isActive ? accent : 'var(--border-2)'}`, boxShadow: isActive ? `0 0 0 1px ${accent}, 0 0 46px color-mix(in srgb, ${accent} 12%, transparent)` : 'none', transition: 'border-color .18s ease', minWidth: 0, overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 18px 0', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, background: av.bg, color: av.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, flexShrink: 0 }}>{p.short}</div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 17, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.15 }}>{p.name}</div>
+                      <div style={{ fontSize: 11, color: accentInk, fontWeight: 700, height: 14, letterSpacing: '.04em' }}>{turnLabel}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                    {cfg.unit === 'sets' && <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 15, fontWeight: 800, color: legInk, background: `color-mix(in srgb, ${legInk} 14%, transparent)`, padding: '3px 9px', borderRadius: 999 }}>{prog.setsWon[p.id] || 0}</div>}
+                    <div style={{ display: 'flex', gap: 5 }}>
+                      {pips.map((on, k) => <div key={k} style={{ width: 9, height: 9, borderRadius: '50%', background: on ? legInk : 'transparent', border: `2px solid ${on ? legInk : 'var(--border-strong)'}` }} />)}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 0, padding: '6px 10px', gap: 6 }}>
+                  {/* self-sizing: fill the score box's height AND width (container-query units), scaled by the font-size setting */}
+                  <div style={{ flex: 1, width: '100%', minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', containerType: 'size' }}>
+                    <div style={{ fontFamily: cfg.font === 'Inter' ? "'JetBrains Mono',monospace" : 'inherit', fontWeight: 800, fontSize: `min(${Math.round(88 * cfg.scoreScale / 100)}cqh, ${Math.round(56 * cfg.scoreScale / 100)}cqw)`, lineHeight: 1, letterSpacing: '-.03em', color: isActive ? (scoreInk || accentInk) : 'var(--text-4)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center', ...scoreOutline }}>{rem}</div>
+                  </div>
+                  {/* checkout suggestion — centred under the score */}
+                  {cfg.showCheckout && co && (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0, maxWidth: '100%', background: 'rgba(242,184,41,.12)', border: '1px solid rgba(242,184,41,.32)', color: coInk, padding: '5px 12px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: "'JetBrains Mono',monospace", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{co}</div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* throws & stats band (history list and the average/CO/HF box are separate, each toggleable) */}
+        {(cfg.showHistory || cfg.showStats) && (
+          <>
+            {cfg.showHistory && (
+              <div onPointerDown={startResize} style={{ height: 18, margin: '8px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexShrink: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 9, cursor: 'row-resize', touchAction: 'none', userSelect: 'none' }}>
+                <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border-strong)' }} />
+              </div>
+            )}
+            <div style={{ flex: cfg.showHistory ? `${100 - cfg.scoreArea} 1 0` : '0 0 auto', display: 'flex', gap: 12, minHeight: 0, marginTop: cfg.showHistory ? 0 : 8 }}>
+              {s.gamePlayers.map((p) => {
+                const rows = scoreList(slice, p.id);
+                const lt = lastThrow(slice, p.id);
+                const fs = finishStats(slice, p.id);
+                return (
+                  <div key={p.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0, minHeight: 0 }}>
+                    {/* Wurfanzeige */}
+                    {cfg.showHistory && (
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRadius: 16, background: 'var(--surface-2)', border: '1px solid var(--border-2)', minWidth: 0, overflow: 'hidden' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '34px 1fr 1fr', gap: 4, padding: '12px 18px 8px', flexShrink: 0, borderBottom: '1px solid var(--hairline)' }}>
+                          <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase' }}>Rd</span>
+                          <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right' }}>Score</span>
+                          <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right' }}>Rest</span>
+                        </div>
+                        <div className="dh-history-scroll" style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '4px 8px 8px' }}>
+                          {rows.map((r, i) => (
+                            <div key={i} style={{ display: 'grid', gridTemplateColumns: '34px 1fr 1fr', gap: 4, padding: '6px 10px', borderRadius: 6, background: r.checkout ? `color-mix(in srgb, ${accent} 12%, transparent)` : 'transparent' }}>
+                              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--text-5)' }}>{r.round}</span>
+                              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 14, fontWeight: 700, textAlign: 'right', color: r.bust ? '#E0594B' : 'var(--text)' }}>{r.scored}</span>
+                              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 14, fontWeight: 700, textAlign: 'right', color: r.checkout ? accent : 'var(--text-3)' }}>{r.rest}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {/* Durchschnittswerte / Statistik-Box */}
+                    {cfg.showStats && (
+                      <div style={{ flexShrink: 0, display: 'flex', gap: 1, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-2)', background: 'var(--border)' }}>
+                        {[['Ø 3-Dart', average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['Letzter', lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
+                          <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '8px 3px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, textAlign: 'center', minWidth: 0 }}>
+                            <div style={{ fontSize: 9, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
+                            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, lineHeight: 1 }}>{val}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* input deck */}
+      {isTablet ? (
+        <div style={{ flex: `0 0 ${36 * cfg.deckSize / 100}vh`, display: 'flex', gap: 12, padding: '0 12px 12px', minHeight: 0 }}>
+          {cfg.showQuick && (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0, minHeight: 0 }}>
+              <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', paddingLeft: 2, flexShrink: 0 }}>Quick Score</div>
+              <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gridAutoRows: '1fr', gap: 8, minHeight: 0 }}>
+                {quickChips.map((q, i) => (
+                  <button key={i} onClick={() => s.quick(q)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 14, fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(15px,2.8vh,23px)', fontWeight: 800, cursor: 'pointer', minHeight: 0 }}>{q}</button>
+                ))}
+              </div>
+            </div>
+          )}
+          <div style={{ width: 340, display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0, minHeight: 0 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', paddingLeft: 2, flexShrink: 0 }}>Eingabe</div>
+            <div style={{ flex: '2 1 0', minHeight: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 14, padding: 'clamp(4px,0.9vh,10px) 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 13, color: 'var(--text-3)', fontWeight: 600 }}>{activePlayer?.name}</span>
+              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(18px,2.8vh,30px)', fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 70, textAlign: 'right' }}>{inputDisplay}</span>
+            </div>
+            <div style={{ flex: '14 1 0', minHeight: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gridAutoRows: '1fr', gap: 8, minHeight: 0 }}>
+                {keypad.map((k) => (
+                  <button key={k} onClick={() => s.pressDigit(k)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(20px,3vh,26px)', fontWeight: 700, cursor: 'pointer', minHeight: 0 }}>{k}</button>
+                ))}
+                <button onClick={() => s.pressClear()} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', minHeight: 0 }}>C</button>
+                <button onClick={() => s.pressDigit('0')} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(20px,3vh,26px)', fontWeight: 700, cursor: 'pointer', minHeight: 0 }}>0</button>
+                <button onClick={() => s.pressDel()} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', minHeight: 0 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" /><path d="M18 9l-6 6M12 9l6 6" /></svg>
+                </button>
+              </div>
+              <button onClick={() => s.pressEnter()} style={{ background: accent, border: 'none', color: accFg, borderRadius: 13, padding: 'clamp(11px,1.9vh,15px) 0', fontSize: 'clamp(15px,2.1vh,18px)', fontWeight: 800, letterSpacing: '.02em', cursor: 'pointer', boxShadow: `0 6px 18px color-mix(in srgb, ${accent} 22%, transparent)`, flexShrink: 0 }}>EINTRAGEN</button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div style={{ flexShrink: 0, margin: '0 12px 12px', display: 'flex', alignItems: 'center', gap: 18, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 14, padding: '14px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: accent, boxShadow: `0 0 10px ${accent}` }} />
+            <span style={{ fontSize: 15, fontWeight: 700 }}>{activePlayer?.name}</span>
+            <span style={{ fontSize: 13, color: 'var(--text-4)' }}>wirft · Rest {activeRem}</span>
+          </div>
+          {activeCheckout && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'rgba(242,184,41,.12)', border: '1px solid rgba(242,184,41,.32)', color: coInk, padding: '5px 12px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: "'JetBrains Mono',monospace" }}>{activeCheckout}</div>}
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
+            <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 38, fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 78, textAlign: 'right' }}>{inputDisplay}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, whiteSpace: 'nowrap' }}>
+              <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>Score tippen, dann</span>
+              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, color: accentInk, background: `color-mix(in srgb, ${accent} 12%, transparent)`, padding: '2px 8px', borderRadius: 5 }}>↵ Enter</span>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* function-key legend (desktop only) */}
+      {cfg.device === 'desktop' && <FKeyLegend />}
+        </>
+      )}
+
+      {/* rest-score entry box (F9) */}
+      {s.restEntry && <RestEntryBox />}
+      {/* who-starts overlay */}
+      {s.pendingStart && <WhoStarts />}
+      {/* hint */}
+      {s.hint && (
+        <Overlay z={45}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 28, maxWidth: 420, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+            <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{s.hint.title}</div>
+            <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.55, marginBottom: 24 }}>{s.hint.body}</div>
+            <button onClick={() => s.closeHint()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 32px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Verstanden</button>
+          </div>
+        </Overlay>
+      )}
+      {/* abort */}
+      {s.abortConfirm && (
+        <Overlay z={40}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 28, maxWidth: 400, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+            <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>Spiel abbrechen?</div>
+            <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>Das laufende Spiel wird verworfen und erscheint nicht in der Statistik.</div>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+              <button onClick={() => s.cancelAbort()} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Weiter spielen</button>
+              <button onClick={() => s.confirmAbort()} style={{ flex: 1, background: '#E0594B', border: 'none', color: '#fff', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
+            </div>
+          </div>
+        </Overlay>
+      )}
+      {/* win */}
+      {over && <WinOverlay />}
+    </div>
+  );
+}
+
+const phoneIconBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, cursor: 'pointer' };
+
+// F9: type the REMAINING score after a throw — the app derives the scored value (so the throw counts toward the average).
+function RestEntryBox() {
+  const s = useStore();
+  const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
+  const cfg = s.settings;
+  const accent = cfg.accent;
+  const accFg = accentFg(accent);
+  const cp = s.gamePlayers[currentIdx(slice)];
+  const curRem = cp ? scores(slice)[cp.id] : 0;
+  const [val, setVal] = useState('');
+  const entered = val === '' ? NaN : parseInt(val, 10);
+  const valid = !isNaN(entered) && entered >= 0 && entered <= curRem && (curRem - entered) <= 180;
+  const scored = valid ? curRem - entered : null;
+  const submit = () => { if (valid) s.submitRestEntry(val); };
+  return (
+    <Overlay z={47}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 26, width: 360, maxWidth: '92vw', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+        <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 4 }}>Restscore eintragen</div>
+        <div style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 18 }}>{cp?.name} · aktuell <b style={{ color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace" }}>{curRem}</b> übrig</div>
+        <input
+          autoFocus type="text" inputMode="numeric" value={val} placeholder="z. B. 40"
+          onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
+          onKeyDown={(e) => { if (e.key === 'Enter') submit(); else if (e.key === 'Escape') s.closeRestEntry(); }}
+          style={{ width: '100%', background: 'var(--btn)', border: `1px solid ${val !== '' && !valid ? '#E0594B' : 'var(--border-2)'}`, borderRadius: 12, padding: '12px 14px', color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace", fontSize: 26, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+        />
+        <div style={{ fontSize: 13, height: 18, marginTop: 10, textAlign: 'center', color: val !== '' && !valid ? '#E0594B' : 'var(--text-4)' }}>
+          {val === '' ? 'Verbleibenden Score nach dem Wurf eingeben' : (scored != null ? `Geworfen: ${scored}` : 'Ungültiger Restscore')}
+        </div>
+        <div style={{ display: 'flex', gap: 12, marginTop: 18 }}>
+          <button onClick={() => s.closeRestEntry()} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
+          <button onClick={submit} disabled={!valid} style={{ flex: 1, background: valid ? accent : 'var(--surface-3)', border: 'none', color: valid ? accFg : 'var(--text-4)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: valid ? 'pointer' : 'default', fontFamily: 'inherit' }}>Eintragen</button>
+        </div>
+      </div>
+    </Overlay>
+  );
+}
+
+// Small visual cheat-sheet of the function keys, shown at the bottom in desktop mode. Boxes are also clickable.
+function FKeyLegend() {
+  const s = useStore();
+  const cfg = s.settings;
+  const accent = cfg.accent;
+  const accentInk = accent;
+  const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
+  const cp = s.gamePlayers[currentIdx(slice)];
+  const rem = cp ? scores(slice)[cp.id] : 0;
+  const items = [
+    ...(cfg.showQuick ? (cfg.fkeys || []).slice(0, 8).map((v, i) => ({ k: `F${i + 1}`, label: String(v), enabled: true, onClick: () => s.quick(v) })) : []),
+    { k: 'F9', label: 'Rest', enabled: true, onClick: () => s.openRestEntry() },
+    { k: 'F10', label: '1-Dart', enabled: canCheckout(cfg, rem, 1).ok, onClick: () => { if (canCheckout(cfg, rem, 1).ok) s.apply(rem, 1); } },
+    { k: 'F11', label: '2-Dart', enabled: canCheckout(cfg, rem, 2).ok, onClick: () => { if (canCheckout(cfg, rem, 2).ok) s.apply(rem, 2); } },
+    { k: 'F12', label: '3-Dart', enabled: canCheckout(cfg, rem, 3).ok, onClick: () => { if (canCheckout(cfg, rem, 3).ok) s.apply(rem, 3); } },
+  ];
+  return (
+    <div style={{ flexShrink: 0, display: 'flex', flexWrap: 'wrap', gap: 6, padding: '0 12px 10px' }}>
+      {items.map((it) => (
+        <button key={it.k} onClick={it.onClick} disabled={!it.enabled} title={`${it.k} · ${it.label}`} style={{ flex: '1 1 60px', minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '5px 4px', cursor: it.enabled ? 'pointer' : 'default', opacity: it.enabled ? 1 : 0.4, fontFamily: 'inherit' }}>
+          <span style={{ fontSize: 9, fontWeight: 800, color: accentInk, letterSpacing: '.04em' }}>{it.k}</span>
+          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, color: 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{it.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function PhoneCounter({ landscape }: { landscape: boolean }) {
+  const s = useStore();
+  const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
+  const cfg = s.settings;
+  const accent = cfg.accent;
+  const accFg = accentFg(accent);
+  const accentInk = accent;
+  const scoreInk = cfg.scoreColor || accentInk;
+  const coInk = cfg.mode === 'light' ? '#8a5e00' : '#F2B829';
+  const scoreOutline: React.CSSProperties = { WebkitTextStroke: `1.5px ${cfg.mode === 'light' ? 'rgba(0,0,0,.45)' : 'rgba(0,0,0,.6)'}`, paintOrder: 'stroke fill' as React.CSSProperties['paintOrder'] };
+  const sc = scores(slice);
+  const prog = progress(slice);
+  const curIdx = currentIdx(slice);
+  const leg = currentLeg(slice);
+  const [showDetail, setShowDetail] = useState(false);
+
+  const active = s.gamePlayers[curIdx];
+  const rem = active ? sc[active.id] : 0;
+  const co = active ? checkoutSuggestion(cfg, rem) : null;
+  const inputDisplay = s.input === '' ? '—' : s.input;
+  const matchInfo = cfg.unit === 'sets' ? `Best of ${cfg.bestOfSets} Sätze` : `Leg ${leg} · BO${cfg.bestOf}`;
+  const others = s.gamePlayers.filter((_, i) => i !== curIdx);
+  const av = active ? avatar(active.av) : { bg: 'var(--surface-3)', fg: 'var(--text)' };
+  // fill = keys grow to fill available height (landscape, where the deck owns a full column)
+  const keyBtn = (fill: boolean): React.CSSProperties => ({ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 26, fontWeight: 700, cursor: 'pointer', minHeight: fill ? 0 : 54 });
+
+  const activeCard = (
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', borderRadius: 18, background: `color-mix(in srgb, ${accent} 9%, var(--surface-2))`, border: `1px solid ${accent}`, padding: '14px 16px', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 9, background: av.bg, color: av.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, flexShrink: 0 }}>{active?.short}</div>
+          <div style={{ fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{active?.name}</div>
+        </div>
+        {cfg.unit === 'sets' && <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 800, color: accentInk, background: `color-mix(in srgb, ${accent} 14%, transparent)`, padding: '3px 9px', borderRadius: 999, flexShrink: 0 }}>{(active && prog.setsWon[active.id]) || 0}</div>}
+        <div style={{ fontSize: 10, color: accentInk, fontWeight: 800, letterSpacing: '.08em', flexShrink: 0 }}>AM WURF</div>
+      </div>
+      <div style={{ flex: 1, width: '100%', minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', containerType: 'size' }}>
+        <div style={{ fontFamily: cfg.font === 'Inter' ? "'JetBrains Mono',monospace" : 'inherit', fontWeight: 800, fontSize: `min(${Math.round(150 * cfg.scoreScale / 100)}cqh, ${Math.round(46 * cfg.scoreScale / 100)}cqw)`, lineHeight: 1, letterSpacing: '-.03em', color: scoreInk, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', ...scoreOutline }}>{rem}</div>
+      </div>
+      {cfg.showCheckout && co && (
+        <div style={{ alignSelf: 'center', display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0, background: 'rgba(242,184,41,.12)', border: '1px solid rgba(242,184,41,.32)', color: coInk, padding: '5px 14px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: "'JetBrains Mono',monospace" }}>{co}</div>
+      )}
+    </div>
+  );
+
+  const opponentRow = (
+    <button onClick={() => setShowDetail(true)} style={{ flexShrink: 0, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '10px 14px', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--text)' }}>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, fontSize: 13, color: 'var(--text-3)', overflow: 'hidden' }}>
+        {others.map((p) => (
+          <span key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--border-strong)', flexShrink: 0 }} />
+            {p.name} · Rest <b style={{ color: 'var(--text-2)', fontFamily: "'JetBrains Mono',monospace" }}>{sc[p.id]}</b>
+          </span>
+        ))}
+      </span>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, color: 'var(--text-3)' }}>
+          {s.gamePlayers.map((p) => cfg.unit === 'sets' ? (prog.setsWon[p.id] || 0) : (prog.legsSet[p.id] || 0)).join(' : ')}
+        </span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-4)' }}><path d="M9 18l6-6-6-6" /></svg>
+      </span>
+    </button>
+  );
+
+  const deck = (fill: boolean) => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: fill ? 6 : 8, minHeight: 0, ...(fill ? { flex: 1 } : { flexShrink: 0 }) }}>
+      <div style={{ flexShrink: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 12, padding: fill ? '6px 16px' : '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>Wurf eingeben</span>
+        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: fill ? 24 : 28, fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 60, textAlign: 'right' }}>{inputDisplay}</span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 7, ...(fill ? { flex: 1, gridAutoRows: '1fr', minHeight: 0 } : {}) }}>
+        {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((k) => (
+          <button key={k} onClick={() => s.pressDigit(k)} style={keyBtn(fill)}>{k}</button>
+        ))}
+        <button onClick={() => s.pressClear()} style={{ ...keyBtn(fill), color: 'var(--text-3)', fontFamily: 'inherit', fontSize: 16 }}>C</button>
+        <button onClick={() => s.pressDigit('0')} style={keyBtn(fill)}>0</button>
+        <button onClick={() => s.pressDel()} style={{ ...keyBtn(fill), color: 'var(--text-3)' }} aria-label="Löschen">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" /><path d="M18 9l-6 6M12 9l6 6" /></svg>
+        </button>
+      </div>
+      {cfg.showQuick && (
+        <div style={{ flexShrink: 0, display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 7 }}>
+          {[180, 140, 100].map((q) => (
+            <button key={q} onClick={() => s.quick(q)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, padding: fill ? '8px 0' : '11px 0', fontFamily: "'JetBrains Mono',monospace", fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>{q}</button>
+          ))}
+        </div>
+      )}
+      <button onClick={() => s.pressEnter()} style={{ flexShrink: 0, background: accent, border: 'none', color: accFg, borderRadius: 13, padding: fill ? '11px 0' : '15px 0', fontSize: 16, fontWeight: 800, letterSpacing: '.02em', cursor: 'pointer' }}>EINTRAGEN</button>
+    </div>
+  );
+
+  const header = (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)', flexShrink: 0 }}>
+      <button onClick={() => s.go('dashboard')} style={phoneIconBtn} aria-label="Zurück"><IconBack size={18} sw={2} /></button>
+      <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>{matchInfo}</div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        <button onClick={() => s.undo()} style={phoneIconBtn} aria-label="Undo"><IconUndo size={18} /></button>
+        <button onClick={() => s.abortGame()} style={{ ...phoneIconBtn, color: '#E0594B' }} aria-label="Abbrechen"><IconX size={18} sw={2} /></button>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {header}
+
+      {landscape ? (
+        // landscape: scores on the left, keypad fills the right column
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', gap: 10, padding: '8px 10px 10px' }}>
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {activeCard}
+            {opponentRow}
+          </div>
+          <div style={{ width: '44%', maxWidth: 380, minWidth: 230, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            {deck(true)}
+          </div>
+        </div>
+      ) : (
+        <>
+          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', padding: '12px 12px 8px', gap: 8 }}>
+            {activeCard}
+            {opponentRow}
+          </div>
+          <div style={{ flexShrink: 0, padding: '0 12px 12px' }}>{deck(false)}</div>
+        </>
+      )}
+
+      {/* detail overlay (stats & history) */}
+      {showDetail && (
+        <Overlay z={35}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 18, width: '92vw', maxWidth: 460, maxHeight: '84vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <div style={{ fontSize: 16, fontWeight: 800 }}>Spielstand & Verlauf</div>
+              <button onClick={() => setShowDetail(false)} style={phoneIconBtn} aria-label="Schließen"><IconX size={18} sw={2} /></button>
+            </div>
+            <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {s.gamePlayers.map((p) => {
+                const rows = scoreList(slice, p.id);
+                return (
+                  <div key={p.id} style={{ border: '1px solid var(--border-2)', borderRadius: 12, overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--surface-2)' }}>
+                      <span style={{ fontSize: 14, fontWeight: 700 }}>{p.name}</span>
+                      <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 14, fontWeight: 800, color: accentInk }}>{sc[p.id]}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 1, background: 'var(--border)' }}>
+                      {[['Ø 3-Dart', average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`]].map(([label, val], k) => (
+                        <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '7px 4px', textAlign: 'center' }}>
+                          <div style={{ fontSize: 9, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase' }}>{label}</div>
+                          <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, marginTop: 2 }}>{val}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ maxHeight: 150, overflowY: 'auto', padding: '4px 8px 8px' }}>
+                      {rows.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-4)', padding: '8px 6px' }}>Noch keine Würfe</div>}
+                      {rows.map((r, i) => (
+                        <div key={i} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 1fr', gap: 4, padding: '5px 8px', borderRadius: 6, background: r.checkout ? `color-mix(in srgb, ${accent} 12%, transparent)` : 'transparent' }}>
+                          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--text-5)' }}>{r.round}</span>
+                          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, textAlign: 'right', color: r.bust ? '#E0594B' : 'var(--text)' }}>{r.scored}</span>
+                          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, textAlign: 'right', color: r.checkout ? accent : 'var(--text-3)' }}>{r.rest}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </Overlay>
+      )}
+    </>
+  );
+}
+
+function Overlay({ children, z }: { children: React.ReactNode; z: number }) {
+  return <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,10,12,.82)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: z }}>{children}</div>;
+}
+
+function WhoStarts() {
+  const s = useStore();
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,10,12,.86)', backdropFilter: 'blur(7px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 48 }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 20, padding: '32px 34px', width: 520, maxWidth: '92vw', boxShadow: '0 30px 70px rgba(0,0,0,.55)' }}>
+        {!s.bullMode ? (
+          <>
+            <div style={{ textAlign: 'center', marginBottom: 22 }}>
+              <div style={{ fontSize: 23, fontWeight: 800, marginBottom: 6 }}>Wer beginnt?</div>
+              <div style={{ fontSize: 14, color: 'var(--text-3)' }}>Anwurf festlegen — per Maus oder Tastatur</div>
+            </div>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
+              {s.gamePlayers.map((p, i) => {
+                const av = avatar(p.av); const picked = s.spinPick === i;
+                return (
+                  <button key={p.id} className="dh-hover-border" onClick={() => s.chooseStarter(i)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, background: 'var(--btn)', border: `2px solid ${picked ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 15, padding: '20px 12px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                    <div style={{ width: 54, height: 54, borderRadius: '50%', background: av.bg, color: av.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 19 }}>{p.short}</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, textAlign: 'center', lineHeight: 1.25 }}>{p.name}</div>
+                    <kbd style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 7, padding: '3px 10px' }}>{i + 1}</kbd>
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button className="dh-hover-border" onClick={() => s.openBullOff()} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 13, padding: 14, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
+                <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#E0594B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#19A463' }} /></span>
+                Ausbullen <kbd style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px' }}>B</kbd>
+              </button>
+              <button className="dh-hover-border" onClick={() => s.spinStarter()} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 13, padding: 14, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F2B829" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" /></svg>
+                Zufall <kbd style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px' }}>Z</kbd>
+              </button>
+            </div>
+          </>
+        ) : (
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>Ausbullen</div>
+            <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>Beide werfen einen Dart auf das Bull. Wer näher liegt, beginnt.</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {s.gamePlayers.map((p, i) => {
+                const av = avatar(p.av);
+                return (
+                  <button key={p.id} className="dh-hover-border" onClick={() => s.chooseStarter(i)} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 13, padding: '14px 18px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                    <div style={{ width: 42, height: 42, borderRadius: '50%', background: av.bg, color: av.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, flexShrink: 0 }}>{p.short}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 16, fontWeight: 700 }}>{p.name}</div><div style={{ fontSize: 12, color: 'var(--text-4)' }}>war näher am Bull</div></div>
+                    <kbd style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 7, padding: '4px 9px' }}>{i + 1}</kbd>
+                  </button>
+                );
+              })}
+            </div>
+            <button onClick={() => s.closeBullOff()} style={{ marginTop: 18, background: 'transparent', border: 'none', color: 'var(--text-3)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: 8 }}>← Zurück</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function WinOverlay() {
+  const s = useStore();
+  const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
+  const w = winner(slice);
+  const prog = progress(slice);
+  const accent = s.settings.accent; const accFg = accentFg(accent);
+  const legs = s.gamePlayers.map((p) => s.settings.unit === 'sets' ? (prog.setsWon[p.id] || 0) : (prog.legsSet[p.id] || 0)).join(':');
+  const avg = w ? average(slice, w.id).toFixed(1) : '0.0';
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,10,12,.86)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 30 }}>
+      <div style={{ textAlign: 'center', maxWidth: 440, padding: '0 24px' }}>
+        <div style={{ width: 96, height: 96, borderRadius: '50%', background: 'radial-gradient(circle,rgba(242,184,41,.25),rgba(242,184,41,.05))', border: '1px solid rgba(242,184,41,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 22px' }}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#F2B829" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z" /></svg>
+        </div>
+        <div style={{ fontSize: 13, color: '#F2B829', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 8 }}>Match gewonnen</div>
+        <div style={{ fontSize: 34, fontWeight: 800, marginBottom: 6 }}>{w?.name}</div>
+        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 18, color: 'var(--text-3)', marginBottom: 28 }}>{legs} · Ø {avg}</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
+          <button onClick={() => s.endGameTo('dashboard')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Zum Dashboard</button>
+          <button onClick={() => s.endGameTo('setup')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Neues Spiel</button>
+          <button onClick={() => s.rematch()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 28px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Revanche</button>
+        </div>
+      </div>
+    </div>
+  );
+}

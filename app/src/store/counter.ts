@@ -1,0 +1,133 @@
+import type { GamePlayer, Throw, Settings } from '../data/types';
+import { CHECKOUTS } from '../data/constants';
+
+export interface CounterSlice {
+  gamePlayers: GamePlayer[];
+  allThrows: Throw[];
+  startOffset: number;
+  settings: Settings;
+}
+
+export function checkoutCount(t: Throw[]) { return t.filter((x) => x.checkout).length; }
+export function currentLeg(s: CounterSlice) { return checkoutCount(s.allThrows) + 1; }
+export function legThrows(s: CounterSlice) { const cl = currentLeg(s); return s.allThrows.filter((t) => t.leg === cl); }
+
+export function scores(s: CounterSlice): Record<string | number, number> {
+  const out: Record<string | number, number> = {};
+  const start = s.settings.startScore;
+  s.gamePlayers.forEach((p) => { out[p.id] = start; });
+  legThrows(s).forEach((t) => { if (!t.bust) out[t.playerId] -= t.score; });
+  return out;
+}
+
+export function starterIdx(s: CounterSlice) { return ((s.startOffset || 0) + currentLeg(s) - 1) % s.gamePlayers.length; }
+export function currentIdx(s: CounterSlice) { return (starterIdx(s) + legThrows(s).length) % s.gamePlayers.length; }
+export function currentPlayer(s: CounterSlice) { return s.gamePlayers[currentIdx(s)]; }
+
+export interface Progress {
+  sets: boolean; setsWon: Record<string | number, number>; legsSet: Record<string | number, number>;
+  legsToWinSet: number; setsToWin: number; over: boolean; winnerId: string | number | null;
+}
+export function progress(s: CounterSlice): Progress {
+  const cfg = s.settings;
+  const sets = cfg.unit === 'sets';
+  const legsToWinSet = Math.max(1, Math.ceil((cfg.bestOf || 5) / 2));
+  const setsToWin = Math.max(1, Math.ceil((cfg.bestOfSets || 3) / 2));
+  const players = s.gamePlayers;
+  const setsWon: Record<string | number, number> = {}, legsSet: Record<string | number, number> = {};
+  players.forEach((p) => { setsWon[p.id] = 0; legsSet[p.id] = 0; });
+  let over = false, winnerId: string | number | null = null;
+  const cos = s.allThrows.filter((t) => t.checkout);
+  for (const t of cos) {
+    if (over) break;
+    legsSet[t.playerId] = (legsSet[t.playerId] || 0) + 1;
+    if (sets) {
+      if (legsSet[t.playerId] >= legsToWinSet) {
+        setsWon[t.playerId]++;
+        players.forEach((p) => { legsSet[p.id] = 0; });
+        if (setsWon[t.playerId] >= setsToWin) { over = true; winnerId = t.playerId; }
+      }
+    } else if (legsSet[t.playerId] >= legsToWinSet) { over = true; winnerId = t.playerId; }
+  }
+  return { sets, setsWon, legsSet, legsToWinSet, setsToWin, over, winnerId };
+}
+export function matchOver(s: CounterSlice) { return progress(s).over; }
+export function winner(s: CounterSlice) { const id = progress(s).winnerId; return s.gamePlayers.find((p) => p.id === id) || null; }
+
+export function average(s: CounterSlice, pid: string | number) {
+  const ts = s.allThrows.filter((t) => t.playerId === pid);
+  if (!ts.length) return 0;
+  return ts.reduce((a, t) => a + (t.bust ? 0 : t.score), 0) / ts.length;
+}
+export function first9(s: CounterSlice, pid: string | number) {
+  const ts = s.allThrows.filter((t) => t.playerId === pid).slice(0, 3);
+  if (!ts.length) return 0;
+  return ts.reduce((a, t) => a + (t.bust ? 0 : t.score), 0) / ts.length;
+}
+export function countAtLeast(s: CounterSlice, pid: string | number, n: number, exact?: boolean) {
+  return s.allThrows.filter((t) => t.playerId === pid && !t.bust && (exact ? t.raw === n : t.raw >= n)).length;
+}
+export function lastThrow(s: CounterSlice, pid: string | number) {
+  const ts = legThrows(s).filter((t) => t.playerId === pid);
+  return ts.length ? ts[ts.length - 1] : null;
+}
+/** Checkout-Quote (% der ausspielbaren Aufnahmen, die gecheckt wurden) und High Finish */
+export function finishStats(s: CounterSlice, pid: string | number): { co: number; hf: number } {
+  const start = s.settings.startScore;
+  const byLeg: Record<number, Throw[]> = {};
+  s.allThrows.filter((t) => t.playerId === pid).forEach((t) => { (byLeg[t.leg] = byLeg[t.leg] || []).push(t); });
+  let chances = 0, hits = 0, hf = 0;
+  for (const leg of Object.keys(byLeg)) {
+    let rem = start;
+    for (const t of byLeg[+leg]) {
+      const before = rem;
+      if (before <= 170 && canCheckout(s.settings, before, 3).ok) chances++;
+      if (t.checkout) { hits++; if (t.raw > hf) hf = t.raw; }
+      if (!t.bust) rem -= t.score;
+    }
+  }
+  return { co: chances ? Math.round((hits / chances) * 100) : 0, hf };
+}
+
+export interface ScoreRow { round: number; scored: string | number; rest: number; bust: boolean; checkout: boolean; }
+export function scoreList(s: CounterSlice, pid: string | number): ScoreRow[] {
+  let rest = s.settings.startScore; const rows: ScoreRow[] = [];
+  legThrows(s).filter((t) => t.playerId === pid).forEach((t, i) => {
+    if (!t.bust) rest -= t.score;
+    rows.push({ round: i + 1, scored: t.bust ? 'BUST' : t.raw, rest, bust: t.bust, checkout: t.checkout });
+  });
+  return rows;
+}
+
+export function outMode(settings: Settings): 'single' | 'double' | 'master' {
+  return settings.outMode || (settings.doubleOut === false ? 'single' : 'double');
+}
+
+export interface CheckoutResult { ok: boolean; reason: string; max: number; }
+export function canCheckout(settings: Settings, rem: number, darts: number): CheckoutResult {
+  const mode = outMode(settings);
+  if (rem <= 0) return { ok: false, reason: 'empty', max: 0 };
+  if (mode !== 'single' && rem === 1) return { ok: false, reason: 'one', max: 0 };
+  const singles: number[] = [];
+  for (let i = 1; i <= 20; i++) { singles.push(i, i * 2, i * 3); }
+  singles.push(25, 50);
+  const doubles = [2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,50];
+  const trebles: number[] = []; for (let i = 1; i <= 20; i++) trebles.push(i * 3);
+  // valid FINAL dart: any field (single), a double/bull, or — for master — also a treble
+  const finishers = mode === 'single' ? singles.slice() : mode === 'master' ? [...doubles, ...trebles] : doubles;
+  const finSet = new Set(finishers); const sglSet = new Set(singles);
+  const max = Math.max(...finishers) + (darts - 1) * Math.max(...singles);
+  if (rem > max) return { ok: false, reason: 'high', max };
+  let ok = false;
+  if (darts === 1) ok = finSet.has(rem);
+  else if (darts === 2) { for (const a of sglSet) { if (finSet.has(rem - a)) { ok = true; break; } } }
+  else { for (const a of singles) { for (const b of singles) { if (finSet.has(rem - a - b)) { ok = true; break; } } if (ok) break; } }
+  return { ok, reason: ok ? '' : 'impossible', max };
+}
+
+/** Checkout-Vorschlag für aktiven Spieler (≤170, ausspielbar). Master nutzt die Double-Out-Wege (auch gültig). */
+export function checkoutSuggestion(settings: Settings, rem: number): string | null {
+  if (outMode(settings) === 'single') return null;
+  if (rem > 170 || rem < 2) return null;
+  return CHECKOUTS[rem] || null;
+}

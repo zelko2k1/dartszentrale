@@ -1,0 +1,40 @@
+/* Base + Pseudozustände (was Inline-Styles nicht können) */
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+button { font-family: inherit; }
+input, select, textarea { font-family: inherit; }
+input::placeholder, textarea::placeholder { color: var(--text-5); }
+
+/* Hover-Regel (README): Karten/Listenzeilen heben border-color auf --border-strong */
+.dh-hover-border { transition: border-color .18s ease, background .18s ease; }
+.dh-hover-border:hover { border-color: var(--border-strong) !important; }
+
+/* Buttons mit dezentem Hover-Hintergrund */
+.dh-btn { transition: background .15s ease, border-color .15s ease, color .15s ease, opacity .15s ease; }
+.dh-btn:hover { background: var(--surface-3); }
+.dh-btn-ghost:hover { background: rgba(255,255,255,.04); }
+
+/* Primärbutton (Akzent-Grün) */
+.dh-primary { transition: filter .15s ease, box-shadow .15s ease, transform .05s ease; }
+.dh-primary:hover { filter: brightness(1.06); }
+.dh-primary:active { transform: translateY(1px); }
+
+/* Inputs Fokus */
+.dh-input { transition: border-color .15s ease, box-shadow .15s ease; outline: none; }
+.dh-input:focus { border-color: var(--border-strong); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+
+/* Nav-Item Hover (nur wenn nicht aktiv) */
+.dh-nav:hover:not(.dh-nav-active) { background: var(--surface-2); color: var(--text); }
+
+/* Klickbare Zeile */
+.dh-row { transition: background .15s ease, border-color .18s ease; }
+
+.dh-pop { animation: dh-pop .18s ease both; }
+.dh-up { animation: dh-up .2s ease both; }
+
+a { color: inherit; text-decoration: none; }

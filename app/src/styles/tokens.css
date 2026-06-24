@@ -1,0 +1,25 @@
+/* Design tokens — 1:1 aus DartsHub.dc.html (Zeilen 15–38) */
+:root, [data-theme="dark"] {
+  --sidebar:#0a0c0e; --bg:#0d0f12; --surface:#14181c; --surface-2:#13171c; --surface-3:#161b20; --btn:#1a2026;
+  --border:#232a31; --border-2:#2a333c; --border-strong:#3a434d; --hairline:#1c2229;
+  --text:#ECEAE3; --text-2:#aeb4bd; --text-3:#8a9099; --text-4:#6b7480; --text-5:#5b626b;
+  --success:#7fd7a6; --danger-soft:#c98b86;
+  --nav-active:color-mix(in srgb, var(--accent) 16%, transparent); --nav-active-fg:var(--accent); --bar:rgba(13,15,18,.55);
+}
+[data-theme="light"] {
+  --sidebar:#ffffff; --bg:#edeae1; --surface:#ffffff; --surface-2:#f7f5ef; --surface-3:#f0ede4; --btn:#ece9de;
+  --border:#e3e0d4; --border-2:#dad6c8; --border-strong:#c2bdac; --hairline:#ece9df;
+  --text:#1c1f24; --text-2:#474c54; --text-3:#5c616a; --text-4:#7c818a; --text-5:#9aa0a7;
+  --danger-soft:#b5483b; --success:#178a52;
+  --nav-active:color-mix(in srgb, var(--accent) 14%, transparent); --nav-active-fg:var(--accent); --bar:rgba(248,246,240,.7);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+#root { height: 100%; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 6px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-track { background: transparent; }
+@keyframes dh-pop { from { transform: scale(.82); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes dh-up { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes dh-glow { 0%,100% { box-shadow: 0 0 0 1px rgba(43,211,119,.55), 0 0 46px rgba(43,211,119,.10); } 50% { box-shadow: 0 0 0 1px rgba(43,211,119,.85), 0 0 60px rgba(43,211,119,.20); } }
+@keyframes dh-spin { to { transform: rotate(360deg); } }

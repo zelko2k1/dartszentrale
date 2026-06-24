@@ -1,0 +1,23 @@
+# PocketBase für den Vereinsmodus — Deployment via Coolify (Docker Compose).
+# Coolify übernimmt Reverse-Proxy + HTTPS; die Domain (db.<deine-domain>) wird in der Coolify-UI gesetzt.
+# WICHTIG: Das Volume pb_data ist persistent → enthält SQLite-DB + Uploads + Backups.
+#          Ohne dieses Volume wären die Daten nach einem Redeploy weg.
+services:
+  pocketbase:
+    # Community-Image, das die PocketBase-Releases spiegelt.
+    # In Produktion eine konkrete Version pinnen (aktuelle stabile statt :latest).
+    image: ghcr.io/muchobien/pocketbase:latest
+    restart: unless-stopped
+    # Zielport für Coolifys Proxy (in der UI db.<domain> → Port 8090 verdrahten).
+    ports:
+      - "8090:8090"
+    volumes:
+      - pb_data:/pb_data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8090/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  pb_data:
