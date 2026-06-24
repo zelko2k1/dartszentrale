@@ -138,6 +138,9 @@ export interface Settings {
   appMode: AppMode;
   appModeManual?: boolean;
   appModeDetected?: AppMode;
+  // PocketBase-Serveradresse für den Vereinsmodus — GERÄTE-LOKAL (eigener localStorage-Key,
+  // nicht serverseitig gespeichert), damit jeder Rechner/Verein auf seine eigene Instanz zeigen kann.
+  pbUrl?: string;
   clubName: string;
   clubLogo: string | null;
   dashRange?: 'week' | 'month' | 'all';

@@ -19,7 +19,7 @@ export interface Snapshot {
   clubLogo?: string | null;
 }
 
-export interface AuthUser { id: string; name: string; role: Role; }
+export interface AuthUser { id: string; name: string; role: Role; active: boolean; }
 
 export type ProviderRecord = Record<string, unknown>;
 

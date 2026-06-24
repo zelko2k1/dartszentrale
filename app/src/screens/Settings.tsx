@@ -86,6 +86,16 @@ export function Settings() {
   const isVerein = cfg.appMode === 'verein';
   const [logoErr, setLogoErr] = useState('');
   const [dataMsg, setDataMsg] = useState('');
+  const [pbUrlDraft, setPbUrlDraft] = useState(cfg.pbUrl || '');
+  const [pbMsg, setPbMsg] = useState('');
+
+  const savePbUrl = () => {
+    const v = pbUrlDraft.trim().replace(/\/+$/, ''); // trailing slash entfernen
+    if (v && !/^https?:\/\//i.test(v)) { setPbMsg('Adresse muss mit http:// oder https:// beginnen.'); return; }
+    s.setPbUrl(v);
+    setPbMsg(v ? 'Gespeichert – verbinde neu …' : 'Server entfernt – wechsle in den lokalen Modus …');
+    setTimeout(() => window.location.reload(), 600); // init() baut den Provider mit der neuen URL neu auf
+  };
 
   const doExport = () => {
     try {
@@ -218,6 +228,18 @@ export function Settings() {
 
       {p.manageClub && isVerein && (
         <Section title="Verein">
+          <Row label="Vereins-Server (PocketBase)" sub="Adresse deiner PocketBase-Instanz, z. B. https://db.deinverein.de. Wird nur auf diesem Gerät gespeichert – nach dem Speichern verbindet sich die App neu." top>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                <input className="dh-input" type="url" inputMode="url" autoCapitalize="off" autoCorrect="off" spellCheck={false} value={pbUrlDraft} onChange={(e) => { setPbUrlDraft(e.target.value); setPbMsg(''); }} placeholder="https://db.deinverein.de" style={{ width: 260, maxWidth: '100%', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, outline: 'none' }} />
+                <button onClick={savePbUrl} style={{ background: accent, color: 'var(--accent-fg)', border: `1px solid ${accent}`, padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>Speichern &amp; verbinden</button>
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, color: s.pbMode ? accent : 'var(--text-4)' }}>
+                {s.pbMode ? `✓ Verbunden mit ${cfg.pbUrl || 'Server'}` : (cfg.pbUrl ? '⚠ Nicht verbunden – Adresse prüfen' : 'Kein Server – läuft im lokalen Modus')}
+              </span>
+              {pbMsg && <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>{pbMsg}</span>}
+            </div>
+          </Row>
           <Row label="Vereinsname" sub="Wird in der Hauptansicht neben dem Logo angezeigt.">
             <input className="dh-input" type="text" value={cfg.clubName} onChange={(e) => set('clubName', e.target.value)} placeholder="z. B. SV Adler Niederrhein" style={{ width: 260, maxWidth: '100%', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, outline: 'none' }} />
           </Row>
@@ -241,7 +263,7 @@ export function Settings() {
 
       {p.manageUsers && (
         <Section title="Benutzer & Rechte">
-          <button className="dh-row" onClick={() => s.go('users')} style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: '16px 0', cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button className="dh-row" onClick={() => s.go('users')} style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: '16px 0', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--text)' }}>
             <div style={{ width: 40, height: 40, borderRadius: 11, background: 'var(--btn)', border: '1px solid var(--border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--text-2)' }}><IconUsers size={20} /></div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 14, fontWeight: 600 }}>Benutzer verwalten</div>

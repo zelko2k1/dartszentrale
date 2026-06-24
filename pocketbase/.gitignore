@@ -1,0 +1,9 @@
+# Lokale PocketBase-Laufzeit – nicht versionieren.
+# Schema & Beispieldaten sind reproduzierbar über provision.mjs / seed.mjs (+ SCHEMA.md).
+
+# Heruntergeladenes Binary (plattformspezifisch, ~31 MB)
+/pocketbase
+# Lokale SQLite-DB, Uploads, Superuser-Hashes
+pb_data/
+# Automatisch erzeugte Schema-Snapshots
+pb_migrations/
