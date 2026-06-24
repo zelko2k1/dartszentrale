@@ -4,7 +4,7 @@ import type {
   GamePlayer, Throw, Role, MatchPlayerStat,
 } from '../data/types';
 import { AVATARS } from '../data/constants';
-import { uid, firstName, lastName } from '../lib/format';
+import { uid, firstName, lastName, initials } from '../lib/format';
 import {
   scores as cScores, progress as cProgress, currentPlayer as cCurrentPlayer,
   matchOver as cMatchOver, average as cAverage, countAtLeast,
@@ -32,6 +32,7 @@ const LS = {
   users: 'dartshub_users',
   session: 'dartshub_session',
   leagues: 'dartshub_leagues',
+  pburl: 'dartshub_pburl',
 };
 
 function read<T>(key: string, fallback: T): T {
@@ -46,7 +47,7 @@ function write(key: string, val: unknown) {
 }
 
 // ── Modal-Typen ──
-export interface PlayerModalState { mode: 'add' | 'edit'; id: string | null; name: string; short: string; avi: number; }
+export interface PlayerModalState { mode: 'add' | 'edit'; id: string | null; first: string; last: string; short: string; avi: number; }
 export interface TeamModalState { mode: 'add' | 'edit'; id: string | null; name: string; league: string; memberIds: string[]; captainId: string | null; }
 export interface UserModalState { mode: 'add' | 'edit'; id: string | null; first: string; last: string; email: string; role: Role; playerId: string | null; active: boolean; avi: number; position: string; password: string; }
 export interface LeagueModalState { mode: 'add' | 'edit'; id: string | null; name: string; season: string; teams: { id: string; name: string; own: boolean }[]; }
@@ -141,6 +142,8 @@ export interface AppState {
   // settings
   setSetting: <K extends keyof Settings>(key: K, val: Settings[K]) => void;
   setFKey: (i: number, val: string) => void;
+  // PocketBase-Serveradresse (gerätelokal); leerer String = lokaler Modus
+  setPbUrl: (url: string) => void;
 
   // Daten-Backup
   exportData: () => string;
@@ -150,7 +153,7 @@ export interface AppState {
   openAddPlayer: () => void;
   openEditPlayer: (id: string) => void;
   closePlayerModal: () => void;
-  setPlayerField: (key: 'name' | 'short', val: string) => void;
+  setPlayerField: (key: 'first' | 'last' | 'short', val: string) => void;
   cyclePlayerAvi: (dir: number) => void;
   savePlayerModal: () => void;
   deletePlayer: (id: string) => void;
@@ -331,12 +334,21 @@ export const useStore = create<AppState>((set, get) => ({
     if (!savedSettings || savedSettings.appModeManual !== true) settings.appMode = detected;
     settings.appModeDetected = detected;
 
-    // Datenquelle wählen. provider.mode === 'verein' nur, wenn auch VITE_PB_URL gesetzt ist
-    // (sonst Fallback auf LocalProvider) → lokaler & Vereins-Demo-Pfad bleiben unverändert.
-    const provider = createProvider(settings.appMode);
+    // PocketBase-URL ist GERÄTE-LOKAL (eigener Key, nicht serverseitig) — jeder Rechner/Verein
+    // trägt seine eigene Instanz ein. Hat Vorrang vor dem Build-Default VITE_PB_URL.
+    const pbUrl = read<string>(LS.pburl, '');
+    settings.pbUrl = pbUrl;
+
+    // Datenquelle wählen. provider.mode === 'verein' nur, wenn eine URL vorliegt (Einstellung
+    // oder VITE_PB_URL); sonst Fallback auf LocalProvider → lokaler & Demo-Pfad unverändert.
+    const provider = createProvider(settings.appMode, pbUrl);
     if (provider.mode === 'verein') {
       // Echter PocketBase-Pfad: Daten vom Server, echte Auth, Schreiben & Realtime.
-      set({ settings, provider, pbMode: true, session: provider.currentUser()?.id ?? null });
+      // Eine wiederhergestellte Session eines zwischenzeitlich deaktivierten Kontos verwerfen.
+      const restored = provider.currentUser();
+      if (restored && !restored.active) { void provider.logout(); }
+      const session = restored && restored.active ? restored.id : null;
+      set({ settings, provider, pbMode: true, session });
       void applySnapshot(get, set);
       // Realtime: bei serverseitigen Änderungen neu laden (entprellt) → mehrere Geräte bleiben synchron.
       provider.subscribe(() => scheduleReload(get, set));
@@ -390,6 +402,14 @@ export const useStore = create<AppState>((set, get) => ({
     if (st.pbMode) {
       // Echte PocketBase-Anmeldung mit E-Mail + Passwort.
       void st.provider.login(email, st.loginForm.pw).then((user) => {
+        // Deaktivierte Konten dürfen sich nicht anmelden (analog zum lokalen Modus).
+        // Server-seitig ebenfalls per authRule "active = true" erzwungen; diese Prüfung
+        // liefert die verständliche Meldung und greift auch bei Altinstanzen ohne Rule.
+        if (!user.active) {
+          void st.provider.logout();
+          set((s) => ({ session: null, loginForm: { ...s.loginForm, err: 'Dieses Konto ist deaktiviert. Bitte wende dich an die Vereinsverwaltung.' } }));
+          return;
+        }
         set({ session: user.id, screen: 'dashboard', loginForm: { email: '', pw: '', err: '' } });
         void applySnapshot(get, set); // Daten + persönliche Einstellungen des Nutzers nachladen
       }).catch(() => {
@@ -438,6 +458,13 @@ export const useStore = create<AppState>((set, get) => ({
       return { settings };
     });
   },
+  // Gerätelokale PocketBase-Adresse setzen — bewusst NICHT über persistSettings (kein Server-Sync),
+  // sondern eigener localStorage-Key. Der Provider-Wechsel erfolgt beim nächsten Laden (init()).
+  setPbUrl(url) {
+    const clean = (url || '').trim();
+    write(LS.pburl, clean);
+    set((st) => ({ settings: { ...st.settings, pbUrl: clean } }));
+  },
 
   // ── Daten-Backup (Export/Import aller gespeicherten Daten) ──
   exportData() {
@@ -463,18 +490,18 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   // ── player modal ──
-  openAddPlayer() { set({ playerModal: { mode: 'add', id: null, name: '', short: '', avi: 0 } }); },
+  openAddPlayer() { set({ playerModal: { mode: 'add', id: null, first: '', last: '', short: '', avi: 0 } }); },
   openEditPlayer(id) {
     const p = get().players.find((x) => x.id === id); if (!p) return;
-    set({ playerModal: { mode: 'edit', id: p.id, name: p.name, short: p.short, avi: p.avi } });
+    set({ playerModal: { mode: 'edit', id: p.id, first: firstName(p.name), last: lastName(p.name), short: p.short, avi: p.avi } });
   },
   closePlayerModal() { set({ playerModal: null }); },
   setPlayerField(key, val) { set((st) => st.playerModal ? { playerModal: { ...st.playerModal, [key]: key === 'short' ? val.slice(0, 3) : val } } : {}); },
   cyclePlayerAvi(dir) { set((st) => { if (!st.playerModal) return {}; const n = AVATARS.length; return { playerModal: { ...st.playerModal, avi: ((st.playerModal.avi + dir) % n + n) % n } }; }); },
   savePlayerModal() {
     const m = get().playerModal; if (!m) return;
-    const name = m.name.trim(); if (!name) return;
-    const short = (m.short.trim() || name.slice(0, 2)).toUpperCase().slice(0, 3);
+    const name = `${m.first.trim()} ${m.last.trim()}`.trim(); if (!name) return;
+    const short = (m.short.trim() || initials(name)).toUpperCase().slice(0, 3);
     set((st) => {
       let players: Player[];
       if (m.mode === 'add') {
@@ -923,7 +950,10 @@ function persist(st: AppState, set: SetFn, lsKey: string, fullArray: unknown, ve
 }
 function persistSettings(st: AppState, set: SetFn, settings: Settings) {
   if (st.provider.mode === 'verein') {
-    void st.provider.saveSettings(settings).catch((e) => { console.error('[sync]', e); set({ syncError: 'Einstellungen konnten nicht gespeichert werden.' }); });
+    // pbUrl ist gerätelokal → nicht zum Server synchronisieren (sonst würde sie geräteübergreifend verteilt).
+    const serverSettings: Settings = { ...settings };
+    delete (serverSettings as Partial<Settings>).pbUrl;
+    void st.provider.saveSettings(serverSettings).catch((e) => { console.error('[sync]', e); set({ syncError: 'Einstellungen konnten nicht gespeichert werden.' }); });
   } else {
     write(LS.settings, settings);
   }
@@ -933,8 +963,21 @@ function persistSettings(st: AppState, set: SetFn, settings: Settings) {
 async function applySnapshot(get: () => AppState, set: SetFn) {
   try {
     const snap = await get().provider.loadAll();
+    // Realtime-Schutz: Wird das eigene Konto deaktiviert oder gelöscht (z. B. durch einen Admin
+    // auf einem anderen Gerät), liefert die users-Subscription sofort ein Event → hier abfangen
+    // und den Nutzer umgehend abmelden, statt erst beim nächsten App-Start.
+    const sessionId = get().session;
+    if (sessionId) {
+      const me = snap.accounts.find((a) => a.id === sessionId);
+      if (!me || me.active === false) {
+        void get().provider.logout();
+        set({ session: null, screen: 'dashboard', loginForm: { email: '', pw: '', err: 'Dein Konto wurde deaktiviert. Bitte wende dich an die Vereinsverwaltung.' } });
+        return;
+      }
+    }
     const merged: Settings = { ...get().settings, ...(snap.settings || {}) };
     merged.appMode = 'verein';
+    merged.pbUrl = get().settings.pbUrl; // gerätelokal behalten — nie vom Server übernehmen
     if (snap.clubName !== undefined) merged.clubName = snap.clubName;
     if (snap.clubLogo !== undefined) merged.clubLogo = snap.clubLogo;
     set({

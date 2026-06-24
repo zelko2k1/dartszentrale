@@ -66,7 +66,7 @@ export class LocalProvider implements DataProvider {
   async saveTrainingPlays(plays: Record<string, number>): Promise<void> { write(STORAGE_KEYS.trainplays, plays); }
 
   // Lokal: keine echte Anmeldung — voller Zugriff.
-  async login(): Promise<AuthUser> { return { id: 'local', name: 'Lokal', role: 'admin' }; }
+  async login(): Promise<AuthUser> { return { id: 'local', name: 'Lokal', role: 'admin', active: true }; }
   async logout(): Promise<void> { /* noop */ }
   currentUser(): AuthUser | null { return null; }
   subscribe(): () => void { return () => {}; }

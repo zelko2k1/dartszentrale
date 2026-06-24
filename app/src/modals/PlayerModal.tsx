@@ -10,8 +10,9 @@ export function PlayerModal() {
   const [confirmDel, setConfirmDel] = useState(false);
   if (!m) return null;
   const a = avatar(m.avi);
-  const preview = (m.short.trim() || (m.name ? initials(m.name) : '?')).toUpperCase().slice(0, 3);
-  const canSave = m.name.trim().length > 0;
+  const fullName = `${m.first} ${m.last}`.trim();
+  const preview = (m.short.trim() || (fullName ? initials(fullName) : '?')).toUpperCase().slice(0, 3);
+  const canSave = fullName.length > 0;
   const p = useStore.getState().players.find((x) => x.id === m.id);
   const canDelete = m.mode === 'edit' && !p?.locked;
   const isVerein = s.settings.appMode === 'verein';
@@ -27,13 +28,21 @@ export function PlayerModal() {
         </div>
         <div style={{ fontSize: 12, color: 'var(--text-4)', lineHeight: 1.4 }}>Avatar-Farbe<br />wählen</div>
       </div>
-      <FieldLabel>Name</FieldLabel>
-      <input className="dh-input" value={m.name} onChange={(e) => s.setPlayerField('name', e.target.value)} placeholder="z. B. Lukas Brandt" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', fontSize: 15, color: 'var(--text)', fontFamily: 'inherit', marginBottom: 16 }} />
+      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+        <div style={{ flex: 1 }}>
+          <FieldLabel>Vorname</FieldLabel>
+          <input className="dh-input" value={m.first} onChange={(e) => s.setPlayerField('first', e.target.value)} placeholder="z. B. Lukas" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', fontSize: 15, color: 'var(--text)', fontFamily: 'inherit' }} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <FieldLabel>Nachname</FieldLabel>
+          <input className="dh-input" value={m.last} onChange={(e) => s.setPlayerField('last', e.target.value)} placeholder="z. B. Brandt" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', fontSize: 15, color: 'var(--text)', fontFamily: 'inherit' }} />
+        </div>
+      </div>
       <FieldLabel note="(max. 3 Zeichen, optional)">Kürzel</FieldLabel>
       <input className="dh-input" value={m.short} onChange={(e) => s.setPlayerField('short', e.target.value)} placeholder="autom. aus Name" maxLength={3} style={{ width: 140, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', fontSize: 15, color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace", textTransform: 'uppercase', marginBottom: 26 }} />
       {confirmDel ? (
         <div style={{ background: 'rgba(224,89,75,.08)', border: '1px solid rgba(224,89,75,.32)', borderRadius: 12, padding: '14px 16px' }}>
-          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>„{m.name.trim() || 'Spieler'}" wirklich löschen?</div>
+          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>„{fullName || 'Spieler'}" wirklich löschen?</div>
           <div style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 14 }}>
             Diese Aktion kann nicht rückgängig gemacht werden.{isVerein ? ' Der Spieler wird auch aus allen Mannschaften entfernt.' : ''}
           </div>
