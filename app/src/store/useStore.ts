@@ -19,6 +19,7 @@ import {
 } from './training';
 import { createProvider, type DataProvider } from '../data/dataProvider';
 import type { ProviderRecord } from '../data/provider';
+import { mergeSchedule, deriveOwnTeams, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
 
 const LS = {
   settings: 'dartshub_settings',
@@ -96,6 +97,7 @@ export interface AppState {
   leagueModal: LeagueModalState | null;
   fixtureModal: FixtureModalState | null;
   eventModal: EventModalState | null;
+  importOpen: boolean;
 
   // counter (game) state
   gamePlayers: GamePlayer[];
@@ -192,6 +194,11 @@ export interface AppState {
   saveLeagueModal: () => void;
   deleteLeague: (id: string) => void;
 
+  // Spielplan-Import (CSV)
+  openImport: () => void;
+  closeImport: () => void;
+  importSchedule: (parsed: ParsedSchedule) => ImportCounts;
+
   // fixture modal
   openAddFixture: () => void;
   openEditFixture: (id: string) => void;
@@ -281,6 +288,7 @@ export const useStore = create<AppState>((set, get) => ({
   leagueModal: null,
   fixtureModal: null,
   eventModal: null,
+  importOpen: false,
 
   gamePlayers: [
     { id: 1, name: 'Lukas Brandt', short: 'LB', av: 0 },
@@ -661,6 +669,38 @@ export const useStore = create<AppState>((set, get) => ({
       persist(st, set, LS.leagues, leagues, (p) => p.deleteRecord('leagues', id));
       return { leagues, leagueModal: null, selectedLeague: Math.max(0, Math.min(leagues.length - 1, st.selectedLeague)) };
     });
+  },
+
+  // ── Spielplan-Import (CSV) ──
+  openImport() { set({ importOpen: true }); },
+  closeImport() { set({ importOpen: false }); },
+  importSchedule(parsed) {
+    const st = get();
+    const { leagues, touched, counts } = mergeSchedule(st.leagues, parsed);
+    // Eigene Mannschaften zusätzlich im Mannschaften-Screen anlegen (Kader leer).
+    const newTeams = deriveOwnTeams(leagues, st.teams);
+    counts.ownTeamsNew = newTeams.length;
+    const teams = newTeams.length ? [...st.teams, ...newTeams] : st.teams;
+    if (st.provider.mode === 'verein') {
+      // Pro betroffener Liga anlegen/aktualisieren (PocketBase speichert teams/fixtures als JSON).
+      touched.forEach(({ id, isNew }) => {
+        const rec = leagues.find((l) => l.id === id);
+        if (!rec) return;
+        const op = isNew
+          ? st.provider.createRecord('leagues', rec as unknown as ProviderRecord)
+          : st.provider.updateRecord('leagues', id, rec as unknown as ProviderRecord);
+        void op.catch((e) => { console.error('[sync]', e); set({ syncError: 'Import konnte nicht vollständig gespeichert werden.' }); });
+      });
+      newTeams.forEach((t) => {
+        void st.provider.createRecord('teams', t as unknown as ProviderRecord)
+          .catch((e) => { console.error('[sync]', e); set({ syncError: 'Mannschaft konnte nicht angelegt werden.' }); });
+      });
+    } else {
+      write(LS.leagues, leagues);
+      if (newTeams.length) write(LS.teams, teams);
+    }
+    set({ leagues, teams, selectedLeague: 0 });
+    return counts;
   },
 
   // ── fixture modal ──

@@ -3,6 +3,10 @@
 
 # Heruntergeladenes Binary (plattformspezifisch, ~31 MB)
 /pocketbase
+pocketbase.exe
+# Mit dem Binary-Download entpackte Begleitdateien
+CHANGELOG.md
+LICENSE.md
 # Lokale SQLite-DB, Uploads, Superuser-Hashes
 pb_data/
 # Automatisch erzeugte Schema-Snapshots
