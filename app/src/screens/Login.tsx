@@ -4,7 +4,8 @@ import { Logo } from '../lib/icons';
 
 export function Login() {
   const s = useStore();
-  const demos = s.accounts.filter((a) => a.active);
+  // Schnellanmeldung per Konto-Klick gibt es nur im lokalen Demo-Modus (kein echtes Passwort).
+  const demos = s.pbMode ? [] : s.accounts.filter((a) => a.active);
 
   return (
     <div style={{
@@ -47,11 +48,13 @@ export function Login() {
 
           <button className="dh-primary" onClick={() => s.loginEmail()} style={{ width: '100%', marginTop: 16, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Anmelden</button>
 
+          {demos.length > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '22px 0 16px' }}>
             <div style={{ flex: 1, height: 1, background: 'var(--hairline)' }} />
             <span style={{ fontSize: 11, color: 'var(--text-5)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>Demo-Konten</span>
             <div style={{ flex: 1, height: 1, background: 'var(--hairline)' }} />
           </div>
+          )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {demos.map((d) => {
@@ -68,7 +71,7 @@ export function Login() {
               );
             })}
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text-5)', textAlign: 'center', marginTop: 14 }}>Prototyp — Passwort beliebig, oder Demo-Konto wählen.</div>
+          {!s.pbMode && <div style={{ fontSize: 11, color: 'var(--text-5)', textAlign: 'center', marginTop: 14 }}>Demo-Modus — Passwort beliebig, oder Demo-Konto wählen.</div>}
         </div>
       </div>
     </div>

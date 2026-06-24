@@ -25,8 +25,8 @@ Zwei A-Records auf die Server-IP zeigen lassen:
 2. **Settings → Application** → `Application URL` = `https://db.<domain>`.
 3. **Settings → CORS / Allowed origins** → `https://app.<domain>` eintragen.
 4. **Settings → Backups** → automatische Backups aktivieren (optional Ziel: Hetzner Storage Box / S3).
-5. **Collections anlegen** (siehe `docs/verein-pocketbase-plan.md`, Abschnitt 2 + 3):
-   - Per Migration/Import (empfohlen) **oder** manuell in der Admin-UI.
+5. **Collections + API-Rules anlegen** — Schritt-für-Schritt-Spezifikation in
+   **`pocketbase/SCHEMA.md`** (maßgeblich; die App spricht genau diese Feldnamen an).
    - Self-Registration deaktiviert: `users`-Collection → API-Rule *create* = `@request.auth.role = "admin"`.
 6. **Ersten App-Admin** anlegen: Collection `users` → Record hinzufügen, `role = admin`, E-Mail + Passwort. Damit meldest du dich später in der App an.
 

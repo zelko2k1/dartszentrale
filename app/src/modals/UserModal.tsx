@@ -10,7 +10,9 @@ export function UserModal() {
   if (!m) return null;
   const a = avatar(m.avi);
   const preview = (initials(`${m.first} ${m.last}`.trim()) || '?').toUpperCase();
-  const canSave = `${m.first}${m.last}`.trim().length > 0 && m.email.trim().length > 0;
+  // Im echten Vereinsmodus braucht ein neues Konto ein Anmeldepasswort (PocketBase-Auth).
+  const needsPw = s.pbMode && m.mode === 'add';
+  const canSave = `${m.first}${m.last}`.trim().length > 0 && m.email.trim().length > 0 && (!needsPw || m.password.trim().length >= 8);
   const players = s.players;
   const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' };
 
@@ -40,6 +42,13 @@ export function UserModal() {
 
       <FieldLabel>E-Mail</FieldLabel>
       <input className="dh-input" type="email" value={m.email} onChange={(e) => s.setUserField('email', e.target.value)} placeholder="name@verein.de" style={{ ...inputStyle, marginBottom: 18 }} />
+
+      {s.pbMode && (
+        <>
+          <FieldLabel note={m.mode === 'edit' ? '(leer = unverändert)' : '(min. 8 Zeichen)'}>Anmeldepasswort</FieldLabel>
+          <input className="dh-input" type="password" value={m.password} onChange={(e) => s.setUserField('password', e.target.value)} placeholder={m.mode === 'edit' ? '••••••••' : 'Passwort für den Login vergeben'} autoComplete="new-password" style={{ ...inputStyle, marginBottom: 18 }} />
+        </>
+      )}
 
       <FieldLabel note="(optional)">Position im Verein</FieldLabel>
       <input className="dh-input" value={m.position} onChange={(e) => s.setUserField('position', e.target.value)} placeholder="z. B. 1. Vorsitzender, Kassenwart, Trainer" style={{ ...inputStyle, marginBottom: 18 }} />

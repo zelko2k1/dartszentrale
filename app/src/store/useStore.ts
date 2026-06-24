@@ -18,6 +18,7 @@ import {
   type TrainGame, type TrainPlayer, type TurnInput,
 } from './training';
 import { createProvider, type DataProvider } from '../data/dataProvider';
+import type { ProviderRecord } from '../data/provider';
 
 const LS = {
   settings: 'dartshub_settings',
@@ -47,7 +48,7 @@ function write(key: string, val: unknown) {
 // ── Modal-Typen ──
 export interface PlayerModalState { mode: 'add' | 'edit'; id: string | null; name: string; short: string; avi: number; }
 export interface TeamModalState { mode: 'add' | 'edit'; id: string | null; name: string; league: string; memberIds: string[]; captainId: string | null; }
-export interface UserModalState { mode: 'add' | 'edit'; id: string | null; first: string; last: string; email: string; role: Role; playerId: string | null; active: boolean; avi: number; position: string; }
+export interface UserModalState { mode: 'add' | 'edit'; id: string | null; first: string; last: string; email: string; role: Role; playerId: string | null; active: boolean; avi: number; position: string; password: string; }
 export interface LeagueModalState { mode: 'add' | 'edit'; id: string | null; name: string; season: string; teams: { id: string; name: string; own: boolean }[]; }
 export interface FixtureModalState { mode: 'add' | 'edit'; id: string | null; leagueId: string; homeId: string | null; awayId: string | null; date: string; played: boolean; hs: string; as: string; }
 export interface EventModalState { mode: 'add' | 'edit'; id: string | null; scope: 'local' | 'verein'; title: string; date: string; time: string; type: string; loc: string; }
@@ -70,6 +71,10 @@ export interface AppState {
 
   // Datenquelle (lokal = localStorage, verein = PocketBase wenn VITE_PB_URL gesetzt)
   provider: DataProvider;
+  // true, wenn ein echtes PocketBase-Backend aktiv ist (Login/Schreiben gehen an den Server)
+  pbMode: boolean;
+  // letzte fehlgeschlagene Server-Synchronisation (für eine kleine Hinweisleiste); null = ok
+  syncError: string | null;
 
   // collections
   settings: Settings;
@@ -128,6 +133,10 @@ export interface AppState {
   login: (id: string) => void;
   loginEmail: () => void;
   logout: () => void;
+
+  // Server-Sync (Verein)
+  reloadFromProvider: () => void;
+  clearSyncError: () => void;
 
   // settings
   setSetting: <K extends keyof Settings>(key: K, val: Settings[K]) => void;
@@ -250,6 +259,8 @@ export const useStore = create<AppState>((set, get) => ({
   now: Date.now(),
 
   provider: createProvider('local'),
+  pbMode: false,
+  syncError: null,
   settings: DEFAULT_SETTINGS,
   players: [],
   teams: [],
@@ -324,13 +335,11 @@ export const useStore = create<AppState>((set, get) => ({
     // (sonst Fallback auf LocalProvider) → lokaler & Vereins-Demo-Pfad bleiben unverändert.
     const provider = createProvider(settings.appMode);
     if (provider.mode === 'verein') {
-      // Aktiver PocketBase-Pfad (Phase 2: Auth-Flow + Schreiben + Liga-/Prefs-Mapping).
-      set({ settings, provider, session: provider.currentUser()?.id ?? null });
-      void provider.loadAll().then((snap) => set({
-        players: snap.players, teams: snap.teams, accounts: snap.accounts,
-        leagues: snap.leagues, events: snap.events, matches: snap.matches,
-        trainingPlays: snap.trainingPlays,
-      })).catch(() => { /* Phase 2: Auth/Fehlerbehandlung */ });
+      // Echter PocketBase-Pfad: Daten vom Server, echte Auth, Schreiben & Realtime.
+      set({ settings, provider, pbMode: true, session: provider.currentUser()?.id ?? null });
+      void applySnapshot(get, set);
+      // Realtime: bei serverseitigen Änderungen neu laden (entprellt) → mehrere Geräte bleiben synchron.
+      provider.subscribe(() => scheduleReload(get, set));
       return;
     }
 
@@ -357,26 +366,46 @@ export const useStore = create<AppState>((set, get) => ({
     const session = read<string | null>(LS.session, null);
     const trainingPlays = read<Record<string, number>>(LS.trainplays, {});
 
-    set({ settings, provider, players, teams, accounts, leagues, events, matches, session, trainingPlays });
+    set({ settings, provider, pbMode: false, players, teams, accounts, leagues, events, matches, session, trainingPlays });
   },
+
+  reloadFromProvider() { void applySnapshot(get, set); },
+  clearSyncError() { set({ syncError: null }); },
 
   go(screen) { set({ screen }); },
   openPlayer(id) { set({ selectedPlayerId: id, screen: 'playerDetail' }); },
 
   setLoginField(key, val) { set((st) => ({ loginForm: { ...st.loginForm, [key]: val, err: '' } })); },
+  // Schnellanmeldung per Konto-Klick — nur im lokalen Demo-Modus (kein Passwort).
   login(id) {
+    if (get().pbMode) return; // im echten Vereinsmodus ist Passwort-Login Pflicht
     const acc = get().accounts.find((a) => a.id === id);
     if (!acc || !acc.active) return;
     write(LS.session, id);
     set({ session: id, screen: 'dashboard', loginForm: { email: '', pw: '', err: '' } });
   },
   loginEmail() {
-    const email = get().loginForm.email.trim().toLowerCase();
-    const acc = get().accounts.find((a) => a.email.toLowerCase() === email && a.active);
-    if (!acc) { set((st) => ({ loginForm: { ...st.loginForm, err: 'Kein aktives Konto mit dieser E-Mail.' } })); return; }
+    const st = get();
+    const email = st.loginForm.email.trim();
+    if (st.pbMode) {
+      // Echte PocketBase-Anmeldung mit E-Mail + Passwort.
+      void st.provider.login(email, st.loginForm.pw).then((user) => {
+        set({ session: user.id, screen: 'dashboard', loginForm: { email: '', pw: '', err: '' } });
+        void applySnapshot(get, set); // Daten + persönliche Einstellungen des Nutzers nachladen
+      }).catch(() => {
+        set((s) => ({ loginForm: { ...s.loginForm, err: 'Anmeldung fehlgeschlagen. E-Mail oder Passwort falsch.' } }));
+      });
+      return;
+    }
+    // Lokaler Demo-Modus: Konto per E-Mail finden (Passwort beliebig).
+    const acc = st.accounts.find((a) => a.email.toLowerCase() === email.toLowerCase() && a.active);
+    if (!acc) { set((s) => ({ loginForm: { ...s.loginForm, err: 'Kein aktives Konto mit dieser E-Mail.' } })); return; }
     get().login(acc.id);
   },
-  logout() { write(LS.session, null); set({ session: null }); },
+  logout() {
+    if (get().pbMode) { void get().provider.logout(); set({ session: null }); return; }
+    write(LS.session, null); set({ session: null });
+  },
 
   setSetting(key, val) {
     set((st) => {
@@ -393,7 +422,7 @@ export const useStore = create<AppState>((set, get) => ({
         settings.scoreColor = m === 'light' ? settings.scoreColorLight : settings.scoreColorDark;
         settings.legColor = m === 'light' ? settings.legColorLight : settings.legColorDark;
       }
-      write(LS.settings, settings);
+      persistSettings(st, set, settings);
       const patch: Partial<AppState> = { settings };
       if (key === 'appMode' && val === 'local' && ['leagues', 'teams', 'users'].includes(st.screen)) patch.screen = 'dashboard';
       return patch;
@@ -405,7 +434,7 @@ export const useStore = create<AppState>((set, get) => ({
       const fkeys = [...(st.settings.fkeys || [])];
       fkeys[i] = n;
       const settings = { ...st.settings, fkeys };
-      write(LS.settings, settings);
+      persistSettings(st, set, settings);
       return { settings };
     });
   },
@@ -448,9 +477,15 @@ export const useStore = create<AppState>((set, get) => ({
     const short = (m.short.trim() || name.slice(0, 2)).toUpperCase().slice(0, 3);
     set((st) => {
       let players: Player[];
-      if (m.mode === 'add') players = [...st.players, { id: uid(), name, short, avi: m.avi }];
-      else players = st.players.map((p) => p.id === m.id ? { ...p, name, short, avi: m.avi } : p);
-      write(LS.players, players);
+      if (m.mode === 'add') {
+        const rec: Player = { id: uid(), name, short, avi: m.avi };
+        players = [...st.players, rec];
+        persist(st, set, LS.players, players, (p) => p.createRecord('players', rec as unknown as ProviderRecord));
+      } else {
+        const rec: Player = { id: m.id!, name, short, avi: m.avi };
+        players = st.players.map((p) => p.id === m.id ? { ...p, ...rec } : p);
+        persist(st, set, LS.players, players, (p) => p.updateRecord('players', m.id!, rec as unknown as ProviderRecord));
+      }
       return { players, playerModal: null };
     });
   },
@@ -460,7 +495,17 @@ export const useStore = create<AppState>((set, get) => ({
       if (st.players.find((p) => p.id === id)?.locked) return {};
       const players = st.players.filter((p) => p.id !== id);
       const teams = st.teams.map((t) => ({ ...t, memberIds: t.memberIds.filter((mid) => mid !== id), captainId: t.captainId === id ? null : t.captainId }));
-      write(LS.players, players); write(LS.teams, teams);
+      persist(st, set, LS.players, players, (p) => p.deleteRecord('players', id));
+      // betroffene Mannschaften (Mitglied/Kapitän entfernt) serverseitig nachziehen
+      if (st.provider.mode === 'verein') {
+        st.teams.forEach((t) => {
+          if (!t.memberIds.includes(id) && t.captainId !== id) return;
+          const nt = teams.find((x) => x.id === t.id)!;
+          void st.provider.updateRecord('teams', nt.id, nt as unknown as ProviderRecord).catch((e) => { console.error('[sync]', e); set({ syncError: 'Mannschaft konnte nicht aktualisiert werden.' }); });
+        });
+      } else {
+        write(LS.teams, teams);
+      }
       return { players, teams, playerModal: null };
     });
   },
@@ -493,23 +538,25 @@ export const useStore = create<AppState>((set, get) => ({
       let teams: Team[]; let selectedTeam = st.selectedTeam;
       if (m.mode === 'add') { teams = [...st.teams, rec]; selectedTeam = teams.length - 1; }
       else teams = st.teams.map((t) => t.id === m.id ? rec : t);
-      write(LS.teams, teams);
+      persist(st, set, LS.teams, teams, (p) => m.mode === 'add'
+        ? p.createRecord('teams', rec as unknown as ProviderRecord)
+        : p.updateRecord('teams', rec.id, rec as unknown as ProviderRecord));
       return { teams, teamModal: null, selectedTeam };
     });
   },
   deleteTeam(id) {
     set((st) => {
       const teams = st.teams.filter((t) => t.id !== id);
-      write(LS.teams, teams);
+      persist(st, set, LS.teams, teams, (p) => p.deleteRecord('teams', id));
       return { teams, teamModal: null, selectedTeam: Math.max(0, Math.min(teams.length - 1, st.selectedTeam)) };
     });
   },
 
   // ── user modal ──
-  openAddUser() { set({ userModal: { mode: 'add', id: null, first: '', last: '', email: '', role: 'player', playerId: null, active: true, avi: 0, position: '' } }); },
+  openAddUser() { set({ userModal: { mode: 'add', id: null, first: '', last: '', email: '', role: 'player', playerId: null, active: true, avi: 0, position: '', password: '' } }); },
   openEditUser(id) {
     const a = get().accounts.find((x) => x.id === id); if (!a) return;
-    set({ userModal: { mode: 'edit', id: a.id, first: a.first, last: a.last, email: a.email, role: a.role, playerId: a.playerId, active: a.active, avi: a.avi, position: a.position || '' } });
+    set({ userModal: { mode: 'edit', id: a.id, first: a.first, last: a.last, email: a.email, role: a.role, playerId: a.playerId, active: a.active, avi: a.avi, position: a.position || '', password: '' } });
   },
   closeUserModal() { set({ userModal: null }); },
   setUserField(key, val) { set((st) => st.userModal ? { userModal: { ...st.userModal, [key]: val } as UserModalState } : {}); },
@@ -521,23 +568,33 @@ export const useStore = create<AppState>((set, get) => ({
     if (!name || !email) return;
     set((st) => {
       let accounts: Account[];
-      if (m.mode === 'add') accounts = [...st.accounts, { id: uid(), first, last, name, email, role: m.role, playerId: m.playerId, active: m.active, avi: m.avi, position: m.position.trim(), last_login: '—' }];
-      else accounts = st.accounts.map((a) => a.id === m.id ? { ...a, first, last, name, email, role: m.role, playerId: m.playerId, active: m.active, avi: m.avi, position: m.position.trim() } : a);
-      write(LS.users, accounts);
+      if (m.mode === 'add') {
+        const rec: Account = { id: uid(), first, last, name, email, role: m.role, playerId: m.playerId, active: m.active, avi: m.avi, position: m.position.trim(), last_login: '—' };
+        accounts = [...st.accounts, rec];
+        const body = { ...rec, password: m.password } as unknown as ProviderRecord;
+        persist(st, set, LS.users, accounts, (p) => p.createRecord('accounts', body));
+      } else {
+        const fields = { first, last, name, email, role: m.role, playerId: m.playerId, active: m.active, avi: m.avi, position: m.position.trim() };
+        accounts = st.accounts.map((a) => a.id === m.id ? { ...a, ...fields } : a);
+        const body: ProviderRecord = { id: m.id!, ...fields };
+        if (m.password) body.password = m.password;
+        persist(st, set, LS.users, accounts, (p) => p.updateRecord('accounts', m.id!, body));
+      }
       return { accounts, userModal: null };
     });
   },
   deleteUser(id) {
     set((st) => {
       const accounts = st.accounts.filter((a) => a.id !== id);
-      write(LS.users, accounts);
+      persist(st, set, LS.users, accounts, (p) => p.deleteRecord('accounts', id));
       return { accounts, userModal: null };
     });
   },
   toggleUserActive(id) {
     set((st) => {
       const accounts = st.accounts.map((a) => a.id === id ? { ...a, active: !a.active } : a);
-      write(LS.users, accounts);
+      const next = accounts.find((a) => a.id === id);
+      persist(st, set, LS.users, accounts, (p) => p.updateRecord('accounts', id, { active: !!next?.active } as ProviderRecord));
       return { accounts };
     });
   },
@@ -565,14 +622,16 @@ export const useStore = create<AppState>((set, get) => ({
       let leagues: League[]; let selectedLeague = st.selectedLeague;
       if (m.mode === 'add') { leagues = [...st.leagues, rec]; selectedLeague = leagues.length - 1; }
       else leagues = st.leagues.map((l) => l.id === m.id ? rec : l);
-      write(LS.leagues, leagues);
+      persist(st, set, LS.leagues, leagues, (p) => m.mode === 'add'
+        ? p.createRecord('leagues', rec as unknown as ProviderRecord)
+        : p.updateRecord('leagues', rec.id, rec as unknown as ProviderRecord));
       return { leagues, leagueModal: null, selectedLeague };
     });
   },
   deleteLeague(id) {
     set((st) => {
       const leagues = st.leagues.filter((l) => l.id !== id);
-      write(LS.leagues, leagues);
+      persist(st, set, LS.leagues, leagues, (p) => p.deleteRecord('leagues', id));
       return { leagues, leagueModal: null, selectedLeague: Math.max(0, Math.min(leagues.length - 1, st.selectedLeague)) };
     });
   },
@@ -597,21 +656,28 @@ export const useStore = create<AppState>((set, get) => ({
     const m = get().fixtureModal; if (!m) return;
     if (!m.homeId || !m.awayId || m.homeId === m.awayId) return;
     set((st) => {
+      let changed: League | null = null;
       const leagues = st.leagues.map((l) => {
         if (l.id !== m.leagueId) return l;
         const rec: Fixture = { id: m.id || uid(), homeId: m.homeId!, awayId: m.awayId!, date: m.date, played: m.played, hs: m.played ? (parseInt(m.hs, 10) || 0) : '', as: m.played ? (parseInt(m.as, 10) || 0) : '' };
         const fixtures = m.mode === 'add' ? [...l.fixtures, rec] : l.fixtures.map((f) => f.id === m.id ? rec : f);
-        return { ...l, fixtures };
+        changed = { ...l, fixtures };
+        return changed;
       });
-      write(LS.leagues, leagues);
+      if (changed) persist(st, set, LS.leagues, leagues, (p) => p.updateRecord('leagues', changed!.id, changed! as unknown as ProviderRecord));
       return { leagues, fixtureModal: null };
     });
   },
   deleteFixture(id) {
     set((st) => {
       const m = st.fixtureModal;
-      const leagues = st.leagues.map((l) => (m && l.id === m.leagueId) ? { ...l, fixtures: l.fixtures.filter((f) => f.id !== id) } : l);
-      write(LS.leagues, leagues);
+      let changed: League | null = null;
+      const leagues = st.leagues.map((l) => {
+        if (!(m && l.id === m.leagueId)) return l;
+        changed = { ...l, fixtures: l.fixtures.filter((f) => f.id !== id) };
+        return changed;
+      });
+      if (changed) persist(st, set, LS.leagues, leagues, (p) => p.updateRecord('leagues', changed!.id, changed! as unknown as ProviderRecord));
       return { leagues, fixtureModal: null };
     });
   },
@@ -633,14 +699,16 @@ export const useStore = create<AppState>((set, get) => ({
     set((st) => {
       const rec: EventItem = { id: m.id || uid(), scope: m.scope, title, date: m.date, time: m.time, type: m.type, loc: m.loc.trim() };
       const events = m.mode === 'add' ? [...st.events, rec] : st.events.map((e) => e.id === m.id ? rec : e);
-      write(LS.events, events);
+      persist(st, set, LS.events, events, (p) => m.mode === 'add'
+        ? p.createRecord('events', rec as unknown as ProviderRecord)
+        : p.updateRecord('events', rec.id, rec as unknown as ProviderRecord));
       return { events, eventModal: null };
     });
   },
   deleteEvent(id) {
     set((st) => {
       const events = st.events.filter((e) => e.id !== id);
-      write(LS.events, events);
+      persist(st, set, LS.events, events, (p) => p.deleteRecord('events', id));
       return { events, eventModal: null };
     });
   },
@@ -691,7 +759,8 @@ export const useStore = create<AppState>((set, get) => ({
       players.push({ id: `t${i}_${p.id}`, name: p.name, short: p.short, av: p.avi });
     }
     const trainingPlays = { ...st.trainingPlays, [su.modeId]: (st.trainingPlays[su.modeId] || 0) + 1 };
-    write(LS.trainplays, trainingPlays);
+    if (st.provider.mode === 'verein') void st.provider.saveTrainingPlays(trainingPlays).catch((e) => { console.error('[sync]', e); });
+    else write(LS.trainplays, trainingPlays);
     set({ trainGame: newTrainGame(su.modeId, players), trainUndo: [], trainingPlays, screen: 'trainGame' });
   },
   trainApply(input) {
@@ -737,7 +806,7 @@ export const useStore = create<AppState>((set, get) => ({
       { id: 2, name: b.name, short: b.short, av: b.avi },
     ];
     const settings = { ...st.settings, startScore: su.startScore, bestOf: su.bestOf, bestOfSets: su.bestOfSets, unit: su.unit, doubleOut: su.doubleOut, outMode: su.outMode, doubleIn: su.doubleIn };
-    write(LS.settings, settings);
+    persistSettings(st, set, settings);
     try { localStorage.removeItem(LS.live); } catch { /* ignore */ }
     set({ gamePlayers, gameMode: su.mode, allThrows: [], input: '', screen: 'counter', settings, startOffset: 0, pendingStart: true, bullMode: false, spinPick: null, matchSaved: false, hint: null, abortConfirm: false });
   },
@@ -842,6 +911,49 @@ export const useStore = create<AppState>((set, get) => ({
   closeHint() { set({ hint: null }); },
 }));
 
+// ── Persistenz-Routing: lokal → localStorage (volle Liste), verein → PocketBase (pro Datensatz) ──
+type SetFn = (p: Partial<AppState>) => void;
+
+function persist(st: AppState, set: SetFn, lsKey: string, fullArray: unknown, verein: (p: DataProvider) => Promise<unknown>) {
+  if (st.provider.mode === 'verein') {
+    void verein(st.provider).catch((e) => { console.error('[sync]', e); set({ syncError: 'Änderung konnte nicht gespeichert werden.' }); });
+  } else {
+    write(lsKey, fullArray);
+  }
+}
+function persistSettings(st: AppState, set: SetFn, settings: Settings) {
+  if (st.provider.mode === 'verein') {
+    void st.provider.saveSettings(settings).catch((e) => { console.error('[sync]', e); set({ syncError: 'Einstellungen konnten nicht gespeichert werden.' }); });
+  } else {
+    write(LS.settings, settings);
+  }
+}
+
+// Lädt den kompletten Datenbestand vom Provider und übernimmt ihn in den Store (inkl. persönlicher Einstellungen).
+async function applySnapshot(get: () => AppState, set: SetFn) {
+  try {
+    const snap = await get().provider.loadAll();
+    const merged: Settings = { ...get().settings, ...(snap.settings || {}) };
+    merged.appMode = 'verein';
+    if (snap.clubName !== undefined) merged.clubName = snap.clubName;
+    if (snap.clubLogo !== undefined) merged.clubLogo = snap.clubLogo;
+    set({
+      settings: merged,
+      players: snap.players, teams: snap.teams, accounts: snap.accounts,
+      leagues: snap.leagues, events: snap.events, matches: snap.matches,
+      trainingPlays: snap.trainingPlays, syncError: null,
+    });
+  } catch (e) {
+    console.error('[load]', e);
+    set({ syncError: 'Daten konnten nicht vom Server geladen werden.' });
+  }
+}
+let _reloadTimer: ReturnType<typeof setTimeout> | null = null;
+function scheduleReload(get: () => AppState, set: SetFn) {
+  if (_reloadTimer) clearTimeout(_reloadTimer);
+  _reloadTimer = setTimeout(() => { _reloadTimer = null; void applySnapshot(get, set); }, 300);
+}
+
 // ── Live-Persistenz & Match-Speicherung ──
 function persistLive(get: () => AppState) {
   const st = get();
@@ -863,13 +975,13 @@ function saveMatch(get: () => AppState, set: (p: Partial<AppState>) => void) {
   const unit = st.settings.unit;
   const scoreLine = st.gamePlayers.map((p) => unit === 'sets' ? (prog.setsWon[p.id] || 0) : (prog.legsSet[p.id] || 0)).join(':');
   const match: Match = {
-    id: 'm' + uid(), date: new Date().toISOString(), startScore: st.settings.startScore,
+    id: uid(), date: new Date().toISOString(), startScore: st.settings.startScore,
     doubleOut: st.settings.doubleOut, doubleIn: st.settings.doubleIn, unit, mode: st.gameMode,
     bestOf: st.settings.bestOf, bestOfSets: st.settings.bestOfSets,
     gameLabel: `X01 ${st.settings.startScore} · Bo${st.settings.bestOf}`, winnerName, scoreLine, perPlayer,
   };
   const matches = [...st.matches, match];
-  write(LS.matches, matches);
+  persist(st, set, LS.matches, matches, (p) => p.createRecord('matches', match as unknown as ProviderRecord));
   try { localStorage.removeItem(LS.live); } catch { /* ignore */ }
   set({ matches, matchSaved: true });
 }

@@ -1,9 +1,12 @@
 // Hilfsfunktionen für Datum/Zeit/IDs
 
-let _uidCounter = 0;
+// 15-stellige Kleinbuchstaben-/Ziffern-ID — kompatibel mit dem PocketBase-Standard-ID-Format,
+// damit clientseitig erzeugte IDs direkt an PocketBase übergeben werden können (Relationen bleiben gültig).
+const ID_ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';
 export function uid(): string {
-  _uidCounter += 1;
-  return 'id_' + Date.now().toString(36) + '_' + _uidCounter.toString(36) + Math.floor(Math.random() * 1e6).toString(36);
+  let s = '';
+  for (let i = 0; i < 15; i++) s += ID_ALPHABET[Math.floor(Math.random() * ID_ALPHABET.length)];
+  return s;
 }
 
 /** YYYY-MM-DD, off Tage von heute */

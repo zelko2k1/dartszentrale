@@ -3,6 +3,14 @@
 > Lokaler Modus bleibt unverändert (localStorage, offline, kein Backend).
 > Dieser Plan betrifft **nur den Vereinsmodus**: geteilte Daten, echte Logins von mehreren Rechnern.
 
+> **Umsetzungs-Hinweis (Stand: implementiert).** Phase 1–3 sind im Code umgesetzt: echte
+> PocketBase-Auth, Schreiben/Lesen aller Collections, persönliche Einstellungen (`user_prefs`),
+> Vereinsname/Logo (`club_config`) und Realtime-Sync. **Abweichend von Abschnitt 2** wird das
+> Datenmodell **denormalisiert** gespeichert: `teams.memberIds/captainId`, `leagues.teams/fixtures`
+> und `matches.perPlayer` sind JSON-Felder — keine eigenen Collections `league_teams`/`fixtures`.
+> Das maßgebliche, umgesetzte Schema steht in **`pocketbase/SCHEMA.md`**.
+> Die normalisierte Variante unten bleibt als ursprüngliche Überlegung erhalten.
+
 ## 1. Architektur (Überblick)
 
 ```
