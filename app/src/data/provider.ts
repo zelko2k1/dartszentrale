@@ -36,6 +36,10 @@ export interface DataProvider {
   updateRecord(coll: CollectionName, id: string, patch: ProviderRecord): Promise<ProviderRecord>;
   deleteRecord(coll: CollectionName, id: string): Promise<void>;
 
+  // ── Profilfoto (nur 'players' | 'accounts'); PocketBase-File-Feld. Lokal: nicht unterstützt. ──
+  uploadPhoto(coll: CollectionName, id: string, file: Blob): Promise<void>;
+  clearPhoto(coll: CollectionName, id: string): Promise<void>;
+
   // ── Einstellungen / persönliche Werte ──
   saveSettings(settings: Settings): Promise<void>;
   saveTrainingPlays(plays: Record<string, number>): Promise<void>;

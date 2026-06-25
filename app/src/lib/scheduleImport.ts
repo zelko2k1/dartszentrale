@@ -4,13 +4,14 @@
 // Gruppiert nach Staffel → eine Liga je Staffel; ermittelt die eigenen
 // Mannschaften über die häufigste Vereinsnummer (Export ist vereinsgefiltert).
 
-import type { League, LeagueTeam, Fixture, Team } from '../data/types';
+import type { League, LeagueTeam, Fixture, Team, EventItem } from '../data/types';
 import { uid } from './format';
 import { parseCsv } from './csv';
 
 // ── geparste Zwischenform ──
 export interface ParsedFixture {
   date: string;        // YYYY-MM-DD ('' = unbekannt)
+  time: string;        // HH:MM ('' = unbekannt)
   homeName: string;
   awayName: string;
   homeOwn: boolean;
@@ -39,6 +40,7 @@ export interface ImportCounts {
   ownTeamsNew: number;    // eigene Vereins-Mannschaften (Mannschaften-Screen)
   fixturesNew: number;
   resultsSet: number;
+  eventsNew: number;      // neue Kalender-Termine (eigene Begegnungen)
   skipped: number;
 }
 export interface MergeResult {
@@ -75,6 +77,12 @@ function parseDate(raw: string): string {
     return `${y}-${mo}-${d}`;
   }
   return '';
+}
+
+function parseTime(raw: string): string {
+  const m = (raw || '').match(/(\d{1,2}):(\d{2})/);
+  if (!m) return '';
+  return `${m[1].padStart(2, '0')}:${m[2]}`;
 }
 
 function parseScore(raw: string): number | null {
@@ -150,6 +158,7 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
     const homeName = clean(cell(r, idx.home));
     const awayName = clean(cell(r, idx.away));
     const date = parseDate(cell(r, idx.date));
+    const time = parseTime(cell(r, idx.date));
     if (!homeName || !awayName || BYE.has(norm(homeName)) || BYE.has(norm(awayName)) || !date) {
       skipped++;
       continue;
@@ -167,7 +176,7 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
     const key = `${season}|||${leagueName}`;
     let g = groups.get(key);
     if (!g) { g = { name: leagueName, season, fixtures: [] }; groups.set(key, g); }
-    g.fixtures.push({ date, homeName, awayName, homeOwn, awayOwn, played, hs: hs ?? 0, as: as ?? 0 });
+    g.fixtures.push({ date, time, homeName, awayName, homeOwn, awayOwn, played, hs: hs ?? 0, as: as ?? 0 });
     total++;
   }
 
@@ -196,7 +205,7 @@ export function mergeSchedule(existing: League[], parsed: ParsedSchedule): Merge
   }));
 
   const counts: ImportCounts = {
-    leaguesNew: 0, leaguesExisting: 0, teamsNew: 0, ownTeamsNew: 0, fixturesNew: 0, resultsSet: 0, skipped: parsed.skipped,
+    leaguesNew: 0, leaguesExisting: 0, teamsNew: 0, ownTeamsNew: 0, fixturesNew: 0, resultsSet: 0, eventsNew: 0, skipped: parsed.skipped,
   };
   const newIds = new Set<string>();
   const dirty = new Set<string>();
@@ -281,6 +290,37 @@ export function deriveOwnTeams(leagues: League[], existingTeams: Team[]): Team[]
       if (have.has(n) || seen.has(n)) continue;
       seen.add(n);
       out.push({ id: uid(), name: t.name, league: lg.name, memberIds: [], captainId: null });
+    }
+  }
+  return out;
+}
+
+/**
+ * Leitet aus den geparsten Begegnungen Kalender-Termine (Typ „ligaspiel") ab —
+ * nur für Begegnungen mit Beteiligung einer eigenen Mannschaft, gespielte wie
+ * anstehende. Idempotent: ein Termin gilt als vorhanden, wenn schon ein
+ * Ligaspiel mit gleichem Datum + Titel existiert (auch innerhalb eines Imports
+ * wird nicht doppelt angelegt). Standard-Uhrzeit 19:30, wenn die CSV keine liefert.
+ */
+export function deriveLeagueEvents(parsed: ParsedSchedule, existingEvents: EventItem[]): EventItem[] {
+  const title = (pf: ParsedFixture) => `${pf.homeName} — ${pf.awayName}`;
+  const keyOf = (date: string, t: string) => `${date}|||${norm(t)}`;
+  const have = new Set(
+    existingEvents.filter((e) => e.type === 'ligaspiel').map((e) => keyOf(e.date, e.title)),
+  );
+  const out: EventItem[] = [];
+  for (const g of parsed.groups) {
+    for (const pf of g.fixtures) {
+      if (!pf.homeOwn && !pf.awayOwn) continue;
+      const t = title(pf);
+      const k = keyOf(pf.date, t);
+      if (have.has(k)) continue;
+      have.add(k);
+      out.push({
+        id: uid(), scope: 'verein', title: t, date: pf.date,
+        time: pf.time || '19:30', type: 'ligaspiel',
+        loc: pf.homeOwn ? 'Heim' : 'Auswärts',
+      });
     }
   }
   return out;

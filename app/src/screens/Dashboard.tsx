@@ -1,10 +1,12 @@
 import { useStore } from '../store/useStore';
-import { EVENT_TYPES, TRAIN_MODES, avatar, type TrainMode } from '../data/constants';
+import { EVENT_TYPES, TRAIN_MODES, ROLES, TEAM_KINDS, teamKind, type TrainMode } from '../data/constants';
+import { Avatar } from '../components/Avatar';
 import {
-  dashboardMetrics, nextMatchDay, recentResults, aggregateFor, perm,
+  dashboardMetrics, recentResults, aggregateFor, perm, currentUser, nextOwnFixture, computeStandings,
 } from '../store/selectors';
-import { longDate, timeNow, greeting as greetFn, initials } from '../lib/format';
-import { IconTarget, IconCalendarSmall } from '../lib/icons';
+import { longDate, timeNow, greeting as greetFn, shortLong, todayIso } from '../lib/format';
+import { IconTarget, IconCalendarSmall, IconUsers, IconUserCheck, IconShield, IconTrophy, IconSettings, IconChevronRight, IconPlus } from '../lib/icons';
+import { TeamKindIcon } from '../modals/TeamModal';
 import { useIsPhone } from '../lib/useIsPhone';
 
 export function Dashboard() {
@@ -18,14 +20,28 @@ const WD = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 function VereinDashboard() {
   const s = useStore();
   const now = new Date();
-  const isVerein = s.settings.appMode === 'verein';
   const p = perm(s.settings, s.accounts, s.session);
   const accent = s.settings.accent;
   const range = s.settings.dashRange || 'month';
   const isPhone = useIsPhone();
+  const norm = (x: string) => x.replace(/\s+/g, ' ').trim().toLowerCase();
 
-  // ── Termine ──
-  const scope = isVerein ? 'verein' : 'local';
+  // ── Wer ist angemeldet? Die Rolle bestimmt den Fokus des Dashboards. ──
+  const u = currentUser(s.accounts, s.session);
+  const isAdmin = p.admin;
+  const canManage = p.manageTeams; // Admin/Kapitän dürfen aufstellen
+  const myPlayerId = u?.playerId ?? null;
+  const myPlayer = myPlayerId ? s.players.find((pl) => pl.id === myPlayerId) : null;
+  const myTeams = myPlayerId
+    ? s.teams.filter((t) => t.memberIds.includes(myPlayerId) || t.captainId === myPlayerId || (t.viceCaptainIds || []).includes(myPlayerId))
+    : [];
+  // Persönliche Sicht (Kapitän/Spieler mit eigener Mannschaft) vs. Vereinssicht (Admin / ohne Verknüpfung).
+  const personalView = !isAdmin && myTeams.length > 0;
+  const teamsView = personalView ? myTeams : s.teams;
+  const namesView = new Set(teamsView.map((t) => norm(t.name)));
+
+  // ── Termine (verein-scoped) ──
+  const scope = 'verein';
   const today = new Date(); today.setHours(0, 0, 0, 0);
   let limit: Date | null = null;
   if (range === 'week') { const dow = (today.getDay() + 6) % 7; limit = new Date(today); limit.setDate(today.getDate() + (6 - dow)); limit.setHours(23, 59, 59, 999); }
@@ -49,25 +65,219 @@ function VereinDashboard() {
       };
     });
 
+  // ── Nächste Begegnungen je relevanter Mannschaft (Liga/Pokal über teamKind getrennt) ──
+  const todayStr = todayIso();
+  const upcoming = teamsView
+    .map((t) => ({ team: t, fx: nextOwnFixture(s.leagues, todayStr, t.name, teamKind(t)) }))
+    .filter((x) => x.fx)
+    .sort((a, b) => (a.fx!.date || '').localeCompare(b.fx!.date || ''));
+
+  // ── Tabellen je relevantem Wettbewerb ──
+  const leaguesView = s.leagues
+    .filter((lg) => lg.teams.some((t) => t.own && (!personalView || namesView.has(norm(t.name)))));
+
+  const myAgg = myPlayer ? aggregateFor(myPlayer.name, s.matches) : null;
+  const results = recentResults(leaguesView, 4);
   const metrics = dashboardMetrics(s.players, s.teams, s.leagues, s.matches);
-  const next = nextMatchDay(s.leagues);
-  const results = recentResults(s.leagues, 4);
-  const top = s.players
-    .map((pl) => ({ pl, agg: aggregateFor(pl.name, s.matches) }))
-    .sort((a, b) => b.agg.avg - a.agg.avg)
-    .slice(0, 5);
 
-  const greeting = isVerein ? `${greetFn(now)}, Verein` : greetFn(now);
+  const roleLabel = p.role && (ROLES as Record<string, { label: string }>)[p.role] ? (ROLES as Record<string, { label: string }>)[p.role].label : 'Verein';
+  const firstName = u?.first?.trim() || u?.name?.trim() || s.settings.clubName || 'Verein';
+  const greeting = `${greetFn(now)}, ${firstName}`;
+  const subtitle = u ? `${roleLabel}${s.settings.clubName ? ' · ' + s.settings.clubName : ''}` : (s.settings.clubName || 'Vereinsübersicht');
 
-  const statCards = [
-    { label: 'Spieler', value: String(metrics.playerCount), delta: 'in der Spielerliste', icon: '👥', iconBg: 'rgba(59,158,255,.12)' },
-    { label: 'Mannschaften', value: String(metrics.teamCount), delta: metrics.teamCount === 1 ? '1 Kader' : metrics.teamCount + ' Kader', icon: '🛡', iconBg: 'rgba(25,164,99,.12)' },
-    { label: 'Team Ø 3-Dart', value: metrics.teamAvg ? metrics.teamAvg.toFixed(1) : '–', delta: 'Noch keine Spiele', icon: '🎯', iconBg: 'rgba(242,184,41,.12)' },
-    { label: 'Tabellenplatz', value: metrics.tablePos ? metrics.tablePos + '.' : '–', delta: metrics.leagueName || 'Keine Liga', icon: '🏆', iconBg: 'rgba(224,89,75,.12)' },
+  const statCards: { label: string; value: string; delta: string; icon: string; iconBg: string; screen: Parameters<typeof s.go>[0] }[] = [
+    { label: 'Spieler', value: String(metrics.playerCount), delta: 'verwalten →', icon: '👥', iconBg: 'rgba(59,158,255,.12)', screen: 'players' },
+    { label: 'Mannschaften', value: String(metrics.teamCount), delta: 'verwalten →', icon: '🛡', iconBg: 'rgba(25,164,99,.12)', screen: 'teams' },
+    { label: 'Wettbewerbe', value: String(leaguesView.length), delta: 'Liga & Pokal →', icon: '🏆', iconBg: 'rgba(242,184,41,.12)', screen: 'leagues' },
+    { label: 'Konten', value: String(s.accounts.length), delta: 'Benutzer & Rechte →', icon: '🔑', iconBg: 'rgba(155,109,255,.12)', screen: 'users' },
   ];
 
-  const badgeBg = (own: boolean) => own ? 'linear-gradient(135deg,#19A463,#0f6b40)' : 'var(--border)';
-  const badgeFg = (own: boolean) => own ? '#fff' : 'var(--text-2)';
+  const cardStyle: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 22px' };
+  const sectionTitle: React.CSSProperties = { fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 14 };
+
+  // ── Admin: Schnellanlage (direkt aus dem Dashboard anlegen) ──
+  const quickCreate: { label: string; sub: string; color: string; icon: React.ReactNode; onClick: () => void }[] = [
+    { label: 'Spieler', sub: 'Zur Spielerliste', color: '#3B9EFF', icon: <IconUserCheck size={20} />, onClick: () => s.openAddPlayer() },
+    { label: 'Benutzer', sub: 'Konto & Rolle', color: '#9b6dff', icon: <IconUsers size={20} />, onClick: () => s.openAddUser() },
+    { label: 'Mannschaft', sub: 'Kader anlegen', color: '#19A463', icon: <IconShield size={20} />, onClick: () => s.openAddTeam() },
+    { label: 'Wettbewerb', sub: 'Liga oder Pokal', color: '#F2B829', icon: <IconTrophy size={20} />, onClick: () => s.openAddLeague() },
+    { label: 'Termin', sub: 'Im Vereinskalender', color: '#2BD3C0', icon: <IconCalendarSmall size={20} sw={2} />, onClick: () => s.openAddEvent() },
+  ];
+  const QuickCreateCard = (
+    <div style={cardStyle}>
+      <div style={sectionTitle}>Schnellanlage</div>
+      <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+        {quickCreate.map((q) => (
+          <button key={q.label} className="dh-hover-border" onClick={q.onClick} style={{ display: 'flex', alignItems: 'center', gap: 13, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '14px 16px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <div style={{ width: 40, height: 40, borderRadius: 11, background: `color-mix(in srgb, ${q.color} 16%, transparent)`, color: q.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{q.icon}</div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <IconPlus size={13} style={{ color: 'var(--text-4)' }} />
+                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{q.label}</span>
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>{q.sub}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  // ── Admin: Verwaltung (Sprung in die jeweiligen Bereiche) ──
+  const adminLinks: { label: string; sub: string; icon: React.ReactNode; screen: Parameters<typeof s.go>[0] }[] = [
+    { label: 'Spieler', sub: `${s.players.length} in der Liste`, icon: <IconUserCheck size={20} />, screen: 'players' },
+    { label: 'Benutzer & Rechte', sub: `${s.accounts.length} Konten`, icon: <IconUsers size={20} />, screen: 'users' },
+    { label: 'Mannschaften', sub: `${s.teams.length} Kader`, icon: <IconShield size={20} />, screen: 'teams' },
+    { label: 'Ligen & Pokale', sub: `${s.leagues.length} Wettbewerbe`, icon: <IconTrophy size={20} />, screen: 'leagues' },
+    { label: 'Einstellungen', sub: 'Verein, Board-Konten & mehr', icon: <IconSettings size={20} />, screen: 'settings' },
+  ];
+  const AdminLinksCard = (
+    <div style={cardStyle}>
+      <div style={sectionTitle}>Verwaltung</div>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {adminLinks.map((l) => (
+          <button key={l.label} className="dh-row" onClick={() => s.go(l.screen)} style={{ display: 'flex', alignItems: 'center', gap: 13, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', borderRadius: 10, padding: '11px 6px', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--text)' }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--text-2)' }}>{l.icon}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>{l.label}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 1 }}>{l.sub}</div>
+            </div>
+            <IconChevronRight size={18} style={{ flexShrink: 0, color: 'var(--text-4)' }} />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const UpcomingCard = (
+    <div style={cardStyle}>
+      <div style={sectionTitle}>{personalView ? 'Deine nächsten Begegnungen' : 'Nächste Begegnungen'}</div>
+      {upcoming.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-4)', padding: '6px 4px' }}>Keine anstehenden Begegnungen.</div>}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {upcoming.map(({ team, fx }) => {
+          const k = teamKind(team); const kc = TEAM_KINDS[k].color;
+          const d = fx!.date ? new Date(fx!.date + 'T00:00') : null;
+          return (
+            <div key={team.id + fx!.fixtureId} className="dh-hover-border" style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '11px 12px', border: '1px solid var(--border-2)', borderRadius: 12, background: 'var(--btn)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 46, flexShrink: 0, borderRight: `2px solid ${kc}`, paddingRight: 11 }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em' }}>{d ? MON3[d.getMonth()] : '—'}</span>
+                <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 20, fontWeight: 800, lineHeight: 1.05 }}>{d ? d.getDate() : '–'}</span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ color: kc, display: 'inline-flex', flexShrink: 0 }} title={TEAM_KINDS[k].label}><TeamKindIcon kind={k} size={12} /></span>
+                  <span style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.name}</span>
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {fx!.ownIsHome ? 'gegen ' : 'bei '}{fx!.oppName}{fx!.date ? ' · ' + shortLong(fx!.date) : ''}{fx!.hasLineup ? ' · aufgestellt' : ''}
+                </div>
+              </div>
+              {canManage && (
+                <button onClick={() => s.openLineupAt(fx!.leagueIndex, fx!.fixtureId)} className="dh-btn" style={{ flexShrink: 0, background: fx!.hasLineup ? 'var(--btn)' : 'color-mix(in srgb, var(--accent) 14%, transparent)', border: `1px solid ${fx!.hasLineup ? 'var(--border-2)' : 'color-mix(in srgb, var(--accent) 40%, transparent)'}`, color: fx!.hasLineup ? 'var(--text-2)' : 'var(--accent)', padding: '8px 13px', borderRadius: 10, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{fx!.hasLineup ? 'Aufstellung' : 'Aufstellen'}</button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const ResultsCard = (
+    <div style={cardStyle}>
+      <div style={sectionTitle}>Letzte Ergebnisse</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {results.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-4)', padding: '8px 6px' }}>Noch keine Ergebnisse.</div>}
+        {results.map((r, i) => {
+          const barColor = r.outcome === 'S' ? '#19A463' : r.outcome === 'U' ? '#F2B829' : '#E0594B';
+          const scoreColor = r.outcome === 'S' ? 'var(--success)' : r.outcome === 'U' ? '#F2B829' : 'var(--danger-soft)';
+          return (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 6px', borderBottom: '1px solid var(--hairline)' }}>
+              <div style={{ width: 5, height: 30, borderRadius: 3, background: barColor }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>{r.opp}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{r.leagueName}</div>
+              </div>
+              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 18, fontWeight: 800, color: scoreColor }}>{r.hs}:{r.as}</span>
+              <span style={{ fontSize: 11, fontWeight: 800, color: scoreColor, width: 24, textAlign: 'center' }}>{r.outcome}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const MyStatsCard = myAgg && myPlayer ? (
+    <div style={cardStyle}>
+      <div style={sectionTitle}>Meine Statistik · {myPlayer.name}</div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 14 }}>
+        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 38, fontWeight: 800, letterSpacing: '-.02em', color: 'var(--text)' }}>{myAgg.avg ? myAgg.avg.toFixed(1) : '–'}</span>
+        <span style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700 }}>Ø 3-DART</span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 14 }}>
+        {[
+          { v: String(myAgg.games), l: 'Spiele' },
+          { v: `${myAgg.wins}–${myAgg.losses}`, l: 'S–N' },
+          { v: String(myAgg.c180), l: '180er' },
+          { v: String(myAgg.high || '–'), l: 'High Finish' },
+          { v: String(myAgg.c140), l: '140+' },
+          { v: String(myAgg.c100), l: '100+' },
+        ].map((b) => (
+          <div key={b.l} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px' }}>
+            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 18, fontWeight: 800 }}>{b.v}</div>
+            <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, marginTop: 2 }}>{b.l}</div>
+          </div>
+        ))}
+      </div>
+      {myAgg.recent.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {myAgg.recent.slice(0, 4).map((g, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 4px', borderBottom: '1px solid var(--hairline)' }}>
+              <span style={{ width: 5, height: 26, borderRadius: 3, background: g.won ? '#19A463' : '#E0594B', flexShrink: 0 }} />
+              <span style={{ flex: 1, fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{g.opp || '—'}</span>
+              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: 'var(--text-3)' }}>{g.avg ? g.avg.toFixed(1) : ''}</span>
+              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 800, color: g.won ? 'var(--success)' : 'var(--danger-soft)', width: 44, textAlign: 'right' }}>{g.score}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  ) : null;
+
+  const TablesCard = leaguesView.length > 0 ? (
+    <div style={cardStyle}>
+      <div style={sectionTitle}>Tabellen je Wettbewerb</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {leaguesView.map((lg) => {
+          const k = teamKind(lg); const kc = TEAM_KINDS[k].color;
+          const rows = computeStandings(lg).slice(0, 8);
+          return (
+            <div key={lg.id}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
+                <span style={{ color: kc, display: 'inline-flex' }} title={TEAM_KINDS[k].label}><TeamKindIcon kind={k} size={13} /></span>
+                <span style={{ fontSize: 13, fontWeight: 700 }}>{lg.name}</span>
+                {lg.season && <span style={{ fontSize: 11, color: 'var(--text-4)' }}>· {lg.season}</span>}
+              </div>
+              {rows.length === 0 ? (
+                <div style={{ fontSize: 12, color: 'var(--text-4)', padding: '4px 2px' }}>Noch keine Mannschaften.</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  {rows.map((row, idx) => (
+                    <div key={row.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 6px', borderRadius: 7, background: row.own ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent' }}>
+                      <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, fontWeight: 800, color: 'var(--text-4)', width: 18, textAlign: 'right' }}>{idx + 1}</span>
+                      <span style={{ flex: 1, fontSize: 13, fontWeight: row.own ? 700 : 500, color: row.own ? 'var(--text)' : 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.name}</span>
+                      <span style={{ fontSize: 11, color: 'var(--text-4)', width: 30, textAlign: 'center' }}>{row.sp}</span>
+                      <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 800, width: 28, textAlign: 'right' }}>{row.pts}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <button className="dh-hover-border" onClick={() => s.go('leagues')} style={{ width: '100%', marginTop: 14, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: 11, borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Zu den Ligen →</button>
+    </div>
+  ) : null;
 
   return (
     <div style={{ padding: '28px 32px', maxWidth: 1240, margin: '0 auto' }}>
@@ -79,6 +289,7 @@ function VereinDashboard() {
             <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.05em' }}>{timeNow(now)}</div>
           </div>
           <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{greeting}</h1>
+          <div style={{ fontSize: 13, color: 'var(--text-3)', fontWeight: 600, marginTop: 4 }}>{subtitle}</div>
         </div>
         {p.play && (
           <button className="dh-primary" onClick={() => s.goSetup()} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '13px 22px', borderRadius: 13, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)', whiteSpace: 'nowrap' }}>
@@ -131,92 +342,43 @@ function VereinDashboard() {
         </div>
       )}
 
-      {/* stat cards */}
-      {isVerein && (
+      {/* Vereins-Kennzahlen nur für Admin */}
+      {isAdmin && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16, marginBottom: 18 }}>
           {statCards.map((c) => (
-            <div key={c.label} className="dh-hover-border" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '18px 20px' }}>
+            <button key={c.label} className="dh-hover-border" onClick={() => s.go(c.screen)} style={{ textAlign: 'left', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '18px 20px', cursor: 'pointer', fontFamily: 'inherit' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>{c.label}</span>
                 <div style={{ width: 30, height: 30, borderRadius: 9, background: c.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>{c.icon}</div>
               </div>
-              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 30, fontWeight: 800, marginTop: 12, letterSpacing: '-.02em' }}>{c.value}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600, marginTop: 3 }}>{c.delta}</div>
-            </div>
+              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 30, fontWeight: 800, marginTop: 12, letterSpacing: '-.02em', color: 'var(--text)' }}>{c.value}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginTop: 3 }}>{c.delta}</div>
+            </button>
           ))}
         </div>
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: isPhone ? 'minmax(0, 1fr)' : '1.6fr 1fr', gap: 18 }}>
-        {/* left column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          {next && (
-            <div style={{ background: 'linear-gradient(135deg,#13241b,var(--surface) 60%)', border: '1px solid #234032', borderRadius: 16, padding: 22 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-                <span style={{ fontSize: 12, color: 'var(--success)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Nächster Spieltag</span>
-                <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>{new Date(next.date + 'T00:00:00').toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
-                  <div style={{ width: 54, height: 54, borderRadius: 14, background: badgeBg(next.home.own), color: badgeFg(next.home.own), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 18 }}>{initials(next.home.name).slice(0, 3)}</div>
-                  <span style={{ fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{next.home.name}</span>
-                </div>
-                <div style={{ textAlign: 'center', padding: '0 18px' }}>
-                  <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: 'var(--text-4)', fontWeight: 700 }}>{next.ownIsHome ? 'Heim' : 'Auswärts'}</div>
-                  <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-4)', margin: '2px 0' }}>VS</div>
-                  <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{next.leagueName}</div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
-                  <div style={{ width: 54, height: 54, borderRadius: 14, background: badgeBg(next.away.own), color: badgeFg(next.away.own), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 18 }}>{initials(next.away.name).slice(0, 3)}</div>
-                  <span style={{ fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{next.away.name}</span>
-                </div>
-              </div>
-              <button className="dh-btn" onClick={() => s.go('leagues')} style={{ width: '100%', marginTop: 20, background: 'color-mix(in srgb, var(--accent) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 35%, transparent)', color: 'var(--accent)', padding: 11, borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Zur Liga →</button>
+        {isAdmin ? (
+          <>
+            {/* Admin: Verwaltungs-Fokus statt Spiel-/Tabellen-Auswertung */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>{QuickCreateCard}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>{AdminLinksCard}</div>
+          </>
+        ) : (
+          <>
+            {/* linke Spalte */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              {UpcomingCard}
+              {ResultsCard}
             </div>
-          )}
-
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 22px' }}>
-            <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 14 }}>Letzte Ergebnisse</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {results.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-4)', padding: '8px 6px' }}>Noch keine Ergebnisse.</div>}
-              {results.map((r, i) => {
-                const barColor = r.outcome === 'S' ? '#19A463' : r.outcome === 'U' ? '#F2B829' : '#E0594B';
-                const scoreColor = r.outcome === 'S' ? 'var(--success)' : r.outcome === 'U' ? '#F2B829' : 'var(--danger-soft)';
-                return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 6px', borderBottom: '1px solid var(--hairline)' }}>
-                    <div style={{ width: 5, height: 30, borderRadius: 3, background: barColor }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600 }}>{r.opp}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{r.leagueName}</div>
-                    </div>
-                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 18, fontWeight: 800, color: scoreColor }}>{r.hs}:{r.as}</span>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: scoreColor, width: 24, textAlign: 'center' }}>{r.outcome}</span>
-                  </div>
-                );
-              })}
+            {/* rechte Spalte */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              {MyStatsCard}
+              {TablesCard}
             </div>
-          </div>
-        </div>
-
-        {/* right column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 22px' }}>
-            <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 14 }}>Top-Spieler · Ø 3-Dart</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {top.map((row, idx) => {
-                const a = avatar(row.pl.avi);
-                return (
-                  <div key={row.pl.id} className="dh-row" onClick={() => s.openPlayer(row.pl.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 6px', cursor: 'pointer', borderRadius: 9 }}>
-                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 800, color: idx === 0 && row.agg.avg ? '#F2B829' : 'var(--text-4)', width: 18 }}>{idx + 1}</span>
-                    <div style={{ width: 32, height: 32, borderRadius: 9, background: a.bg, color: a.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12 }}>{row.pl.short}</div>
-                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{row.pl.name}</span>
-                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{row.agg.avg ? row.agg.avg.toFixed(1) : '–'}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -392,11 +554,10 @@ function LocalDashboard() {
             {top.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-4)', padding: '8px 6px' }}>Keine Spieler angelegt.</div>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {top.map((row, idx) => {
-                const a = avatar(row.pl.avi);
                 return (
                   <div key={row.pl.id} className="dh-row" onClick={() => s.openPlayer(row.pl.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 6px', cursor: 'pointer', borderRadius: 9 }}>
                     <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 800, color: idx === 0 && row.agg.avg ? '#F2B829' : 'var(--text-4)', width: 18 }}>{idx + 1}</span>
-                    <div style={{ width: 32, height: 32, borderRadius: 9, background: a.bg, color: a.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12 }}>{row.pl.short}</div>
+                    <Avatar photo={row.pl.photo} short={row.pl.short} avi={row.pl.avi} size={32} />
                     <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{row.pl.name}</span>
                     <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{row.agg.avg ? row.agg.avg.toFixed(1) : '–'}</span>
                   </div>

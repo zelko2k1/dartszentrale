@@ -1,5 +1,28 @@
 // Konstanten — 1:1 aus DartsHub.dc.html
-import type { Role } from './types';
+import type { Role, Settings, LineupSegment, TeamKind } from './types';
+
+// Mannschafts-Arten: Liga vs. Pokal. Icon wird in der UI über die Art gewählt (IconShield / IconTrophy).
+export const TEAM_KINDS: Record<TeamKind, { label: string; short: string; color: string }> = {
+  league: { label: 'Liga-Mannschaft', short: 'Liga', color: '#19A463' },
+  cup:    { label: 'Pokalmannschaft', short: 'Pokal', color: '#F2B829' },
+};
+// Robuster Zugriff inkl. Altdaten ohne kind-Feld → Standard 'league'.
+export const teamKind = (t: { kind?: TeamKind }): TeamKind => (t.kind === 'cup' ? 'cup' : 'league');
+
+// Spielformat-Vorlagen laut Wettkampfordnung. Reihenfolge der Segmente = realer Spielablauf.
+export const LEAGUE_FORMAT_PRESETS: Record<string, { label: string; short: string; segments: LineupSegment[] }> = {
+  BL: { label: 'Bayernliga', short: '8 Einzel + 4 Doppel', segments: [{ kind: 'singles', count: 8 }, { kind: 'doubles', count: 4 }] },
+  LL: { label: 'Landesliga', short: '6 Einzel · 3 Doppel · 6 Einzel', segments: [{ kind: 'singles', count: 6 }, { kind: 'doubles', count: 3 }, { kind: 'singles', count: 6 }] },
+};
+
+// Einstellungen, die NICHT vereinsweit zentral gelten, sondern an Gerät/Login gebunden bleiben:
+// Verbindung (pbUrl), Betriebsmodus & Geräteart (hardwareabhängig) sowie der Dashboard-Zeitraum
+// (reiner Ansichtsfilter, den jeder frei umschalten darf). Alles andere wird in club_config zentral
+// gepflegt, damit alle Board-Rechner identisch aussehen/verhalten.
+export const DEVICE_LOCAL_SETTING_KEYS: (keyof Settings)[] = [
+  'pbUrl', 'appMode', 'appModeManual', 'appModeDetected', 'device', 'dashRange',
+  'kiosk', 'boardName', 'nameOrder',
+];
 
 export const AVATARS: { bg: string; fg: string }[] = [
   { bg: 'linear-gradient(135deg,#19A463,#0f6b40)', fg: '#fff' },
@@ -23,7 +46,10 @@ export const ROLES: Record<Role, RoleDef> = {
   captain: { label: 'Kapitän',       short: 'Kapitän',    desc: 'Aufstellung & Kader der eigenen Mannschaft',        color: '#F2B829', bg: 'rgba(242,184,41,.13)', bd: 'rgba(242,184,41,.4)' },
   player:  { label: 'Spieler',       short: 'Spieler',    desc: 'Eigene Statistik, Termine & Spiele',                color: '#19A463', bg: 'rgba(25,164,99,.13)',  bd: 'rgba(25,164,99,.4)' },
   viewer:  { label: 'Betrachter',    short: 'Betrachter', desc: 'Nur Lesezugriff auf Spielpläne & Tabellen',         color: '#3B9EFF', bg: 'rgba(59,158,255,.13)', bd: 'rgba(59,158,255,.4)' },
+  board:   { label: 'Board-Rechner', short: 'Board',      desc: 'Maschinen-Konto: nur spielen, nichts verwalten',    color: '#7a828c', bg: 'rgba(122,130,140,.13)', bd: 'rgba(122,130,140,.4)' },
 };
+// Von Hand vergebbare Rollen. 'board' fehlt bewusst: die Board-Rolle wird ausschließlich an
+// Board-Rechner-Konten (isBoard) gekoppelt und kann nicht frei zugewiesen werden.
 export const ROLE_ORDER: Role[] = ['admin', 'captain', 'player', 'viewer'];
 
 export interface EventTypeDef { label: string; color: string; icon: string; }

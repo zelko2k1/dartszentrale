@@ -23,6 +23,7 @@ die IDs selbst erzeugt und mitsendet.
 | short | text (max 3) |
 | avi | number |
 | locked | bool |
+| photo | file (Bild, max 1, Thumbnail 160x160) |
 
 ### `teams` (Base)
 | Feld | Typ |
@@ -31,6 +32,8 @@ die IDs selbst erzeugt und mitsendet.
 | league | text |
 | memberIds | json |
 | captainId | json |
+| viceCaptainIds | json |
+| kind | text (`league` Standard \| `cup` = Pokalmannschaft) |
 
 ### `leagues` (Base)
 | Feld | Typ |
@@ -39,6 +42,7 @@ die IDs selbst erzeugt und mitsendet.
 | season | text |
 | teams | json |
 | fixtures | json |
+| kind | text (`league` Standard \| `cup` = Pokal-Wettbewerb) |
 
 ### `events` (Base)
 | Feld | Typ |
@@ -86,12 +90,19 @@ die IDs selbst erzeugt und mitsendet.
 | name | text |
 | first | text |
 | last | text |
-| role | select (Werte: `admin`, `captain`, `player`, `viewer`) |
+| role | select (Werte: `admin`, `captain`, `player`, `viewer`, `board`) |
 | playerId | json |
 | position | text |
 | active | bool |
 | avi | number |
 | last_login | text |
+| isBoard | bool |
+| boardNumber | number (onlyInt) |
+| photo | file (Bild, max 1, Thumbnail 160x160) |
+
+`board` = Maschinen-Rolle der Board-Rechner: nur spielen (Matches anlegen/lesen), nichts verwalten.
+Sie ist über den Hook `pb_hooks/board_role_guard.pb.js` fest an `isBoard` gekoppelt — ein Board-Konto
+kann serverseitig nie eine andere Rolle erhalten und `board` nie an ein normales Konto vergeben werden.
 
 **Wichtig:** *Self-Registration deaktivieren* — Konten legt nur der Admin an
 (siehe API-Rule unten).

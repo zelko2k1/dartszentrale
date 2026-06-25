@@ -1,21 +1,9 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { avatar, ROLES } from '../data/constants';
+import { ROLES } from '../data/constants';
 import type { Role } from '../data/types';
 import { accentFg } from '../store/selectors';
 
-// ── Avatar (Initialen-Badge) ──
-export function Avatar({ avi, short, size = 38, radius = 10, fontSize, style }: {
-  avi: number; short: string; size?: number; radius?: number; fontSize?: number; style?: CSSProperties;
-}) {
-  const a = avatar(avi);
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: radius, background: a.bg, color: a.fg,
-      display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800,
-      fontSize: fontSize ?? Math.round(size * 0.34), flexShrink: 0, ...style,
-    }}>{short}</div>
-  );
-}
+// Avatar lebt jetzt in components/Avatar.tsx (mit Profilfoto + Fallback).
 
 // ── Rollen-Badge ──
 export function RoleBadge({ role, style }: { role: Role; style?: CSSProperties }) {

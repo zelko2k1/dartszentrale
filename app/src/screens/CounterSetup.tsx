@@ -1,5 +1,6 @@
+import { useMemo } from 'react';
 import { useStore } from '../store/useStore';
-import { avatar } from '../data/constants';
+import { Avatar } from '../components/Avatar';
 import { IconTarget } from '../lib/icons';
 import { useIsPhone } from '../lib/useIsPhone';
 
@@ -11,7 +12,12 @@ export function CounterSetup() {
   const s = useStore();
   const su = s.setup;
   const accent = s.settings.accent;
-  const players = s.players;
+  // Standard-Spieler (locked = "Spieler 1/2") immer oben in der Auswahl für ein neues Spiel.
+  const players = useMemo(() => {
+    const def = s.players.filter((p) => p.locked);
+    const rest = s.players.filter((p) => !p.locked);
+    return [...def, ...rest];
+  }, [s.players]);
   const sets = su.unit === 'sets';
   const isPhone = useIsPhone();
 
@@ -31,25 +37,30 @@ export function CounterSetup() {
   );
 
   const slot = (idx: 'p1' | 'p2', highlight: boolean, slotLabel: string) => {
-    const sel = players[su[idx]] || players[0];
+    const guestKey = idx === 'p1' ? 'p1Guest' : 'p2Guest';
+    const guest = (su[guestKey] || '').trim();
+    const selPlayer = players[su[idx]] || players[0];
     const otherIdx = idx === 'p1' ? su.p2 : su.p1;
-    const av = sel ? avatar(sel.avi) : { bg: 'var(--btn)', fg: 'var(--text)' };
+    const headName = guest || selPlayer?.name || '';
+    const headShort = guest ? (guest.slice(0, 2).toUpperCase()) : (selPlayer?.short || '');
     return (
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 14px', background: highlight ? 'color-mix(in srgb, var(--accent) 9%, transparent)' : 'rgba(255,255,255,.03)', border: `1px solid ${highlight ? 'color-mix(in srgb, var(--accent) 40%, var(--border-2))' : 'var(--border-2)'}`, borderRadius: 12, marginBottom: 10 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 11, background: av.bg, color: av.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14 }}>{sel?.short}</div>
+          {!guest && selPlayer
+            ? <Avatar photo={selPlayer.photo} short={headShort} avi={selPlayer.avi} size={40} />
+            : <div style={{ width: 40, height: 40, borderRadius: 11, background: 'var(--btn)', color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 14, flexShrink: 0 }}>{headShort}</div>}
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 10, color: highlight ? 'var(--success)' : 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em' }}>{slotLabel}</div>
-            <div style={{ fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sel?.name}</div>
+            <div style={{ fontSize: 10, color: highlight ? 'var(--success)' : 'var(--text-3)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em' }}>{slotLabel}{guest && ' · Gast'}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{headName}</div>
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 230, overflowY: 'auto' }}>
+        <input value={su[guestKey] || ''} onChange={(e) => s.setSetup(guestKey, e.target.value)} placeholder="oder Gastname eingeben …" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: `1px solid ${guest ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 10, padding: '9px 11px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', marginBottom: 8 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 200, overflowY: 'auto', opacity: guest ? 0.4 : 1, pointerEvents: guest ? 'none' : 'auto' }}>
           {players.map((p, i) => {
             const on = su[idx] === i; const disabled = i === otherIdx;
-            const av2 = avatar(p.avi);
             return (
               <button key={p.id} onClick={() => !disabled && s.setSetup(idx, i)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px', background: on ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 10, cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit', textAlign: 'left', opacity: disabled ? 0.4 : 1 }}>
-                <div style={{ width: 30, height: 30, borderRadius: 8, background: av2.bg, color: av2.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 11, flexShrink: 0 }}>{p.short}</div>
+                <Avatar photo={p.photo} short={p.short} avi={p.avi} size={30} />
                 <div style={{ minWidth: 0 }}><div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap' }}>{p.name}</div></div>
               </button>
             );
@@ -109,10 +120,14 @@ export function CounterSetup() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 64 }}><span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 16, fontWeight: 800, color: 'var(--text-4)' }}>VS</span></div>
           {slot('p2', false, 'Spieler 2')}
         </div>
+        {row('Freies Spiel', 'Spaßspiel ohne Wertung – wird nicht gespeichert', toggle(!!su.freePlay, () => s.setSetup('freePlay', !su.freePlay)))}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
-        <div style={{ fontSize: 13, color: 'var(--text-3)', fontFamily: "'JetBrains Mono',monospace" }}>{summary}</div>
+        <div>
+          <div style={{ fontSize: 13, color: 'var(--text-3)', fontFamily: "'JetBrains Mono',monospace" }}>{summary}</div>
+          <div style={{ fontSize: 12, color: su.freePlay ? 'var(--text-4)' : 'var(--success)', fontWeight: 600, marginTop: 4 }}>{su.freePlay ? 'Freies Spiel – wird nicht gespeichert' : 'Wird für die gewählten Spieler gewertet'}</div>
+        </div>
         <button className="dh-primary" onClick={() => s.startGame()} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '14px 28px', borderRadius: 13, fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
           Spiel starten

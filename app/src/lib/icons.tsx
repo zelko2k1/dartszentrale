@@ -25,6 +25,7 @@ export const IconLogout = (p: IconProps) => <S {...p}><path d="M9 21H5a2 2 0 0 1
 
 // ── Allgemein ──
 export const IconPlus = (p: IconProps) => <S sw={2.6} {...p}><path d="M12 5v14M5 12h14" /></S>;
+export const IconSearch = (p: IconProps) => <S sw={2} {...p}><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></S>;
 export const IconEdit = (p: IconProps) => <S sw={2} {...p}><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" /></S>;
 export const IconBack = (p: IconProps) => <S sw={2} {...p}><path d="M19 12H5M12 19l-7-7 7-7" /></S>;
 export const IconChevronRight = (p: IconProps) => <S sw={2} {...p}><path d="M9 18l6-6-6-6" /></S>;

@@ -3,7 +3,7 @@
 // Logik liegt in initData() / applyTurn() / standings() (Switch nach modeId).
 import { TRAIN_MODES, CRICKET_TARGETS, CHECKOUTS } from '../data/constants';
 
-export interface TrainPlayer { id: string; name: string; short: string; av: number; }
+export interface TrainPlayer { id: string; name: string; short: string; av: number; photo?: string; }
 
 export interface TrainLog { round: number; playerId: string; text: string; }
 

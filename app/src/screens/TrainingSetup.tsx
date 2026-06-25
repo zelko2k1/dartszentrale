@@ -1,6 +1,6 @@
 import { useStore } from '../store/useStore';
-import { avatar } from '../data/constants';
 import { TRAIN_MODES, MODE_RULES } from '../data/constants';
+import { Avatar } from '../components/Avatar';
 import { trainMeta } from '../store/training';
 import { useIsPhone } from '../lib/useIsPhone';
 
@@ -80,10 +80,11 @@ export function TrainingSetup() {
         <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12, paddingBottom: 18, borderTop: '1px solid var(--hairline)', paddingTop: 16 }}>
           {slots.map((i) => {
             const sel = players[su.picks[i]] || players[0];
-            const av = sel ? avatar(sel.avi) : { bg: 'var(--btn)', fg: 'var(--text)' };
             return (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12 }}>
-                <div style={{ width: 38, height: 38, borderRadius: 10, background: av.bg, color: av.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, flexShrink: 0 }}>{sel?.short}</div>
+                {sel
+                  ? <Avatar photo={sel.photo} short={sel.short} avi={sel.avi} size={38} />
+                  : <div style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--btn)', flexShrink: 0 }} />}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em' }}>Spieler {i + 1}</div>
                   <select value={su.picks[i]} onChange={(e) => s.setTrainPick(i, Number(e.target.value))} style={{ width: '100%', background: 'transparent', color: 'var(--text)', border: 'none', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', outline: 'none', padding: 0 }}>

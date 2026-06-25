@@ -41,6 +41,16 @@ Zwei A-Records auf die Server-IP zeigen lassen:
 - In Edge „Als App installieren" (PWA, HTTPS vorhanden ✔).
 - Weitere Mitglieder: Konten legt der Admin in der App (bzw. PB-Admin-UI) an.
 
+## 6. Sicherheit / Härtung
+Die echte Zugriffskontrolle sind die **PocketBase-API-Rules** (serverseitig) — der Kiosk-/Board-Modus ist nur Oberfläche.
+- **Board-Rechner-Konto** (dediziert, rechtearm) anlegen statt echte Spieler-/Admin-Logins an die Bretter zu geben:
+  `PB_URL=https://db.<domain> PB_SU_EMAIL=… PB_SU_PASS=… BOARD_EMAIL=board@<domain> BOARD_PW=<starkes-pw> node pocketbase/add-board-account.mjs`
+  → Rolle `player`: darf nur **Matches anlegen + lesen**, nichts verwalten, Matches nicht ändern/löschen (nur admin).
+- **HTTPS** ist Pflicht (Coolify stellt es automatisch) — sonst wandern Login-Tokens im Klartext.
+- **Superuser-/Admin-Passwort** stark wählen und **nie auf den Board-PCs** speichern. Board-PW regelmäßig rotieren (Skript erneut ausführen).
+- Self-Registration bleibt aus (`users` create = admin). Unauthentifiziert ist nichts lesbar (alle list/view-Rules verlangen Login).
+- Kiosk-Ausstieg am Board verlangt Admin/Kapitän-Login → ein Board-Konto (player) kann den Board-Modus nicht selbst verlassen.
+
 ## Betrieb / Gut zu wissen
 - **Daten liegen im Volume `pb_data`** — Backups regelmäßig prüfen, gelegentlich Restore testen.
 - PocketBase-Version in der `docker-compose.yml` pinnen und Updates kontrolliert einspielen.

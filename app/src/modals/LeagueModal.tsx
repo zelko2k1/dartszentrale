@@ -1,11 +1,27 @@
 import { useStore } from '../store/useStore';
 import { Modal, ModalTitle, FieldLabel, ModalFooter } from '../components/Modal';
+import { LEAGUE_FORMAT_PRESETS, TEAM_KINDS } from '../data/constants';
+import { TeamKindIcon } from './TeamModal';
+import type { TeamKind } from '../data/types';
 
 export function LeagueModal() {
   const s = useStore();
   const m = s.leagueModal;
   if (!m) return null;
   const canSave = m.name.trim().length > 0;
+
+  const fmtKey = JSON.stringify(m.format);
+  const activePreset = m.format == null ? 'custom'
+    : (Object.keys(LEAGUE_FORMAT_PRESETS).find((k) => JSON.stringify(LEAGUE_FORMAT_PRESETS[k].segments) === fmtKey) || 'preset');
+  const presetBtn = (key: string, label: string, sub: string) => {
+    const on = activePreset === key;
+    return (
+      <button key={key} onClick={() => s.setLeagueFormatPreset(key as 'BL' | 'LL' | 'custom')} style={{ flex: 1, minWidth: 140, textAlign: 'left', background: on ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1.5px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 11, padding: '10px 13px', cursor: 'pointer', fontFamily: 'inherit' }}>
+        <div style={{ fontSize: 13, fontWeight: 800, color: on ? 'var(--accent)' : 'var(--text)' }}>{label}</div>
+        <div style={{ fontSize: 11, color: 'var(--text-4)', marginTop: 2 }}>{sub}</div>
+      </button>
+    );
+  };
 
   return (
     <Modal onClose={() => s.closeLeagueModal()} width={540} z={62} style={{ maxHeight: '88vh', overflow: 'auto' }}>
@@ -21,6 +37,43 @@ export function LeagueModal() {
           <input className="dh-input" value={m.season} onChange={(e) => s.setLeagueField('season', e.target.value)} placeholder="2025/26" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
         </div>
       </div>
+
+      <FieldLabel>Art des Wettbewerbs</FieldLabel>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
+        {(Object.keys(TEAM_KINDS) as TeamKind[]).map((k) => {
+          const def = TEAM_KINDS[k]; const on = m.kind === k;
+          return (
+            <button key={k} onClick={() => s.setLeagueField('kind', k)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: on ? `color-mix(in srgb, ${def.color} 13%, transparent)` : 'var(--btn)', border: `1px solid ${on ? def.color : 'var(--border-2)'}`, color: on ? def.color : 'var(--text-3)', borderRadius: 11, padding: '10px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <TeamKindIcon kind={k} size={15} />
+              {k === 'cup' ? 'Pokal' : 'Liga'}
+            </button>
+          );
+        })}
+      </div>
+
+      <FieldLabel>Spielformat</FieldLabel>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+        {presetBtn('BL', LEAGUE_FORMAT_PRESETS.BL.label, LEAGUE_FORMAT_PRESETS.BL.short)}
+        {presetBtn('LL', LEAGUE_FORMAT_PRESETS.LL.label, LEAGUE_FORMAT_PRESETS.LL.short)}
+        {presetBtn('custom', 'Eigenes', 'Einzel/Doppel frei wählen')}
+      </div>
+
+      {m.format == null ? (
+        <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
+          <div style={{ flex: 1 }}>
+            <FieldLabel note="pro Begegnung">Einzel</FieldLabel>
+            <input className="dh-input" type="number" min={0} max={12} value={m.singlesCount} onChange={(e) => s.setLeagueCount('singlesCount', parseInt(e.target.value, 10) || 0)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <FieldLabel note="pro Begegnung">Doppel</FieldLabel>
+            <input className="dh-input" type="number" min={0} max={12} value={m.doublesCount} onChange={(e) => s.setLeagueCount('doublesCount', parseInt(e.target.value, 10) || 0)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+          </div>
+        </div>
+      ) : (
+        <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 18, lineHeight: 1.5 }}>
+          Ablauf: {m.format.map((seg) => `${seg.count} ${seg.kind === 'singles' ? 'Einzel' : 'Doppel'}`).join(' → ')}
+        </div>
+      )}
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
         <label style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700 }}>Mannschaften in der Liga</label>

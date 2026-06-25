@@ -1,5 +1,6 @@
 import { useStore } from '../store/useStore';
-import { ROLES, avatar } from '../data/constants';
+import { ROLES } from '../data/constants';
+import { Avatar } from '../components/Avatar';
 import { Logo } from '../lib/icons';
 
 export function Login() {
@@ -58,10 +59,10 @@ export function Login() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {demos.map((d) => {
-              const av = avatar(d.avi); const r = ROLES[d.role];
+              const r = ROLES[d.role];
               return (
                 <button key={d.id} className="dh-hover-border" onClick={() => s.login(d.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '10px 12px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                  <div style={{ width: 34, height: 34, borderRadius: 9, background: av.bg, color: av.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, flexShrink: 0 }}>{(d.first[0] || '') + (d.last[0] || '')}</div>
+                  <Avatar photo={d.photo} short={(d.first[0] || '') + (d.last[0] || '')} avi={d.avi} size={34} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.name}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.email}</div>

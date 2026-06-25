@@ -120,6 +120,8 @@ export function Leagues() {
                   const played = !!f.played;
                   const { day, mon } = fmtDate(f.date);
                   const score = played ? `${f.hs}:${f.as}` : '–';
+                  const isOwn = !!sel.teams.find((t) => (t.id === f.homeId || t.id === f.awayId) && t.own);
+                  const hasLineup = !!(f.lineup && (f.lineup.positions?.some((e) => e.playerIds.length) || f.lineup.substitutes?.length));
                   return (
                     <div key={f.id} className="dh-hover-border" onClick={() => canEdit && s.openEditFixture(f.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', border: '1px solid var(--border-2)', borderRadius: 12, cursor: canEdit ? 'pointer' : 'default', background: 'transparent' }}>
                       <div style={{ textAlign: 'center', width: 42, flexShrink: 0 }}>
@@ -130,6 +132,20 @@ export function Leagues() {
                         <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{teamNameById(f.homeId)} — {teamNameById(f.awayId)}</div>
                         <div style={{ fontSize: 11, color: played ? 'var(--text-4)' : 'var(--success)', fontWeight: 600, marginTop: 2 }}>{played ? 'Beendet' : 'Geplant'}</div>
                       </div>
+                      {isOwn && canEdit && (
+                        <button onClick={(e) => { e.stopPropagation(); s.openLineup(f.id); }} title="Aufstellung"
+                          style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, background: hasLineup ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--btn)', border: `1px solid ${hasLineup ? 'var(--accent)' : 'var(--border-2)'}`, color: hasLineup ? 'var(--accent)' : 'var(--text-3)', padding: '6px 10px', borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                          <IconUsersSmall size={14} />
+                          {hasLineup ? 'Aufstellung' : 'Aufstellen'}
+                        </button>
+                      )}
+                      {isOwn && canEdit && hasLineup && (
+                        <button onClick={(e) => { e.stopPropagation(); s.openResult(f.id); }} title="Ergebnis erfassen"
+                          style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 10px', borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+                          Ergebnis
+                        </button>
+                      )}
                       <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 15, fontWeight: 800, color: played ? 'var(--text)' : 'var(--text-4)' }}>{score}</span>
                     </div>
                   );

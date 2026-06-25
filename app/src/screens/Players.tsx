@@ -1,22 +1,37 @@
+import { useMemo, useState } from 'react';
 import { useStore } from '../store/useStore';
-import { avatar } from '../data/constants';
 import { aggregateFor, perm } from '../store/selectors';
-import { IconPlus, IconEdit } from '../lib/icons';
+import { Avatar } from '../components/Avatar';
+import { IconPlus, IconEdit, IconUserCheck } from '../lib/icons';
+import { SearchInput } from '../components/SearchInput';
+import { compareName, matchesQuery, nameParts } from '../lib/people';
 
 export function Players() {
   const s = useStore();
   const p = perm(s.settings, s.accounts, s.session);
+  const order = s.settings.nameOrder ?? 'first';
+  const isVerein = s.settings.appMode === 'verein';
+  const linkedPlayerIds = useMemo(() => new Set(s.accounts.map((a) => a.playerId).filter(Boolean) as string[]), [s.accounts]);
+  const [query, setQuery] = useState('');
+
+  const players = useMemo(() => {
+    const sorted = [...s.players].sort((a, b) => compareName(nameParts(a.name), nameParts(b.name), order));
+    return sorted.filter((pl) => matchesQuery(query, pl.name, pl.short));
+  }, [s.players, order, query]);
 
   return (
     <div style={{ padding: '28px 32px', maxWidth: 1100, margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, marginBottom: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
         <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>Spieler</h1>
-        {p.managePlayers && (
-          <button className="dh-primary" onClick={() => s.openAddPlayer()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
-            <IconPlus size={17} />
-            Spieler
-          </button>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <SearchInput value={query} onChange={setQuery} placeholder="Spieler suchen …" />
+          {p.managePlayers && (
+            <button className="dh-primary" onClick={() => s.openAddPlayer()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <IconPlus size={17} />
+              Spieler
+            </button>
+          )}
+        </div>
       </div>
 
       {s.players.length === 0 && (
@@ -26,18 +41,38 @@ export function Players() {
         </div>
       )}
 
+      {s.players.length > 0 && players.length === 0 && (
+        <div style={{ background: 'var(--surface)', border: '1px dashed var(--border-strong)', borderRadius: 16, padding: 36, textAlign: 'center', color: 'var(--text-4)', fontSize: 14 }}>
+          Kein Spieler passt zu „{query}".
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
-        {s.players.map((pl) => {
-          const a = avatar(pl.avi); const agg = aggregateFor(pl.name, s.matches);
+        {players.map((pl) => {
+          const agg = aggregateFor(pl.name, s.matches);
+          const linked = linkedPlayerIds.has(pl.id);
           return (
             <div key={pl.id} className="dh-hover-border" onClick={() => s.openPlayer(pl.id)} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 20, cursor: 'pointer', position: 'relative' }}>
-              {p.managePlayers && (
-                <button onClick={(e) => { e.stopPropagation(); s.openEditPlayer(pl.id); }} title="Bearbeiten" className="dh-btn" style={{ position: 'absolute', top: 14, right: 14, width: 30, height: 30, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                  <IconEdit size={15} />
-                </button>
-              )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 13, marginBottom: 16 }}>
-                <div style={{ width: 46, height: 46, borderRadius: 12, background: a.bg, color: a.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 16 }}>{pl.short}</div>
+              <div style={{ position: 'absolute', top: 14, right: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                {isVerein && p.manageUsers && (
+                  linked ? (
+                    <span title="Hat bereits ein Benutzerkonto" style={{ width: 30, height: 30, borderRadius: 8, background: 'color-mix(in srgb, var(--success) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--success) 45%, transparent)', color: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <IconUserCheck size={15} />
+                    </span>
+                  ) : (
+                    <button onClick={(e) => { e.stopPropagation(); s.openAddUserForPlayer(pl.id); }} title="Als Benutzer anlegen" className="dh-btn" style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                      <IconUserCheck size={15} />
+                    </button>
+                  )
+                )}
+                {p.managePlayers && (
+                  <button onClick={(e) => { e.stopPropagation(); s.openEditPlayer(pl.id); }} title="Bearbeiten" className="dh-btn" style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    <IconEdit size={15} />
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 13, marginBottom: 16, paddingRight: 64 }}>
+                <Avatar photo={pl.photo} short={pl.short} avi={pl.avi} size={46} />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pl.name}</div>
                   <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{agg.games} Spiele</div>

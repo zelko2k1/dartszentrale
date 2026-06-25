@@ -1,6 +1,8 @@
 // Datenmodell — siehe DATA_MODEL.md
 
-export type Role = 'admin' | 'captain' | 'player' | 'viewer';
+// 'board' = Maschinen-Rolle der Board-Rechner (am stärksten eingeschränkt: nur spielen + lesen).
+// Wird NIE von Hand vergeben (fehlt bewusst in ROLE_ORDER) und ist fest an isBoard gekoppelt.
+export type Role = 'admin' | 'captain' | 'player' | 'viewer' | 'board';
 export type AppMode = 'local' | 'verein';
 
 export interface Player {
@@ -9,14 +11,23 @@ export interface Player {
   short: string;       // max 3
   avi: number;         // Avatar-Farbindex
   locked?: boolean;    // Seed-Spieler
+  // Optionales Profilfoto (nur Vereinsmodus, PocketBase-File-Feld). Nach dem Laden eine fertige Bild-URL
+  // (Thumbnail); fehlt → Anzeige fällt auf Farbe + Kürzel zurück. Siehe components/Avatar.tsx.
+  photo?: string;
 }
+
+// Art der Mannschaft: 'league' = Liga-Mannschaft (Standard), 'cup' = Pokalmannschaft.
+// Ein Spieler kann gleichzeitig in einer Liga- UND einer Pokalmannschaft stehen.
+export type TeamKind = 'league' | 'cup';
 
 export interface Team {
   id: string;
   name: string;
   league?: string;     // Freitext
-  memberIds: string[]; // → Player.id
+  memberIds: string[]; // → Player.id (unbegrenzt)
   captainId: string | null;
+  viceCaptainIds?: string[]; // bis zu 2 Ersatzkapitäne (→ Player.id)
+  kind?: TeamKind;     // fehlt = 'league' (Abwärtskompatibilität für Altdaten)
 }
 
 export interface Account {
@@ -31,12 +42,35 @@ export interface Account {
   active: boolean;
   avi: number;
   last_login?: string;
+  // Board-Rechner-Konto (Maschinen-Login): feste Nummer = Identität des Bretts, NIE mit einem Spieler verknüpft.
+  isBoard?: boolean;
+  boardNumber?: number;
+  // Optionales Profilfoto (nur Vereinsmodus, PocketBase-File-Feld) — nach dem Laden eine fertige Bild-URL.
+  photo?: string;
 }
 
 export interface LeagueTeam {
   id: string;
   name: string;
   own: boolean;
+}
+
+// Eine Position der frei konfigurierbaren Aufstellung. kind = Einzel/Doppel; playerIds: Einzel = 1 ID,
+// Doppel = 2 IDs (→ Player.id). board = optionale Board-Bezeichnung (Bezug zum Kiosk-boardName).
+export interface LineupPosition {
+  id: string;
+  kind: 'single' | 'double';
+  playerIds: string[];
+  board?: string;
+  // Ergebnis dieses Spiels (Spielbericht): won = aus eigener Sicht gewonnen/verloren; Legs optional.
+  result?: { won: 'own' | 'opp'; ownLegs?: number; oppLegs?: number };
+}
+
+// Aufstellung der EIGENEN Mannschaft für eine Begegnung: pro Spieltag frei zusammengestellt
+// (beliebig viele Einzel/Doppel in beliebiger Reihenfolge). substitutes = geordnete Ersatzliste (E1, E2, …).
+export interface FixtureLineup {
+  positions: LineupPosition[];
+  substitutes: string[];
 }
 
 export interface Fixture {
@@ -47,7 +81,13 @@ export interface Fixture {
   played: boolean;
   hs: number | '';
   as: number | '';
+  lineup?: FixtureLineup; // Aufstellung der eigenen Mannschaft (nur bei eigenen Begegnungen)
 }
+
+// Ein Block des Spielformats, z. B. 8 Einzel oder 4 Doppel. Die REIHENFOLGE der Segmente bildet
+// den realen Ablauf ab (LL: 6 Einzel → 3 Doppel → 6 Einzel; BL: 8 Einzel → 4 Doppel).
+export type LineupSegmentKind = 'singles' | 'doubles';
+export interface LineupSegment { kind: LineupSegmentKind; count: number; }
 
 export interface League {
   id: string;
@@ -55,6 +95,14 @@ export interface League {
   season: string;
   teams: LeagueTeam[];
   fixtures: Fixture[];
+  // Art des Wettbewerbs (fehlt = 'league'): trennt Liga- von Pokal-Begegnungen, damit eine
+  // Pokalmannschaft beim Aufstellungs-Shortcut nur Pokal-Begegnungen findet. Siehe TeamKind.
+  kind?: TeamKind;
+  // Spielformat der Begegnungen (pro Liga konfigurierbar). Bevorzugt `format` (geordnete Blöcke);
+  // singlesCount/doublesCount bleiben als einfache/ältere Variante erhalten (Fallback 4 Einzel + 2 Doppel).
+  format?: LineupSegment[];
+  singlesCount?: number;
+  doublesCount?: number;
 }
 
 export interface EventItem {
@@ -96,6 +144,11 @@ export interface Match {
   winnerName: string;
   scoreLine: string;
   perPlayer: MatchPlayerStat[];
+  // Optionale Verknüpfung zu einer Liga-Aufstellungsposition (Board-Spiel → Spielbericht).
+  // Slot 0 (perPlayer[0]) ist dabei stets die eigene Seite.
+  leagueId?: string;
+  fixtureId?: string;
+  positionId?: string;
 }
 
 export interface Settings {
@@ -144,6 +197,13 @@ export interface Settings {
   clubName: string;
   clubLogo: string | null;
   dashRange?: 'week' | 'month' | 'all';
+  // Sortier-Reihenfolge der Personen-Listen (Spieler, Benutzer, Kader):
+  // 'first' = Vorname Nachname, 'last' = Nachname Vorname.
+  nameOrder?: 'first' | 'last';
+  // Board-/Kiosk-Modus (GERÄTE-LOKAL): startet direkt im Counter, sperrt die Navigation.
+  // boardName = Bezeichnung dieses Board-Rechners (z. B. "Board 3"), für die spätere Aufstellung.
+  kiosk?: boolean;
+  boardName?: string;
 }
 
 export type Screen =
@@ -167,4 +227,5 @@ export interface GamePlayer {
   name: string;
   short: string;
   av: number;
+  photo?: string; // optionales Profilfoto (aus dem verknüpften Spieler durchgereicht); Gäste haben keins
 }

@@ -1,4 +1,4 @@
-import type { Account, League, LeagueTeam, Settings, Player, Team, EventItem, Match } from '../data/types';
+import type { Account, League, LeagueTeam, Settings, Player, Team, EventItem, Match, Fixture, TeamKind } from '../data/types';
 import { FONTS, THEMES_DARK, THEMES_LIGHT } from '../data/constants';
 import { parseIso } from '../lib/format';
 
@@ -20,7 +20,9 @@ export function perm(settings: Settings, accounts: Account[], session: string | 
   const admin = r === 'admin';
   const staff = r === 'admin' || r === 'captain';
   const player = r === 'admin' || r === 'captain' || r === 'player';
-  return { admin, manageUsers: admin, manageClub: admin, managePlayers: staff, manageTeams: staff, manageLeagues: staff, manageEvents: staff, play: player, role: r };
+  // 'board' darf spielen (Matches anlegen/lesen), aber nichts verwalten.
+  const play = player || r === 'board';
+  return { admin, manageUsers: admin, manageClub: admin, managePlayers: staff, manageTeams: staff, manageLeagues: staff, manageEvents: staff, play, role: r };
 }
 
 export interface StandingRow {
@@ -153,6 +155,89 @@ export function upcomingEvents(events: EventItem[], scope: 'local' | 'verein', r
 // ── Kader & Aufstellung aus Team.memberIds ──
 export function teamRoster(team: Team, players: Player[]): Player[] {
   return team.memberIds.map((id) => players.find((p) => p.id === id)).filter((p): p is Player => !!p);
+}
+
+// ── Board-Anzeige (Kiosk): welches Spiel ist diesem Board (Board-Nummer) zugeordnet? ──
+export interface BoardGame { positionId: string; label: string; kind: 'single' | 'double'; players: Player[]; }
+export interface BoardAssignment {
+  leagueId: string; fixtureId: string;
+  leagueName: string; ownTeamName: string; oppName: string; ownIsHome: boolean; date: string; games: BoardGame[];
+}
+// Eine Aufstellungsposition zählt zu Board N, wenn ihr board-Feld (Freitext-Nummer) zur Nummer passt.
+const boardOf = (raw?: string): number | null => { const n = parseInt((raw || '').replace(/[^0-9]/g, ''), 10); return isNaN(n) ? null : n; };
+// Sucht über alle Ligen die für dieses Board (Nummer) passende Begegnung (heute/nächste bevorzugt) und liefert
+// die diesem Board zugewiesenen Einzel/Doppel mit den eigenen Spielern. null = keine Nummer / keine Zuordnung.
+export function boardAssignment(leagues: League[], players: Player[], boardNumber: number | null | undefined, todayIsoStr: string): BoardAssignment | null {
+  if (boardNumber == null) return null;
+  const pById = (id: string) => players.find((p) => p.id === id);
+
+  const cands: { lg: League; fx: Fixture; bucket: number; diff: number }[] = [];
+  for (const lg of leagues) {
+    for (const fx of lg.fixtures || []) {
+      const own = lg.teams.find((t) => (t.id === fx.homeId || t.id === fx.awayId) && t.own);
+      if (!own || !fx.lineup?.positions?.length) continue;
+      if (!fx.lineup.positions.some((p) => boardOf(p.board) === boardNumber && p.playerIds.length)) continue;
+      const d = fx.date || '';
+      const future = d >= todayIsoStr;
+      const diff = d ? Math.abs((+parseIso(d) - +parseIso(todayIsoStr)) / 86400000) : 9999;
+      cands.push({ lg, fx, bucket: future ? 0 : 1, diff });
+    }
+  }
+  if (!cands.length) return null;
+  cands.sort((a, b) => a.bucket - b.bucket || a.diff - b.diff);
+  const { lg, fx } = cands[0];
+  const home = lg.teams.find((t) => t.id === fx.homeId) || null;
+  const away = lg.teams.find((t) => t.id === fx.awayId) || null;
+  const ownIsHome = !!(home && home.own);
+  const own = ownIsHome ? home : away;
+  const opp = ownIsHome ? away : home;
+
+  let sNo = 0, dNo = 0;
+  const games: BoardGame[] = [];
+  for (const p of fx.lineup!.positions) {
+    const label = p.kind === 'single' ? `Einzel ${++sNo}` : `Doppel ${++dNo}`;
+    if (boardOf(p.board) === boardNumber && p.playerIds.length) {
+      games.push({ positionId: p.id, label, kind: p.kind, players: p.playerIds.map(pById).filter((x): x is Player => !!x) });
+    }
+  }
+  return { leagueId: lg.id, fixtureId: fx.id, leagueName: lg.name, ownTeamName: own ? own.name : '—', oppName: opp ? opp.name : '—', ownIsHome, date: fx.date || '', games };
+}
+
+// ── Nächster Spieltag der eigenen Mannschaft (Shortcut „Aufstellen" aus der Mannschafts-Ansicht) ──
+export interface NextFixtureRef {
+  leagueIndex: number; leagueId: string; fixtureId: string;
+  date: string; oppName: string; ownTeamName: string; ownIsHome: boolean; hasLineup: boolean;
+}
+// Sucht über alle Wettbewerbe die nächste OFFENE Begegnung der eigenen Mannschaft (kommende bevorzugt, sonst nächste).
+// teamName grenzt auf eine bestimmte Mannschaft ein (Name der own-Mannschaft); kind grenzt auf die Wettbewerbsart
+// ein (Liga/Pokal), damit eine Pokalmannschaft nur Pokal-Begegnungen findet. null = keine offene Begegnung.
+export function nextOwnFixture(leagues: League[], todayIsoStr: string, teamName?: string, kind?: TeamKind): NextFixtureRef | null {
+  const norm = (x: string) => (x || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  const compKind = (lg: League): TeamKind => (lg.kind === 'cup' ? 'cup' : 'league');
+  const want = teamName ? norm(teamName) : null;
+  const cands: { idx: number; lg: League; fx: Fixture; own: LeagueTeam; bucket: number; diff: number }[] = [];
+  leagues.forEach((lg, idx) => {
+    if (kind && compKind(lg) !== kind) return; // nur Wettbewerbe der passenden Art (Liga vs. Pokal)
+    for (const fx of lg.fixtures || []) {
+      const own = lg.teams.find((t) => (t.id === fx.homeId || t.id === fx.awayId) && t.own);
+      if (!own || fx.played) continue; // nur noch offene Spieltage aufstellen
+      if (want && norm(own.name) !== want) continue;
+      const d = fx.date || '';
+      const future = d >= todayIsoStr;
+      const diff = d ? Math.abs((+parseIso(d) - +parseIso(todayIsoStr)) / 86400000) : 9999;
+      cands.push({ idx, lg, fx, own, bucket: future ? 0 : 1, diff });
+    }
+  });
+  if (!cands.length) return null;
+  cands.sort((a, b) => a.bucket - b.bucket || a.diff - b.diff);
+  const c = cands[0];
+  const home = c.lg.teams.find((t) => t.id === c.fx.homeId) || null;
+  const ownIsHome = !!(home && home.own);
+  const opp = ownIsHome ? c.lg.teams.find((t) => t.id === c.fx.awayId) || null : home;
+  return {
+    leagueIndex: c.idx, leagueId: c.lg.id, fixtureId: c.fx.id, date: c.fx.date || '',
+    oppName: opp ? opp.name : '—', ownTeamName: c.own.name, ownIsHome, hasLineup: !!c.fx.lineup?.positions?.length,
+  };
 }
 
 // ── Theme-Helfer ──

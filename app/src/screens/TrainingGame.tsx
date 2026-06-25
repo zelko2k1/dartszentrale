@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react';
 import { useStore } from '../store/useStore';
-import { avatar } from '../data/constants';
 import { CRICKET_TARGETS } from '../data/constants';
+import { Avatar } from '../components/Avatar';
 import { accentFg } from '../store/selectors';
 import {
   standings, leaderboard, currentTarget, trainModeName,
@@ -81,11 +81,10 @@ export function TrainingGame() {
 }
 
 function PlayerCard({ row, active, accent }: { row: StandRow; active: boolean; accent: string }) {
-  const av = avatar(row.player.av);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, borderRadius: 16, padding: '14px 16px', background: active ? `color-mix(in srgb, ${accent} 9%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${active ? accent : 'var(--border-2)'}`, boxShadow: active ? `0 0 0 1px ${accent}` : 'none', opacity: row.eliminated ? 0.5 : 1 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, background: av.bg, color: av.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, flexShrink: 0 }}>{row.player.short}</div>
+        <Avatar photo={row.player.photo} short={row.player.short} avi={row.player.av} size={36} />
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.player.name}</div>
           {active && <div style={{ fontSize: 10, color: accent, fontWeight: 800, letterSpacing: '.06em' }}>AM WURF</div>}
@@ -139,11 +138,10 @@ function MatrixBoard({ headLabel, cols, rows, accent, renderCell, footer }: {
         {/* Kopfzeile */}
         <div style={{ ...cellBase, padding: '10px 0', fontSize: 10, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em' }}>{headLabel}</div>
         {cols.map((c, i) => {
-          const av = avatar(c.player.av);
           return (
             <div key={i} style={{ ...cellBase, flexDirection: 'column', gap: 4, padding: '9px 6px', background: c.active ? activeBg : 'var(--surface-2)', borderBottom: c.active ? `2px solid ${accent}` : '2px solid transparent', opacity: c.eliminated ? 0.5 : 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, maxWidth: '100%' }}>
-                <div style={{ width: 22, height: 22, borderRadius: 6, background: av.bg, color: av.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 10, flexShrink: 0 }}>{c.player.short}</div>
+                <Avatar photo={c.player.photo} short={c.player.short} avi={c.player.av} size={22} />
                 <span style={{ fontSize: 12, fontWeight: 700, color: c.active ? accent : 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.player.name}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>

@@ -78,6 +78,7 @@ export function ImportModal() {
               <Stat label="Eigene Mannschaften" value={result.ownTeamsNew} />
               <Stat label="Begegnungen neu" value={result.fixturesNew} />
               <Stat label="Ergebnisse gesetzt" value={result.resultsSet} />
+              <Stat label="Termine neu" value={result.eventsNew} />
               <Stat label="Übersprungen" value={result.skipped} />
             </div>
           </div>
@@ -87,8 +88,9 @@ export function ImportModal() {
         <>
           <div style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.6, marginBottom: 16 }}>
             CSV deines Verbands (z. B. BDV-Vereinsspielplan) oder die Vorlage hochladen. Es entsteht
-            eine Liga je Staffel; eure Mannschaften werden automatisch markiert. Erneuter Import
-            aktualisiert nur Ergebnisse — nichts wird doppelt angelegt.
+            eine Liga je Staffel; eure Mannschaften werden automatisch markiert und eure Begegnungen
+            zusätzlich als Termine im Kalender angelegt. Erneuter Import aktualisiert nur Ergebnisse —
+            nichts wird doppelt angelegt.
           </div>
 
           <input ref={fileRef} type="file" accept=".csv,text/csv,text/plain" style={{ display: 'none' }}

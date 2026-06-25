@@ -42,6 +42,9 @@ export const DEFAULT_SETTINGS: Settings = {
   clubName: 'SV Adler Niederrhein',
   clubLogo: null,
   dashRange: 'month',
+  nameOrder: 'first',
+  kiosk: false,
+  boardName: '',
 };
 
 export function seedPlayers(): Player[] {
@@ -49,6 +52,16 @@ export function seedPlayers(): Player[] {
     { id: 'p_seed1', name: 'Spieler 1', short: 'S1', avi: 6, locked: true },
     { id: 'p_seed2', name: 'Spieler 2', short: 'S2', avi: 7, locked: true },
   ];
+}
+
+// Garantiert, dass die zwei Standard-Spieler ("Spieler 1/2", locked = nicht löschbar) immer vorhanden
+// sind – in BEIDEN Modi (lokal & Verein). Fehlende werden vorangestellt; vorhandene werden als locked markiert.
+export function withDefaultPlayers(players: Player[]): Player[] {
+  const defaults = seedPlayers();
+  const have = new Set(players.map((p) => p.id));
+  const missing = defaults.filter((d) => !have.has(d.id));
+  const normalized = players.map((p) => (p.id === 'p_seed1' || p.id === 'p_seed2') ? { ...p, locked: true } : p);
+  return [...missing, ...normalized];
 }
 
 export function seedTeams(players: Player[]): Team[] {

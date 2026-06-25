@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { useStore } from '../store/useStore';
 import { perm, currentUser } from '../store/selectors';
-import { ROLES, avatar } from '../data/constants';
+import { ROLES } from '../data/constants';
+import { Avatar } from '../components/Avatar';
 import type { Screen } from '../data/types';
 import {
   Logo, IconDashboard, IconTarget, IconTraining, IconCalendar, IconTrophy, IconShield,
@@ -78,9 +79,7 @@ export function Sidebar() {
       {isVerein && cu && (
         <div style={{ padding: 12, borderTop: '1px solid var(--hairline)' }}>
           <div title="Angemeldetes Konto" style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '9px 11px', borderRadius: 11, background: 'var(--surface-2)' }}>
-            <div style={{ width: 34, height: 34, borderRadius: 9, background: avatar(cu.avi).bg, color: avatar(cu.avi).fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
-              {(cu.first[0] || '') + (cu.last[0] || '')}
-            </div>
+            <Avatar photo={cu.photo} short={(cu.first[0] || '') + (cu.last[0] || '')} avi={cu.avi} size={34} />
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cu.name}</div>
               <div style={{ fontSize: 11, color: ROLES[cu.role].color, fontWeight: 600 }}>{ROLES[cu.role].label}</div>

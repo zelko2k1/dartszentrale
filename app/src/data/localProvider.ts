@@ -62,6 +62,10 @@ export class LocalProvider implements DataProvider {
     write(key, arr.filter((r) => r.id !== id));
   }
 
+  // Profilfotos gibt es nur im Vereinsmodus (PocketBase-File-Feld).
+  async uploadPhoto(): Promise<void> { throw new Error('Profilfotos gibt es nur im Vereinsmodus.'); }
+  async clearPhoto(): Promise<void> { /* lokal nichts zu tun */ }
+
   async saveSettings(settings: Settings): Promise<void> { write(STORAGE_KEYS.settings, settings); }
   async saveTrainingPlays(plays: Record<string, number>): Promise<void> { write(STORAGE_KEYS.trainplays, plays); }
 

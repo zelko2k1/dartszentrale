@@ -23,6 +23,8 @@ const text = (name, opt = {}) => ({ name, type: 'text', required: false, ...opt 
 const num = (name) => ({ name, type: 'number', required: false });
 const bool = (name) => ({ name, type: 'bool', required: false });
 const json = (name) => ({ name, type: 'json', required: false, maxSize: 2000000 });
+// Bild-File-Feld (Profilfoto). PB erzeugt Thumbnails on-demand; 160x160 vordefiniert für die Listen-Anzeige.
+const photo = () => ({ name: 'photo', type: 'file', required: false, maxSelect: 1, maxSize: 5242880, mimeTypes: ['image/png', 'image/jpeg', 'image/webp'], thumbs: ['160x160'] });
 
 // --- Rules ---
 const LOGGED_IN = '@request.auth.id != ""';
@@ -39,15 +41,17 @@ const editorRules = {
 const BASE_COLLECTIONS = [
   {
     name: 'players', type: 'base', ...editorRules,
-    fields: [text('name'), text('short', { max: 3 }), num('avi'), bool('locked')],
+    fields: [text('name'), text('short', { max: 3 }), num('avi'), bool('locked'), photo()],
   },
   {
     name: 'teams', type: 'base', ...editorRules,
-    fields: [text('name'), text('league'), json('memberIds'), json('captainId')],
+    // kind = 'league' (Standard) | 'cup' (Pokalmannschaft). viceCaptainIds: bis zu 2 Ersatzkapitäne.
+    fields: [text('name'), text('league'), json('memberIds'), json('captainId'), json('viceCaptainIds'), text('kind')],
   },
   {
     name: 'leagues', type: 'base', ...editorRules,
-    fields: [text('name'), text('season'), json('teams'), json('fixtures')],
+    // kind = 'league' (Standard) | 'cup' (Pokal-Wettbewerb) – trennt Liga- von Pokal-Begegnungen.
+    fields: [text('name'), text('season'), json('teams'), json('fixtures'), text('kind')],
   },
   {
     name: 'events', type: 'base', ...editorRules,
@@ -94,11 +98,20 @@ async function main() {
   // 2) users (Auth) um Vereinsfelder erweitern + Rules setzen
   const users = byName.get('users') || (await pb.collections.getOne('users'));
   const have = new Set(users.fields.map((f) => f.name));
+  // 'board' = Maschinen-Rolle der Board-Rechner. Fest an isBoard gekoppelt (siehe pb_hooks/board_role_guard.pb.js).
+  const ROLE_VALUES = ['admin', 'captain', 'player', 'viewer', 'board'];
   const addUserFields = [
     text('first'), text('last'),
-    { name: 'role', type: 'select', required: false, maxSelect: 1, values: ['admin', 'captain', 'player', 'viewer'] },
+    { name: 'role', type: 'select', required: false, maxSelect: 1, values: ROLE_VALUES },
     json('playerId'), text('position'), bool('active'), num('avi'), text('last_login'),
+    bool('isBoard'), { name: 'boardNumber', type: 'number', required: false, onlyInt: true }, photo(),
   ].filter((f) => !have.has(f.name));
+  // Bestehendes role-Feld nachziehen, falls es 'board' noch nicht kennt.
+  const existingRole = users.fields.find((f) => f.name === 'role');
+  if (existingRole && !(existingRole.values || []).includes('board')) {
+    existingRole.values = ROLE_VALUES;
+    console.log("✓ role-Feld um Wert 'board' ergänzt");
+  }
   const usersPatch = {
     fields: [...users.fields, ...addUserFields],
     listRule: LOGGED_IN, viewRule: LOGGED_IN,

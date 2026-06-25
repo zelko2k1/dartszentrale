@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useStore } from '../store/useStore';
-import { avatar } from '../data/constants';
+import { Avatar } from '../components/Avatar';
 import { accentFg } from '../store/selectors';
 import {
   scores, progress, currentIdx, currentLeg, average, first9, lastThrow, scoreList,
@@ -143,7 +143,7 @@ export function Counter() {
         {/* SCORE band */}
         <div style={{ flex: cfg.showHistory ? cfg.scoreArea : 100, display: 'flex', gap: 12, minHeight: 0 }}>
           {s.gamePlayers.map((p, i) => {
-            const av = avatar(p.av); const isActive = i === curIdx && !over;
+            const isActive = i === curIdx && !over;
             const rem = sc[p.id];
             const co = checkoutSuggestion(cfg, rem);
             const turnLabel = isActive ? 'AM WURF' : '';
@@ -152,7 +152,7 @@ export function Counter() {
               <div key={p.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRadius: 16, background: isActive ? `color-mix(in srgb, ${accent} 9%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${isActive ? accent : 'var(--border-2)'}`, boxShadow: isActive ? `0 0 0 1px ${accent}, 0 0 46px color-mix(in srgb, ${accent} 12%, transparent)` : 'none', transition: 'border-color .18s ease', minWidth: 0, overflow: 'hidden' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 18px 0', flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 10, background: av.bg, color: av.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, flexShrink: 0 }}>{p.short}</div>
+                    <Avatar photo={p.photo} short={p.short} avi={p.av} size={40} />
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 17, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.15 }}>{p.name}</div>
                       <div style={{ fontSize: 11, color: accentInk, fontWeight: 700, height: 14, letterSpacing: '.04em' }}>{turnLabel}</div>
@@ -411,7 +411,6 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
   const inputDisplay = s.input === '' ? '—' : s.input;
   const matchInfo = cfg.unit === 'sets' ? `Best of ${cfg.bestOfSets} Sätze` : `Leg ${leg} · BO${cfg.bestOf}`;
   const others = s.gamePlayers.filter((_, i) => i !== curIdx);
-  const av = active ? avatar(active.av) : { bg: 'var(--surface-3)', fg: 'var(--text)' };
   // fill = keys grow to fill available height (landscape, where the deck owns a full column)
   const keyBtn = (fill: boolean): React.CSSProperties => ({ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 26, fontWeight: 700, cursor: 'pointer', minHeight: fill ? 0 : 54 });
 
@@ -419,7 +418,9 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
     <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', borderRadius: 18, background: `color-mix(in srgb, ${accent} 9%, var(--surface-2))`, border: `1px solid ${accent}`, padding: '14px 16px', overflow: 'hidden' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 9, background: av.bg, color: av.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, flexShrink: 0 }}>{active?.short}</div>
+          {active
+            ? <Avatar photo={active.photo} short={active.short} avi={active.av} size={34} />
+            : <div style={{ width: 34, height: 34, borderRadius: 9, background: 'var(--surface-3)', flexShrink: 0 }} />}
           <div style={{ fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{active?.name}</div>
         </div>
         {cfg.unit === 'sets' && <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 800, color: accentInk, background: `color-mix(in srgb, ${accent} 14%, transparent)`, padding: '3px 9px', borderRadius: 999, flexShrink: 0 }}>{(active && prog.setsWon[active.id]) || 0}</div>}
@@ -579,10 +580,10 @@ function WhoStarts() {
             </div>
             <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
               {s.gamePlayers.map((p, i) => {
-                const av = avatar(p.av); const picked = s.spinPick === i;
+                const picked = s.spinPick === i;
                 return (
                   <button key={p.id} className="dh-hover-border" onClick={() => s.chooseStarter(i)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, background: 'var(--btn)', border: `2px solid ${picked ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 15, padding: '20px 12px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                    <div style={{ width: 54, height: 54, borderRadius: '50%', background: av.bg, color: av.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 19 }}>{p.short}</div>
+                    <Avatar photo={p.photo} short={p.short} avi={p.av} size={54} circle />
                     <div style={{ fontSize: 15, fontWeight: 700, textAlign: 'center', lineHeight: 1.25 }}>{p.name}</div>
                     <kbd style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 7, padding: '3px 10px' }}>{i + 1}</kbd>
                   </button>
@@ -606,10 +607,9 @@ function WhoStarts() {
             <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>Beide werfen einen Dart auf das Bull. Wer näher liegt, beginnt.</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {s.gamePlayers.map((p, i) => {
-                const av = avatar(p.av);
                 return (
                   <button key={p.id} className="dh-hover-border" onClick={() => s.chooseStarter(i)} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 13, padding: '14px 18px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
-                    <div style={{ width: 42, height: 42, borderRadius: '50%', background: av.bg, color: av.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15, flexShrink: 0 }}>{p.short}</div>
+                    <Avatar photo={p.photo} short={p.short} avi={p.av} size={42} circle />
                     <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 16, fontWeight: 700 }}>{p.name}</div><div style={{ fontSize: 12, color: 'var(--text-4)' }}>war näher am Bull</div></div>
                     <kbd style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 7, padding: '4px 9px' }}>{i + 1}</kbd>
                   </button>

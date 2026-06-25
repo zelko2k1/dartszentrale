@@ -1,17 +1,18 @@
 import { create } from 'zustand';
 import type {
   Player, Team, Account, League, Fixture, EventItem, Match, Settings, Screen,
-  GamePlayer, Throw, Role, MatchPlayerStat,
+  GamePlayer, Throw, Role, MatchPlayerStat, LineupPosition, FixtureLineup, LineupSegment, TeamKind,
 } from '../data/types';
-import { AVATARS } from '../data/constants';
+import { AVATARS, DEVICE_LOCAL_SETTING_KEYS, LEAGUE_FORMAT_PRESETS } from '../data/constants';
 import { uid, firstName, lastName, initials } from '../lib/format';
+import { downscaleSquare } from '../lib/image';
 import {
   scores as cScores, progress as cProgress, currentPlayer as cCurrentPlayer,
   matchOver as cMatchOver, average as cAverage, countAtLeast,
   type CounterSlice,
 } from './counter';
 import {
-  DEFAULT_SETTINGS, seedPlayers, seedTeams, seedAccounts, seedLeagues, seedEvents,
+  DEFAULT_SETTINGS, seedPlayers, seedTeams, seedAccounts, seedLeagues, seedEvents, withDefaultPlayers,
 } from '../data/seed';
 import {
   newTrainGame, applyTurn as tApplyTurn, trainMeta,
@@ -19,7 +20,7 @@ import {
 } from './training';
 import { createProvider, type DataProvider } from '../data/dataProvider';
 import type { ProviderRecord } from '../data/provider';
-import { mergeSchedule, deriveOwnTeams, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
+import { mergeSchedule, deriveOwnTeams, deriveLeagueEvents, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
 
 const LS = {
   settings: 'dartshub_settings',
@@ -34,6 +35,7 @@ const LS = {
   session: 'dartshub_session',
   leagues: 'dartshub_leagues',
   pburl: 'dartshub_pburl',
+  device: 'dartshub_device', // gerätelokale Konfiguration (Board-/Kiosk-Modus, Board-Bezeichnung)
 };
 
 function read<T>(key: string, fallback: T): T {
@@ -49,15 +51,42 @@ function write(key: string, val: unknown) {
 
 // ── Modal-Typen ──
 export interface PlayerModalState { mode: 'add' | 'edit'; id: string | null; first: string; last: string; short: string; avi: number; }
-export interface TeamModalState { mode: 'add' | 'edit'; id: string | null; name: string; league: string; memberIds: string[]; captainId: string | null; }
-export interface UserModalState { mode: 'add' | 'edit'; id: string | null; first: string; last: string; email: string; role: Role; playerId: string | null; active: boolean; avi: number; position: string; password: string; }
-export interface LeagueModalState { mode: 'add' | 'edit'; id: string | null; name: string; season: string; teams: { id: string; name: string; own: boolean }[]; }
+export interface TeamModalState { mode: 'add' | 'edit'; id: string | null; name: string; league: string; memberIds: string[]; captainId: string | null; viceCaptainIds: string[]; kind: TeamKind; }
+export interface UserModalState { mode: 'add' | 'edit'; id: string | null; first: string; last: string; email: string; role: Role; playerId: string | null; active: boolean; avi: number; position: string; password: string; isBoard: boolean; boardNumber: number | null; }
+export interface LeagueModalState { mode: 'add' | 'edit'; id: string | null; name: string; season: string; teams: { id: string; name: string; own: boolean }[]; singlesCount: number; doublesCount: number; format: LineupSegment[] | null; kind: TeamKind; }
+export interface LineupModalState {
+  leagueId: string; fixtureId: string;
+  ownTeamName: string; oppName: string; ownIsHome: boolean;
+  rosterIds: string[];                 // Kader-Spieler zur Auswahl (Player.id)
+  positions: LineupPosition[];         // frei konfigurierbar, geordnet
+  substitutes: string[];               // geordnet → E1, E2, …
+}
+export interface ResultRow { id: string; kind: 'single' | 'double'; label: string; playerNames: string[]; won: 'own' | 'opp' | null; ownLegs: string; oppLegs: string; auto: boolean; }
+export interface ResultModalState {
+  leagueId: string; fixtureId: string;
+  ownTeamName: string; oppName: string; ownIsHome: boolean;
+  rows: ResultRow[];
+}
+
+// Geordnete Format-Segmente einer Liga (Fallback: einfache Einzel/Doppel-Zähler bzw. 4+2).
+// Nicht gesetzte/0-Zähler (z. B. Altdaten oder frisch ergänzte Spalten) → Standard 4 Einzel + 2 Doppel.
+export function leagueSegments(lg: Pick<League, 'format' | 'singlesCount' | 'doublesCount'>): LineupSegment[] {
+  if (lg.format && lg.format.length) return lg.format;
+  const s = lg.singlesCount && lg.singlesCount > 0 ? lg.singlesCount : 4;
+  const d = lg.doublesCount && lg.doublesCount > 0 ? lg.doublesCount : 2;
+  return [{ kind: 'singles', count: s }, { kind: 'doubles', count: d }];
+}
+const segTotal = (segs: LineupSegment[], kind: LineupSegment['kind']) =>
+  segs.filter((s) => s.kind === kind).reduce((a, b) => a + b.count, 0);
 export interface FixtureModalState { mode: 'add' | 'edit'; id: string | null; leagueId: string; homeId: string | null; awayId: string | null; date: string; played: boolean; hs: string; as: string; }
 export interface EventModalState { mode: 'add' | 'edit'; id: string | null; scope: 'local' | 'verein'; title: string; date: string; time: string; type: string; loc: string; }
 
 export interface SetupState {
   mode: 'single' | 'teams'; startScore: number; bestOf: number; bestOfSets: number;
   unit: 'legs' | 'sets'; doubleOut: boolean; outMode: 'single' | 'double' | 'master'; doubleIn: boolean; p1: number; p2: number; teamA: number; teamB: number;
+  p1Guest?: string; p2Guest?: string; // Gast-Namen (überschreiben die Spielerwahl, wenn gesetzt)
+  freePlay?: boolean;                  // Freies Spiel → wird nicht als Match gespeichert
+  link?: { leagueId: string; fixtureId: string; positionId: string } | null; // Board-Spiel → Liga-Position
 }
 export interface HintState { title: string; body: string; }
 export interface TrainSetupState { modeId: string; count: number; picks: number[]; }
@@ -75,6 +104,9 @@ export interface AppState {
   provider: DataProvider;
   // true, wenn ein echtes PocketBase-Backend aktiv ist (Login/Schreiben gehen an den Server)
   pbMode: boolean;
+  // Board-Modus für diese Sitzung entsperrt (z. B. Kapitän hat sich zum Ändern angemeldet);
+  // nicht persistiert → nach Neuladen ist das Board wieder gesperrt, sofern settings.kiosk gilt.
+  kioskUnlocked: boolean;
   // letzte fehlgeschlagene Server-Synchronisation (für eine kleine Hinweisleiste); null = ok
   syncError: string | null;
 
@@ -95,6 +127,8 @@ export interface AppState {
   teamModal: TeamModalState | null;
   userModal: UserModalState | null;
   leagueModal: LeagueModalState | null;
+  lineupModal: LineupModalState | null;
+  resultModal: ResultModalState | null;
   fixtureModal: FixtureModalState | null;
   eventModal: EventModalState | null;
   importOpen: boolean;
@@ -109,6 +143,8 @@ export interface AppState {
   spinPick: number | null;
   abortConfirm: boolean;
   matchSaved: boolean;
+  freePlay: boolean;        // laufendes Spiel ist „Freies Spiel" → kein Speichern
+  gameLink: { leagueId: string; fixtureId: string; positionId: string } | null; // Liga-Position des laufenden Spiels
   gameMode: 'single' | 'teams';
   setup: SetupState;
   hint: HintState | null;
@@ -144,6 +180,10 @@ export interface AppState {
   // settings
   setSetting: <K extends keyof Settings>(key: K, val: Settings[K]) => void;
   setFKey: (i: number, val: string) => void;
+  // Board-/Kiosk-Modus (gerätelokal). kioskUnlocked = laufzeit-Entsperrung (nicht persistiert).
+  setDeviceSetting: (key: 'kiosk' | 'boardName' | 'nameOrder', val: boolean | string) => void;
+  kioskExitLogin: (email: string, pw: string) => Promise<boolean>;
+  relockKiosk: () => void;
   // PocketBase-Serveradresse (gerätelokal); leerer String = lokaler Modus
   setPbUrl: (url: string) => void;
 
@@ -168,11 +208,13 @@ export interface AppState {
   setTeamField: (key: 'name' | 'league', val: string) => void;
   toggleTeamMember: (pid: string) => void;
   setTeamCaptain: (pid: string) => void;
+  toggleTeamViceCaptain: (pid: string) => void;
   saveTeamModal: () => void;
   deleteTeam: (id: string) => void;
 
   // user modal
   openAddUser: () => void;
+  openAddUserForPlayer: (playerId: string) => void;
   openEditUser: (id: string) => void;
   closeUserModal: () => void;
   setUserField: (key: keyof UserModalState, val: string | boolean | null) => void;
@@ -180,19 +222,47 @@ export interface AppState {
   saveUserModal: () => void;
   deleteUser: (id: string) => void;
   toggleUserActive: (id: string) => void;
+  // Board-Rechner-Konten nach festem Schema anlegen (Board 1…count, gemeinsames Passwort). Nur Vereinsmodus/Admin.
+  createBoardAccounts: (count: number, password: string) => void;
+  // Profilfoto für Spieler/Benutzerkonto setzen/entfernen (nur Vereinsmodus, PocketBase-File-Feld).
+  uploadPhoto: (kind: 'player' | 'account', id: string, file: File) => Promise<void>;
+  clearPhoto: (kind: 'player' | 'account', id: string) => Promise<void>;
 
   // league modal
   selectLeague: (i: number) => void;
   openAddLeague: () => void;
   openEditLeague: () => void;
   closeLeagueModal: () => void;
-  setLeagueField: (key: 'name' | 'season', val: string) => void;
+  setLeagueField: (key: 'name' | 'season' | 'kind', val: string) => void;
+  setLeagueCount: (key: 'singlesCount' | 'doublesCount', val: number) => void;
+  setLeagueFormatPreset: (key: 'BL' | 'LL' | 'custom') => void;
   addLeagueTeam: () => void;
   setLeagueTeamName: (id: string, val: string) => void;
   toggleLeagueTeamOwn: (id: string) => void;
   removeLeagueTeam: (id: string) => void;
   saveLeagueModal: () => void;
   deleteLeague: (id: string) => void;
+
+  // lineup modal (frei konfigurierbare Aufstellung pro Begegnung)
+  openLineup: (fixtureId: string) => void;
+  // Shortcut aus der Mannschafts-Ansicht: wählt die passende Liga und öffnet das Aufstellungs-Modal direkt.
+  openLineupAt: (leagueIndex: number, fixtureId: string) => void;
+  closeLineup: () => void;
+  addLineupPosition: (kind: 'single' | 'double') => void;
+  removeLineupPosition: (id: string) => void;
+  moveLineupPosition: (id: string, dir: -1 | 1) => void;
+  setLineupPositionPlayer: (id: string, pos: number, playerId: string) => void;
+  setLineupPositionBoard: (id: string, board: string) => void;
+  toggleSubstitute: (playerId: string) => void;
+  moveSubstitute: (playerId: string, dir: -1 | 1) => void;
+  saveLineup: () => void;
+
+  // result modal (Brett-für-Brett-Ergebniserfassung / Spielbericht)
+  openResult: (fixtureId: string) => void;
+  closeResult: () => void;
+  setResultWon: (id: string, won: 'own' | 'opp') => void;
+  setResultLeg: (id: string, side: 'own' | 'opp', val: string) => void;
+  saveResult: () => void;
 
   // Spielplan-Import (CSV)
   openImport: () => void;
@@ -232,6 +302,7 @@ export interface AppState {
   setSetup: <K extends keyof SetupState>(key: K, val: SetupState[K]) => void;
   startGame: () => void;
   quickStart: (preset?: Partial<SetupState>) => void;
+  startBoardGame: (leagueId: string, fixtureId: string, positionId: string, ownPlayerId: string, oppName: string) => void;
   chooseStarter: (idx: number) => void;
   openBullOff: () => void;
   closeBullOff: () => void;
@@ -270,6 +341,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   provider: createProvider('local'),
   pbMode: false,
+  kioskUnlocked: false,
   syncError: null,
   settings: DEFAULT_SETTINGS,
   players: [],
@@ -286,6 +358,8 @@ export const useStore = create<AppState>((set, get) => ({
   teamModal: null,
   userModal: null,
   leagueModal: null,
+  lineupModal: null,
+  resultModal: null,
   fixtureModal: null,
   eventModal: null,
   importOpen: false,
@@ -302,8 +376,10 @@ export const useStore = create<AppState>((set, get) => ({
   spinPick: null,
   abortConfirm: false,
   matchSaved: false,
+  freePlay: false,
+  gameLink: null,
   gameMode: 'single',
-  setup: { mode: 'single', startScore: 501, bestOf: 5, bestOfSets: 3, unit: 'legs', doubleOut: true, outMode: 'double', doubleIn: false, p1: 0, p2: 1, teamA: 0, teamB: 1 },
+  setup: { mode: 'single', startScore: 501, bestOf: 5, bestOfSets: 3, unit: 'legs', doubleOut: true, outMode: 'double', doubleIn: false, p1: 0, p2: 1, teamA: 0, teamB: 1, p1Guest: '', p2Guest: '', freePlay: false, link: null },
   hint: null,
 
   rulesMode: null,
@@ -347,6 +423,12 @@ export const useStore = create<AppState>((set, get) => ({
     const pbUrl = read<string>(LS.pburl, '');
     settings.pbUrl = pbUrl;
 
+    // Board-/Kiosk-Konfiguration + Namens-Sortierung sind GERÄTE-LOKAL (jeder Rechner/Nutzer für sich).
+    const dev = read<{ kiosk?: boolean; boardName?: string; nameOrder?: 'first' | 'last' }>(LS.device, {});
+    settings.kiosk = !!dev.kiosk;
+    settings.boardName = dev.boardName || '';
+    settings.nameOrder = dev.nameOrder || settings.nameOrder || 'first';
+
     // Datenquelle wählen. provider.mode === 'verein' nur, wenn eine URL vorliegt (Einstellung
     // oder VITE_PB_URL); sonst Fallback auf LocalProvider → lokaler & Demo-Pfad unverändert.
     const provider = createProvider(settings.appMode, pbUrl);
@@ -368,7 +450,8 @@ export const useStore = create<AppState>((set, get) => ({
       players = seedPlayers();
       write(LS.players, players);
     }
-    players = players.map((p) => (p.id === 'p_seed1' || p.id === 'p_seed2') ? { ...p, locked: true } : p);
+    players = withDefaultPlayers(players); // Standard-Spieler 1/2 immer vorhanden + locked
+    write(LS.players, players);
 
     let teams = read<Team[]>(LS.teams, []);
     if (!Array.isArray(teams) || teams.length === 0) { teams = seedTeams(players); write(LS.teams, teams); }
@@ -437,6 +520,12 @@ export const useStore = create<AppState>((set, get) => ({
 
   setSetting(key, val) {
     set((st) => {
+      // Im Vereinsmodus sind die Oberflächen-/Counter-Einstellungen vereinsweit zentral und nur vom
+      // Admin änderbar. Gerätelokale Schlüssel (Verbindung, Modus, Geräteart, Dashboard-Ansicht) bleiben frei.
+      if (st.provider.mode === 'verein' && !DEVICE_LOCAL_SETTING_KEYS.includes(key)) {
+        const isAdmin = st.accounts.find((a) => a.id === st.session)?.role === 'admin';
+        if (!isAdmin) return {};
+      }
       const settings = { ...st.settings, [key]: val } as Settings;
       if (key === 'appMode') settings.appModeManual = true;
       // colours are stored per light/dark mode; keep the live values + per-mode copies in sync
@@ -473,6 +562,45 @@ export const useStore = create<AppState>((set, get) => ({
     write(LS.pburl, clean);
     set((st) => ({ settings: { ...st.settings, pbUrl: clean } }));
   },
+
+  // ── Gerätelokale Einstellungen (eigener localStorage-Key, kein Server-Sync): Board-/Kiosk + Namens-Sortierung ──
+  setDeviceSetting(key, val) {
+    set((st) => {
+      const settings = { ...st.settings, [key]: val } as Settings;
+      write(LS.device, { kiosk: !!settings.kiosk, boardName: settings.boardName || '', nameOrder: settings.nameOrder || 'first' });
+      // Beim Aktivieren direkt ins Counter-Setup; beim Deaktivieren Entsperrung zurücksetzen.
+      const patch: Partial<AppState> = { settings };
+      if (key === 'kiosk') { patch.kioskUnlocked = false; if (val) patch.screen = 'setup'; }
+      return patch;
+    });
+  },
+  // Board-Modus für diese Sitzung entsperren — nur Admin/Kapitän (manageTeams) dürfen das.
+  // Meldet den angegebenen Account an (ersetzt das Board-Konto) und gibt die volle App frei.
+  async kioskExitLogin(email, pw) {
+    const st = get();
+    // Rolle VORAB aus den geladenen Konten prüfen (kein Login-Versuch bei falscher Rolle), damit die
+    // bestehende Board-Sitzung unangetastet bleibt. Nur Admin/Kapitän dürfen den Board-Modus verlassen.
+    const acc = st.accounts.find((a) => a.email.trim().toLowerCase() === email.trim().toLowerCase());
+    if (!acc || !acc.active || (acc.role !== 'admin' && acc.role !== 'captain')) return false;
+    if (!st.pbMode) {
+      // Lokaler/Demo-Pfad: Passwort beliebig.
+      write(LS.session, acc.id);
+      set({ session: acc.id, kioskUnlocked: true, screen: 'dashboard' });
+      return true;
+    }
+    try {
+      // Ein fehlgeschlagener authWithPassword lässt die aktuelle Sitzung im PB-Client unberührt.
+      const user = await st.provider.login(email.trim(), pw);
+      if (!user.active) return false;
+      set({ session: user.id, kioskUnlocked: true, screen: 'dashboard' });
+      void applySnapshot(get, set);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  // „Zurück zum Board": Kapitäns-/Admin-Sitzung beenden → der Board-Rechner meldet sich wieder mit seinem Board-Konto an.
+  relockKiosk() { get().logout(); set({ kioskUnlocked: false, screen: 'setup' }); },
 
   // ── Daten-Backup (Export/Import aller gespeicherten Daten) ──
   exportData() {
@@ -547,10 +675,10 @@ export const useStore = create<AppState>((set, get) => ({
 
   // ── team modal ──
   selectTeam(i) { set({ selectedTeam: i }); },
-  openAddTeam() { set({ teamModal: { mode: 'add', id: null, name: '', league: '', memberIds: [], captainId: null } }); },
+  openAddTeam() { set({ teamModal: { mode: 'add', id: null, name: '', league: '', memberIds: [], captainId: null, viceCaptainIds: [], kind: 'league' } }); },
   openEditTeam() {
     const st = get(); const t = st.teams[Math.max(0, Math.min(st.teams.length - 1, st.selectedTeam))]; if (!t) return;
-    set({ teamModal: { mode: 'edit', id: t.id, name: t.name, league: t.league || '', memberIds: [...t.memberIds], captainId: t.captainId } });
+    set({ teamModal: { mode: 'edit', id: t.id, name: t.name, league: t.league || '', memberIds: [...t.memberIds], captainId: t.captainId, viceCaptainIds: [...(t.viceCaptainIds || [])], kind: t.kind === 'cup' ? 'cup' : 'league' } });
   },
   closeTeamModal() { set({ teamModal: null }); },
   setTeamField(key, val) { set((st) => st.teamModal ? { teamModal: { ...st.teamModal, [key]: val } } : {}); },
@@ -561,15 +689,41 @@ export const useStore = create<AppState>((set, get) => ({
       const memberIds = has ? st.teamModal.memberIds.filter((x) => x !== pid) : [...st.teamModal.memberIds, pid];
       let captainId = st.teamModal.captainId;
       if (has && captainId === pid) captainId = null;
-      return { teamModal: { ...st.teamModal, memberIds, captainId } };
+      // Beim Entfernen auch aus der Vertretungsliste nehmen.
+      const viceCaptainIds = has ? st.teamModal.viceCaptainIds.filter((x) => x !== pid) : st.teamModal.viceCaptainIds;
+      return { teamModal: { ...st.teamModal, memberIds, captainId, viceCaptainIds } };
     });
   },
-  setTeamCaptain(pid) { set((st) => st.teamModal ? { teamModal: { ...st.teamModal, captainId: st.teamModal.captainId === pid ? null : pid } } : {}); },
+  setTeamCaptain(pid) {
+    set((st) => {
+      if (!st.teamModal) return {};
+      const captainId = st.teamModal.captainId === pid ? null : pid;
+      // Kapitän kann nicht gleichzeitig Vertretung sein.
+      const viceCaptainIds = st.teamModal.viceCaptainIds.filter((x) => x !== captainId);
+      return { teamModal: { ...st.teamModal, captainId, viceCaptainIds } };
+    });
+  },
+  toggleTeamViceCaptain(pid) {
+    set((st) => {
+      if (!st.teamModal) return {};
+      if (pid === st.teamModal.captainId) return {}; // Kapitän nicht als Vertretung
+      const cur = st.teamModal.viceCaptainIds;
+      if (cur.includes(pid)) return { teamModal: { ...st.teamModal, viceCaptainIds: cur.filter((x) => x !== pid) } };
+      if (cur.length >= 2) return {}; // max. 2 Ersatzkapitäne
+      return { teamModal: { ...st.teamModal, viceCaptainIds: [...cur, pid] } };
+    });
+  },
   saveTeamModal() {
     const m = get().teamModal; if (!m) return;
     const name = m.name.trim(); if (!name) return;
+    // Sicherheitsnetz: (Name, Art) eindeutig – im Modal bereits blockiert, hier gegen Doppelanlage geschützt.
+    const norm = (x: string) => x.replace(/\s+/g, ' ').trim().toLowerCase();
+    const dupKind: TeamKind = m.kind;
+    if (get().teams.some((t) => t.id !== m.id && norm(t.name) === norm(name) && (t.kind === 'cup' ? 'cup' : 'league') === dupKind)) return;
     set((st) => {
-      const rec: Team = { id: m.id || uid(), name, league: m.league.trim(), memberIds: m.memberIds, captainId: m.captainId && m.memberIds.includes(m.captainId) ? m.captainId : null };
+      const captainId = m.captainId && m.memberIds.includes(m.captainId) ? m.captainId : null;
+      const viceCaptainIds = m.viceCaptainIds.filter((id) => m.memberIds.includes(id) && id !== captainId).slice(0, 2);
+      const rec: Team = { id: m.id || uid(), name, league: m.league.trim(), memberIds: m.memberIds, captainId, viceCaptainIds, kind: m.kind };
       let teams: Team[]; let selectedTeam = st.selectedTeam;
       if (m.mode === 'add') { teams = [...st.teams, rec]; selectedTeam = teams.length - 1; }
       else teams = st.teams.map((t) => t.id === m.id ? rec : t);
@@ -588,10 +742,16 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   // ── user modal ──
-  openAddUser() { set({ userModal: { mode: 'add', id: null, first: '', last: '', email: '', role: 'player', playerId: null, active: true, avi: 0, position: '', password: '' } }); },
+  openAddUser() { set({ userModal: { mode: 'add', id: null, first: '', last: '', email: '', role: 'player', playerId: null, active: true, avi: 0, position: '', password: '', isBoard: false, boardNumber: null } }); },
+  // Neues Benutzerkonto direkt aus einem Spieler vorbefüllen (Vor-/Nachname, Avatar, Verknüpfung).
+  // Nur sinnvoll im Vereinsmodus; E-Mail/Passwort/Rolle ergänzt der Admin im Modal.
+  openAddUserForPlayer(playerId) {
+    const pl = get().players.find((x) => x.id === playerId); if (!pl) return;
+    set({ userModal: { mode: 'add', id: null, first: firstName(pl.name), last: lastName(pl.name), email: '', role: 'player', playerId: pl.id, active: true, avi: pl.avi ?? 0, position: '', password: '', isBoard: false, boardNumber: null } });
+  },
   openEditUser(id) {
     const a = get().accounts.find((x) => x.id === id); if (!a) return;
-    set({ userModal: { mode: 'edit', id: a.id, first: a.first, last: a.last, email: a.email, role: a.role, playerId: a.playerId, active: a.active, avi: a.avi, position: a.position || '', password: '' } });
+    set({ userModal: { mode: 'edit', id: a.id, first: a.first, last: a.last, email: a.email, role: a.role, playerId: a.playerId, active: a.active, avi: a.avi, position: a.position || '', password: '', isBoard: !!a.isBoard, boardNumber: a.boardNumber ?? null } });
   },
   closeUserModal() { set({ userModal: null }); },
   setUserField(key, val) { set((st) => st.userModal ? { userModal: { ...st.userModal, [key]: val } as UserModalState } : {}); },
@@ -603,13 +763,16 @@ export const useStore = create<AppState>((set, get) => ({
     if (!name || !email) return;
     set((st) => {
       let accounts: Account[];
+      // Board-Konten werden NIE mit einem Spieler verknüpft und behalten IMMER die Rolle 'board'.
+      const playerId = m.isBoard ? null : m.playerId;
+      const role: Role = m.isBoard ? 'board' : m.role;
       if (m.mode === 'add') {
-        const rec: Account = { id: uid(), first, last, name, email, role: m.role, playerId: m.playerId, active: m.active, avi: m.avi, position: m.position.trim(), last_login: '—' };
+        const rec: Account = { id: uid(), first, last, name, email, role, playerId, active: m.active, avi: m.avi, position: m.position.trim(), last_login: '—', isBoard: m.isBoard, boardNumber: m.boardNumber ?? undefined };
         accounts = [...st.accounts, rec];
         const body = { ...rec, password: m.password } as unknown as ProviderRecord;
         persist(st, set, LS.users, accounts, (p) => p.createRecord('accounts', body));
       } else {
-        const fields = { first, last, name, email, role: m.role, playerId: m.playerId, active: m.active, avi: m.avi, position: m.position.trim() };
+        const fields = { first, last, name, email, role, playerId, active: m.active, avi: m.avi, position: m.position.trim() };
         accounts = st.accounts.map((a) => a.id === m.id ? { ...a, ...fields } : a);
         const body: ProviderRecord = { id: m.id!, ...fields };
         if (m.password) body.password = m.password;
@@ -633,16 +796,60 @@ export const useStore = create<AppState>((set, get) => ({
       return { accounts };
     });
   },
+  async createBoardAccounts(count, password) {
+    const st = get();
+    if (st.provider.mode !== 'verein') { set({ syncError: 'Board-Konten gibt es nur im Vereinsmodus (mit Server).' }); return; }
+    const n = Math.max(1, Math.min(32, count | 0));
+    const have = new Set(st.accounts.filter((a) => a.isBoard && a.boardNumber != null).map((a) => a.boardNumber));
+    let created = 0;
+    for (let i = 1; i <= n; i++) {
+      if (have.has(i)) continue;
+      const body = {
+        email: `board${i}@board.local`, password,
+        name: `Board ${i}`, first: 'Board', last: String(i), role: 'board', playerId: null,
+        position: 'Board-Rechner', active: true, avi: i % 8, isBoard: true, boardNumber: i, last_login: '—',
+      };
+      try { await st.provider.createRecord('accounts', body as unknown as ProviderRecord); created++; }
+      catch (e) { console.error('[board]', e); set({ syncError: `Board ${i} konnte nicht angelegt werden (evtl. E-Mail schon vergeben).` }); }
+    }
+    if (created > 0) void applySnapshot(get, set);
+  },
+  async uploadPhoto(kind, id, file) {
+    const st = get();
+    if (st.provider.mode !== 'verein') { set({ syncError: 'Profilfotos gibt es nur im Vereinsmodus.' }); return; }
+    const coll = kind === 'player' ? 'players' : 'accounts';
+    try {
+      const blob = await downscaleSquare(file, 256); // klein halten: zentriertes 256er-Quadrat
+      await st.provider.uploadPhoto(coll, id, blob);
+      await applySnapshot(get, set);
+    } catch (e) { console.error('[photo]', e); set({ syncError: 'Foto konnte nicht gespeichert werden.' }); }
+  },
+  async clearPhoto(kind, id) {
+    const st = get();
+    if (st.provider.mode !== 'verein') return;
+    const coll = kind === 'player' ? 'players' : 'accounts';
+    try { await st.provider.clearPhoto(coll, id); await applySnapshot(get, set); }
+    catch (e) { console.error('[photo]', e); set({ syncError: 'Foto konnte nicht entfernt werden.' }); }
+  },
 
   // ── league modal ──
   selectLeague(i) { set({ selectedLeague: i }); },
-  openAddLeague() { set({ leagueModal: { mode: 'add', id: null, name: '', season: '2025/26', teams: [] } }); },
+  openAddLeague() { set({ leagueModal: { mode: 'add', id: null, name: '', season: '2025/26', teams: [], singlesCount: 4, doublesCount: 2, format: null, kind: 'league' } }); },
   openEditLeague() {
     const st = get(); const lg = st.leagues[Math.max(0, Math.min(st.leagues.length - 1, st.selectedLeague))]; if (!lg) return;
-    set({ leagueModal: { mode: 'edit', id: lg.id, name: lg.name, season: lg.season || '', teams: lg.teams.map((t) => ({ ...t })) } });
+    set({ leagueModal: { mode: 'edit', id: lg.id, name: lg.name, season: lg.season || '', teams: lg.teams.map((t) => ({ ...t })), singlesCount: lg.singlesCount ?? 4, doublesCount: lg.doublesCount ?? 2, format: lg.format ? lg.format.map((s) => ({ ...s })) : null, kind: lg.kind === 'cup' ? 'cup' : 'league' } });
   },
   closeLeagueModal() { set({ leagueModal: null }); },
   setLeagueField(key, val) { set((st) => st.leagueModal ? { leagueModal: { ...st.leagueModal, [key]: val } } : {}); },
+  setLeagueCount(key, val) { set((st) => st.leagueModal ? { leagueModal: { ...st.leagueModal, [key]: Math.max(0, Math.min(12, val | 0)) } } : {}); },
+  setLeagueFormatPreset(key) {
+    set((st) => {
+      if (!st.leagueModal) return {};
+      if (key === 'custom') return { leagueModal: { ...st.leagueModal, format: null } };
+      const preset = LEAGUE_FORMAT_PRESETS[key];
+      return preset ? { leagueModal: { ...st.leagueModal, format: preset.segments.map((s) => ({ ...s })) } } : {};
+    });
+  },
   addLeagueTeam() { set((st) => st.leagueModal ? { leagueModal: { ...st.leagueModal, teams: [...st.leagueModal.teams, { id: uid(), name: '', own: false }] } } : {}); },
   setLeagueTeamName(id, val) { set((st) => st.leagueModal ? { leagueModal: { ...st.leagueModal, teams: st.leagueModal.teams.map((t) => t.id === id ? { ...t, name: val } : t) } } : {}); },
   toggleLeagueTeamOwn(id) { set((st) => st.leagueModal ? { leagueModal: { ...st.leagueModal, teams: st.leagueModal.teams.map((t) => t.id === id ? { ...t, own: !t.own } : t) } } : {}); },
@@ -653,7 +860,9 @@ export const useStore = create<AppState>((set, get) => ({
     const teams = m.teams.map((t) => ({ id: t.id, name: t.name.trim(), own: !!t.own })).filter((t) => t.name);
     set((st) => {
       const existing = st.leagues.find((l) => l.id === m.id);
-      const rec: League = { id: m.id || uid(), name, season: m.season.trim(), teams, fixtures: existing ? existing.fixtures : [] };
+      // Format: bevorzugt geordnete Segmente (Preset); sonst einfache Einzel/Doppel-Zähler.
+      const segs = m.format && m.format.length ? m.format : [{ kind: 'singles' as const, count: m.singlesCount }, { kind: 'doubles' as const, count: m.doublesCount }];
+      const rec: League = { id: m.id || uid(), name, season: m.season.trim(), teams, fixtures: existing ? existing.fixtures : [], format: m.format && m.format.length ? m.format : undefined, singlesCount: segTotal(segs, 'singles'), doublesCount: segTotal(segs, 'doubles'), kind: m.kind };
       let leagues: League[]; let selectedLeague = st.selectedLeague;
       if (m.mode === 'add') { leagues = [...st.leagues, rec]; selectedLeague = leagues.length - 1; }
       else leagues = st.leagues.map((l) => l.id === m.id ? rec : l);
@@ -671,6 +880,188 @@ export const useStore = create<AppState>((set, get) => ({
     });
   },
 
+  // ── Mannschaftsaufstellung (frei konfigurierbar pro Begegnung, nur eigene Mannschaft) ──
+  openLineup(fixtureId) {
+    const st = get();
+    const lg = st.leagues[Math.max(0, Math.min(st.leagues.length - 1, st.selectedLeague))]; if (!lg) return;
+    const fx = lg.fixtures.find((f) => f.id === fixtureId); if (!fx) return;
+    const norm = (x: string) => (x || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    const home = lg.teams.find((t) => t.id === fx.homeId) || null;
+    const away = lg.teams.find((t) => t.id === fx.awayId) || null;
+    const ownTeam = (home && home.own) ? home : (away && away.own) ? away : null;
+    if (!ownTeam) return; // Aufstellung gibt es nur für eigene Begegnungen
+    const ownIsHome = !!(home && home.own);
+    const opp = ownIsHome ? away : home;
+    // Kader der eigenen Mannschaft über Namensabgleich; Fallback: alle Spieler.
+    const team = st.teams.find((t) => norm(t.name) === norm(ownTeam.name));
+    let rosterIds = team ? team.memberIds.slice() : [];
+    if (rosterIds.length === 0) rosterIds = st.players.map((p) => p.id);
+    const ex = fx.lineup;
+    let positions: LineupPosition[];
+    if (ex?.positions?.length) {
+      positions = ex.positions.map((p) => ({ id: p.id || uid(), kind: p.kind, playerIds: p.kind === 'double' ? [p.playerIds[0] || '', p.playerIds[1] || ''] : [p.playerIds[0] || ''], board: p.board || '', result: p.result }));
+    } else {
+      // Noch keine Aufstellung → aus dem Liga-Format als Vorlage vorbelegen (frei editierbar).
+      positions = [];
+      for (const seg of leagueSegments(lg)) {
+        for (let k = 0; k < seg.count; k++) {
+          positions.push({ id: uid(), kind: seg.kind === 'doubles' ? 'double' : 'single', playerIds: seg.kind === 'doubles' ? ['', ''] : [''], board: '' });
+        }
+      }
+    }
+    const substitutes = (ex?.substitutes || []).filter((id) => rosterIds.includes(id));
+    set({ lineupModal: { leagueId: lg.id, fixtureId, ownTeamName: ownTeam.name, oppName: opp ? opp.name : '—', ownIsHome, rosterIds, positions, substitutes } });
+  },
+  openLineupAt(leagueIndex, fixtureId) {
+    const i = Math.max(0, Math.min(get().leagues.length - 1, leagueIndex));
+    set({ selectedLeague: i });
+    get().openLineup(fixtureId); // liest selectedLeague (gerade gesetzt) und öffnet das Modal
+  },
+  closeLineup() { set({ lineupModal: null }); },
+  addLineupPosition(kind) {
+    set((st) => st.lineupModal ? { lineupModal: { ...st.lineupModal, positions: [...st.lineupModal.positions, { id: uid(), kind, playerIds: kind === 'double' ? ['', ''] : [''], board: '' }] } } : {});
+  },
+  removeLineupPosition(id) {
+    set((st) => st.lineupModal ? { lineupModal: { ...st.lineupModal, positions: st.lineupModal.positions.filter((p) => p.id !== id) } } : {});
+  },
+  moveLineupPosition(id, dir) {
+    set((st) => {
+      const m = st.lineupModal; if (!m) return {};
+      const arr = m.positions.slice();
+      const i = arr.findIndex((p) => p.id === id); const j = i + dir;
+      if (i < 0 || j < 0 || j >= arr.length) return {};
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      return { lineupModal: { ...m, positions: arr } };
+    });
+  },
+  setLineupPositionPlayer(id, pos, playerId) {
+    set((st) => {
+      const m = st.lineupModal; if (!m) return {};
+      // Ein Spieler darf MEHRERE Spiele bestreiten (z. B. ein Einzel UND ein Doppel) – daher NICHT
+      // aus anderen Positionen entfernen. Einzige Grenzen: nicht zweimal derselbe Spieler im selben
+      // Doppel, und beim Aufstellen wird er aus der Ersatzliste genommen.
+      const positions = m.positions.map((p) => ({ ...p, playerIds: p.playerIds.slice() }));
+      const substitutes = playerId ? m.substitutes.filter((x) => x !== playerId) : m.substitutes.slice();
+      const target = positions.find((p) => p.id === id);
+      if (target) {
+        if (playerId) target.playerIds = target.playerIds.map((x, i) => (i !== pos && x === playerId ? '' : x));
+        target.playerIds[pos] = playerId;
+      }
+      return { lineupModal: { ...m, positions, substitutes } };
+    });
+  },
+  setLineupPositionBoard(id, board) {
+    set((st) => st.lineupModal ? { lineupModal: { ...st.lineupModal, positions: st.lineupModal.positions.map((p) => p.id === id ? { ...p, board } : p) } } : {});
+  },
+  toggleSubstitute(playerId) {
+    set((st) => {
+      const m = st.lineupModal; if (!m) return {};
+      if (m.substitutes.includes(playerId)) {
+        return { lineupModal: { ...m, substitutes: m.substitutes.filter((id) => id !== playerId) } };
+      }
+      // Als Ersatz markieren → aus allen Positionen entfernen, hinten an die Ersatzliste (E…) anhängen.
+      const positions = m.positions.map((p) => ({ ...p, playerIds: p.playerIds.map((id) => id === playerId ? '' : id) }));
+      return { lineupModal: { ...m, positions, substitutes: [...m.substitutes, playerId] } };
+    });
+  },
+  moveSubstitute(playerId, dir) {
+    set((st) => {
+      const m = st.lineupModal; if (!m) return {};
+      const arr = m.substitutes.slice();
+      const i = arr.indexOf(playerId); const j = i + dir;
+      if (i < 0 || j < 0 || j >= arr.length) return {};
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+      return { lineupModal: { ...m, substitutes: arr } };
+    });
+  },
+  saveLineup() {
+    const m = get().lineupModal; if (!m) return;
+    const positions: LineupPosition[] = m.positions.map((p) => ({ id: p.id, kind: p.kind, playerIds: p.playerIds.filter(Boolean), board: (p.board || '').trim() || undefined, ...(p.result ? { result: p.result } : {}) }));
+    const lineup: FixtureLineup = { positions, substitutes: m.substitutes.slice() };
+    set((st) => {
+      let changed: League | null = null;
+      const leagues = st.leagues.map((l) => {
+        if (l.id !== m.leagueId) return l;
+        changed = { ...l, fixtures: l.fixtures.map((f) => f.id === m.fixtureId ? { ...f, lineup } : f) };
+        return changed;
+      });
+      if (changed) persist(st, set, LS.leagues, leagues, (p) => p.updateRecord('leagues', changed!.id, changed! as unknown as ProviderRecord));
+      return { leagues, lineupModal: null };
+    });
+  },
+
+  // ── Brett-für-Brett-Ergebniserfassung (Spielbericht) ──
+  openResult(fixtureId) {
+    const st = get();
+    const lg = st.leagues[Math.max(0, Math.min(st.leagues.length - 1, st.selectedLeague))]; if (!lg) return;
+    const fx = lg.fixtures.find((f) => f.id === fixtureId); if (!fx || !fx.lineup?.positions?.length) return;
+    const home = lg.teams.find((t) => t.id === fx.homeId) || null;
+    const away = lg.teams.find((t) => t.id === fx.awayId) || null;
+    const ownIsHome = !!(home && home.own);
+    const ownTeam = ownIsHome ? home : (away && away.own ? away : null);
+    if (!ownTeam) return;
+    const opp = ownIsHome ? away : home;
+    const nameById = (id: string) => st.players.find((p) => p.id === id)?.name || '';
+    // Neuestes am Board gespieltes (verknüpftes) Match je Position → für die Auto-Vorbefüllung.
+    const linkedMatch = (positionId: string): Match | null => {
+      const ms = st.matches.filter((mm) => mm.fixtureId === fixtureId && mm.positionId === positionId && (mm.perPlayer?.length || 0) >= 2);
+      if (!ms.length) return null;
+      return ms.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''))[0];
+    };
+    let sNo = 0, dNo = 0;
+    const rows: ResultRow[] = fx.lineup.positions.map((p) => {
+      const label = p.kind === 'single' ? `Einzel ${++sNo}` : `Doppel ${++dNo}`;
+      const names = p.playerIds.map(nameById).filter(Boolean);
+      if (p.result) {
+        return { id: p.id, kind: p.kind, label, playerNames: names, won: p.result.won, ownLegs: p.result.ownLegs != null ? String(p.result.ownLegs) : '', oppLegs: p.result.oppLegs != null ? String(p.result.oppLegs) : '', auto: false };
+      }
+      // Noch nicht bestätigt → aus dem verknüpften Board-Match vorbefüllen (Slot 0 = eigene Seite).
+      const mt = linkedMatch(p.id);
+      if (mt) {
+        const own = mt.perPlayer[0], opp = mt.perPlayer[1];
+        return { id: p.id, kind: p.kind, label, playerNames: names, won: mt.winnerName === own.name ? 'own' : 'opp', ownLegs: String(own.legsWon ?? ''), oppLegs: String(opp.legsWon ?? ''), auto: true };
+      }
+      return { id: p.id, kind: p.kind, label, playerNames: names, won: null, ownLegs: '', oppLegs: '', auto: false };
+    });
+    set({ resultModal: { leagueId: lg.id, fixtureId, ownTeamName: ownTeam.name, oppName: opp ? opp.name : '—', ownIsHome, rows } });
+  },
+  closeResult() { set({ resultModal: null }); },
+  setResultWon(id, won) {
+    set((st) => st.resultModal ? { resultModal: { ...st.resultModal, rows: st.resultModal.rows.map((r) => r.id === id ? { ...r, won: r.won === won ? null : won, auto: false } : r) } } : {});
+  },
+  setResultLeg(id, side, val) {
+    const v = val.replace(/[^0-9]/g, '').slice(0, 2);
+    set((st) => st.resultModal ? { resultModal: { ...st.resultModal, rows: st.resultModal.rows.map((r) => r.id === id ? { ...r, [side === 'own' ? 'ownLegs' : 'oppLegs']: v, auto: false } : r) } } : {});
+  },
+  saveResult() {
+    const m = get().resultModal; if (!m) return;
+    const ownWins = m.rows.filter((r) => r.won === 'own').length;
+    const oppWins = m.rows.filter((r) => r.won === 'opp').length;
+    const played = ownWins + oppWins > 0;
+    const hsVal = m.ownIsHome ? ownWins : oppWins;
+    const asVal = m.ownIsHome ? oppWins : ownWins;
+    set((st) => {
+      let changed: League | null = null;
+      const leagues = st.leagues.map((l) => {
+        if (l.id !== m.leagueId) return l;
+        const fixtures = l.fixtures.map((f) => {
+          if (f.id !== m.fixtureId || !f.lineup) return f;
+          const positions = f.lineup.positions.map((p) => {
+            const row = m.rows.find((r) => r.id === p.id);
+            if (!row || !row.won) { const { result: _omit, ...rest } = p; void _omit; return rest; }
+            const ol = parseInt(row.ownLegs, 10); const pl = parseInt(row.oppLegs, 10);
+            return { ...p, result: { won: row.won, ...(isNaN(ol) ? {} : { ownLegs: ol }), ...(isNaN(pl) ? {} : { oppLegs: pl }) } };
+          });
+          return { ...f, lineup: { ...f.lineup, positions }, played, hs: played ? hsVal : ('' as const), as: played ? asVal : ('' as const) };
+        });
+        changed = { ...l, fixtures };
+        return changed;
+      });
+      if (changed) persist(st, set, LS.leagues, leagues, (p) => p.updateRecord('leagues', changed!.id, changed! as unknown as ProviderRecord));
+      return { leagues, resultModal: null };
+    });
+  },
+
   // ── Spielplan-Import (CSV) ──
   openImport() { set({ importOpen: true }); },
   closeImport() { set({ importOpen: false }); },
@@ -681,6 +1072,10 @@ export const useStore = create<AppState>((set, get) => ({
     const newTeams = deriveOwnTeams(leagues, st.teams);
     counts.ownTeamsNew = newTeams.length;
     const teams = newTeams.length ? [...st.teams, ...newTeams] : st.teams;
+    // Kalender-Termine für eigene Begegnungen ableiten (idempotent gegen vorhandene).
+    const newEvents = deriveLeagueEvents(parsed, st.events);
+    counts.eventsNew = newEvents.length;
+    const events = newEvents.length ? [...st.events, ...newEvents] : st.events;
     if (st.provider.mode === 'verein') {
       // Pro betroffener Liga anlegen/aktualisieren (PocketBase speichert teams/fixtures als JSON).
       touched.forEach(({ id, isNew }) => {
@@ -695,11 +1090,16 @@ export const useStore = create<AppState>((set, get) => ({
         void st.provider.createRecord('teams', t as unknown as ProviderRecord)
           .catch((e) => { console.error('[sync]', e); set({ syncError: 'Mannschaft konnte nicht angelegt werden.' }); });
       });
+      newEvents.forEach((e) => {
+        void st.provider.createRecord('events', e as unknown as ProviderRecord)
+          .catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht angelegt werden.' }); });
+      });
     } else {
       write(LS.leagues, leagues);
       if (newTeams.length) write(LS.teams, teams);
+      if (newEvents.length) write(LS.events, events);
     }
-    set({ leagues, teams, selectedLeague: 0 });
+    set({ leagues, teams, events, selectedLeague: 0 });
     return counts;
   },
 
@@ -823,7 +1223,7 @@ export const useStore = create<AppState>((set, get) => ({
       // Doppelte vermeiden (Mehrspieler): nächsten freien Spieler nehmen
       if (count > 1 && used.has(p.id)) { p = pool.find((q) => !used.has(q.id)) || p; }
       used.add(p.id);
-      players.push({ id: `t${i}_${p.id}`, name: p.name, short: p.short, av: p.avi });
+      players.push({ id: `t${i}_${p.id}`, name: p.name, short: p.short, av: p.avi, photo: p.photo });
     }
     const trainingPlays = { ...st.trainingPlays, [su.modeId]: (st.trainingPlays[su.modeId] || 0) + 1 };
     if (st.provider.mode === 'verein') void st.provider.saveTrainingPlays(trainingPlays).catch((e) => { console.error('[sync]', e); });
@@ -868,17 +1268,27 @@ export const useStore = create<AppState>((set, get) => ({
     let i2 = clamp(su.p2);
     if (i2 === i1 && pool.length > 1) i2 = (i1 + 1) % pool.length;
     const a = pool[i1], b = pool[i2];
-    const gamePlayers: GamePlayer[] = [
-      { id: 1, name: a.name, short: a.short, av: a.avi },
-      { id: 2, name: b.name, short: b.short, av: b.avi },
-    ];
+    // Gast-Name (falls eingetippt) überschreibt die Spielerwahl für diesen Slot.
+    const mk = (id: number, guest: string | undefined, fb: Player): GamePlayer => {
+      const g = (guest || '').trim();
+      return g ? { id, name: g, short: initials(g) || g.slice(0, 2).toUpperCase(), av: 0 } : { id, name: fb.name, short: fb.short, av: fb.avi, photo: fb.photo };
+    };
+    const gamePlayers: GamePlayer[] = [mk(1, su.p1Guest, a), mk(2, su.p2Guest, b)];
     const settings = { ...st.settings, startScore: su.startScore, bestOf: su.bestOf, bestOfSets: su.bestOfSets, unit: su.unit, doubleOut: su.doubleOut, outMode: su.outMode, doubleIn: su.doubleIn };
     persistSettings(st, set, settings);
     try { localStorage.removeItem(LS.live); } catch { /* ignore */ }
-    set({ gamePlayers, gameMode: su.mode, allThrows: [], input: '', screen: 'counter', settings, startOffset: 0, pendingStart: true, bullMode: false, spinPick: null, matchSaved: false, hint: null, abortConfirm: false });
+    set({ gamePlayers, gameMode: su.mode, allThrows: [], input: '', screen: 'counter', settings, startOffset: 0, pendingStart: true, bullMode: false, spinPick: null, matchSaved: false, freePlay: !!su.freePlay, gameLink: su.link || null, hint: null, abortConfirm: false });
   },
   quickStart(preset) {
-    set((st) => ({ setup: { ...st.setup, mode: 'single', p1: 0, p2: 1, ...(preset || {}) } }));
+    // Schnellstart = normales, gewertetes Spiel: Gast-Namen, Freies-Spiel & Liga-Verknüpfung zurücksetzen.
+    set((st) => ({ setup: { ...st.setup, mode: 'single', p1: 0, p2: 1, p1Guest: '', p2Guest: '', freePlay: false, link: null, ...(preset || {}) } }));
+    get().startGame();
+  },
+  // Startet ein konkretes Ligaspiel vom Board: eigener Spieler als Slot 0, Gegner als Gast, mit Positions-Verknüpfung.
+  startBoardGame(leagueId, fixtureId, positionId, ownPlayerId, oppName) {
+    const st = get();
+    const idx = st.players.findIndex((p) => p.id === ownPlayerId);
+    set((s) => ({ setup: { ...s.setup, mode: 'single', p1: idx < 0 ? 0 : idx, p1Guest: '', p2Guest: (oppName || 'Gast'), freePlay: false, link: { leagueId, fixtureId, positionId } } }));
     get().startGame();
   },
   chooseStarter(idx) { set({ startOffset: idx, pendingStart: false, bullMode: false, spinPick: null }); },
@@ -1018,11 +1428,12 @@ async function applySnapshot(get: () => AppState, set: SetFn) {
     const merged: Settings = { ...get().settings, ...(snap.settings || {}) };
     merged.appMode = 'verein';
     merged.pbUrl = get().settings.pbUrl; // gerätelokal behalten — nie vom Server übernehmen
+    merged.nameOrder = get().settings.nameOrder; // Namens-Sortierung ist gerätelokal, nicht vom Server überschreiben
     if (snap.clubName !== undefined) merged.clubName = snap.clubName;
     if (snap.clubLogo !== undefined) merged.clubLogo = snap.clubLogo;
     set({
       settings: merged,
-      players: snap.players, teams: snap.teams, accounts: snap.accounts,
+      players: withDefaultPlayers(snap.players), teams: snap.teams, accounts: snap.accounts,
       leagues: snap.leagues, events: snap.events, matches: snap.matches,
       trainingPlays: snap.trainingPlays, syncError: null,
     });
@@ -1044,6 +1455,12 @@ function persistLive(get: () => AppState) {
 }
 function saveMatch(get: () => AppState, set: (p: Partial<AppState>) => void) {
   const st = get();
+  // Freies Spiel: nichts speichern, nur den laufenden Spielstand verwerfen und als „erledigt" markieren.
+  if (st.freePlay) {
+    try { localStorage.removeItem(LS.live); } catch { /* ignore */ }
+    set({ matchSaved: true });
+    return;
+  }
   const slice: CounterSlice = { gamePlayers: st.gamePlayers, allThrows: st.allThrows, startOffset: st.startOffset, settings: st.settings };
   const prog = cProgress(slice);
   const w = cMatchOver(slice) ? prog.winnerId : null;
@@ -1062,6 +1479,7 @@ function saveMatch(get: () => AppState, set: (p: Partial<AppState>) => void) {
     doubleOut: st.settings.doubleOut, doubleIn: st.settings.doubleIn, unit, mode: st.gameMode,
     bestOf: st.settings.bestOf, bestOfSets: st.settings.bestOfSets,
     gameLabel: `X01 ${st.settings.startScore} · Bo${st.settings.bestOf}`, winnerName, scoreLine, perPlayer,
+    ...(st.gameLink ? { leagueId: st.gameLink.leagueId, fixtureId: st.gameLink.fixtureId, positionId: st.gameLink.positionId } : {}),
   };
   const matches = [...st.matches, match];
   persist(st, set, LS.matches, matches, (p) => p.createRecord('matches', match as unknown as ProviderRecord));

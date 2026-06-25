@@ -1,6 +1,6 @@
 import { useStore } from '../store/useStore';
-import { avatar } from '../data/constants';
 import { aggregateFor } from '../store/selectors';
+import { Avatar } from '../components/Avatar';
 
 const COLS = '26px 1fr 54px 34px 30px 30px 44px 46px 46px 40px 46px 44px';
 
@@ -10,15 +10,14 @@ export function Statistics() {
     .map((p) => ({ p, agg: aggregateFor(p.name, s.matches) }))
     .sort((a, b) => b.agg.avg - a.agg.avg)
     .map((row, idx) => {
-      const a = avatar(row.p.avi); const agg = row.agg;
+      const agg = row.agg;
       return {
-        id: row.p.id, rank: idx + 1, name: row.p.name, short: row.p.short,
+        id: row.p.id, rank: idx + 1, name: row.p.name, short: row.p.short, photo: row.p.photo, avi: row.p.avi,
         avg: agg.avg ? agg.avg.toFixed(1) : '0.0', sp: String(agg.games), sw: String(agg.wins), sn: String(agg.losses),
         checkout: agg.games ? Math.round(agg.wins / agg.games * 100) + '%' : '0%',
         s60: String(agg.c60), s100: String(agg.c100), s140: String(agg.c140), s180: String(agg.c180), highFinish: agg.high ? String(agg.high) : '0',
         rankColor: idx === 0 && agg.games ? '#F2B829' : idx < 3 && agg.games ? 'var(--success)' : 'var(--text-4)',
         rowBg: idx === 0 && agg.games ? 'rgba(242,184,41,.05)' : 'transparent',
-        avBg: a.bg, avFg: a.fg,
       };
     });
 
@@ -34,7 +33,7 @@ export function Statistics() {
           <div key={l.id} className="dh-row" onClick={() => s.openPlayer(l.id)} style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4, padding: '13px 18px', borderBottom: '1px solid var(--hairline)', alignItems: 'center', cursor: 'pointer', background: l.rowBg, minWidth: 640 }}>
             <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 14, fontWeight: 800, color: l.rankColor }}>{l.rank}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-              <div style={{ width: 30, height: 30, borderRadius: 9, background: l.avBg, color: l.avFg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12, flexShrink: 0 }}>{l.short}</div>
+              <Avatar photo={l.photo} short={l.short} avi={l.avi} size={30} />
               <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.name}</span>
             </div>
             <span style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 15, fontWeight: 800, color: '#2BD377' }}>{l.avg}</span>

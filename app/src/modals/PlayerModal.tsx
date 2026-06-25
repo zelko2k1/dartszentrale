@@ -1,32 +1,56 @@
 import { useState } from 'react';
 import { useStore } from '../store/useStore';
-import { avatar } from '../data/constants';
 import { Modal, ModalTitle, FieldLabel, ModalFooter } from '../components/Modal';
+import { Avatar } from '../components/Avatar';
 import { initials } from '../lib/format';
+import { PHOTO_TYPES } from '../lib/image';
 
 export function PlayerModal() {
   const s = useStore();
   const m = s.playerModal;
   const [confirmDel, setConfirmDel] = useState(false);
+  const [photoErr, setPhotoErr] = useState('');
   if (!m) return null;
-  const a = avatar(m.avi);
   const fullName = `${m.first} ${m.last}`.trim();
   const preview = (m.short.trim() || (fullName ? initials(fullName) : '?')).toUpperCase().slice(0, 3);
   const canSave = fullName.length > 0;
-  const p = useStore.getState().players.find((x) => x.id === m.id);
+  const p = s.players.find((x) => x.id === m.id);
   const canDelete = m.mode === 'edit' && !p?.locked;
   const isVerein = s.settings.appMode === 'verein';
+  const photo = p?.photo;
+  const canPhoto = isVerein && m.mode === 'edit' && !!m.id; // Upload braucht den vorhandenen Datensatz (PocketBase)
+
+  const onPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; e.target.value = ''; setPhotoErr('');
+    if (!f || !m.id) return;
+    if (!PHOTO_TYPES.includes(f.type)) { setPhotoErr('Nur PNG, JPG oder WebP.'); return; }
+    void s.uploadPhoto('player', m.id, f);
+  };
 
   return (
     <Modal onClose={() => s.closePlayerModal()} width={440} z={60}>
       <ModalTitle>{m.mode === 'edit' ? 'Spieler bearbeiten' : 'Neuer Spieler'}</ModalTitle>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 22 }}>
-        <div style={{ width: 64, height: 64, borderRadius: 16, background: a.bg, color: a.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 22, flexShrink: 0 }}>{preview}</div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="dh-btn" onClick={() => s.cyclePlayerAvi(-1)} title="Farbe zurück" style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 18, cursor: 'pointer', fontFamily: 'inherit' }}>‹</button>
-          <button className="dh-btn" onClick={() => s.cyclePlayerAvi(1)} title="Farbe weiter" style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 18, cursor: 'pointer', fontFamily: 'inherit' }}>›</button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 22 }}>
+        <Avatar photo={photo} short={preview} avi={m.avi} size={64} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button className="dh-btn" onClick={() => s.cyclePlayerAvi(-1)} title="Farbe zurück" style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 17, cursor: 'pointer', fontFamily: 'inherit' }}>‹</button>
+            <button className="dh-btn" onClick={() => s.cyclePlayerAvi(1)} title="Farbe weiter" style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 17, cursor: 'pointer', fontFamily: 'inherit' }}>›</button>
+            <span style={{ fontSize: 12, color: 'var(--text-4)' }}>Farbe</span>
+          </div>
+          {canPhoto ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <label className="dh-btn" style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '7px 12px', borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                {photo ? 'Foto ändern' : 'Foto wählen'}
+                <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onPhoto} style={{ display: 'none' }} />
+              </label>
+              {photo && <button onClick={() => m.id && s.clearPhoto('player', m.id)} style={{ background: 'transparent', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '7px 11px', borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Entfernen</button>}
+            </div>
+          ) : isVerein && m.mode === 'add' ? (
+            <span style={{ fontSize: 11, color: 'var(--text-5)' }}>Foto nach dem Speichern hinzufügen</span>
+          ) : null}
+          {photoErr && <span style={{ fontSize: 11, color: '#E0594B', fontWeight: 600 }}>{photoErr}</span>}
         </div>
-        <div style={{ fontSize: 12, color: 'var(--text-4)', lineHeight: 1.4 }}>Avatar-Farbe<br />wählen</div>
       </div>
       <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
         <div style={{ flex: 1 }}>

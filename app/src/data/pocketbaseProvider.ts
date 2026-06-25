@@ -7,6 +7,7 @@
 import PocketBase from 'pocketbase';
 import type { DataProvider, Snapshot, CollectionName, AuthUser, ProviderRecord } from './provider';
 import type { Settings, Role } from './types';
+import { DEVICE_LOCAL_SETTING_KEYS } from './constants';
 
 const PB_COLLECTION: Record<CollectionName, string> = {
   players: 'players',
@@ -50,34 +51,42 @@ export class PocketBaseProvider implements DataProvider {
       this.pb.collection('matches').getFullList(opt),
     ]);
 
-    // Vereinsweite Einstellungen (ein Datensatz)
+    // Vereinsweite Einstellungen (ein Datensatz) — Name, Logo UND die zentrale UI-/Counter-Konfiguration,
+    // damit alle Nutzer/Board-Rechner identisch aussehen. Nur Admins dürfen schreiben (API-Rule).
     let clubName: string | undefined;
     let clubLogo: string | null = null;
+    let settings: Partial<Settings> | null = null;
     try {
       const cfg = await this.pb.collection('club_config').getFirstListItem('', opt);
       this.clubCfgId = cfg.id;
       clubName = cfg.clubName as string | undefined;
       clubLogo = (cfg.clubLogo as string | null) || null;
+      settings = (cfg.settings as Partial<Settings> | null) || null;
     } catch { /* noch keine club_config */ }
 
-    // Persönliche Einstellungen des angemeldeten Nutzers
-    let settings: Partial<Settings> | null = null;
+    // Aus user_prefs kommt nur noch der persönliche Trainings-Fortschritt (gerät-/nutzerübergreifend).
     let trainingPlays: Record<string, number> = {};
     const me = this.pb.authStore.record;
     if (me) {
       try {
         const prefs = await this.pb.collection('user_prefs').getFirstListItem(`user="${me.id}"`, opt);
         this.prefsId = prefs.id;
-        settings = (prefs.settings as Partial<Settings> | null) || null;
         trainingPlays = (prefs.trainingPlays as Record<string, number> | null) || {};
       } catch { /* noch keine prefs für diesen Nutzer */ }
     }
 
     const as = <T>(v: unknown): T => (v as ProviderRecord[]).map((r) => clean(r)) as T;
+    // Profilfoto: PB liefert nur den Dateinamen → zu einer fertigen (Thumbnail-)URL auflösen, sonst Feld entfernen.
+    const withPhoto = <T>(v: unknown): T => (v as ProviderRecord[]).map((r) => {
+      const c = clean(r) as ProviderRecord;
+      if (r.photo) c.photo = this.pb.files.getURL(r, String(r.photo), { thumb: '160x160' });
+      else delete c.photo;
+      return c;
+    }) as T;
     return {
-      players: as<Snapshot['players']>(players),
+      players: withPhoto<Snapshot['players']>(players),
       teams: as<Snapshot['teams']>(teams),
-      accounts: as<Snapshot['accounts']>(accounts),
+      accounts: withPhoto<Snapshot['accounts']>(accounts),
       leagues: as<Snapshot['leagues']>(leagues),
       events: as<Snapshot['events']>(events),
       matches: as<Snapshot['matches']>(matches),
@@ -90,6 +99,7 @@ export class PocketBaseProvider implements DataProvider {
 
   async createRecord(coll: CollectionName, record: ProviderRecord): Promise<ProviderRecord> {
     const body = { ...record };
+    delete body.photo; // Foto ist ein File-Feld und wird ausschließlich über uploadPhoto/clearPhoto gesetzt.
     if (coll === 'accounts') {
       // Auth-Collection: PocketBase verlangt password + passwordConfirm bei der Anlage.
       const pw = (body.password as string) || '';
@@ -101,6 +111,7 @@ export class PocketBaseProvider implements DataProvider {
 
   async updateRecord(coll: CollectionName, id: string, patch: ProviderRecord): Promise<ProviderRecord> {
     const body = { ...patch };
+    delete body.photo; // Foto-File-Feld nicht über den generischen Pfad überschreiben (sonst URL-String → Fehler).
     // Beim Bearbeiten kein leeres Passwort mitsenden (würde PB ablehnen).
     if (coll === 'accounts' && !body.password) { delete body.password; delete body.passwordConfirm; }
     else if (coll === 'accounts' && body.password) body.passwordConfirm = body.password;
@@ -111,25 +122,28 @@ export class PocketBaseProvider implements DataProvider {
     await this.pb.collection(PB_COLLECTION[coll]).delete(id);
   }
 
+  // Profilfoto hochladen (File-Feld). PocketBase erzeugt Thumbnails on-demand.
+  async uploadPhoto(coll: CollectionName, id: string, file: Blob): Promise<void> {
+    const f = file instanceof File ? file : new File([file], 'avatar.png', { type: file.type || 'image/png' });
+    await this.pb.collection(PB_COLLECTION[coll]).update(id, { photo: f });
+  }
+  async clearPhoto(coll: CollectionName, id: string): Promise<void> {
+    await this.pb.collection(PB_COLLECTION[coll]).update(id, { photo: null });
+  }
+
   async saveSettings(settings: Settings): Promise<void> {
     const me = this.pb.authStore.record;
-    if (!me) return;
-    // Persönliche UI-Einstellungen → user_prefs (clubName/Logo werden hier ignoriert, kommen aus club_config)
-    const body = { user: me.id, settings: settings as unknown };
-    if (this.prefsId) {
-      await this.pb.collection('user_prefs').update(this.prefsId, body);
-    } else {
-      const rec = await this.pb.collection('user_prefs').create(body);
-      this.prefsId = rec.id;
-    }
-    // Vereinsweite Werte → club_config (nur Admin darf laut API-Rule schreiben)
-    if (me.role === 'admin') {
-      const cfg = { clubName: settings.clubName, clubLogo: settings.clubLogo };
-      try {
-        if (this.clubCfgId) await this.pb.collection('club_config').update(this.clubCfgId, cfg);
-        else { const rec = await this.pb.collection('club_config').create(cfg); this.clubCfgId = rec.id; }
-      } catch { /* keine Rechte / Collection fehlt → still ignorieren */ }
-    }
+    // Einstellungen sind vereinsweit zentral → nur Admins pflegen sie. Andere Rollen erhalten sie
+    // beim Laden read-only; ein Schreibversuch würde an der API-Rule scheitern, daher hier abbrechen.
+    if (!me || me.role !== 'admin') return;
+    // Gerätelokale Schlüssel nicht zentral speichern (Verbindung, Modus, Geräteart, Ansichtsfilter).
+    const central: Partial<Settings> = { ...settings };
+    for (const k of DEVICE_LOCAL_SETTING_KEYS) delete central[k];
+    const cfg = { clubName: settings.clubName, clubLogo: settings.clubLogo, settings: central as unknown };
+    try {
+      if (this.clubCfgId) await this.pb.collection('club_config').update(this.clubCfgId, cfg);
+      else { const rec = await this.pb.collection('club_config').create(cfg); this.clubCfgId = rec.id; }
+    } catch { /* keine Rechte / Collection fehlt → still ignorieren */ }
   }
 
   async saveTrainingPlays(plays: Record<string, number>): Promise<void> {

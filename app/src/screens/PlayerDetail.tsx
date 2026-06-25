@@ -1,6 +1,6 @@
 import { useStore } from '../store/useStore';
-import { avatar } from '../data/constants';
 import { aggregateFor } from '../store/selectors';
+import { Avatar } from '../components/Avatar';
 import { IconBack } from '../lib/icons';
 import { useIsPhone } from '../lib/useIsPhone';
 
@@ -8,7 +8,6 @@ export function PlayerDetail() {
   const s = useStore();
   const player = s.players.find((p) => p.id === s.selectedPlayerId) || s.players[0];
   if (!player) { return <div style={{ padding: '28px 32px' }}>Kein Spieler ausgewählt.</div>; }
-  const a = avatar(player.avi);
   const agg = aggregateFor(player.name, s.matches);
   const isPhone = useIsPhone();
 
@@ -35,7 +34,7 @@ export function PlayerDetail() {
       </button>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 24 }}>
-        <div style={{ width: 78, height: 78, borderRadius: 20, background: a.bg, color: a.fg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 26 }}>{player.short}</div>
+        <Avatar photo={player.photo} short={player.short} avi={player.avi} size={78} />
         <div style={{ flex: 1 }}>
           <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, letterSpacing: '-.02em' }}>{player.name}</h1>
           <div style={{ fontSize: 14, color: 'var(--text-3)', marginTop: 4 }}>Spielerprofil · {agg.games} {agg.games === 1 ? 'Spiel' : 'Spiele'}</div>
