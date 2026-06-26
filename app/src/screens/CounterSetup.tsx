@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { Avatar } from '../components/Avatar';
 import { SearchInput } from '../components/SearchInput';
 import { IconTarget } from '../lib/icons';
+import { formatCombo } from '../lib/shortcut';
 import { useIsPhone } from '../lib/useIsPhone';
 
 const START_OPTS = [301, 501, 701, 1001];
@@ -12,6 +13,7 @@ const SET_OPTS = [3, 5];
 export function CounterSetup() {
   const s = useStore();
   const su = s.setup;
+  const cfg = s.settings;
   const accent = s.settings.accent;
   // Standard-Spieler (locked = "Spieler 1/2") immer oben in der Auswahl für ein neues Spiel.
   const players = useMemo(() => {
@@ -126,13 +128,14 @@ export function CounterSetup() {
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '8px 22px', marginBottom: 18 }}>
         <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', padding: '16px 0 12px' }}>Schnellstart</div>
         <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : '1fr 1fr', gap: 12, paddingBottom: 18 }}>
-          {[{ name: '501 · Double Out · Best of 5', bestOf: 5 }, { name: '501 · Double Out · Best of 3', bestOf: 3 }].map((g) => (
-            <button key={g.name} className="dh-hover-border" onClick={() => s.quickStart({ startScore: 501, doubleOut: true, outMode: 'double', doubleIn: false, unit: 'legs', bestOf: g.bestOf })} style={{ display: 'flex', alignItems: 'center', gap: 13, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '14px 16px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
+          {[{ name: '501 · Double Out · Best of 5', bestOf: 5, combo: cfg.quickBo5Key || 'alt+5' }, { name: '501 · Double Out · Best of 3', bestOf: 3, combo: cfg.quickBo3Key || 'alt+3' }].map((g) => (
+            <button key={g.name} className="dh-hover-border" onClick={() => s.quickStart({ startScore: 501, doubleOut: true, outMode: 'double', doubleIn: false, unit: 'legs', bestOf: g.bestOf })} title={`Schnellstart (${formatCombo(g.combo)})`} style={{ display: 'flex', alignItems: 'center', gap: 13, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '14px 16px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
               <div style={{ width: 38, height: 38, borderRadius: 10, background: 'color-mix(in srgb, var(--accent) 14%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--accent)' }}><IconTarget size={18} sw={2.2} /></div>
-              <div style={{ minWidth: 0 }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>{g.name}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>{players[0]?.name} vs {players[1]?.name}</div>
               </div>
+              <span style={{ flexShrink: 0, fontFamily: "'JetBrains Mono',monospace", fontSize: 11, fontWeight: 700, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '3px 8px' }}>{formatCombo(g.combo)}</span>
             </button>
           ))}
         </div>

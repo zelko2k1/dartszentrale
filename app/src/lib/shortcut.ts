@@ -25,9 +25,9 @@ export function comboFromEvent(e: KeyboardEvent): string | null {
   return parts.join('+');
 }
 
-// Only Strg + Alt + a single letter/digit is allowed.
+// Alt + <Buchstabe/Ziffer> (optional zusätzlich Strg) ist erlaubt.
 export function isValidCombo(combo: string): boolean {
-  return /^ctrl\+alt\+[a-z0-9]$/.test(combo);
+  return /^(ctrl\+)?alt\+[a-z0-9]$/.test(combo);
 }
 
 const LABELS: Record<string, string> = { ctrl: 'Strg', alt: 'Alt', shift: 'Shift', meta: '⌘' };

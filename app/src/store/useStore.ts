@@ -40,6 +40,18 @@ const LS = {
   devui: 'dartshub_devui', // gerätelokale UI-Vorlieben (Eingabe-Modus, Hell/Dunkel, Größen) – Mischbetrieb PC/Tablet
 };
 
+// Tastenkürzel auf gültige Werte bringen + die früheren Strg+Alt-Standards auf die neuen Alt-Standards heben.
+// Wird in init UND nach jedem Server-Snapshot angewandt (club_config-Werte würden die Migration sonst überschreiben).
+function normalizeShortcuts(s: Settings) {
+  const re = /^(ctrl\+)?alt\+[a-z0-9]$/;
+  if (!re.test(s.newGameKey || '')) s.newGameKey = 'alt+n';
+  if (!re.test(s.quickBo5Key || '')) s.quickBo5Key = 'alt+5';
+  if (!re.test(s.quickBo3Key || '')) s.quickBo3Key = 'alt+3';
+  if (s.newGameKey === 'ctrl+alt+n') s.newGameKey = 'alt+n';
+  if (s.quickBo5Key === 'ctrl+alt+5') s.quickBo5Key = 'alt+5';
+  if (s.quickBo3Key === 'ctrl+alt+3') s.quickBo3Key = 'alt+3';
+}
+
 // Schreibt die gerätelokalen UI-Vorlieben (DEVICE_UI_KEYS) in den eigenen localStorage-Key – diese Settings
 // gelten NUR auf diesem Gerät und werden bewusst nicht ins vereinsweite club_config synchronisiert.
 function writeDevUi(settings: Settings) {
@@ -428,10 +440,8 @@ export const useStore = create<AppState>((set, get) => ({
     settings.scoreColor = settings.mode === 'light' ? settings.scoreColorLight : settings.scoreColorDark;
     settings.legColor = settings.mode === 'light' ? settings.legColorLight : settings.legColorDark;
     // shortcuts must be Strg+Alt+<letter/digit> — reset any legacy/invalid value
-    const reCombo = /^ctrl\+alt\+[a-z0-9]$/;
-    if (!reCombo.test(settings.newGameKey || '')) settings.newGameKey = 'ctrl+alt+n';
-    if (!reCombo.test(settings.quickBo5Key || '')) settings.quickBo5Key = 'ctrl+alt+5';
-    if (!reCombo.test(settings.quickBo3Key || '')) settings.quickBo3Key = 'ctrl+alt+3';
+    // Kürzel = Alt + Buchstabe/Ziffer (optional Strg). Standard Alt+N / Alt+5 / Alt+3; alte Strg+Alt-Standards migrieren.
+    normalizeShortcuts(settings);
     if (!savedSettings || savedSettings.appModeManual !== true) settings.appMode = detected;
     settings.appModeDetected = detected;
 
@@ -1459,6 +1469,7 @@ async function applySnapshot(get: () => AppState, set: SetFn) {
     merged.accent = (lightMode ? merged.accentLight : merged.accentDark) || merged.accent;
     merged.scoreColor = lightMode ? merged.scoreColorLight : merged.scoreColorDark;
     merged.legColor = lightMode ? merged.legColorLight : merged.legColorDark;
+    normalizeShortcuts(merged); // club_config könnte noch die alten Strg+Alt-Standards tragen → hier heben
     if (snap.clubName !== undefined) merged.clubName = snap.clubName;
     if (snap.clubLogo !== undefined) merged.clubLogo = snap.clubLogo;
     set({

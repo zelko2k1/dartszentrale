@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { perm } from '../store/selectors';
+import { formatCombo } from '../lib/shortcut';
 import { SearchInput } from './SearchInput';
 
 interface Cmd { label: string; hint?: string; run: () => void; }
@@ -24,15 +25,15 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
       return [
         { label: 'Spiel', hint: 'Alt+1', run: () => { s.go('setup'); onClose(); } },
         { label: 'Training', hint: 'Alt+2', run: go('training') },
-        { label: 'Einstellungen', hint: 'Alt+3', run: go('settings') },
+        { label: 'Einstellungen', hint: 'Alt+E', run: go('settings') },
       ];
     }
     const list: (Cmd | false)[] = [
       { label: 'Dashboard', run: go('dashboard') },
-      p.play && { label: 'Neues Spiel', hint: 'Strg+Alt+N', run: () => { s.requestNew({ kind: 'setup' }); onClose(); } },
+      p.play && { label: 'Neues Spiel', hint: formatCombo(s.settings.newGameKey || 'alt+n'), run: () => { s.requestNew({ kind: 'setup' }); onClose(); } },
       p.play && gameActive && { label: 'Laufendes Spiel', run: go('counter') },
-      p.play && { label: 'Schnellstart 501 · Bo5', run: () => { s.requestNew({ kind: 'preset', preset: { startScore: 501, unit: 'legs', bestOf: 5, outMode: 'double', doubleOut: true, doubleIn: false } }); onClose(); } },
-      p.play && { label: 'Schnellstart 501 · Bo3', run: () => { s.requestNew({ kind: 'preset', preset: { startScore: 501, unit: 'legs', bestOf: 3, outMode: 'double', doubleOut: true, doubleIn: false } }); onClose(); } },
+      p.play && { label: 'Schnellstart 501 · Bo5', hint: formatCombo(s.settings.quickBo5Key || 'alt+5'), run: () => { s.requestNew({ kind: 'preset', preset: { startScore: 501, unit: 'legs', bestOf: 5, outMode: 'double', doubleOut: true, doubleIn: false } }); onClose(); } },
+      p.play && { label: 'Schnellstart 501 · Bo3', hint: formatCombo(s.settings.quickBo3Key || 'alt+3'), run: () => { s.requestNew({ kind: 'preset', preset: { startScore: 501, unit: 'legs', bestOf: 3, outMode: 'double', doubleOut: true, doubleIn: false } }); onClose(); } },
       p.play && { label: 'Trainingsspiele', run: go('training') },
       { label: 'Kalender', run: go('calendar') },
       isVerein && { label: 'Ligen', run: go('leagues') },

@@ -51,9 +51,9 @@ function ShortcutRecorder({ value, accent, fallback, onChange }: { value: string
   }, [recording, onChange]);
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-      {warn && <span style={{ fontSize: 11, color: '#E0594B', fontWeight: 600 }}>Nur Strg + Alt + Buchstabe/Ziffer</span>}
+      {warn && <span style={{ fontSize: 11, color: '#E0594B', fontWeight: 600 }}>Alt + Buchstabe/Ziffer (optional Strg)</span>}
       <button onClick={() => { setRecording((r) => !r); setWarn(false); }} style={{ minWidth: 140, fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 800, color: recording ? accent : 'var(--text-2)', background: 'var(--btn)', border: `1px solid ${recording ? accent : 'var(--border-2)'}`, borderRadius: 8, padding: '8px 14px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-        {recording ? 'Strg + Alt + Taste …' : formatCombo(value)}
+        {recording ? 'Alt + Taste …' : formatCombo(value)}
       </button>
       <button onClick={() => { onChange(fallback); setRecording(false); setWarn(false); }} title={`Auf ${formatCombo(fallback)} zurücksetzen`} className="dh-btn" style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>↺</button>
     </div>
@@ -288,7 +288,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         // Am Board nur als Info: Tastenkürzel legt der Verein zentral fest. Auf einem Desktop-Board jederzeit per Tastatur nutzbar.
         <Row label="Tastenkürzel" sub="Legt der Verein zentral fest. Am Board-PC im Eingabe-Modus Desktop direkt per Tastatur nutzbar." top>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
-            {([['Neues Spiel', cfg.newGameKey || 'ctrl+alt+n'], ['Schnellstart Bo5', cfg.quickBo5Key || 'ctrl+alt+5'], ['Schnellstart Bo3', cfg.quickBo3Key || 'ctrl+alt+3']] as const).map(([label, combo]) => (
+            {([['Neues Spiel', cfg.newGameKey || 'alt+n'], ['Schnellstart Bo5', cfg.quickBo5Key || 'alt+5'], ['Schnellstart Bo3', cfg.quickBo3Key || 'alt+3']] as const).map(([label, combo]) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{label}</span>
                 <kbd style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12.5, fontWeight: 700, color: accent, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '4px 10px' }}>{formatCombo(combo)}</kbd>
@@ -310,14 +310,14 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
               </div>
             ))}
           </Row>
-          <Row label="Neues Spiel — Tastenkürzel" sub="Global. Startet jederzeit ein neues Spiel (mit Spielerauswahl); läuft gerade ein Spiel, wird vorher nachgefragt. Nur Strg + Alt + Buchstabe/Ziffer.">
-            {ed('newGameKey', <ShortcutRecorder value={cfg.newGameKey || 'ctrl+alt+n'} accent={accent} fallback="ctrl+alt+n" onChange={(combo) => set('newGameKey', combo)} />)}
+          <Row label="Neues Spiel — Tastenkürzel" sub="Global. Startet jederzeit ein neues Spiel (mit Spielerauswahl); läuft gerade ein Spiel, wird vorher nachgefragt. Alt + Buchstabe/Ziffer (optional zusätzlich Strg).">
+            {ed('newGameKey', <ShortcutRecorder value={cfg.newGameKey || 'alt+n'} accent={accent} fallback="alt+n" onChange={(combo) => set('newGameKey', combo)} />)}
           </Row>
           <Row label="Schnellstart 501 · Double Out · Best of 5" sub="Global. Startet sofort ein 501-Spiel (Double Out, Best of 5) mit den zuletzt gewählten Spielern.">
-            {ed('quickBo5Key', <ShortcutRecorder value={cfg.quickBo5Key || 'ctrl+alt+5'} accent={accent} fallback="ctrl+alt+5" onChange={(combo) => set('quickBo5Key', combo)} />)}
+            {ed('quickBo5Key', <ShortcutRecorder value={cfg.quickBo5Key || 'alt+5'} accent={accent} fallback="alt+5" onChange={(combo) => set('quickBo5Key', combo)} />)}
           </Row>
           <Row label="Schnellstart 501 · Double Out · Best of 3" sub="Global. Startet sofort ein 501-Spiel (Double Out, Best of 3) mit den zuletzt gewählten Spielern.">
-            {ed('quickBo3Key', <ShortcutRecorder value={cfg.quickBo3Key || 'ctrl+alt+3'} accent={accent} fallback="ctrl+alt+3" onChange={(combo) => set('quickBo3Key', combo)} />)}
+            {ed('quickBo3Key', <ShortcutRecorder value={cfg.quickBo3Key || 'alt+3'} accent={accent} fallback="alt+3" onChange={(combo) => set('quickBo3Key', combo)} />)}
           </Row>
         </>
       )}

@@ -72,18 +72,19 @@ export default function App() {
       const typing = !!tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT' || tgt.isContentEditable);
       // Befehls-Palette: Strg+K (auch beim Tippen, um sie zu schließen).
       if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); setPaletteOpen((v) => !v); return; }
-      // Kiosk-Tabs per Alt+1/2/3 (nicht im laufenden Spiel, nicht beim Tippen).
+      // Alt-Kürzel feuern bewusst AUCH im Suchfeld (Alt+Taste erzeugt keinen Text) – Setup ist tastatur-first.
+      const combo = comboFromEvent(e);
+      // Kiosk-Tabs: Alt+1 Spiel · Alt+2 Training · Alt+E Einstellungen (nicht im laufenden Spiel).
       const me = st.accounts.find((a) => a.id === st.session) || null;
       const inKiosk = cfg.appMode === 'verein' && !!st.session && !!me?.isBoard && me?.boardNumber != null && !st.kioskUnlocked;
-      if (inKiosk && e.altKey && !e.ctrlKey && !e.metaKey && !typing && ['1', '2', '3'].includes(e.key)) {
+      if (inKiosk && combo && (combo === 'alt+1' || combo === 'alt+2' || combo === 'alt+e')) {
         if (st.screen === 'counter' || st.screen === 'trainGame') return; // laufendes Spiel nicht stören
         e.preventDefault();
-        st.go(e.key === '1' ? 'setup' : e.key === '2' ? 'training' : 'settings');
+        st.go(combo === 'alt+1' ? 'setup' : combo === 'alt+2' ? 'training' : 'settings');
         return;
       }
-      const combo = typing ? null : comboFromEvent(e);
       if (combo) {
-        if (combo === (cfg.newGameKey || 'ctrl+alt+n')) { e.preventDefault(); st.requestNew({ kind: 'setup' }); return; }
+        if (combo === (cfg.newGameKey || 'alt+n')) { e.preventDefault(); st.requestNew({ kind: 'setup' }); return; }
         if (cfg.quickBo5Key && combo === cfg.quickBo5Key) { e.preventDefault(); st.requestNew({ kind: 'preset', preset: { startScore: 501, unit: 'legs', bestOf: 5, outMode: 'double', doubleOut: true, doubleIn: false } }); return; }
         if (cfg.quickBo3Key && combo === cfg.quickBo3Key) { e.preventDefault(); st.requestNew({ kind: 'preset', preset: { startScore: 501, unit: 'legs', bestOf: 3, outMode: 'double', doubleOut: true, doubleIn: false } }); return; }
       }
@@ -130,7 +131,7 @@ export default function App() {
       <div style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
         {kioskTab('Spiel', !kioskInTraining && !kioskInSettings, () => s.go('setup'), 'Alt+1')}
         {kioskTab('Training', kioskInTraining, () => s.go('training'), 'Alt+2')}
-        {kioskTab('Einstellungen', kioskInSettings, () => s.go('settings'), 'Alt+3')}
+        {kioskTab('Einstellungen', kioskInSettings, () => s.go('settings'), 'Alt+E')}
       </div>
       <div style={{ flex: 1 }} />
       <button onClick={() => { setExitForm({ email: '', pw: '', err: '', busy: false }); setExitOpen(true); }}
