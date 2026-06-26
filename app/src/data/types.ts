@@ -15,6 +15,27 @@ export interface Season {
   endDate?: string;         // YYYY-MM-DD (optional)
 }
 
+// Eingefrorener Abschluss-Stand einer Saison (beim „Saison abschließen" erzeugt). Bleibt auch nach
+// einem späteren Auslagern (Phase 4) in der DB, damit die App die History günstig anzeigen kann.
+export interface SeasonSnapshotStandingRow {
+  id: string; name: string; own: boolean;
+  sp: number; s: number; u: number; n: number; lf: number; la: number; pts: number;
+}
+export interface SeasonSnapshotPlayerStat {
+  playerId?: string; name: string;
+  games: number; wins: number; losses: number; avg: number;
+  c180: number; c140: number; c100: number; c60: number; high: number; shortLegs: number;
+}
+export interface SeasonSnapshot {
+  id: string;
+  seasonId: string;
+  seasonName: string;
+  standings: { leagueId: string; leagueName: string; kind: TeamKind; rows: SeasonSnapshotStandingRow[] }[];
+  playerStats: SeasonSnapshotPlayerStat[];
+  teamRosters: { teamId: string; name: string; kind: TeamKind; captainId: string | null; memberIds: string[] }[];
+  meta: { generatedAt: string; matchCount: number; teamCount: number; leagueCount: number };
+}
+
 export interface Player {
   id: string;
   name: string;

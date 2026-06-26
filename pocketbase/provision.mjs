@@ -49,6 +49,13 @@ const BASE_COLLECTIONS = [
     fields: [text('name'), text('status'), text('startDate'), text('endDate')],
   },
   {
+    // Eingefrorener Abschluss-Stand einer Saison (beim „Saison abschließen" erzeugt). Schreiben nur Admin.
+    name: 'season_snapshots', type: 'base',
+    listRule: LOGGED_IN, viewRule: LOGGED_IN,
+    createRule: ADMIN, updateRule: ADMIN, deleteRule: ADMIN,
+    fields: [text('seasonId'), text('seasonName'), json('standings'), json('playerStats'), json('teamRosters'), json('meta')],
+  },
+  {
     name: 'teams', type: 'base', ...editorRules,
     // kind = 'league' (Standard) | 'cup' (Pokalmannschaft). viceCaptainIds: bis zu 2 Ersatzkapitäne.
     fields: [text('name'), text('league'), json('memberIds'), json('captainId'), json('viceCaptainIds'), text('kind'), text('seasonId')],

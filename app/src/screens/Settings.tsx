@@ -119,6 +119,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const [dataMsg, setDataMsg] = useState('');
   const [pbUrlDraft, setPbUrlDraft] = useState(cfg.pbUrl || '');
   const [pbMsg, setPbMsg] = useState('');
+  const [closeConfirm, setCloseConfirm] = useState(false);
   const [activeKey, setActiveKey] = useState<string>('eingabe');
 
   const savePbUrl = () => {
@@ -442,10 +443,51 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     </Section>
   );
 
+  const activeSeasonObj = s.seasons.find((x) => x.id === s.activeSeasonId) || null;
+  const archivedSeasons = s.seasons.filter((x) => x.status === 'archived');
+  const saisonNode = (
+    <Section title="Saison">
+      <Row label="Aktive Saison" sub="Neue Ligen, Mannschaften, Termine und Spiele werden dieser Saison zugeordnet.">
+        <span style={{ fontSize: 14, fontWeight: 800, color: accent }}>{activeSeasonObj ? activeSeasonObj.name : '—'}</span>
+      </Row>
+      <Row label="Saison-Daten sichern" sub="Lädt die komplette aktive Saison (Ligen, Mannschaften, Termine, Spiele + Abschluss-Stand) als JSON-Datei herunter. Ändert nichts.">
+        <button className="dh-btn" onClick={() => s.exportSeason()} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Exportieren</button>
+      </Row>
+      <Row label="Saison abschließen" sub="Friert Tabellen & Statistiken als Schnappschuss ein, lädt eine Sicherung herunter, archiviert die Saison (read-only) und legt automatisch eine neue, leere Folgesaison an.">
+        {!closeConfirm ? (
+          <button onClick={() => setCloseConfirm(true)} style={{ background: 'transparent', border: '1px solid rgba(242,184,41,.5)', color: '#F2B829', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Abschließen …</button>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+            <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600, textAlign: 'right', maxWidth: 320 }}>
+              „{activeSeasonObj ? activeSeasonObj.name : ''}" wird archiviert (bleibt read-only sichtbar) und eine neue Saison gestartet. Eine Sicherungsdatei wird heruntergeladen.
+            </span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setCloseConfirm(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
+              <button onClick={() => { s.closeSeason(); setCloseConfirm(false); }} style={{ background: '#F2B829', border: 'none', color: '#1a1206', padding: '9px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Jetzt abschließen</button>
+            </div>
+          </div>
+        )}
+      </Row>
+      {archivedSeasons.length > 0 && (
+        <Row label="Archivierte Saisons" sub="Über den Saison-Umschalter links als Lesemodus aufrufbar. Zum Sichern auswählen und exportieren.">
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+            {archivedSeasons.map((se) => (
+              <div key={se.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-2)' }}>{se.name}</span>
+                <button className="dh-btn" onClick={() => s.exportSeason(se.id)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Export</button>
+              </div>
+            ))}
+          </div>
+        </Row>
+      )}
+    </Section>
+  );
+
   // Rubriken als Buttons. Verein/Benutzer/Board nur im Vereinsmodus; sonst bleibt nur die Nutzungsart + Counter-Rubriken.
   const categories: { key: string; label: string; show: boolean; node: ReactNode }[] = [
     { key: 'modus', label: 'Nutzungsart', show: p.manageClub, node: dim(modusNode) },
     { key: 'verein', label: 'Verein', show: isVerein && p.manageClub, node: vereinNode },
+    { key: 'saison', label: 'Saison', show: isVerein && p.manageClub, node: saisonNode },
     { key: 'benutzer', label: 'Benutzer & Rechte', show: isVerein && p.manageUsers, node: benutzerNode },
     { key: 'board', label: 'Board-Rechner', show: isVerein && p.manageUsers, node: boardNode },
     { key: 'konto', label: 'Mein Konto', show: isVerein && !!s.session && !s.accounts.find((a) => a.id === s.session)?.isBoard, node: kontoNode },

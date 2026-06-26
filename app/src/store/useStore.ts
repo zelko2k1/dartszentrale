@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type {
-  Player, Team, Account, League, Fixture, EventItem, Match, Season, Settings, Screen,
+  Player, Team, Account, League, Fixture, EventItem, Match, Season, SeasonSnapshot, Settings, Screen,
   GamePlayer, Throw, Role, MatchPlayerStat, LineupPosition, FixtureLineup, LineupSegment, TeamKind,
 } from '../data/types';
 import { AVATARS, DEVICE_LOCAL_SETTING_KEYS, DEVICE_UI_KEYS, LEAGUE_FORMAT_PRESETS } from '../data/constants';
@@ -15,7 +15,7 @@ import {
 import {
   DEFAULT_SETTINGS, seedPlayers, seedTeams, seedAccounts, seedLeagues, seedEvents, seedSeasons, withDefaultPlayers,
 } from '../data/seed';
-import { activeSeason as pickActiveSeason } from './selectors';
+import { activeSeason as pickActiveSeason, computeStandings, aggregateFor } from './selectors';
 import {
   newTrainGame, applyTurn as tApplyTurn, trainMeta,
   type TrainGame, type TrainPlayer, type TurnInput,
@@ -37,6 +37,7 @@ const LS = {
   session: 'dartshub_session',
   leagues: 'dartshub_leagues',
   seasons: 'dartshub_seasons',
+  seasonSnapshots: 'dartshub_season_snapshots',
   pburl: 'dartshub_pburl',
   device: 'dartshub_device', // gerätelokale Konfiguration (Board-/Kiosk-Modus, Board-Bezeichnung)
   devui: 'dartshub_devui', // gerätelokale UI-Vorlieben (Eingabe-Modus, Hell/Dunkel, Größen) – Mischbetrieb PC/Tablet
@@ -145,6 +146,7 @@ export interface AppState {
   // Saisons + aktive/angezeigte Saison. activeSeasonId = laufende Saison (neue Datensätze hängen hier).
   // viewSeasonId = aktuell betrachtete Saison (Umschalter); ≠ active → Lesemodus (Soft-Archiv).
   seasons: Season[];
+  seasonSnapshots: SeasonSnapshot[];
   activeSeasonId: string | null;
   viewSeasonId: string | null;
 
@@ -208,6 +210,10 @@ export interface AppState {
 
   // Saison-Umschalter (Soft-Archiv): betrachtete Saison wechseln.
   setViewSeason: (seasonId: string) => void;
+  // Aktuelle (aktive) Saison als JSON-Bundle herunterladen (Wegsicherung, nicht-destruktiv).
+  exportSeason: (seasonId?: string) => void;
+  // Saison abschließen: Snapshot einfrieren + Bundle herunterladen + archivieren + Nachfolge-Saison anlegen.
+  closeSeason: () => void;
 
   // settings
   setSetting: <K extends keyof Settings>(key: K, val: Settings[K]) => void;
@@ -387,6 +393,7 @@ export const useStore = create<AppState>((set, get) => ({
   events: [],
   matches: [],
   seasons: [],
+  seasonSnapshots: [],
   activeSeasonId: null,
   viewSeasonId: null,
 
@@ -521,8 +528,9 @@ export const useStore = create<AppState>((set, get) => ({
     if (mig.tc) { teams = mig.teams; write(LS.teams, teams); }
     if (mig.ec) { events = mig.events; write(LS.events, events); }
     if (mig.mc) { matches = mig.matches; write(LS.matches, matches); }
+    const seasonSnapshots = read<SeasonSnapshot[]>(LS.seasonSnapshots, []);
 
-    set({ settings, provider, pbMode: false, players, teams, accounts, leagues, events, matches, seasons, activeSeasonId, viewSeasonId: activeSeasonId, session, trainingPlays });
+    set({ settings, provider, pbMode: false, players, teams, accounts, leagues, events, matches, seasons, seasonSnapshots, activeSeasonId, viewSeasonId: activeSeasonId, session, trainingPlays });
   },
 
   reloadFromProvider() { void applySnapshot(get, set); },
@@ -531,6 +539,37 @@ export const useStore = create<AppState>((set, get) => ({
   // Betrachtete Saison wechseln (nur Lese-/Filteransicht; ändert nicht die aktive Saison).
   setViewSeason(seasonId) {
     set((st) => st.seasons.some((s) => s.id === seasonId) ? { viewSeasonId: seasonId, selectedLeague: 0, selectedTeam: 0 } : {});
+  },
+
+  // Saison als JSON-Bundle herunterladen (Wegsicherung) — ändert nichts.
+  exportSeason(seasonId) {
+    const st = get();
+    const season = st.seasons.find((s) => s.id === (seasonId || st.activeSeasonId));
+    if (!season) return;
+    const snapshot = buildSeasonSnapshot(season, st);
+    downloadJson(bundleFilename(season), buildSeasonBundle(season, snapshot, st));
+  },
+
+  // Saison abschließen: Snapshot einfrieren + Bundle herunterladen + archivieren + Nachfolge-Saison anlegen.
+  // Daten bleiben in der DB (Soft-Archiv, read-only); die Wegsicherung ist die heruntergeladene Datei.
+  closeSeason() {
+    const st = get();
+    const active = st.seasons.find((s) => s.id === st.activeSeasonId);
+    if (!active || active.status !== 'active') return;
+    const snapshot = buildSeasonSnapshot(active, st);
+    // Wegsicherung sofort herunterladen (vor jeder späteren Auslagerung).
+    downloadJson(bundleFilename(active), buildSeasonBundle(active, snapshot, st));
+    const today = new Date().toISOString().slice(0, 10);
+    const archived: Season = { ...active, status: 'archived', endDate: active.endDate || today };
+    const newSeason: Season = { id: uid(), name: nextSeasonName(active.name), status: 'active', startDate: today };
+    const seasons = st.seasons.map((s) => s.id === active.id ? archived : s).concat(newSeason);
+    const seasonSnapshots = [...st.seasonSnapshots, snapshot];
+    persist(st, set, LS.seasonSnapshots, seasonSnapshots, (p) => p.createRecord('season_snapshots', snapshot as unknown as ProviderRecord));
+    persist(st, set, LS.seasons, seasons, (p) => Promise.all([
+      p.updateRecord('seasons', archived.id, { status: 'archived', endDate: archived.endDate } as unknown as ProviderRecord),
+      p.createRecord('seasons', newSeason as unknown as ProviderRecord),
+    ]));
+    set({ seasons, seasonSnapshots, activeSeasonId: newSeason.id, viewSeasonId: newSeason.id, selectedLeague: 0, selectedTeam: 0 });
   },
 
   go(screen) { set({ screen }); },
@@ -1570,6 +1609,67 @@ function migrateSeasonData(
   return { leagues, teams, events, matches, lc, tc, ec, mc };
 }
 
+// ── Saison-Abschluss (Phase 2): Snapshot, Export-Bundle, Nachfolge-Name ──
+// Nächster Saison-Name: "2025/26" → "2026/27"; "2025" → "2026"; sonst Anhängsel.
+function nextSeasonName(name: string): string {
+  const m = name.match(/^(\d{4})\s*\/\s*(\d{2,4})$/);
+  if (m) { const y = parseInt(m[1], 10) + 1; return `${y}/${String((y + 1) % 100).padStart(2, '0')}`; }
+  const y4 = name.match(/^(\d{4})$/);
+  if (y4) return String(parseInt(y4[1], 10) + 1);
+  return `${name} (neu)`;
+}
+
+// Browser-Download eines JSON-Objekts (Export-Bundle / Wegsicherung).
+function downloadJson(filename: string, data: unknown): void {
+  try {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (e) { console.error('[export]', e); }
+}
+
+const ofSeason = <T extends { seasonId?: string }>(items: T[], sid: string, asid: string | null): T[] =>
+  items.filter((x) => (x.seasonId ?? asid) === sid);
+
+// Eingefrorenen Abschluss-Stand einer Saison aus dem aktuellen Datenbestand berechnen.
+function buildSeasonSnapshot(season: Season, st: AppState): SeasonSnapshot {
+  const sid = season.id; const asid = st.activeSeasonId;
+  const sLeagues = ofSeason(st.leagues, sid, asid);
+  const sTeams = ofSeason(st.teams, sid, asid);
+  const sMatches = ofSeason(st.matches, sid, asid);
+  const standings = sLeagues.map((l) => ({ leagueId: l.id, leagueName: l.name, kind: (l.kind === 'cup' ? 'cup' : 'league') as TeamKind, rows: computeStandings(l) }));
+  const playerStats = st.players.map((p) => {
+    const a = aggregateFor(p.name, sMatches);
+    return { playerId: p.id, name: p.name, games: a.games, wins: a.wins, losses: a.losses, avg: a.avg, c180: a.c180, c140: a.c140, c100: a.c100, c60: a.c60, high: a.high, shortLegs: a.shortLegs };
+  }).filter((x) => x.games > 0);
+  const teamRosters = sTeams.map((t) => ({ teamId: t.id, name: t.name, kind: (t.kind === 'cup' ? 'cup' : 'league') as TeamKind, captainId: t.captainId, memberIds: t.memberIds }));
+  return {
+    id: uid(), seasonId: sid, seasonName: season.name, standings, playerStats, teamRosters,
+    meta: { generatedAt: new Date().toISOString(), matchCount: sMatches.length, teamCount: sTeams.length, leagueCount: sLeagues.length },
+  };
+}
+
+// Vollständiges Export-Bundle einer Saison (Wegsicherung + spätere Re-Import-Grundlage).
+function buildSeasonBundle(season: Season, snapshot: SeasonSnapshot, st: AppState) {
+  const sid = season.id; const asid = st.activeSeasonId;
+  return {
+    format: 'dartshub-season-bundle', version: 1, exportedAt: new Date().toISOString(),
+    season, snapshot,
+    leagues: ofSeason(st.leagues, sid, asid),
+    teams: ofSeason(st.teams, sid, asid),
+    events: ofSeason(st.events, sid, asid),
+    matches: ofSeason(st.matches, sid, asid),
+  };
+}
+
+function bundleFilename(season: Season): string {
+  const safe = season.name.replace(/[^\dA-Za-z]+/g, '-');
+  return `dartshub-saison-${safe}-${new Date().toISOString().slice(0, 10)}.json`;
+}
+
 // Lädt den kompletten Datenbestand vom Provider und übernimmt ihn in den Store (inkl. persönlicher Einstellungen).
 async function applySnapshot(get: () => AppState, set: SetFn) {
   try {
@@ -1612,7 +1712,7 @@ async function applySnapshot(get: () => AppState, set: SetFn) {
       settings: merged,
       players: withDefaultPlayers(snap.players), teams: snap.teams, accounts: snap.accounts,
       leagues: snap.leagues, events: snap.events, matches: snap.matches,
-      seasons, activeSeasonId, viewSeasonId,
+      seasons, seasonSnapshots: snap.seasonSnapshots || [], activeSeasonId, viewSeasonId,
       trainingPlays: snap.trainingPlays, syncError: null,
     });
   } catch (e) {
