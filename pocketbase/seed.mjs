@@ -30,12 +30,17 @@ async function main() {
   console.log('✓ Als Superuser angemeldet\n');
 
   // 1) Aufräumen (Reihenfolge unkritisch, da denormalisiert)
-  for (const c of ['matches', 'events', 'leagues', 'teams', 'user_prefs', 'players']) {
+  for (const c of ['season_snapshots', 'matches', 'events', 'leagues', 'teams', 'user_prefs', 'players', 'seasons']) {
     const n = await wipe(c);
     console.log(`  geleert: ${c} (${n})`);
   }
   const delUsers = await wipe('users', `email != "${KEEP_ADMIN_EMAIL}"`);
   console.log(`  geleert: users (${delUsers}, App-Admin behalten)\n`);
+
+  // 1b) Aktive Saison anlegen — alle Inhalte hängen an dieser Saison (sonst blendet der Saison-Filter sie aus).
+  const season = await pb.collection('seasons').create({ id: uid(), name: '2025/26', status: 'active' });
+  const SID = season.id;
+  console.log('✓ Aktive Saison 2025/26 angelegt');
 
   // 2) Spieler-Kader
   const squad = [
@@ -55,11 +60,11 @@ async function main() {
 
   // 3) Mannschaften
   await pb.collection('teams').create({
-    id: uid(), name: '1. Mannschaft', league: 'Verbandsliga Nord',
+    id: uid(), name: '1. Mannschaft', league: 'Verbandsliga Nord', seasonId: SID,
     memberIds: [P(0), P(1), P(2), P(3), P(4), P(5)], captainId: P(0),
   });
   await pb.collection('teams').create({
-    id: uid(), name: '2. Mannschaft', league: 'Kreisliga A',
+    id: uid(), name: '2. Mannschaft', league: 'Kreisliga A', seasonId: SID,
     memberIds: [P(6), P(7), P(8), P(9)], captainId: P(6),
   });
   console.log('✓ 2 Mannschaften angelegt');
@@ -81,7 +86,7 @@ async function main() {
     fx(adler, falken, 0, 0, 5, false), fx(rhein, phoenix, 0, 0, 6, false),
     fx(adler, phoenix, 0, 0, 12, false), fx(steel, adler, 0, 0, 19, false),
   ];
-  await pb.collection('leagues').create({ id: uid(), name: 'Verbandsliga Nord', season: '2025/26', teams: lteams, fixtures });
+  await pb.collection('leagues').create({ id: uid(), name: 'Verbandsliga Nord', season: '2025/26', seasonId: SID, teams: lteams, fixtures });
   console.log('✓ Liga „Verbandsliga Nord" mit Spielplan angelegt');
 
   // 5) Termine
@@ -95,7 +100,7 @@ async function main() {
     ['Jahreshauptversammlung', iso(30), '17:00', 'verein', 'Gaststätte Zur Post'],
   ];
   for (const [title, date, time, type, loc] of events) {
-    await pb.collection('events').create({ id: uid(), title, date, time, type, loc, scope: 'verein' });
+    await pb.collection('events').create({ id: uid(), title, date, time, type, loc, scope: 'verein', seasonId: SID });
   }
   console.log(`✓ ${events.length} Termine angelegt`);
 
@@ -118,7 +123,7 @@ async function main() {
 
   // 7) Gespielte Matches mit Statistik (perPlayer denormalisiert)
   const stat = (p, legsWon, avg3, c180, c140, c100, c60, highFinish, darts) => ({
-    name: p.name, short: p.short, av: p.avi, legsWon, setsWon: 0,
+    name: p.name, short: p.short, av: p.avi, playerId: p.id, legsWon, setsWon: 0,
     avg3, c180, c60, c100, c140, highFinish, darts,
   });
   const matches = [
@@ -138,7 +143,7 @@ async function main() {
       scoreLine: '2:0', perPlayer: [stat(players[4], 6, 67.8, 3, 6, 9, 14, 121, 90), stat(players[5], 2, 55.1, 0, 2, 4, 8, 62, 84)],
     },
   ];
-  for (const m of matches) await pb.collection('matches').create(m);
+  for (const m of matches) await pb.collection('matches').create({ ...m, seasonId: SID });
   console.log(`✓ ${matches.length} gespielte Matches angelegt`);
 
   // 8) Vereinsname/Logo
