@@ -21,6 +21,7 @@ import { TrainingGame } from './screens/TrainingGame';
 import { Counter } from './screens/Counter';
 import { CounterSetup } from './screens/CounterSetup';
 import { BoardPanel } from './components/BoardPanel';
+import { CommandPalette } from './components/CommandPalette';
 import { Modals } from './modals/Modals';
 
 function ScreenView() {
@@ -49,6 +50,7 @@ export default function App() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [exitOpen, setExitOpen] = useState(false);
   const [exitForm, setExitForm] = useState({ email: '', pw: '', err: '', busy: false });
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   useEffect(() => { init(); }, [init]);
   useEffect(() => {
@@ -68,6 +70,17 @@ export default function App() {
       const st = useStore.getState(); const cfg = st.settings;
       const tgt = e.target as HTMLElement | null;
       const typing = !!tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT' || tgt.isContentEditable);
+      // Befehls-Palette: Strg+K (auch beim Tippen, um sie zu schließen).
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); setPaletteOpen((v) => !v); return; }
+      // Kiosk-Tabs per Alt+1/2/3 (nicht im laufenden Spiel, nicht beim Tippen).
+      const me = st.accounts.find((a) => a.id === st.session) || null;
+      const inKiosk = cfg.appMode === 'verein' && !!st.session && !!me?.isBoard && me?.boardNumber != null && !st.kioskUnlocked;
+      if (inKiosk && e.altKey && !e.ctrlKey && !e.metaKey && !typing && ['1', '2', '3'].includes(e.key)) {
+        if (st.screen === 'counter' || st.screen === 'trainGame') return; // laufendes Spiel nicht stören
+        e.preventDefault();
+        st.go(e.key === '1' ? 'setup' : e.key === '2' ? 'training' : 'settings');
+        return;
+      }
       const combo = typing ? null : comboFromEvent(e);
       if (combo) {
         if (combo === (cfg.newGameKey || 'ctrl+alt+n')) { e.preventDefault(); st.requestNew({ kind: 'setup' }); return; }
@@ -75,6 +88,7 @@ export default function App() {
         if (cfg.quickBo3Key && combo === cfg.quickBo3Key) { e.preventDefault(); st.requestNew({ kind: 'preset', preset: { startScore: 501, unit: 'legs', bestOf: 3, outMode: 'double', doubleOut: true, doubleIn: false } }); return; }
       }
       if (st.newConfirm && e.key === 'Escape') { e.preventDefault(); st.cancelNew(); }
+      else if (st.newConfirm && e.key === 'Enter' && !typing) { e.preventDefault(); st.confirmNew(); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -101,8 +115,11 @@ export default function App() {
 
   const kioskInTraining = s.screen === 'training' || s.screen === 'trainSetup' || s.screen === 'trainGame';
   const kioskInSettings = s.screen === 'settings';
-  const kioskTab = (label: string, active: boolean, onClick: () => void) => (
-    <button onClick={onClick} style={{ background: active ? 'var(--accent)' : 'var(--surface-3)', color: active ? 'var(--accent-fg)' : 'var(--text-3)', border: `1px solid ${active ? 'var(--accent)' : 'var(--border-2)'}`, padding: '7px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
+  const kioskTab = (label: string, active: boolean, onClick: () => void, hint?: string) => (
+    <button onClick={onClick} title={hint ? `${label} (${hint})` : label} style={{ display: 'flex', alignItems: 'center', gap: 7, background: active ? 'var(--accent)' : 'var(--surface-3)', color: active ? 'var(--accent-fg)' : 'var(--text-3)', border: `1px solid ${active ? 'var(--accent)' : 'var(--border-2)'}`, padding: '7px 14px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+      {label}
+      {hint && <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, fontWeight: 700, opacity: 0.65, background: active ? 'rgba(0,0,0,.16)' : 'var(--btn)', borderRadius: 5, padding: '1px 5px' }}>{hint}</span>}
+    </button>
   );
   const kioskBar = (
     <header style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)' }}>
@@ -111,9 +128,9 @@ export default function App() {
         : <Logo size={28} />}
       <div style={{ fontWeight: 800, fontSize: 15 }}>{boardNumber != null ? `Board ${boardNumber}` : 'Board'}</div>
       <div style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
-        {kioskTab('Spiel', !kioskInTraining && !kioskInSettings, () => s.go('setup'))}
-        {kioskTab('Training', kioskInTraining, () => s.go('training'))}
-        {kioskTab('Einstellungen', kioskInSettings, () => s.go('settings'))}
+        {kioskTab('Spiel', !kioskInTraining && !kioskInSettings, () => s.go('setup'), 'Alt+1')}
+        {kioskTab('Training', kioskInTraining, () => s.go('training'), 'Alt+2')}
+        {kioskTab('Einstellungen', kioskInSettings, () => s.go('settings'), 'Alt+3')}
       </div>
       <div style={{ flex: 1 }} />
       <button onClick={() => { setExitForm({ email: '', pw: '', err: '', busy: false }); setExitOpen(true); }}
@@ -191,6 +208,7 @@ export default function App() {
         </>
       )}
       <Modals />
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       {s.syncError && (
         <div
           onClick={() => s.clearSyncError()}
