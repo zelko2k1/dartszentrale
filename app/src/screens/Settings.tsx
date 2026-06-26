@@ -120,6 +120,9 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const [pbUrlDraft, setPbUrlDraft] = useState(cfg.pbUrl || '');
   const [pbMsg, setPbMsg] = useState('');
   const [closeConfirm, setCloseConfirm] = useState(false);
+  const [carrySource, setCarrySource] = useState('');
+  const [carryTeams, setCarryTeams] = useState(true);
+  const [carryLeagues, setCarryLeagues] = useState(true);
   const [activeKey, setActiveKey] = useState<string>('eingabe');
 
   const savePbUrl = () => {
@@ -445,6 +448,12 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
 
   const activeSeasonObj = s.seasons.find((x) => x.id === s.activeSeasonId) || null;
   const archivedSeasons = s.seasons.filter((x) => x.status === 'archived');
+  // Übernahme-Assistent: nur sinnvoll, wenn die aktive Saison noch leer ist und es eine Vorsaison zum Klonen gibt.
+  const activeSeasonTeams = s.teams.filter((t) => (t.seasonId ?? s.activeSeasonId) === s.activeSeasonId);
+  const activeSeasonLeagues = s.leagues.filter((l) => (l.seasonId ?? s.activeSeasonId) === s.activeSeasonId);
+  const activeIsEmpty = activeSeasonTeams.length === 0 && activeSeasonLeagues.length === 0;
+  const otherSeasons = s.seasons.filter((x) => x.id !== s.activeSeasonId);
+  const carrySrc = carrySource || otherSeasons[0]?.id || '';
   const saisonNode = (
     <Section title="Saison">
       <Row label="Aktive Saison" sub="Neue Ligen, Mannschaften, Termine und Spiele werden dieser Saison zugeordnet.">
@@ -468,6 +477,22 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
           </div>
         )}
       </Row>
+      {activeIsEmpty && otherSeasons.length > 0 && (
+        <Row label="Vorsaison übernehmen" sub="Übernimmt Mannschaften und/oder Liga-Strukturen (Teilnehmer & Format, OHNE Begegnungen/Ergebnisse) aus einer früheren Saison in die aktuelle. Den neuen Spielplan danach über Ligen → Import einlesen.">
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
+            <select value={carrySrc} onChange={(e) => setCarrySource(e.target.value)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '8px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, fontWeight: 600 }}>
+              {otherSeasons.map((se) => <option key={se.id} value={se.id}>aus Saison {se.name}</option>)}
+            </select>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-2)', cursor: 'pointer' }}>
+              <input type="checkbox" checked={carryTeams} onChange={(e) => setCarryTeams(e.target.checked)} /> Mannschaften (mit Kader &amp; Kapitän)
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-2)', cursor: 'pointer' }}>
+              <input type="checkbox" checked={carryLeagues} onChange={(e) => setCarryLeagues(e.target.checked)} /> Liga-Struktur (ohne Ergebnisse)
+            </label>
+            <button onClick={() => s.carryOverSeason({ fromSeasonId: carrySrc, teams: carryTeams, leagues: carryLeagues })} disabled={!carrySrc || (!carryTeams && !carryLeagues)} style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: (!carrySrc || (!carryTeams && !carryLeagues)) ? 'not-allowed' : 'pointer', opacity: (!carrySrc || (!carryTeams && !carryLeagues)) ? 0.5 : 1, fontFamily: 'inherit' }}>Übernehmen</button>
+          </div>
+        </Row>
+      )}
       {archivedSeasons.length > 0 && (
         <Row label="Archivierte Saisons" sub="Über den Saison-Umschalter links als Lesemodus aufrufbar. Zum Sichern auswählen und exportieren.">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>

@@ -40,7 +40,13 @@ export class PocketBaseProvider implements DataProvider {
   private prefsId: string | null = null;     // gecachte user_prefs-Record-ID (für Upsert)
   private clubCfgId: string | null = null;   // gecachte club_config-Record-ID (für Upsert)
 
-  constructor(url: string) { this.pb = new PocketBase(url); }
+  constructor(url: string) {
+    this.pb = new PocketBase(url);
+    // Auto-Cancellation aus: sonst brechen GLEICHZEITIGE Mutationen auf dieselbe Collection einander ab
+    // (PB-SDK keyt den Cancel-Token auf Methode+Pfad) — z. B. mehrere parallele createRecord beim
+    // Saison-Klonen oder Spielplan-Import. Lese-Requests entkoppeln zusätzlich über requestKey: null.
+    this.pb.autoCancellation(false);
+  }
 
   async loadAll(): Promise<Snapshot> {
     const opt = { requestKey: null as null };

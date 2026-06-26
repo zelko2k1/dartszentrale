@@ -214,6 +214,9 @@ export interface AppState {
   exportSeason: (seasonId?: string) => void;
   // Saison abschließen: Snapshot einfrieren + Bundle herunterladen + archivieren + Nachfolge-Saison anlegen.
   closeSeason: () => void;
+  // Neue-Saison-Assistent: Mannschaften und/oder Liga-Strukturen (ohne Ergebnisse) aus einer früheren Saison
+  // in die aktive Saison klonen.
+  carryOverSeason: (opts: { fromSeasonId: string; teams: boolean; leagues: boolean }) => void;
 
   // settings
   setSetting: <K extends keyof Settings>(key: K, val: Settings[K]) => void;
@@ -570,6 +573,31 @@ export const useStore = create<AppState>((set, get) => ({
       p.createRecord('seasons', newSeason as unknown as ProviderRecord),
     ]));
     set({ seasons, seasonSnapshots, activeSeasonId: newSeason.id, viewSeasonId: newSeason.id, selectedLeague: 0, selectedTeam: 0 });
+  },
+
+  // Vorsaison in die aktive Saison übernehmen: Mannschaften (mit Kader/Kapitän) und/oder Liga-Strukturen
+  // (Teilnehmer + Format, OHNE Begegnungen/Ergebnisse) klonen. Spieler sind saisonübergreifend (keine Klone).
+  carryOverSeason({ fromSeasonId, teams: doTeams, leagues: doLeagues }) {
+    const st = get();
+    const asid = st.activeSeasonId;
+    const activeSeasonObj = st.seasons.find((s) => s.id === asid);
+    if (!asid || !activeSeasonObj || !fromSeasonId || fromSeasonId === asid) return;
+    const newTeams: Team[] = doTeams
+      ? st.teams.filter((t) => t.seasonId === fromSeasonId).map((t) => ({ ...t, id: uid(), seasonId: asid }))
+      : [];
+    const newLeagues: League[] = doLeagues
+      ? st.leagues.filter((l) => l.seasonId === fromSeasonId).map((l) => ({
+          ...l, id: uid(), seasonId: asid, season: activeSeasonObj.name,
+          teams: l.teams.map((team) => ({ ...team, id: uid() })), // interne Team-IDs neu; Begegnungen werden geleert
+          fixtures: [],
+        }))
+      : [];
+    if (!newTeams.length && !newLeagues.length) return;
+    const teams = [...st.teams, ...newTeams];
+    const leagues = [...st.leagues, ...newLeagues];
+    if (newTeams.length) persist(st, set, LS.teams, teams, (p) => Promise.all(newTeams.map((t) => p.createRecord('teams', t as unknown as ProviderRecord))));
+    if (newLeagues.length) persist(st, set, LS.leagues, leagues, (p) => Promise.all(newLeagues.map((l) => p.createRecord('leagues', l as unknown as ProviderRecord))));
+    set({ teams, leagues, selectedLeague: 0, selectedTeam: 0 });
   },
 
   go(screen) { set({ screen }); },
@@ -1241,15 +1269,30 @@ export const useStore = create<AppState>((set, get) => ({
   closeImport() { set({ importOpen: false }); },
   importSchedule(parsed) {
     const st = get();
-    const { leagues, touched, counts } = mergeSchedule(st.leagues, parsed);
-    // Eigene Mannschaften zusätzlich im Mannschaften-Screen anlegen (Kader leer).
-    const newTeams = deriveOwnTeams(leagues, st.teams);
+    // Import wirkt IMMER auf die aktive Saison: nur deren Ligen/Teams/Termine mergen, Fremdsaisons unberührt
+    // lassen (sonst würden neue Spielpläne in archivierte Ligen wandern). Neue Datensätze werden getaggt.
+    const asid = st.activeSeasonId ?? undefined;
+    const inActive = <T extends { seasonId?: string }>(x: T) => (x.seasonId ?? asid) === asid;
+    const tagSeason = <T extends { seasonId?: string }>(x: T): T => (x.seasonId ? x : { ...x, seasonId: asid });
+    const otherLeagues = st.leagues.filter((l) => !inActive(l));
+    const otherTeams = st.teams.filter((t) => !inActive(t));
+    const otherEvents = st.events.filter((e) => !inActive(e));
+    const activeLeagues = st.leagues.filter(inActive);
+    const activeTeams = st.teams.filter(inActive);
+    const activeEvents = st.events.filter(inActive);
+
+    const merged = mergeSchedule(activeLeagues, parsed);
+    const touched = merged.touched; const counts = merged.counts;
+    const seasonLeagues = merged.leagues.map(tagSeason);
+    const leagues = [...otherLeagues, ...seasonLeagues];
+    // Eigene Mannschaften zusätzlich im Mannschaften-Screen anlegen (Kader leer) — Dedup nur gegen aktive Saison.
+    const newTeams = deriveOwnTeams(seasonLeagues, activeTeams).map(tagSeason);
     counts.ownTeamsNew = newTeams.length;
-    const teams = newTeams.length ? [...st.teams, ...newTeams] : st.teams;
-    // Kalender-Termine für eigene Begegnungen ableiten (idempotent gegen vorhandene).
-    const newEvents = deriveLeagueEvents(parsed, st.events);
+    const teams = newTeams.length ? [...otherTeams, ...activeTeams, ...newTeams] : st.teams;
+    // Kalender-Termine für eigene Begegnungen ableiten (idempotent gegen vorhandene der aktiven Saison).
+    const newEvents = deriveLeagueEvents(parsed, activeEvents).map(tagSeason);
     counts.eventsNew = newEvents.length;
-    const events = newEvents.length ? [...st.events, ...newEvents] : st.events;
+    const events = newEvents.length ? [...otherEvents, ...activeEvents, ...newEvents] : st.events;
     if (st.provider.mode === 'verein') {
       // Pro betroffener Liga anlegen/aktualisieren (PocketBase speichert teams/fixtures als JSON).
       touched.forEach(({ id, isNew }) => {
