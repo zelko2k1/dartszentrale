@@ -74,7 +74,7 @@ function write(key: string, val: unknown) {
 // ── Modal-Typen ──
 export interface PlayerModalState { mode: 'add' | 'edit'; id: string | null; first: string; last: string; short: string; avi: number; }
 export interface TeamModalState { mode: 'add' | 'edit'; id: string | null; name: string; league: string; memberIds: string[]; captainId: string | null; viceCaptainIds: string[]; kind: TeamKind; }
-export interface UserModalState { mode: 'add' | 'edit'; id: string | null; first: string; last: string; email: string; role: Role; playerId: string | null; active: boolean; avi: number; position: string; password: string; isBoard: boolean; boardNumber: number | null; }
+export interface UserModalState { mode: 'add' | 'edit'; id: string | null; first: string; last: string; email: string; role: Role; playerId: string | null; active: boolean; avi: number; position: string; password: string; isBoard: boolean; boardNumber: number | null; teamIds: string[]; }
 export interface LeagueModalState { mode: 'add' | 'edit'; id: string | null; name: string; season: string; teams: { id: string; name: string; own: boolean }[]; singlesCount: number; doublesCount: number; format: LineupSegment[] | null; kind: TeamKind; }
 export interface LineupModalState {
   leagueId: string; fixtureId: string;
@@ -241,6 +241,7 @@ export interface AppState {
   openEditUser: (id: string) => void;
   closeUserModal: () => void;
   setUserField: (key: keyof UserModalState, val: string | boolean | null) => void;
+  toggleUserTeam: (teamId: string) => void;
   cycleUserAvi: (dir: number) => void;
   saveUserModal: () => void;
   deleteUser: (id: string) => void;
@@ -775,19 +776,40 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   // ── user modal ──
-  openAddUser() { set({ userModal: { mode: 'add', id: null, first: '', last: '', email: '', role: 'player', playerId: null, active: true, avi: 0, position: '', password: '', isBoard: false, boardNumber: null } }); },
+  openAddUser() { set({ userModal: { mode: 'add', id: null, first: '', last: '', email: '', role: 'player', playerId: null, active: true, avi: 0, position: '', password: '', isBoard: false, boardNumber: null, teamIds: [] } }); },
   // Neues Benutzerkonto direkt aus einem Spieler vorbefüllen (Vor-/Nachname, Avatar, Verknüpfung).
   // Nur sinnvoll im Vereinsmodus; E-Mail/Passwort/Rolle ergänzt der Admin im Modal.
   openAddUserForPlayer(playerId) {
     const pl = get().players.find((x) => x.id === playerId); if (!pl) return;
-    set({ userModal: { mode: 'add', id: null, first: firstName(pl.name), last: lastName(pl.name), email: '', role: 'player', playerId: pl.id, active: true, avi: pl.avi ?? 0, position: '', password: '', isBoard: false, boardNumber: null } });
+    const teamIds = get().teams.filter((t) => t.memberIds.includes(pl.id)).map((t) => t.id);
+    set({ userModal: { mode: 'add', id: null, first: firstName(pl.name), last: lastName(pl.name), email: '', role: 'player', playerId: pl.id, active: true, avi: pl.avi ?? 0, position: '', password: '', isBoard: false, boardNumber: null, teamIds } });
   },
   openEditUser(id) {
     const a = get().accounts.find((x) => x.id === id); if (!a) return;
-    set({ userModal: { mode: 'edit', id: a.id, first: a.first, last: a.last, email: a.email, role: a.role, playerId: a.playerId, active: a.active, avi: a.avi, position: a.position || '', password: '', isBoard: !!a.isBoard, boardNumber: a.boardNumber ?? null } });
+    const teamIds = a.playerId ? get().teams.filter((t) => t.memberIds.includes(a.playerId!)).map((t) => t.id) : [];
+    set({ userModal: { mode: 'edit', id: a.id, first: a.first, last: a.last, email: a.email, role: a.role, playerId: a.playerId, active: a.active, avi: a.avi, position: a.position || '', password: '', isBoard: !!a.isBoard, boardNumber: a.boardNumber ?? null, teamIds } });
   },
   closeUserModal() { set({ userModal: null }); },
-  setUserField(key, val) { set((st) => st.userModal ? { userModal: { ...st.userModal, [key]: val } as UserModalState } : {}); },
+  setUserField(key, val) {
+    set((st) => {
+      if (!st.userModal) return {};
+      const next = { ...st.userModal, [key]: val } as UserModalState;
+      // Beim (Ent-)Verknüpfen eines Spielers die Mannschaftsauswahl auf dessen aktuelle Zugehörigkeit zurücksetzen.
+      if (key === 'playerId') {
+        const pid = val as string | null;
+        next.teamIds = pid ? st.teams.filter((t) => t.memberIds.includes(pid)).map((t) => t.id) : [];
+      }
+      return { userModal: next };
+    });
+  },
+  toggleUserTeam(teamId) {
+    set((st) => {
+      if (!st.userModal) return {};
+      const cur = st.userModal.teamIds;
+      const teamIds = cur.includes(teamId) ? cur.filter((x) => x !== teamId) : [...cur, teamId];
+      return { userModal: { ...st.userModal, teamIds } };
+    });
+  },
   cycleUserAvi(dir) { set((st) => { if (!st.userModal) return {}; const n = AVATARS.length; return { userModal: { ...st.userModal, avi: ((st.userModal.avi + dir) % n + n) % n } }; }); },
   saveUserModal() {
     const m = get().userModal; if (!m) return;
@@ -816,7 +838,33 @@ export const useStore = create<AppState>((set, get) => ({
           if (pw) await p.setPassword(m.id!, pw);
         });
       }
-      return { accounts, userModal: null };
+
+      // Mannschaftszuordnung des verknüpften Spielers autoritativ angleichen (nur Rolle Spieler/Kapitän):
+      // m.teamIds ist die VOLLSTÄNDIGE Zugehörigkeit → Spieler wird aus nicht gewählten Mannschaften entfernt.
+      // Bei Kapitän-Rolle wird er Kapitän jeder gewählten Mannschaft (verdrängt einen bisherigen Kapitän).
+      let teams = st.teams;
+      if (!m.isBoard && playerId && (role === 'player' || role === 'captain')) {
+        const sel = new Set(m.teamIds);
+        teams = st.teams.map((t) => {
+          const inSel = sel.has(t.id);
+          const wasMember = t.memberIds.includes(playerId);
+          if (!inSel && !wasMember) return t; // unbeteiligt → unverändert
+          const memberIds = inSel
+            ? (wasMember ? t.memberIds : [...t.memberIds, playerId])
+            : t.memberIds.filter((x) => x !== playerId);
+          let captainId = t.captainId;
+          if (inSel && role === 'captain') captainId = playerId;
+          else if (captainId === playerId) captainId = null; // abgewählt oder zu 'player' zurückgestuft
+          let viceCaptainIds = t.viceCaptainIds;
+          if (viceCaptainIds && (!inSel || captainId === playerId)) viceCaptainIds = viceCaptainIds.filter((x) => x !== playerId);
+          return { ...t, memberIds, captainId, viceCaptainIds };
+        });
+        const changed = teams.filter((t) => !st.teams.includes(t));
+        if (changed.length) {
+          persist(st, set, LS.teams, teams, (p) => Promise.all(changed.map((t) => p.updateRecord('teams', t.id, t as unknown as ProviderRecord))));
+        }
+      }
+      return { accounts, teams, userModal: null };
     });
   },
   deleteUser(id) {

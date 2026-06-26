@@ -167,6 +167,44 @@ export function UserModal() {
               )}
             </div>
           )}
+
+          {/* Mannschaftszuordnung – nur sinnvoll für Spieler/Kapitän und wenn ein Spieler verknüpft ist.
+              Mehrfachauswahl (Liga + Pokal); die Auswahl ist die vollständige Zugehörigkeit (Abwahl = entfernen). */}
+          {selectedPlayer && (m.role === 'player' || m.role === 'captain') && (
+            <div style={{ marginBottom: 22 }}>
+              <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 4 }}>
+                Mannschaft{m.role === 'captain' ? ' & Kapitänsamt' : ''} <span style={{ color: 'var(--text-5)', fontWeight: 500 }}>(optional)</span>
+              </label>
+              <div style={{ fontSize: 12, color: 'var(--text-5)', marginBottom: 10 }}>
+                {m.role === 'captain'
+                  ? `${selectedPlayer.name} wird Mitglied und Kapitän der gewählten Mannschaft(en).`
+                  : `${selectedPlayer.name} wird Mitglied der gewählten Mannschaft(en).`}
+              </div>
+              {s.teams.length === 0 ? (
+                <div style={{ background: 'var(--btn)', border: '1px dashed var(--border-strong)', borderRadius: 12, padding: 16, textAlign: 'center', color: 'var(--text-4)', fontSize: 13 }}>Noch keine Mannschaften angelegt.</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 220, overflowY: 'auto' }}>
+                  {s.teams.map((t) => {
+                    const on = m.teamIds.includes(t.id);
+                    const cup = t.kind === 'cup';
+                    return (
+                      <button key={t.id} onClick={() => s.toggleUserTeam(t.id)} className="dh-hover-border" style={{ display: 'flex', alignItems: 'center', gap: 11, textAlign: 'left', background: on ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'var(--btn)', border: `1px solid ${on ? 'color-mix(in srgb, var(--accent) 40%, transparent)' : 'var(--border-2)'}`, borderRadius: 10, padding: '9px 11px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        <span style={{ width: 18, height: 18, borderRadius: 6, border: `2px solid ${on ? 'var(--accent)' : 'var(--border-strong)'}`, background: on ? 'var(--accent)' : 'transparent', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {on && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>}
+                        </span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</div>
+                          {t.league && <div style={{ fontSize: 11, color: 'var(--text-4)' }}>{t.league}</div>}
+                        </div>
+                        {cup && <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, color: 'var(--text-4)', background: 'var(--btn)', border: '1px solid var(--border-2)', padding: '2px 7px', borderRadius: 6 }}>POKAL</span>}
+                        {on && m.role === 'captain' && <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '2px 7px', borderRadius: 6 }}>KAPITÄN</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
 
