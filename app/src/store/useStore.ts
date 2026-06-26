@@ -206,6 +206,7 @@ export interface AppState {
   openEditTeam: () => void;
   closeTeamModal: () => void;
   setTeamField: (key: 'name' | 'league', val: string) => void;
+  setTeamKind: (kind: TeamKind) => void;
   toggleTeamMember: (pid: string) => void;
   setTeamCaptain: (pid: string) => void;
   toggleTeamViceCaptain: (pid: string) => void;
@@ -682,6 +683,7 @@ export const useStore = create<AppState>((set, get) => ({
   },
   closeTeamModal() { set({ teamModal: null }); },
   setTeamField(key, val) { set((st) => st.teamModal ? { teamModal: { ...st.teamModal, [key]: val } } : {}); },
+  setTeamKind(kind) { set((st) => st.teamModal ? { teamModal: { ...st.teamModal, kind } } : {}); },
   toggleTeamMember(pid) {
     set((st) => {
       if (!st.teamModal) return {};

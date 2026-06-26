@@ -71,7 +71,7 @@ export function TeamModal() {
         {(Object.keys(TEAM_KINDS) as TeamKind[]).map((k) => {
           const def = TEAM_KINDS[k]; const on = m.kind === k;
           return (
-            <button key={k} onClick={() => s.setTeamField('kind', k)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: on ? `color-mix(in srgb, ${def.color} 13%, transparent)` : 'var(--btn)', border: `1px solid ${on ? def.color : 'var(--border-2)'}`, color: on ? def.color : 'var(--text-3)', borderRadius: 11, padding: '10px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button key={k} onClick={() => s.setTeamKind(k)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: on ? `color-mix(in srgb, ${def.color} 13%, transparent)` : 'var(--btn)', border: `1px solid ${on ? def.color : 'var(--border-2)'}`, color: on ? def.color : 'var(--text-3)', borderRadius: 11, padding: '10px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
               <TeamKindIcon kind={k} size={15} />
               {def.label}
             </button>
