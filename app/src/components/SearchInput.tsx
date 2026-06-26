@@ -1,15 +1,18 @@
+import type { Ref, KeyboardEventHandler } from 'react';
 import { IconSearch, IconX } from '../lib/icons';
 
 // Schlankes Suchfeld für Listen (Spieler, Benutzer, Kader). Filtert live ab dem
 // ersten Zeichen; mit „×" lässt sich die Eingabe schnell leeren.
 export function SearchInput({
-  value, onChange, placeholder = 'Suchen …', width = 240, autoFocus = false,
+  value, onChange, placeholder = 'Suchen …', width = 240, autoFocus = false, inputRef, onKeyDown,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   width?: number | string;
   autoFocus?: boolean;
+  inputRef?: Ref<HTMLInputElement>;
+  onKeyDown?: KeyboardEventHandler<HTMLInputElement>;
 }) {
   return (
     <div style={{ position: 'relative', width, maxWidth: '100%' }}>
@@ -19,12 +22,14 @@ export function SearchInput({
       <input
         className="dh-input"
         type="text"
+        ref={inputRef}
         value={value}
         autoFocus={autoFocus}
         spellCheck={false}
         autoCapitalize="off"
         autoCorrect="off"
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
         placeholder={placeholder}
         style={{
           width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)',

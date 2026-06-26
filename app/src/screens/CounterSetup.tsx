@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { Avatar } from '../components/Avatar';
 import { SearchInput } from '../components/SearchInput';
@@ -23,6 +23,34 @@ export function CounterSetup() {
   const isPhone = useIsPhone();
   // Suchbegriff je Slot, damit man bei großen Kadern nicht durch die ganze Liste scrollen muss.
   const [pQuery, setPQuery] = useState<{ p1: string; p2: string }>({ p1: '', p2: '' });
+  // Tastatur-First: hervorgehobene Position (Cursor) in der gefilterten Liste je Slot (↑/↓), Enter übernimmt.
+  const [hi, setHi] = useState<{ p1: number; p2: number }>({ p1: 0, p2: 0 });
+  const searchRefs = { p1: useRef<HTMLInputElement>(null), p2: useRef<HTMLInputElement>(null) };
+  const startRef = useRef<HTMLButtonElement>(null);
+  // Beim Öffnen direkt ins Spieler-1-Suchfeld springen (sofern vorhanden) – kein Tab-Marathon.
+  useEffect(() => { searchRefs.p1.current?.focus(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Liste eines Slots gefiltert + mit ORIGINAL-Index (su[idx] zeigt in `players`).
+  const filteredFor = (idx: 'p1' | 'p2') => {
+    const q = pQuery[idx].trim().toLowerCase();
+    return players.map((p, i) => ({ p, i })).filter(({ p }) => !q || p.name.toLowerCase().includes(q));
+  };
+  // Tastatursteuerung im Suchfeld: ↑/↓ bewegt den Cursor, Enter übernimmt & springt weiter, Strg+Enter startet.
+  const onSearchKey = (idx: 'p1' | 'p2') => (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); s.startGame(); return; }
+    const list = filteredFor(idx);
+    if (!list.length) return;
+    const cur = Math.min(hi[idx], list.length - 1);
+    if (e.key === 'ArrowDown') { e.preventDefault(); setHi((h) => ({ ...h, [idx]: Math.min(cur + 1, list.length - 1) })); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setHi((h) => ({ ...h, [idx]: Math.max(cur - 1, 0) })); }
+    else if (e.key === 'Enter') {
+      e.preventDefault();
+      const pick = list[cur];
+      const other = idx === 'p1' ? su.p2 : su.p1;
+      if (pick.i !== other) s.setSetup(idx, pick.i);
+      if (idx === 'p1') searchRefs.p2.current?.focus(); else startRef.current?.focus();
+    }
+  };
 
   const seg = (active: boolean, label: string, onClick: () => void, mono?: boolean, key?: React.Key) => (
     <button key={key} onClick={onClick} style={{ background: active ? accent : 'var(--btn)', color: active ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${active ? accent : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '10px 18px', borderRadius: 10, fontSize: mono ? 14 : 13, cursor: 'pointer', fontFamily: mono ? "'JetBrains Mono',monospace" : 'inherit' }}>{label}</button>
@@ -65,14 +93,15 @@ export function CounterSetup() {
         <input value={su[guestKey] || ''} onChange={(e) => s.setSetup(guestKey, e.target.value)} placeholder="oder Gastname eingeben …" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: `1px solid ${guest ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 10, padding: '9px 11px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', marginBottom: 8 }} />
         {players.length > 6 && !guest && (
           <div style={{ marginBottom: 8 }}>
-            <SearchInput value={pQuery[idx]} onChange={(v) => setPQuery((cur) => ({ ...cur, [idx]: v }))} placeholder="Spieler suchen …" width="100%" />
+            <SearchInput value={pQuery[idx]} onChange={(v) => { setPQuery((cur) => ({ ...cur, [idx]: v })); setHi((h) => ({ ...h, [idx]: 0 })); }} placeholder="Spieler suchen … (↑/↓ · Enter)" width="100%" inputRef={searchRefs[idx]} onKeyDown={onSearchKey(idx)} />
           </div>
         )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 200, overflowY: 'auto', opacity: guest ? 0.4 : 1, pointerEvents: guest ? 'none' : 'auto' }}>
-          {filtered.map(({ p, i }) => {
+          {filtered.map(({ p, i }, pos) => {
             const on = su[idx] === i; const disabled = i === otherIdx;
+            const isHi = !guest && pos === Math.min(hi[idx], filtered.length - 1);
             return (
-              <button key={p.id} onClick={() => !disabled && s.setSetup(idx, i)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px', background: on ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 10, cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit', textAlign: 'left', opacity: disabled ? 0.4 : 1 }}>
+              <button key={p.id} ref={isHi ? (el) => el?.scrollIntoView({ block: 'nearest' }) : undefined} onClick={() => !disabled && s.setSetup(idx, i)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px', background: on ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 10, cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit', textAlign: 'left', opacity: disabled ? 0.4 : 1, boxShadow: isHi ? '0 0 0 2px var(--accent)' : 'none' }}>
                 <Avatar photo={p.photo} short={p.short} avi={p.avi} size={30} />
                 <div style={{ minWidth: 0 }}><div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap' }}>{p.name}</div></div>
               </button>
@@ -90,7 +119,7 @@ export function CounterSetup() {
   const summary = `${su.startScore} · ${outLabel}${su.doubleIn ? ' · Double In' : ''} · Best of ${sets ? su.bestOfSets + ' Sätze' : su.bestOf + ' Legs'}`;
 
   return (
-    <div style={{ padding: isPhone ? '18px 14px' : '28px 32px', maxWidth: 1000, margin: '0 auto' }}>
+    <div onKeyDown={(e) => { if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); s.startGame(); } }} style={{ padding: isPhone ? '18px 14px' : '28px 32px', maxWidth: 1000, margin: '0 auto' }}>
       <div style={{ marginBottom: 6, fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>Darts Counter</div>
       <h1 style={{ margin: '0 0 24px', fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>Neues Spiel</h1>
 
@@ -144,9 +173,10 @@ export function CounterSetup() {
           <div style={{ fontSize: 13, color: 'var(--text-3)', fontFamily: "'JetBrains Mono',monospace" }}>{summary}</div>
           <div style={{ fontSize: 12, color: su.freePlay ? 'var(--text-4)' : 'var(--success)', fontWeight: 600, marginTop: 4 }}>{su.freePlay ? 'Freies Spiel – wird nicht gespeichert' : 'Wird für die gewählten Spieler gewertet'}</div>
         </div>
-        <button className="dh-primary" onClick={() => s.startGame()} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '14px 28px', borderRadius: 13, fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)' }}>
+        <button ref={startRef} className="dh-primary" onClick={() => s.startGame()} title="Spiel starten (Strg+Enter)" style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '14px 28px', borderRadius: 13, fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
           Spiel starten
+          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, fontWeight: 700, opacity: 0.8, background: 'rgba(0,0,0,.18)', borderRadius: 6, padding: '2px 7px', marginLeft: 2 }}>Strg+↵</span>
         </button>
       </div>
     </div>
