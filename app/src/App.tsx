@@ -22,6 +22,7 @@ import { Counter } from './screens/Counter';
 import { CounterSetup } from './screens/CounterSetup';
 import { BoardPanel } from './components/BoardPanel';
 import { CommandPalette } from './components/CommandPalette';
+import { LiveClock } from './components/LiveClock';
 import { Modals } from './modals/Modals';
 
 function ScreenView() {
@@ -77,6 +78,8 @@ export default function App() {
       // Kiosk-Tabs: Alt+S Spiel · Alt+T Training · Alt+E Einstellungen (nicht im laufenden Spiel).
       const me = st.accounts.find((a) => a.id === st.session) || null;
       const inKiosk = cfg.appMode === 'verein' && !!st.session && !!me?.isBoard && me?.boardNumber != null && !st.kioskUnlocked;
+      // Board-Modus verlassen per Alt+V (öffnet den Admin/Kapitän-Dialog) – auch im laufenden Spiel erreichbar.
+      if (inKiosk && combo === 'alt+v') { e.preventDefault(); setExitForm({ email: '', pw: '', err: '', busy: false }); setExitOpen(true); return; }
       if (inKiosk && combo && (combo === 'alt+s' || combo === 'alt+t' || combo === 'alt+e')) {
         if (st.screen === 'counter' || st.screen === 'trainGame') return; // laufendes Spiel nicht stören
         e.preventDefault();
@@ -123,7 +126,7 @@ export default function App() {
     </button>
   );
   const kioskBar = (
-    <header style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)' }}>
+    <header style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)' }}>
       {isVerein && s.settings.clubLogo
         ? <img src={s.settings.clubLogo} alt="Vereinslogo" style={{ width: 28, height: 28, borderRadius: 7, objectFit: 'contain' }} />
         : <Logo size={28} />}
@@ -133,12 +136,15 @@ export default function App() {
         {kioskTab('Training', kioskInTraining, () => s.go('training'), 'Alt+T')}
         {kioskTab('Einstellungen', kioskInSettings, () => s.go('settings'), 'Alt+E')}
       </div>
+      {/* Datum + Uhrzeit (deutsches Standardformat), mittig – unabhängig von der Breite der Tabs/Verlassen. */}
+      <LiveClock mode="datetime" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: 13, fontWeight: 600, color: 'var(--text-3)', whiteSpace: 'nowrap', pointerEvents: 'none' }} />
       <div style={{ flex: 1 }} />
       <button onClick={() => { setExitForm({ email: '', pw: '', err: '', busy: false }); setExitOpen(true); }}
-        title="Board-Modus verlassen (Admin/Kapitän)"
+        title="Board-Modus verlassen (Admin/Kapitän) · Alt+V"
         style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 13px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
         Verlassen
+        <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.65, background: 'var(--btn)', borderRadius: 5, padding: '1px 5px' }}>Alt+V</span>
       </button>
     </header>
   );

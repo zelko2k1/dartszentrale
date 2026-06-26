@@ -4,7 +4,8 @@ import { Avatar } from '../components/Avatar';
 import {
   dashboardMetrics, recentResults, aggregateFor, perm, currentUser, nextOwnFixture, computeStandings,
 } from '../store/selectors';
-import { longDate, timeNow, greeting as greetFn, shortLong, todayIso } from '../lib/format';
+import { longDate, greeting as greetFn, shortLong, todayIso } from '../lib/format';
+import { LiveClock } from '../components/LiveClock';
 import { IconTarget, IconCalendarSmall, IconUsers, IconUserCheck, IconShield, IconTrophy, IconSettings, IconChevronRight, IconPlus } from '../lib/icons';
 import { TeamKindIcon } from '../modals/TeamModal';
 import { useIsPhone } from '../lib/useIsPhone';
@@ -286,7 +287,7 @@ function VereinDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
             <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>{longDate(now).toUpperCase()}</div>
             <span style={{ fontSize: 12, color: 'var(--border-strong)' }}>·</span>
-            <div style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.05em' }}>{timeNow(now)}</div>
+            <LiveClock style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.05em' }} />
           </div>
           <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{greeting}</h1>
           <div style={{ fontSize: 13, color: 'var(--text-3)', fontWeight: 600, marginTop: 4 }}>{subtitle}</div>
@@ -440,7 +441,7 @@ function LocalDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
             <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>{longDate(now).toUpperCase()}</div>
             <span style={{ fontSize: 12, color: 'var(--border-strong)' }}>·</span>
-            <div style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.05em' }}>{timeNow(now)}</div>
+            <LiveClock style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.05em' }} />
           </div>
           <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{greetFn(now)}</h1>
         </div>

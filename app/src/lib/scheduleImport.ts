@@ -330,7 +330,7 @@ export function deriveLeagueEvents(parsed: ParsedSchedule, existingEvents: Event
 export function scheduleTemplate(): string {
   return [
     'Liga;Saison;Datum;Heim;Gast;HeimLegs;GastLegs',
-    'Verbandsliga Nord;2025/26;20.09.2025;SV Adler Niederrhein 1;DC Falke Moers;6;3',
-    'Verbandsliga Nord;2025/26;27.09.2025;DC Falke Moers;SV Adler Niederrhein 1;;',
+    'Verbandsliga Nord;2025/26;20.09.2025;Eigene Mannschaft 1;Gastverein A;6;3',
+    'Verbandsliga Nord;2025/26;27.09.2025;Gastverein A;Eigene Mannschaft 1;;',
   ].join('\r\n');
 }

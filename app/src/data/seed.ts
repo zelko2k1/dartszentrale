@@ -39,7 +39,7 @@ export const DEFAULT_SETTINGS: Settings = {
   quickBo3Key: 'ctrl+alt+3',
   appMode: 'verein',
   pbUrl: '',
-  clubName: 'SV Adler Niederrhein',
+  clubName: '',
   clubLogo: null,
   dashRange: 'month',
   nameOrder: 'first',

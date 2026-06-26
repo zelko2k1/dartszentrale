@@ -274,7 +274,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         </div>
       </Row>
       <Row label="Vereinsname" sub="Wird in der Hauptansicht neben dem Logo angezeigt.">
-        <input className="dh-input" type="text" value={cfg.clubName} onChange={(e) => set('clubName', e.target.value)} placeholder="z. B. SV Adler Niederrhein" style={{ width: 260, maxWidth: '100%', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, outline: 'none' }} />
+        <input className="dh-input" type="text" value={cfg.clubName} onChange={(e) => set('clubName', e.target.value)} placeholder="z. B. Dartverein Musterstadt" style={{ width: 260, maxWidth: '100%', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, outline: 'none' }} />
       </Row>
       <Row label="Vereinslogo" sub="Erscheint in der Hauptansicht oben links. PNG, JPG, SVG oder WebP · max. 2 MB · wird automatisch verkleinert.">
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>

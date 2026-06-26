@@ -21,7 +21,7 @@ export function Login() {
             : <Logo size={52} />}
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>DartsHub</div>
-            <div style={{ fontSize: 13, color: 'var(--text-4)', fontWeight: 600, marginTop: 2 }}>{s.settings.clubName} · Vereinsverwaltung</div>
+            <div style={{ fontSize: 13, color: 'var(--text-4)', fontWeight: 600, marginTop: 2 }}>{s.settings.clubName ? `${s.settings.clubName} · ` : ''}Vereinsverwaltung</div>
           </div>
         </div>
 
