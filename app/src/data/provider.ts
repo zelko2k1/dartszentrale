@@ -48,6 +48,8 @@ export interface DataProvider {
   login(email: string, password: string): Promise<AuthUser>;
   logout(): Promise<void>;
   currentUser(): AuthUser | null;
+  // Passwort setzen (privilegierter Endpunkt /api/set-password): Admin → jedes Konto, Nutzer → sein eigenes.
+  setPassword(userId: string, newPassword: string): Promise<void>;
 
   // ── Realtime (Verein optional); Lokal: gibt eine leere Unsubscribe-Funktion zurück ──
   subscribe(onChange: () => void): () => void;

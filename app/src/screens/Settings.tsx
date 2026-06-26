@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode, type CSSProperties } from 'react';
 import { useStore } from '../store/useStore';
 import { perm } from '../store/selectors';
 import { FONTS, DEVICE_LOCAL_SETTING_KEYS } from '../data/constants';
@@ -73,6 +73,35 @@ function Row({ label, sub, children, top }: { label: string; sub?: string; child
     <div style={{ display: 'flex', alignItems: top ? 'flex-start' : 'center', justifyContent: 'space-between', gap: 20, padding: '14px 0', borderTop: '1px solid var(--hairline)', flexWrap: 'wrap' }}>
       <div style={{ maxWidth: 340 }}><div style={{ fontSize: 14, fontWeight: 600 }}>{label}</div>{sub && <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>{sub}</div>}</div>
       <div style={{ minWidth: 0, maxWidth: '100%' }}>{children}</div>
+    </div>
+  );
+}
+
+// Self-Service: der angemeldete Nutzer setzt sein eigenes Passwort (über den privilegierten setPassword-Endpunkt).
+function PasswordChange() {
+  const change = useStore((st) => st.changeOwnPassword);
+  const accent = useStore((st) => st.settings.accent);
+  const [pw, setPw] = useState('');
+  const [pw2, setPw2] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const field: CSSProperties = { width: 210, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, outline: 'none' };
+  const submit = async () => {
+    setMsg(null);
+    if (pw.length < 8) { setMsg({ ok: false, text: 'Mindestens 8 Zeichen.' }); return; }
+    if (pw !== pw2) { setMsg({ ok: false, text: 'Passwörter stimmen nicht überein.' }); return; }
+    setBusy(true);
+    const ok = await change(pw);
+    setBusy(false);
+    if (ok) { setPw(''); setPw2(''); setMsg({ ok: true, text: '✓ Passwort geändert.' }); }
+    else setMsg({ ok: false, text: 'Konnte nicht geändert werden.' });
+  };
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+      <input type="password" autoComplete="new-password" value={pw} onChange={(e) => { setPw(e.target.value); setMsg(null); }} placeholder="Neues Passwort" style={field} />
+      <input type="password" autoComplete="new-password" value={pw2} onChange={(e) => { setPw2(e.target.value); setMsg(null); }} placeholder="Wiederholen" style={field} />
+      <button onClick={submit} disabled={busy || !pw || !pw2} style={{ background: accent, color: 'var(--accent-fg)', border: 'none', borderRadius: 10, padding: '10px 18px', fontSize: 13, fontWeight: 800, cursor: busy ? 'default' : 'pointer', fontFamily: 'inherit', opacity: busy || !pw || !pw2 ? 0.6 : 1 }}>{busy ? 'Speichern …' : 'Passwort ändern'}</button>
+      {msg && <span style={{ fontSize: 12, fontWeight: 600, color: msg.ok ? 'var(--success)' : '#E0594B' }}>{msg.text}</span>}
     </div>
   );
 }
@@ -404,12 +433,22 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     </Section>
   );
 
+  // „Mein Konto": jeder angemeldete Nutzer kann sein eigenes Passwort ändern (nicht für Board-Maschinenkonten).
+  const kontoNode = (
+    <Section title="Mein Konto">
+      <Row label="Passwort ändern" sub="Neues Passwort für deinen eigenen Login. Mindestens 8 Zeichen; bestehende Sitzungen werden danach abgemeldet." top>
+        <PasswordChange />
+      </Row>
+    </Section>
+  );
+
   // Rubriken als Buttons. Verein/Benutzer/Board nur im Vereinsmodus; sonst bleibt nur die Nutzungsart + Counter-Rubriken.
   const categories: { key: string; label: string; show: boolean; node: ReactNode }[] = [
     { key: 'modus', label: 'Nutzungsart', show: p.manageClub, node: dim(modusNode) },
     { key: 'verein', label: 'Verein', show: isVerein && p.manageClub, node: vereinNode },
     { key: 'benutzer', label: 'Benutzer & Rechte', show: isVerein && p.manageUsers, node: benutzerNode },
     { key: 'board', label: 'Board-Rechner', show: isVerein && p.manageUsers, node: boardNode },
+    { key: 'konto', label: 'Mein Konto', show: isVerein && !!s.session && !s.accounts.find((a) => a.id === s.session)?.isBoard, node: kontoNode },
     { key: 'eingabe', label: 'Eingabe & Tasten', show: true, node: eingabeNode },
     { key: 'darstellung', label: 'Darstellung', show: true, node: darstellungNode },
     { key: 'hilfen', label: 'Hilfen & Anzeige', show: true, node: dim(hilfenNode) },

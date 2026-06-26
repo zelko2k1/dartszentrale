@@ -245,6 +245,8 @@ export interface AppState {
   saveUserModal: () => void;
   deleteUser: (id: string) => void;
   toggleUserActive: (id: string) => void;
+  // Eigenes Passwort ändern (jeder angemeldete Nutzer). Liefert true bei Erfolg.
+  changeOwnPassword: (newPassword: string) => Promise<boolean>;
   // Board-Rechner-Konten nach festem Schema anlegen (Board 1…count, gemeinsames Passwort). Nur Vereinsmodus/Admin.
   createBoardAccounts: (count: number, password: string) => void;
   // Profilfoto für Spieler/Benutzerkonto setzen/entfernen (nur Vereinsmodus, PocketBase-File-Feld).
@@ -806,8 +808,13 @@ export const useStore = create<AppState>((set, get) => ({
         const fields = { first, last, name, email, role, playerId, active: m.active, avi: m.avi, position: m.position.trim() };
         accounts = st.accounts.map((a) => a.id === m.id ? { ...a, ...fields } : a);
         const body: ProviderRecord = { id: m.id!, ...fields };
-        if (m.password) body.password = m.password;
-        persist(st, set, LS.users, accounts, (p) => p.updateRecord('accounts', m.id!, body));
+        // Passwort NICHT über updateRecord (PB verlangt dort oldPassword/Superuser), sondern über den
+        // privilegierten Endpunkt setPassword (Admin darf fremde Konten zurücksetzen).
+        const pw = m.password;
+        persist(st, set, LS.users, accounts, async (p) => {
+          await p.updateRecord('accounts', m.id!, body);
+          if (pw) await p.setPassword(m.id!, pw);
+        });
       }
       return { accounts, userModal: null };
     });
@@ -818,6 +825,19 @@ export const useStore = create<AppState>((set, get) => ({
       persist(st, set, LS.users, accounts, (p) => p.deleteRecord('accounts', id));
       return { accounts, userModal: null };
     });
+  },
+  async changeOwnPassword(newPassword) {
+    const st = get();
+    if (st.provider.mode !== 'verein') { set({ syncError: 'Passwort-Änderung gibt es nur im Vereinsmodus.' }); return false; }
+    if (!st.session) { set({ syncError: 'Nicht angemeldet.' }); return false; }
+    if (!newPassword || newPassword.length < 8) { set({ syncError: 'Das Passwort muss mindestens 8 Zeichen haben.' }); return false; }
+    try {
+      await st.provider.setPassword(st.session, newPassword);
+      // setPassword erneuert den tokenKey → die aktuelle Sitzung würde sonst ungültig. Nahtlos neu anmelden.
+      const me = st.accounts.find((a) => a.id === st.session);
+      if (me?.email) { try { await st.provider.login(me.email, newPassword); } catch { /* nicht kritisch – ggf. neu anmelden */ } }
+      return true;
+    } catch (e) { console.error('[pw]', e); set({ syncError: 'Passwort konnte nicht geändert werden.' }); return false; }
   },
   toggleUserActive(id) {
     set((st) => {

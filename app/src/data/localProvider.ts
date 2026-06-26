@@ -73,5 +73,6 @@ export class LocalProvider implements DataProvider {
   async login(): Promise<AuthUser> { return { id: 'local', name: 'Lokal', role: 'admin', active: true }; }
   async logout(): Promise<void> { /* noop */ }
   currentUser(): AuthUser | null { return null; }
+  async setPassword(): Promise<void> { /* lokaler Modus hat keine Anmeldung/Passwörter */ }
   subscribe(): () => void { return () => {}; }
 }

@@ -160,6 +160,10 @@ export class PocketBaseProvider implements DataProvider {
   }
   async logout(): Promise<void> { this.pb.authStore.clear(); this.prefsId = null; }
   currentUser(): AuthUser | null { return toAuthUser(this.pb.authStore.record as unknown as ProviderRecord | null); }
+  // Privilegierter Endpunkt (pb_hooks/set_password.pb.js): umgeht die oldPassword/Superuser-Pflicht der Records-API.
+  async setPassword(userId: string, newPassword: string): Promise<void> {
+    await this.pb.send('/api/set-password', { method: 'POST', body: { userId, password: newPassword } });
+  }
 
   subscribe(onChange: () => void): () => void {
     const colls = ['players', 'teams', 'users', 'leagues', 'events', 'matches', 'club_config'];
