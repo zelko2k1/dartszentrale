@@ -145,6 +145,7 @@ export const FONTS: Record<string, string> = {
   Archivo: "'Archivo',system-ui,sans-serif",
   Rubik: "'Rubik',system-ui,sans-serif",
   Oswald: "'Oswald',system-ui,sans-serif",
+  'Space Grotesk': "'Space Grotesk',system-ui,sans-serif",
 };
 
 export const THEMES_DARK: Record<string, string> = {

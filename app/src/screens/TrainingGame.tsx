@@ -65,8 +65,8 @@ export function TrainingGame() {
               {tgt && (
                 <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>Ziel</span>
-                  <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 18, fontWeight: 800, color: accent, background: `color-mix(in srgb, ${accent} 14%, transparent)`, padding: '3px 12px', borderRadius: 9 }}>{tgt.label}</span>
-                  {tgt.hint && <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--text-3)' }}>{tgt.hint}</span>}
+                  <span style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800, color: accent, background: `color-mix(in srgb, ${accent} 14%, transparent)`, padding: '3px 12px', borderRadius: 9 }}>{tgt.label}</span>
+                  {tgt.hint && <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-3)' }}>{tgt.hint}</span>}
                 </span>
               )}
             </div>
@@ -91,8 +91,8 @@ function PlayerCard({ row, active, accent }: { row: StandRow; active: boolean; a
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 28, fontWeight: 800, color: active ? accent : 'var(--text)', lineHeight: 1 }}>{row.primary}</div>
-        {row.secondary && <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, color: 'var(--text-4)' }}>{row.secondary}</div>}
+        <div style={{ fontFamily: 'var(--font-num)', fontSize: 28, fontWeight: 800, color: active ? accent : 'var(--text)', lineHeight: 1 }}>{row.primary}</div>
+        {row.secondary && <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: 'var(--text-4)' }}>{row.secondary}</div>}
       </div>
       {row.sub && <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600 }}>{row.sub}</div>}
     </div>
@@ -145,8 +145,8 @@ function MatrixBoard({ headLabel, cols, rows, accent, renderCell, footer }: {
                 <span style={{ fontSize: 12, fontWeight: 700, color: c.active ? accent : 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.player.name}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-                <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 17, fontWeight: 800, color: c.active ? accent : 'var(--text)', lineHeight: 1 }}>{c.primary}</div>
-                {c.secondary && <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, fontWeight: 700, color: 'var(--text-4)' }}>{c.secondary}</div>}
+                <div style={{ fontFamily: 'var(--font-num)', fontSize: 17, fontWeight: 800, color: c.active ? accent : 'var(--text)', lineHeight: 1 }}>{c.primary}</div>
+                {c.secondary && <div style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 700, color: 'var(--text-4)' }}>{c.secondary}</div>}
               </div>
             </div>
           );
@@ -155,7 +155,7 @@ function MatrixBoard({ headLabel, cols, rows, accent, renderCell, footer }: {
         {/* Zeilen */}
         {rows.map((row, r) => (
           <Fragment key={row.key}>
-            <div style={{ ...cellBase, fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 800, color: row.dim ? 'var(--text-5)' : 'var(--text-2)', textDecoration: row.dim ? 'line-through' : 'none', background: row.highlight ? rowBg : 'var(--surface-2)', whiteSpace: 'nowrap', overflow: 'hidden' }}>{row.label}</div>
+            <div style={{ ...cellBase, fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: row.dim ? 'var(--text-5)' : 'var(--text-2)', textDecoration: row.dim ? 'line-through' : 'none', background: row.highlight ? rowBg : 'var(--surface-2)', whiteSpace: 'nowrap', overflow: 'hidden' }}>{row.label}</div>
             {cols.map((c, i) => (
               <div key={i} style={{ ...cellBase, padding: '7px 0', minHeight: 38, background: c.active ? activeBg : (row.highlight ? rowBg : 'var(--surface-2)') }}>
                 {renderCell(i, r)}
@@ -169,7 +169,7 @@ function MatrixBoard({ headLabel, cols, rows, accent, renderCell, footer }: {
           <>
             <div style={{ ...cellBase, padding: '8px 0', fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.03em' }}>{footer.label}</div>
             {footer.values.map((v, i) => (
-              <div key={i} style={{ ...cellBase, padding: '8px 0', background: cols[i].active ? activeBg : 'var(--surface-2)', fontFamily: "'JetBrains Mono',monospace", fontSize: 12, fontWeight: 700, color: 'var(--text-4)' }}>{v}</div>
+              <div key={i} style={{ ...cellBase, padding: '8px 0', background: cols[i].active ? activeBg : 'var(--surface-2)', fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 700, color: 'var(--text-4)' }}>{v}</div>
             ))}
           </>
         )}
@@ -208,7 +208,7 @@ function GameBoard({ game, accent, activeId }: { game: TrainGame; accent: string
         const arr = innings[players[ci].id];
         if (ri >= arr.length) return dotCell();
         const v = arr[ri];
-        return <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 15, fontWeight: 700, color: v > 0 ? 'var(--text)' : 'var(--text-5)' }}>{v}</span>;
+        return <span style={{ fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 700, color: v > 0 ? 'var(--text)' : 'var(--text-5)' }}>{v}</span>;
       };
       return <MatrixBoard headLabel="Inn." cols={cols} rows={rows} accent={accent} renderCell={renderCell} />;
     }
@@ -232,7 +232,7 @@ function GameBoard({ game, accent, activeId }: { game: TrainGame; accent: string
         const arr = rounds[players[ci].id];
         if (ri >= arr.length) return dotCell();
         const e = arr[ri];
-        return <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 14, fontWeight: 700, color: e.hit ? 'var(--text)' : '#E0594B' }}>{e.val}</span>;
+        return <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, color: e.hit ? 'var(--text)' : '#E0594B' }}>{e.val}</span>;
       };
       return <MatrixBoard headLabel="Runde" cols={cols} rows={rows} accent={accent} renderCell={renderCell} />;
     }
@@ -255,7 +255,7 @@ function InputDeck({ game, accent }: { game: TrainGame; accent: string }) {
   }
 }
 
-const bigBtn = (): React.CSSProperties => ({ flex: 1, minWidth: 64, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 13, padding: '16px 0', fontFamily: "'JetBrains Mono',monospace", fontSize: 22, fontWeight: 800, cursor: 'pointer' });
+const bigBtn = (): React.CSSProperties => ({ flex: 1, minWidth: 64, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 13, padding: '16px 0', fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, cursor: 'pointer' });
 const primaryBtn = (accent: string): React.CSSProperties => ({ background: accent, border: 'none', color: accentFg(accent), borderRadius: 12, padding: '13px 24px', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' });
 
 function HitsPanel() {
@@ -323,7 +323,7 @@ function HalvePanel({ accent }: { accent: string }) {
       <input autoFocus type="text" inputMode="numeric" value={val} placeholder="Punkte"
         onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
         onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
-        style={{ flex: 1, minWidth: 120, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '13px 16px', color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace", fontSize: 22, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
+        style={{ flex: 1, minWidth: 120, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '13px 16px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
       <button onClick={submit} disabled={!valid} style={{ ...primaryBtn(accent), opacity: valid ? 1 : 0.4, cursor: valid ? 'pointer' : 'default', padding: '15px 24px' }}>Eintragen</button>
       <button onClick={() => { apply({ kind: 'halve', scored: 0 }); setVal(''); }} style={{ background: 'rgba(224,89,75,.12)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', borderRadius: 12, padding: '15px 22px', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Verfehlt → halbieren</button>
     </div>
@@ -342,12 +342,12 @@ function ScorePanel({ accent }: { accent: string }) {
         <input autoFocus type="text" inputMode="numeric" value={val} placeholder="Aufnahme"
           onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
-          style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '13px 16px', color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace", fontSize: 22, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
+          style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '13px 16px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
         <button onClick={submit} disabled={!valid} style={{ ...primaryBtn(accent), opacity: valid ? 1 : 0.4, cursor: valid ? 'pointer' : 'default', padding: '15px 24px' }}>Eintragen</button>
       </div>
       <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
         {[26, 40, 41, 45, 60, 81, 100, 140, 180].map((q) => (
-          <button key={q} onClick={() => { apply({ kind: 'score', score: q }); setVal(''); }} style={{ flex: '1 1 60px', background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, padding: '10px 0', fontFamily: "'JetBrains Mono',monospace", fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>{q}</button>
+          <button key={q} onClick={() => { apply({ kind: 'score', score: q }); setVal(''); }} style={{ flex: '1 1 60px', background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, padding: '10px 0', fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>{q}</button>
         ))}
       </div>
     </div>
@@ -377,7 +377,7 @@ function CricketPanel({ game, accent }: { game: TrainGame; accent: string }) {
         {[['Single', 1], ['Double', 2], ['Triple', 3]].map(([lbl, m]) => (
           <button key={m as number} onClick={() => setMult(m as number)} style={{ background: mult === m ? accent : 'var(--btn)', color: mult === m ? accentFg(accent) : 'var(--text-2)', border: `1px solid ${mult === m ? accent : 'var(--border-2)'}`, borderRadius: 9, padding: '7px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{lbl}</button>
         ))}
-        <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-3)', fontFamily: "'JetBrains Mono',monospace" }}>Darts: {darts}/3</span>
+        <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>Darts: {darts}/3</span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8, marginBottom: 10 }}>
         {CRICKET_TARGETS.map((num) => {
@@ -385,7 +385,7 @@ function CricketPanel({ game, accent }: { game: TrainGame; accent: string }) {
           const pending = marks[num] || 0;
           return (
             <button key={num} onClick={() => addDart(num)} disabled={darts >= 3} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, background: closed ? `color-mix(in srgb, ${accent} 18%, var(--btn))` : 'var(--btn)', border: `1px solid ${pending ? accent : 'var(--border-2)'}`, borderRadius: 11, padding: '10px 0', cursor: darts >= 3 ? 'default' : 'pointer', opacity: darts >= 3 ? 0.5 : 1, fontFamily: 'inherit' }}>
-              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{num === 25 ? 'Bull' : num}</span>
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{num === 25 ? 'Bull' : num}</span>
               <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700 }}>{marksGlyph(Math.min(3, myMarks[num] + pending))}{pending ? ` +${pending}` : ''}</span>
             </button>
           );
@@ -418,7 +418,7 @@ function KillerPanel({ game, accent }: { game: TrainGame; accent: string }) {
         <span style={{ fontSize: 13, color: 'var(--text-3)' }}>
           {isKiller ? <b style={{ color: accent }}>Killer aktiv</b> : <>Triff deine Zahl <b style={{ color: 'var(--text)' }}>{num[cur.id]}</b>, um Killer zu werden</>}
         </span>
-        <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-3)', fontFamily: "'JetBrains Mono',monospace" }}>Darts: {darts.length}/3</span>
+        <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>Darts: {darts.length}/3</span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(110px, 1fr))`, gap: 8, marginBottom: 10 }}>
         {game.players.map((p) => {
@@ -427,7 +427,7 @@ function KillerPanel({ game, accent }: { game: TrainGame; accent: string }) {
           const hitCount = darts.filter((d) => d === p.id).length;
           return (
             <button key={p.id} onClick={() => addDart(p.id)} disabled={dead || darts.length >= 3} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: hitCount ? `color-mix(in srgb, ${accent} 16%, var(--btn))` : 'var(--btn)', border: `1px solid ${self ? accent : 'var(--border-2)'}`, borderRadius: 11, padding: '10px 6px', cursor: (dead || darts.length >= 3) ? 'default' : 'pointer', opacity: dead ? 0.4 : 1, fontFamily: 'inherit' }}>
-              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>{num[p.id]}</span>
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>{num[p.id]}</span>
               <span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{self ? 'Eigene' : p.short} · {'♥'.repeat(Math.max(0, lives[p.id])) || '✗'}{hitCount ? ` (${hitCount})` : ''}</span>
             </button>
           );
@@ -463,10 +463,10 @@ function TrainWinOverlay({ game, accent }: { game: TrainGame; accent: string }) 
             const isWin = game.winnerIds.includes(r.player.id);
             return (
               <div key={r.player.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 12, background: isWin ? `color-mix(in srgb, ${accent} 12%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${isWin ? accent : 'var(--border-2)'}` }}>
-                <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 14, fontWeight: 800, color: 'var(--text-4)', width: 20 }}>{solo ? '' : `${r.rank}.`}</span>
+                <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: 'var(--text-4)', width: 20 }}>{solo ? '' : `${r.rank}.`}</span>
                 <span style={{ flex: 1, fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.player.name}</span>
-                <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 16, fontWeight: 800, color: isWin ? accent : 'var(--text-2)' }}>{r.primary}</span>
-                {r.secondary && <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--text-4)' }}>{r.secondary}</span>}
+                <span style={{ fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 800, color: isWin ? accent : 'var(--text-2)' }}>{r.primary}</span>
+                {r.secondary && <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-4)' }}>{r.secondary}</span>}
               </div>
             );
           })}

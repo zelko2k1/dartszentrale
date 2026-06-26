@@ -27,7 +27,7 @@ function PercentField({ value, min, max, onCommit }: { value: number; min: numbe
       onBlur={commit}
       onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
       title={`${min}–${max} % · in 5er-Schritten`}
-      style={{ width: 44, textAlign: 'center', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace", fontSize: 17, fontWeight: 700, padding: 0, margin: 0 }}
+      style={{ width: 44, textAlign: 'center', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 17, fontWeight: 700, padding: 0, margin: 0 }}
     />
   );
 }
@@ -52,7 +52,7 @@ function ShortcutRecorder({ value, accent, fallback, onChange }: { value: string
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
       {warn && <span style={{ fontSize: 11, color: '#E0594B', fontWeight: 600 }}>Alt + Buchstabe/Ziffer (optional Strg)</span>}
-      <button onClick={() => { setRecording((r) => !r); setWarn(false); }} style={{ minWidth: 140, fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 800, color: recording ? accent : 'var(--text-2)', background: 'var(--btn)', border: `1px solid ${recording ? accent : 'var(--border-2)'}`, borderRadius: 8, padding: '8px 14px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+      <button onClick={() => { setRecording((r) => !r); setWarn(false); }} style={{ minWidth: 140, fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: recording ? accent : 'var(--text-2)', background: 'var(--btn)', border: `1px solid ${recording ? accent : 'var(--border-2)'}`, borderRadius: 8, padding: '8px 14px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
         {recording ? 'Alt + Taste …' : formatCombo(value)}
       </button>
       <button onClick={() => { onChange(fallback); setRecording(false); setWarn(false); }} title={`Auf ${formatCombo(fallback)} zurücksetzen`} className="dh-btn" style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>↺</button>
@@ -182,7 +182,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         <button className="dh-btn" onClick={() => set(key, clamp(val - 5) as SettingsType[K])} style={btn}>−</button>
         <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 9, padding: '0 9px', height: 40 }}>
           <PercentField value={val} min={min} max={max} onCommit={(n) => set(key, n as SettingsType[K])} />
-          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: 'var(--text-4)', fontWeight: 700 }}>%</span>
+          <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-4)', fontWeight: 700 }}>%</span>
         </div>
         <button className="dh-btn" onClick={() => set(key, clamp(val + 5) as SettingsType[K])} style={btn}>+</button>
       </div>
@@ -291,7 +291,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
             {([['Neues Spiel', cfg.newGameKey || 'alt+n'], ['Schnellstart Bo5', cfg.quickBo5Key || 'alt+5'], ['Schnellstart Bo3', cfg.quickBo3Key || 'alt+3']] as const).map(([label, combo]) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{label}</span>
-                <kbd style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12.5, fontWeight: 700, color: accent, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '4px 10px' }}>{formatCombo(combo)}</kbd>
+                <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 12.5, fontWeight: 700, color: accent, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '4px 10px' }}>{formatCombo(combo)}</kbd>
               </div>
             ))}
           </div>
@@ -304,7 +304,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
                 {cfg.fkeys.map((v, i) => (
                   <label key={i} style={{ display: 'flex', flexDirection: 'column', gap: 3, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '7px 10px', cursor: 'text' }}>
                     <span style={{ fontSize: 10, fontWeight: 800, color: accent, letterSpacing: '.05em' }}>F{i + 1}</span>
-                    <input type="number" min={0} max={180} value={v} onChange={(e) => s.setFKey(i, e.target.value)} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace", fontSize: 16, fontWeight: 700, padding: 0, margin: 0 }} />
+                    <input type="number" min={0} max={180} value={v} onChange={(e) => s.setFKey(i, e.target.value)} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 700, padding: 0, margin: 0 }} />
                   </label>
                 ))}
               </div>

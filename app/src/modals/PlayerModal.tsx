@@ -63,7 +63,7 @@ export function PlayerModal() {
         </div>
       </div>
       <FieldLabel note="(max. 3 Zeichen, optional)">Kürzel</FieldLabel>
-      <input className="dh-input" value={m.short} onChange={(e) => s.setPlayerField('short', e.target.value)} placeholder="autom. aus Name" maxLength={3} style={{ width: 140, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', fontSize: 15, color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace", textTransform: 'uppercase', marginBottom: 26 }} />
+      <input className="dh-input" value={m.short} onChange={(e) => s.setPlayerField('short', e.target.value)} placeholder="autom. aus Name" maxLength={3} style={{ width: 140, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', fontSize: 15, color: 'var(--text)', fontFamily: 'var(--font-num)', textTransform: 'uppercase', marginBottom: 26 }} />
       {confirmDel ? (
         <div style={{ background: 'rgba(224,89,75,.08)', border: '1px solid rgba(224,89,75,.32)', borderRadius: 12, padding: '14px 16px' }}>
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>„{fullName || 'Spieler'}" wirklich löschen?</div>

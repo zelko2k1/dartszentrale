@@ -80,11 +80,11 @@ export function Players() {
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <div style={{ flex: 1, background: 'var(--btn)', borderRadius: 10, padding: '9px 11px' }}>
-                  <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 17, fontWeight: 800 }}>{agg.avg ? agg.avg.toFixed(1) : '–'}</div>
+                  <div style={{ fontFamily: 'var(--font-num)', fontSize: 17, fontWeight: 800 }}>{agg.avg ? agg.avg.toFixed(1) : '–'}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>Ø 3-Dart</div>
                 </div>
                 <div style={{ flex: 1, background: 'var(--btn)', borderRadius: 10, padding: '9px 11px' }}>
-                  <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 17, fontWeight: 800, color: '#F2B829' }}>{agg.wins}</div>
+                  <div style={{ fontFamily: 'var(--font-num)', fontSize: 17, fontWeight: 800, color: '#F2B829' }}>{agg.wins}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>Siege</div>
                 </div>
               </div>

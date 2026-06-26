@@ -22,8 +22,8 @@ function Grid({ modes }: { modes: TrainMode[] }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--hairline)' }}>
             <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, whiteSpace: 'nowrap' }}>{tagText(m)}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <button onClick={(e) => { e.stopPropagation(); openRules(m.id); }} title="Regeln" className="dh-btn" style={{ width: 24, height: 24, borderRadius: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 800 }}>?</button>
-              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 800, color: m.color }}>{m.metric}</span>
+              <button onClick={(e) => { e.stopPropagation(); openRules(m.id); }} title="Regeln" className="dh-btn" style={{ width: 24, height: 24, borderRadius: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800 }}>?</button>
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: m.color }}>{m.metric}</span>
             </div>
           </div>
         </div>

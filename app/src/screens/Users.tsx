@@ -64,7 +64,7 @@ export function Users() {
           { v: linked, label: 'mit Spieler verknüpft', color: '#3B9EFF' },
         ].map((t) => (
           <div key={t.label} style={{ flex: 1, minWidth: 140, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px' }}>
-            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 24, fontWeight: 800, color: t.color }}>{t.v}</div>
+            <div style={{ fontFamily: 'var(--font-num)', fontSize: 24, fontWeight: 800, color: t.color }}>{t.v}</div>
             <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginTop: 2 }}>{t.label}</div>
           </div>
         ))}

@@ -17,7 +17,7 @@ export function FixtureModal() {
     }}>{name}</button>
   );
 
-  const numInput: React.CSSProperties = { width: 80, boxSizing: 'border-box', textAlign: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: 14, color: 'var(--text)', fontSize: 22, fontWeight: 800, fontFamily: "'JetBrains Mono',monospace" };
+  const numInput: React.CSSProperties = { width: 80, boxSizing: 'border-box', textAlign: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: 14, color: 'var(--text)', fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-num)' };
 
   return (
     <Modal onClose={() => s.closeFixtureModal()} width={500} z={63} style={{ maxHeight: '88vh', overflow: 'auto' }}>

@@ -47,7 +47,7 @@ export function TextInput({ value, onChange, placeholder, maxLength, mono, style
       style={{
         width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)',
         borderRadius: 11, padding: '12px 14px', fontSize: 15, color: 'var(--text)',
-        fontFamily: mono ? "'JetBrains Mono',monospace" : 'inherit', textTransform: mono ? 'uppercase' : 'none',
+        fontFamily: mono ? 'var(--font-num)' : 'inherit', textTransform: mono ? 'uppercase' : 'none',
         ...style,
       }}
     />

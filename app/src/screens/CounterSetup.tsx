@@ -55,7 +55,7 @@ export function CounterSetup() {
   };
 
   const seg = (active: boolean, label: string, onClick: () => void, mono?: boolean, key?: React.Key) => (
-    <button key={key} onClick={onClick} style={{ background: active ? accent : 'var(--btn)', color: active ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${active ? accent : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '10px 18px', borderRadius: 10, fontSize: mono ? 14 : 13, cursor: 'pointer', fontFamily: mono ? "'JetBrains Mono',monospace" : 'inherit' }}>{label}</button>
+    <button key={key} onClick={onClick} style={{ background: active ? accent : 'var(--btn)', color: active ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${active ? accent : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '10px 18px', borderRadius: 10, fontSize: mono ? 14 : 13, cursor: 'pointer', fontFamily: mono ? 'var(--font-num)' : 'inherit' }}>{label}</button>
   );
   const toggle = (on: boolean, onClick: () => void) => (
     <button onClick={onClick} style={{ position: 'relative', width: 46, height: 26, borderRadius: 999, background: on ? accent : 'var(--btn)', border: on ? 'none' : '1px solid var(--border-2)', cursor: 'pointer', flexShrink: 0 }}>
@@ -135,7 +135,7 @@ export function CounterSetup() {
                 <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>{g.name}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>{players[0]?.name} vs {players[1]?.name}</div>
               </div>
-              <span style={{ flexShrink: 0, fontFamily: "'JetBrains Mono',monospace", fontSize: 11, fontWeight: 700, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '3px 8px' }}>{formatCombo(g.combo)}</span>
+              <span style={{ flexShrink: 0, fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 700, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '3px 8px' }}>{formatCombo(g.combo)}</span>
             </button>
           ))}
         </div>
@@ -165,7 +165,7 @@ export function CounterSetup() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : '1fr 48px 1fr', gap: 14, alignItems: 'start', paddingBottom: 18, borderTop: '1px solid var(--hairline)', paddingTop: 16 }}>
           {slot('p1', true, 'Spieler 1')}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 64 }}><span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 16, fontWeight: 800, color: 'var(--text-4)' }}>VS</span></div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 64 }}><span style={{ fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 800, color: 'var(--text-4)' }}>VS</span></div>
           {slot('p2', false, 'Spieler 2')}
         </div>
         {row('Freies Spiel', 'Spaßspiel ohne Wertung – wird nicht gespeichert', toggle(!!su.freePlay, () => s.setSetup('freePlay', !su.freePlay)))}
@@ -173,13 +173,13 @@ export function CounterSetup() {
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
         <div>
-          <div style={{ fontSize: 13, color: 'var(--text-3)', fontFamily: "'JetBrains Mono',monospace" }}>{summary}</div>
+          <div style={{ fontSize: 13, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>{summary}</div>
           <div style={{ fontSize: 12, color: su.freePlay ? 'var(--text-4)' : 'var(--success)', fontWeight: 600, marginTop: 4 }}>{su.freePlay ? 'Freies Spiel – wird nicht gespeichert' : 'Wird für die gewählten Spieler gewertet'}</div>
         </div>
         <button ref={startRef} className="dh-primary" onClick={() => s.startGame()} title="Spiel starten (Strg+Enter)" style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '14px 28px', borderRadius: 13, fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
           Spiel starten
-          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, fontWeight: 700, opacity: 0.8, background: 'rgba(0,0,0,.18)', borderRadius: 6, padding: '2px 7px', marginLeft: 2 }}>Strg+↵</span>
+          <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 700, opacity: 0.8, background: 'rgba(0,0,0,.18)', borderRadius: 6, padding: '2px 7px', marginLeft: 2 }}>Strg+↵</span>
         </button>
       </div>
     </div>

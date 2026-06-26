@@ -161,7 +161,7 @@ function VereinDashboard() {
             <div key={team.id + fx!.fixtureId} className="dh-hover-border" style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '11px 12px', border: '1px solid var(--border-2)', borderRadius: 12, background: 'var(--btn)' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 46, flexShrink: 0, borderRight: `2px solid ${kc}`, paddingRight: 11 }}>
                 <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em' }}>{d ? MON3[d.getMonth()] : '—'}</span>
-                <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 20, fontWeight: 800, lineHeight: 1.05 }}>{d ? d.getDate() : '–'}</span>
+                <span style={{ fontFamily: 'var(--font-num)', fontSize: 20, fontWeight: 800, lineHeight: 1.05 }}>{d ? d.getDate() : '–'}</span>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -197,7 +197,7 @@ function VereinDashboard() {
                 <div style={{ fontSize: 14, fontWeight: 600 }}>{r.opp}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{r.leagueName}</div>
               </div>
-              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 18, fontWeight: 800, color: scoreColor }}>{r.hs}:{r.as}</span>
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800, color: scoreColor }}>{r.hs}:{r.as}</span>
               <span style={{ fontSize: 11, fontWeight: 800, color: scoreColor, width: 24, textAlign: 'center' }}>{r.outcome}</span>
             </div>
           );
@@ -210,7 +210,7 @@ function VereinDashboard() {
     <div style={cardStyle}>
       <div style={sectionTitle}>Meine Statistik · {myPlayer.name}</div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 14 }}>
-        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 38, fontWeight: 800, letterSpacing: '-.02em', color: 'var(--text)' }}>{myAgg.avg ? myAgg.avg.toFixed(1) : '–'}</span>
+        <span style={{ fontFamily: 'var(--font-num)', fontSize: 38, fontWeight: 800, letterSpacing: '-.02em', color: 'var(--text)' }}>{myAgg.avg ? myAgg.avg.toFixed(1) : '–'}</span>
         <span style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700 }}>Ø 3-DART</span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 14 }}>
@@ -223,7 +223,7 @@ function VereinDashboard() {
           { v: String(myAgg.c100), l: '100+' },
         ].map((b) => (
           <div key={b.l} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px' }}>
-            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 18, fontWeight: 800 }}>{b.v}</div>
+            <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800 }}>{b.v}</div>
             <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, marginTop: 2 }}>{b.l}</div>
           </div>
         ))}
@@ -234,8 +234,8 @@ function VereinDashboard() {
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 4px', borderBottom: '1px solid var(--hairline)' }}>
               <span style={{ width: 5, height: 26, borderRadius: 3, background: g.won ? '#19A463' : '#E0594B', flexShrink: 0 }} />
               <span style={{ flex: 1, fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{g.opp || '—'}</span>
-              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: 'var(--text-3)' }}>{g.avg ? g.avg.toFixed(1) : ''}</span>
-              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 800, color: g.won ? 'var(--success)' : 'var(--danger-soft)', width: 44, textAlign: 'right' }}>{g.score}</span>
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{g.avg ? g.avg.toFixed(1) : ''}</span>
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: g.won ? 'var(--success)' : 'var(--danger-soft)', width: 44, textAlign: 'right' }}>{g.score}</span>
             </div>
           ))}
         </div>
@@ -263,10 +263,10 @@ function VereinDashboard() {
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {rows.map((row, idx) => (
                     <div key={row.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 6px', borderRadius: 7, background: row.own ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent' }}>
-                      <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, fontWeight: 800, color: 'var(--text-4)', width: 18, textAlign: 'right' }}>{idx + 1}</span>
+                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 800, color: 'var(--text-4)', width: 18, textAlign: 'right' }}>{idx + 1}</span>
                       <span style={{ flex: 1, fontSize: 13, fontWeight: row.own ? 700 : 500, color: row.own ? 'var(--text)' : 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.name}</span>
                       <span style={{ fontSize: 11, color: 'var(--text-4)', width: 30, textAlign: 'center' }}>{row.sp}</span>
-                      <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 800, width: 28, textAlign: 'right' }}>{row.pts}</span>
+                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, width: 28, textAlign: 'right' }}>{row.pts}</span>
                     </div>
                   ))}
                 </div>
@@ -286,7 +286,7 @@ function VereinDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
             <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>{longDate(now).toUpperCase()}</div>
             <span style={{ fontSize: 12, color: 'var(--border-strong)' }}>·</span>
-            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.05em' }}>{timeNow(now)}</div>
+            <div style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.05em' }}>{timeNow(now)}</div>
           </div>
           <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{greeting}</h1>
           <div style={{ fontSize: 13, color: 'var(--text-3)', fontWeight: 600, marginTop: 4 }}>{subtitle}</div>
@@ -325,7 +325,7 @@ function VereinDashboard() {
               <div key={ev.id} className="dh-hover-border dh-row" onClick={() => s.openEditEvent(ev.id)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 10px', borderRadius: 12, cursor: 'pointer', border: '1px solid transparent' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: 50, flexShrink: 0, borderRight: `2px solid ${ev.color}`, paddingRight: 12 }}>
                   <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em' }}>{ev.mon}</span>
-                  <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 22, fontWeight: 800, lineHeight: 1.05, letterSpacing: '-.02em' }}>{ev.day}</span>
+                  <span style={{ fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, lineHeight: 1.05, letterSpacing: '-.02em' }}>{ev.day}</span>
                   <span style={{ fontSize: 10, fontWeight: 700, color: ev.color }}>{ev.rel}</span>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -351,7 +351,7 @@ function VereinDashboard() {
                 <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>{c.label}</span>
                 <div style={{ width: 30, height: 30, borderRadius: 9, background: c.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>{c.icon}</div>
               </div>
-              <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 30, fontWeight: 800, marginTop: 12, letterSpacing: '-.02em', color: 'var(--text)' }}>{c.value}</div>
+              <div style={{ fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, marginTop: 12, letterSpacing: '-.02em', color: 'var(--text)' }}>{c.value}</div>
               <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginTop: 3 }}>{c.delta}</div>
             </button>
           ))}
@@ -440,7 +440,7 @@ function LocalDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
             <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>{longDate(now).toUpperCase()}</div>
             <span style={{ fontSize: 12, color: 'var(--border-strong)' }}>·</span>
-            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.05em' }}>{timeNow(now)}</div>
+            <div style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.05em' }}>{timeNow(now)}</div>
           </div>
           <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{greetFn(now)}</h1>
         </div>
@@ -488,7 +488,7 @@ function LocalDashboard() {
                 <div key={ev.id} className="dh-hover-border dh-row" onClick={() => s.openEditEvent(ev.id)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 10px', borderRadius: 12, cursor: 'pointer', border: '1px solid transparent' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: 50, flexShrink: 0, borderRight: `2px solid ${ev.color}`, paddingRight: 12 }}>
                     <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em' }}>{ev.mon}</span>
-                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 22, fontWeight: 800, lineHeight: 1.05, letterSpacing: '-.02em' }}>{ev.day}</span>
+                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, lineHeight: 1.05, letterSpacing: '-.02em' }}>{ev.day}</span>
                     <span style={{ fontSize: 10, fontWeight: 700, color: ev.color }}>{ev.rel}</span>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -517,7 +517,7 @@ function LocalDashboard() {
                       <div style={{ fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.winnerName || '—'}</div>
                       <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{m.gameLabel} · {dateStr}</div>
                     </div>
-                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 17, fontWeight: 800, color: accent }}>{m.scoreLine}</span>
+                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 17, fontWeight: 800, color: accent }}>{m.scoreLine}</span>
                   </div>
                 );
               })}
@@ -540,7 +540,7 @@ function LocalDashboard() {
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={mode.icon} /></svg>
                     </div>
                     <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{mode.name}</span>
-                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 14, fontWeight: 800, color: 'var(--text-3)' }}>×{n}</span>
+                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: 'var(--text-3)' }}>×{n}</span>
                   </div>
                 ))}
               </div>
@@ -556,10 +556,10 @@ function LocalDashboard() {
               {top.map((row, idx) => {
                 return (
                   <div key={row.pl.id} className="dh-row" onClick={() => s.openPlayer(row.pl.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 6px', cursor: 'pointer', borderRadius: 9 }}>
-                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 800, color: idx === 0 && row.agg.avg ? '#F2B829' : 'var(--text-4)', width: 18 }}>{idx + 1}</span>
+                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: idx === 0 && row.agg.avg ? '#F2B829' : 'var(--text-4)', width: 18 }}>{idx + 1}</span>
                     <Avatar photo={row.pl.photo} short={row.pl.short} avi={row.pl.avi} size={32} />
                     <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{row.pl.name}</span>
-                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{row.agg.avg ? row.agg.avg.toFixed(1) : '–'}</span>
+                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{row.agg.avg ? row.agg.avg.toFixed(1) : '–'}</span>
                   </div>
                 );
               })}

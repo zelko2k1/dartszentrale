@@ -31,22 +31,22 @@ export function Statistics() {
         </div>
         {rows.map((l) => (
           <div key={l.id} className="dh-row" onClick={() => s.openPlayer(l.id)} style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4, padding: '13px 18px', borderBottom: '1px solid var(--hairline)', alignItems: 'center', cursor: 'pointer', background: l.rowBg, minWidth: 680 }}>
-            <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 14, fontWeight: 800, color: l.rankColor }}>{l.rank}</span>
+            <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: l.rankColor }}>{l.rank}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
               <Avatar photo={l.photo} short={l.short} avi={l.avi} size={30} />
               <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.name}</span>
             </div>
-            <span style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 15, fontWeight: 800, color: '#2BD377' }}>{l.avg}</span>
-            <span style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: 'var(--text-3)' }}>{l.sp}</span>
-            <span style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, color: '#19A463' }}>{l.sw}</span>
-            <span style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, color: '#E0594B' }}>{l.sn}</span>
-            <span style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: '#3B9EFF' }}>{l.s60}</span>
-            <span style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: '#19A463' }}>{l.s100}</span>
-            <span style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: '#F2B829' }}>{l.s140}</span>
-            <span style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: '#E0594B' }}>{l.s180}</span>
-            <span style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: '#2bd3c0' }}>{l.shortLegs}</span>
-            <span style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: 'var(--text)' }}>{l.checkout}</span>
-            <span style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: 'var(--text)' }}>{l.highFinish}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: '#2BD377' }}>{l.avg}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{l.sp}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: '#19A463' }}>{l.sw}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: '#E0594B' }}>{l.sn}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: '#3B9EFF' }}>{l.s60}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: '#19A463' }}>{l.s100}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: '#F2B829' }}>{l.s140}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: '#E0594B' }}>{l.s180}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: '#2bd3c0' }}>{l.shortLegs}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text)' }}>{l.checkout}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text)' }}>{l.highFinish}</span>
           </div>
         ))}
       </div>

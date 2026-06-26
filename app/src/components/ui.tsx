@@ -86,7 +86,7 @@ export function StatTile({ label, value, sub, icon, iconBg = 'var(--btn)', value
         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-4)' }}>{label}</span>
         {icon && <span style={{ width: 30, height: 30, borderRadius: 9, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>{icon}</span>}
       </div>
-      <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 30, fontWeight: 800, lineHeight: 1, color: valueColor }}>{value}</div>
+      <div style={{ fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, lineHeight: 1, color: valueColor }}>{value}</div>
       {sub && <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 10 }}>{sub}</div>}
     </div>
   );

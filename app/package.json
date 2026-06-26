@@ -10,6 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/archivo": "^5.2.8",
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/oswald": "^5.2.8",
+    "@fontsource/rubik": "^5.2.8",
+    "@fontsource/space-grotesk": "^5.2.10",
     "pocketbase": "^0.27.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

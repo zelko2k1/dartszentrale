@@ -14,7 +14,7 @@ export function ResultModal() {
 
   const legStyle: React.CSSProperties = {
     width: 38, textAlign: 'center', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)',
-    borderRadius: 8, padding: '7px 4px', color: 'var(--text)', fontSize: 13, fontFamily: "'JetBrains Mono',monospace",
+    borderRadius: 8, padding: '7px 4px', color: 'var(--text)', fontSize: 13, fontFamily: 'var(--font-num)',
   };
   const resBtn = (active: boolean, color: string, label: string, onClick: () => void) => (
     <button onClick={onClick} style={{ background: active ? color : 'var(--btn)', color: active ? '#fff' : 'var(--text-3)', border: `1px solid ${active ? color : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '7px 12px', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{label}</button>
@@ -34,12 +34,12 @@ export function ResultModal() {
       {/* Live-Stand: gewonnene Spiele */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 14, padding: '14px 18px', marginBottom: 18 }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 30, fontWeight: 800, color: ownWins >= oppWins ? 'var(--success)' : 'var(--text)' }}>{ownWins}</div>
+          <div style={{ fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, color: ownWins >= oppWins ? 'var(--success)' : 'var(--text)' }}>{ownWins}</div>
           <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.ownTeamName}</div>
         </div>
         <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-5)' }}>:</span>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 30, fontWeight: 800, color: oppWins > ownWins ? 'var(--danger-soft)' : 'var(--text)' }}>{oppWins}</div>
+          <div style={{ fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, color: oppWins > ownWins ? 'var(--danger-soft)' : 'var(--text)' }}>{oppWins}</div>
           <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.oppName}</div>
         </div>
         {open > 0 && <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--text-5)' }}>· {open} offen</span>}

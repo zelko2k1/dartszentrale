@@ -159,7 +159,7 @@ export function Counter() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                    {cfg.unit === 'sets' && <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 15, fontWeight: 800, color: legInk, background: `color-mix(in srgb, ${legInk} 14%, transparent)`, padding: '3px 9px', borderRadius: 999 }}>{prog.setsWon[p.id] || 0}</div>}
+                    {cfg.unit === 'sets' && <div style={{ fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: legInk, background: `color-mix(in srgb, ${legInk} 14%, transparent)`, padding: '3px 9px', borderRadius: 999 }}>{prog.setsWon[p.id] || 0}</div>}
                     <div style={{ display: 'flex', gap: 5 }}>
                       {pips.map((on, k) => <div key={k} style={{ width: 9, height: 9, borderRadius: '50%', background: on ? legInk : 'transparent', border: `2px solid ${on ? legInk : 'var(--border-strong)'}` }} />)}
                     </div>
@@ -168,11 +168,11 @@ export function Counter() {
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 0, padding: '6px 10px', gap: 6 }}>
                   {/* self-sizing: fill the score box's height AND width (container-query units), scaled by the font-size setting */}
                   <div style={{ flex: 1, width: '100%', minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', containerType: 'size' }}>
-                    <div style={{ fontFamily: cfg.font === 'Inter' ? "'JetBrains Mono',monospace" : 'inherit', fontWeight: 800, fontSize: `min(${Math.round(88 * cfg.scoreScale / 100)}cqh, ${Math.round(56 * cfg.scoreScale / 100)}cqw)`, lineHeight: 1, letterSpacing: '-.03em', color: isActive ? (scoreInk || accentInk) : 'var(--text-4)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center', ...scoreOutline }}>{rem}</div>
+                    <div style={{ fontFamily: 'var(--font-score)', fontWeight: 800, fontSize: `min(${Math.round(88 * cfg.scoreScale / 100)}cqh, ${Math.round(56 * cfg.scoreScale / 100)}cqw)`, lineHeight: 1, letterSpacing: '-.03em', color: isActive ? (scoreInk || accentInk) : 'var(--text-4)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'center', ...scoreOutline }}>{rem}</div>
                   </div>
                   {/* checkout suggestion — centred under the score */}
                   {cfg.showCheckout && co && (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0, maxWidth: '100%', background: 'rgba(242,184,41,.12)', border: '1px solid rgba(242,184,41,.32)', color: coInk, padding: '5px 12px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: "'JetBrains Mono',monospace", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{co}</div>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0, maxWidth: '100%', background: 'rgba(242,184,41,.12)', border: '1px solid rgba(242,184,41,.32)', color: coInk, padding: '5px 12px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{co}</div>
                   )}
                 </div>
               </div>
@@ -206,9 +206,9 @@ export function Counter() {
                         <div className="dh-history-scroll" style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '4px 8px 8px' }}>
                           {rows.map((r, i) => (
                             <div key={i} style={{ display: 'grid', gridTemplateColumns: '34px 1fr 1fr', gap: 4, padding: '6px 10px', borderRadius: 6, background: r.checkout ? `color-mix(in srgb, ${accent} 12%, transparent)` : 'transparent' }}>
-                              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--text-5)' }}>{r.round}</span>
-                              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 14, fontWeight: 700, textAlign: 'right', color: r.bust ? '#E0594B' : 'var(--text)' }}>{r.scored}</span>
-                              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 14, fontWeight: 700, textAlign: 'right', color: r.checkout ? accent : 'var(--text-3)' }}>{r.rest}</span>
+                              <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-5)' }}>{r.round}</span>
+                              <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, textAlign: 'right', color: r.bust ? '#E0594B' : 'var(--text)' }}>{r.scored}</span>
+                              <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, textAlign: 'right', color: r.checkout ? accent : 'var(--text-3)' }}>{r.rest}</span>
                             </div>
                           ))}
                         </div>
@@ -220,7 +220,7 @@ export function Counter() {
                         {[['Ø 3-Dart', average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['Letzter', lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
                           <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '8px 3px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, textAlign: 'center', minWidth: 0 }}>
                             <div style={{ fontSize: 9, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
-                            <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, lineHeight: 1 }}>{val}</div>
+                            <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, lineHeight: 1 }}>{val}</div>
                           </div>
                         ))}
                       </div>
@@ -241,7 +241,7 @@ export function Counter() {
               <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', paddingLeft: 2, flexShrink: 0 }}>Quick Score</div>
               <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gridAutoRows: '1fr', gap: 8, minHeight: 0 }}>
                 {quickChips.map((q, i) => (
-                  <button key={i} onClick={() => s.quick(q)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 14, fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(15px,2.8vh,23px)', fontWeight: 800, cursor: 'pointer', minHeight: 0 }}>{q}</button>
+                  <button key={i} onClick={() => s.quick(q)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 14, fontFamily: 'var(--font-num)', fontSize: 'clamp(15px,2.8vh,23px)', fontWeight: 800, cursor: 'pointer', minHeight: 0 }}>{q}</button>
                 ))}
               </div>
             </div>
@@ -250,15 +250,15 @@ export function Counter() {
             <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', paddingLeft: 2, flexShrink: 0 }}>Eingabe</div>
             <div style={{ flex: '2 1 0', minHeight: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 14, padding: 'clamp(4px,0.9vh,10px) 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 13, color: 'var(--text-3)', fontWeight: 600 }}>{activePlayer?.name}</span>
-              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(18px,2.8vh,30px)', fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 70, textAlign: 'right' }}>{inputDisplay}</span>
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 'clamp(18px,2.8vh,30px)', fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 70, textAlign: 'right' }}>{inputDisplay}</span>
             </div>
             <div style={{ flex: '14 1 0', minHeight: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gridAutoRows: '1fr', gap: 8, minHeight: 0 }}>
                 {keypad.map((k) => (
-                  <button key={k} onClick={() => s.pressDigit(k)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(20px,3vh,26px)', fontWeight: 700, cursor: 'pointer', minHeight: 0 }}>{k}</button>
+                  <button key={k} onClick={() => s.pressDigit(k)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-num)', fontSize: 'clamp(20px,3vh,26px)', fontWeight: 700, cursor: 'pointer', minHeight: 0 }}>{k}</button>
                 ))}
                 <button onClick={() => s.pressClear()} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', minHeight: 0 }}>C</button>
-                <button onClick={() => s.pressDigit('0')} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(20px,3vh,26px)', fontWeight: 700, cursor: 'pointer', minHeight: 0 }}>0</button>
+                <button onClick={() => s.pressDigit('0')} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-num)', fontSize: 'clamp(20px,3vh,26px)', fontWeight: 700, cursor: 'pointer', minHeight: 0 }}>0</button>
                 <button onClick={() => s.pressDel()} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', minHeight: 0 }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" /><path d="M18 9l-6 6M12 9l6 6" /></svg>
                 </button>
@@ -274,12 +274,12 @@ export function Counter() {
             <span style={{ fontSize: 15, fontWeight: 700 }}>{activePlayer?.name}</span>
             <span style={{ fontSize: 13, color: 'var(--text-4)' }}>wirft · Rest {activeRem}</span>
           </div>
-          {activeCheckout && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'rgba(242,184,41,.12)', border: '1px solid rgba(242,184,41,.32)', color: coInk, padding: '5px 12px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: "'JetBrains Mono',monospace" }}>{activeCheckout}</div>}
+          {activeCheckout && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'rgba(242,184,41,.12)', border: '1px solid rgba(242,184,41,.32)', color: coInk, padding: '5px 12px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)' }}>{activeCheckout}</div>}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
-            <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 38, fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 78, textAlign: 'right' }}>{inputDisplay}</span>
+            <span style={{ fontFamily: 'var(--font-num)', fontSize: 38, fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 78, textAlign: 'right' }}>{inputDisplay}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, whiteSpace: 'nowrap' }}>
               <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>Score tippen, dann</span>
-              <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, color: accentInk, background: `color-mix(in srgb, ${accent} 12%, transparent)`, padding: '2px 8px', borderRadius: 5 }}>↵ Enter</span>
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: accentInk, background: `color-mix(in srgb, ${accent} 12%, transparent)`, padding: '2px 8px', borderRadius: 5 }}>↵ Enter</span>
             </div>
           </div>
         </div>
@@ -342,12 +342,12 @@ function RestEntryBox() {
     <Overlay z={47}>
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 26, width: 360, maxWidth: '92vw', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
         <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 4 }}>Restscore eintragen</div>
-        <div style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 18 }}>{cp?.name} · aktuell <b style={{ color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace" }}>{curRem}</b> übrig</div>
+        <div style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 18 }}>{cp?.name} · aktuell <b style={{ color: 'var(--text)', fontFamily: 'var(--font-num)' }}>{curRem}</b> übrig</div>
         <input
           autoFocus type="text" inputMode="numeric" value={val} placeholder="z. B. 40"
           onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); else if (e.key === 'Escape') s.closeRestEntry(); }}
-          style={{ width: '100%', background: 'var(--btn)', border: `1px solid ${val !== '' && !valid ? '#E0594B' : 'var(--border-2)'}`, borderRadius: 12, padding: '12px 14px', color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace", fontSize: 26, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+          style={{ width: '100%', background: 'var(--btn)', border: `1px solid ${val !== '' && !valid ? '#E0594B' : 'var(--border-2)'}`, borderRadius: 12, padding: '12px 14px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 26, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
         />
         <div style={{ fontSize: 13, height: 18, marginTop: 10, textAlign: 'center', color: val !== '' && !valid ? '#E0594B' : 'var(--text-4)' }}>
           {val === '' ? 'Verbleibenden Score nach dem Wurf eingeben' : (scored != null ? `Geworfen: ${scored}` : 'Ungültiger Restscore')}
@@ -382,7 +382,7 @@ function FKeyLegend() {
       {items.map((it) => (
         <button key={it.k} onClick={it.onClick} disabled={!it.enabled} title={`${it.k} · ${it.label}`} style={{ flex: '1 1 60px', minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '5px 4px', cursor: it.enabled ? 'pointer' : 'default', opacity: it.enabled ? 1 : 0.4, fontFamily: 'inherit' }}>
           <span style={{ fontSize: 9, fontWeight: 800, color: accentInk, letterSpacing: '.04em' }}>{it.k}</span>
-          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, color: 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{it.label}</span>
+          <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{it.label}</span>
         </button>
       ))}
     </div>
@@ -412,7 +412,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
   const matchInfo = cfg.unit === 'sets' ? `Best of ${cfg.bestOfSets} Sätze` : `Leg ${leg} · BO${cfg.bestOf}`;
   const others = s.gamePlayers.filter((_, i) => i !== curIdx);
   // fill = keys grow to fill available height (landscape, where the deck owns a full column)
-  const keyBtn = (fill: boolean): React.CSSProperties => ({ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 26, fontWeight: 700, cursor: 'pointer', minHeight: fill ? 0 : 54 });
+  const keyBtn = (fill: boolean): React.CSSProperties => ({ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-num)', fontSize: 26, fontWeight: 700, cursor: 'pointer', minHeight: fill ? 0 : 54 });
 
   const activeCard = (
     <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', borderRadius: 18, background: `color-mix(in srgb, ${accent} 9%, var(--surface-2))`, border: `1px solid ${accent}`, padding: '14px 16px', overflow: 'hidden' }}>
@@ -423,14 +423,14 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
             : <div style={{ width: 34, height: 34, borderRadius: 9, background: 'var(--surface-3)', flexShrink: 0 }} />}
           <div style={{ fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{active?.name}</div>
         </div>
-        {cfg.unit === 'sets' && <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 800, color: accentInk, background: `color-mix(in srgb, ${accent} 14%, transparent)`, padding: '3px 9px', borderRadius: 999, flexShrink: 0 }}>{(active && prog.setsWon[active.id]) || 0}</div>}
+        {cfg.unit === 'sets' && <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: accentInk, background: `color-mix(in srgb, ${accent} 14%, transparent)`, padding: '3px 9px', borderRadius: 999, flexShrink: 0 }}>{(active && prog.setsWon[active.id]) || 0}</div>}
         <div style={{ fontSize: 10, color: accentInk, fontWeight: 800, letterSpacing: '.08em', flexShrink: 0 }}>AM WURF</div>
       </div>
       <div style={{ flex: 1, width: '100%', minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', containerType: 'size' }}>
-        <div style={{ fontFamily: cfg.font === 'Inter' ? "'JetBrains Mono',monospace" : 'inherit', fontWeight: 800, fontSize: `min(${Math.round(150 * cfg.scoreScale / 100)}cqh, ${Math.round(46 * cfg.scoreScale / 100)}cqw)`, lineHeight: 1, letterSpacing: '-.03em', color: scoreInk, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', ...scoreOutline }}>{rem}</div>
+        <div style={{ fontFamily: 'var(--font-score)', fontWeight: 800, fontSize: `min(${Math.round(150 * cfg.scoreScale / 100)}cqh, ${Math.round(46 * cfg.scoreScale / 100)}cqw)`, lineHeight: 1, letterSpacing: '-.03em', color: scoreInk, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', ...scoreOutline }}>{rem}</div>
       </div>
       {cfg.showCheckout && co && (
-        <div style={{ alignSelf: 'center', display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0, background: 'rgba(242,184,41,.12)', border: '1px solid rgba(242,184,41,.32)', color: coInk, padding: '5px 14px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: "'JetBrains Mono',monospace" }}>{co}</div>
+        <div style={{ alignSelf: 'center', display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0, background: 'rgba(242,184,41,.12)', border: '1px solid rgba(242,184,41,.32)', color: coInk, padding: '5px 14px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)' }}>{co}</div>
       )}
     </div>
   );
@@ -441,12 +441,12 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
         {others.map((p) => (
           <span key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--border-strong)', flexShrink: 0 }} />
-            {p.name} · Rest <b style={{ color: 'var(--text-2)', fontFamily: "'JetBrains Mono',monospace" }}>{sc[p.id]}</b>
+            {p.name} · Rest <b style={{ color: 'var(--text-2)', fontFamily: 'var(--font-num)' }}>{sc[p.id]}</b>
           </span>
         ))}
       </span>
       <span style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, color: 'var(--text-3)' }}>
+        <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: 'var(--text-3)' }}>
           {s.gamePlayers.map((p) => cfg.unit === 'sets' ? (prog.setsWon[p.id] || 0) : (prog.legsSet[p.id] || 0)).join(' : ')}
         </span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-4)' }}><path d="M9 18l6-6-6-6" /></svg>
@@ -458,7 +458,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: fill ? 6 : 8, minHeight: 0, ...(fill ? { flex: 1 } : { flexShrink: 0 }) }}>
       <div style={{ flexShrink: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 12, padding: fill ? '6px 16px' : '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>Wurf eingeben</span>
-        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: fill ? 24 : 28, fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 60, textAlign: 'right' }}>{inputDisplay}</span>
+        <span style={{ fontFamily: 'var(--font-num)', fontSize: fill ? 24 : 28, fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 60, textAlign: 'right' }}>{inputDisplay}</span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 7, ...(fill ? { flex: 1, gridAutoRows: '1fr', minHeight: 0 } : {}) }}>
         {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((k) => (
@@ -473,7 +473,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
       {cfg.showQuick && (
         <div style={{ flexShrink: 0, display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 7 }}>
           {[180, 140, 100].map((q) => (
-            <button key={q} onClick={() => s.quick(q)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, padding: fill ? '8px 0' : '11px 0', fontFamily: "'JetBrains Mono',monospace", fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>{q}</button>
+            <button key={q} onClick={() => s.quick(q)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, padding: fill ? '8px 0' : '11px 0', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>{q}</button>
           ))}
         </div>
       )}
@@ -532,13 +532,13 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
                   <div key={p.id} style={{ border: '1px solid var(--border-2)', borderRadius: 12, overflow: 'hidden' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--surface-2)' }}>
                       <span style={{ fontSize: 14, fontWeight: 700 }}>{p.name}</span>
-                      <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 14, fontWeight: 800, color: accentInk }}>{sc[p.id]}</span>
+                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: accentInk }}>{sc[p.id]}</span>
                     </div>
                     <div style={{ display: 'flex', gap: 1, background: 'var(--border)' }}>
                       {[['Ø 3-Dart', average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`]].map(([label, val], k) => (
                         <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '7px 4px', textAlign: 'center' }}>
                           <div style={{ fontSize: 9, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase' }}>{label}</div>
-                          <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, marginTop: 2 }}>{val}</div>
+                          <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, marginTop: 2 }}>{val}</div>
                         </div>
                       ))}
                     </div>
@@ -546,9 +546,9 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
                       {rows.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-4)', padding: '8px 6px' }}>Noch keine Würfe</div>}
                       {rows.map((r, i) => (
                         <div key={i} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 1fr', gap: 4, padding: '5px 8px', borderRadius: 6, background: r.checkout ? `color-mix(in srgb, ${accent} 12%, transparent)` : 'transparent' }}>
-                          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: 'var(--text-5)' }}>{r.round}</span>
-                          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, textAlign: 'right', color: r.bust ? '#E0594B' : 'var(--text)' }}>{r.scored}</span>
-                          <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700, textAlign: 'right', color: r.checkout ? accent : 'var(--text-3)' }}>{r.rest}</span>
+                          <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-5)' }}>{r.round}</span>
+                          <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, textAlign: 'right', color: r.bust ? '#E0594B' : 'var(--text)' }}>{r.scored}</span>
+                          <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, textAlign: 'right', color: r.checkout ? accent : 'var(--text-3)' }}>{r.rest}</span>
                         </div>
                       ))}
                     </div>
@@ -585,7 +585,7 @@ function WhoStarts() {
                   <button key={p.id} className="dh-hover-border" onClick={() => s.chooseStarter(i)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, background: 'var(--btn)', border: `2px solid ${picked ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 15, padding: '20px 12px', cursor: 'pointer', fontFamily: 'inherit' }}>
                     <Avatar photo={p.photo} short={p.short} avi={p.av} size={54} circle />
                     <div style={{ fontSize: 15, fontWeight: 700, textAlign: 'center', lineHeight: 1.25 }}>{p.name}</div>
-                    <kbd style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 7, padding: '3px 10px' }}>{i + 1}</kbd>
+                    <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 7, padding: '3px 10px' }}>{i + 1}</kbd>
                   </button>
                 );
               })}
@@ -593,11 +593,11 @@ function WhoStarts() {
             <div style={{ display: 'flex', gap: 12 }}>
               <button className="dh-hover-border" onClick={() => s.openBullOff()} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 13, padding: 14, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
                 <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#E0594B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#19A463' }} /></span>
-                Ausbullen <kbd style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px' }}>B</kbd>
+                Ausbullen <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px' }}>B</kbd>
               </button>
               <button className="dh-hover-border" onClick={() => s.spinStarter()} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 13, padding: 14, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F2B829" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" /></svg>
-                Zufall <kbd style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px' }}>Z</kbd>
+                Zufall <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px' }}>Z</kbd>
               </button>
             </div>
           </>
@@ -611,7 +611,7 @@ function WhoStarts() {
                   <button key={p.id} className="dh-hover-border" onClick={() => s.chooseStarter(i)} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 13, padding: '14px 18px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
                     <Avatar photo={p.photo} short={p.short} avi={p.av} size={42} circle />
                     <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 16, fontWeight: 700 }}>{p.name}</div><div style={{ fontSize: 12, color: 'var(--text-4)' }}>war näher am Bull</div></div>
-                    <kbd style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 7, padding: '4px 9px' }}>{i + 1}</kbd>
+                    <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 7, padding: '4px 9px' }}>{i + 1}</kbd>
                   </button>
                 );
               })}
@@ -641,7 +641,7 @@ function WinOverlay() {
         <div style={{ fontSize: 13, color: '#F2B829', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 8 }}>Match gewonnen</div>
         {/* Overlay liegt immer auf dunklem Schleier → Textfarben fest hell, unabhängig vom Hell/Dunkel-Modus. */}
         <div style={{ fontSize: 34, fontWeight: 800, marginBottom: 6, color: '#fff' }}>{w?.name}</div>
-        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 18, color: 'rgba(255,255,255,.6)', marginBottom: 28 }}>{legs} · Ø {avg}</div>
+        <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, color: 'rgba(255,255,255,.6)', marginBottom: 28 }}>{legs} · Ø {avg}</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
           <button onClick={() => s.endGameTo('dashboard')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Zum Dashboard</button>
           <button onClick={() => s.endGameTo('setup')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Neues Spiel</button>

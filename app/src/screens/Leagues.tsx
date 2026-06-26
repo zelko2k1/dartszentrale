@@ -114,17 +114,17 @@ export function Leagues() {
                 const posColor = i < 2 ? 'var(--success)' : (standings.length > 4 && i >= standings.length - 1) ? 'var(--danger-soft)' : 'var(--text-3)';
                 return (
                   <div key={t.id} style={{ display: 'grid', gridTemplateColumns: '28px minmax(120px,1fr) 30px 30px 30px 30px 44px 40px', gap: 5, padding: '12px 18px', borderBottom: '1px solid var(--hairline)', alignItems: 'center', background: t.own ? 'rgba(25,164,99,.08)' : 'transparent', minWidth: 440 }}>
-                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 14, fontWeight: 800, color: posColor }}>{i + 1}</span>
+                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: posColor }}>{i + 1}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
                       <div style={{ width: 28, height: 28, borderRadius: 8, background: t.own ? 'linear-gradient(135deg,#19A463,#0f6b40)' : 'var(--btn)', color: t.own ? '#fff' : 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 10, flexShrink: 0 }}>{initials(t.name).slice(0, 3)}</div>
                       <span style={{ fontSize: 14, fontWeight: t.own ? 700 : 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</span>
                     </div>
-                    <span style={{ textAlign: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: 'var(--text-3)' }}>{t.sp}</span>
-                    <span style={{ textAlign: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: 'var(--success)' }}>{t.s}</span>
-                    <span style={{ textAlign: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: 'var(--text-4)' }}>{t.u}</span>
-                    <span style={{ textAlign: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: 'var(--danger-soft)' }}>{t.n}</span>
-                    <span style={{ textAlign: 'center', fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: 'var(--text-3)' }}>{diff > 0 ? '+' : ''}{diff}</span>
-                    <span style={{ textAlign: 'right', fontFamily: "'JetBrains Mono',monospace", fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>{t.pts}</span>
+                    <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{t.sp}</span>
+                    <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--success)' }}>{t.s}</span>
+                    <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-4)' }}>{t.u}</span>
+                    <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--danger-soft)' }}>{t.n}</span>
+                    <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{diff > 0 ? '+' : ''}{diff}</span>
+                    <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>{t.pts}</span>
                   </div>
                 );
               })}
@@ -149,7 +149,7 @@ export function Leagues() {
                     <div className="dh-hover-border" onClick={() => canEdit && s.openEditFixture(f.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', cursor: canEdit ? 'pointer' : 'default', background: 'transparent' }}>
                       <div style={{ textAlign: 'center', width: 42, flexShrink: 0 }}>
                         <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>{mon}</div>
-                        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 18, fontWeight: 800 }}>{day}</div>
+                        <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800 }}>{day}</div>
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{teamNameById(f.homeId)} — {teamNameById(f.awayId)}</div>
@@ -169,7 +169,7 @@ export function Leagues() {
                           Ergebnis
                         </button>
                       )}
-                      <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 15, fontWeight: 800, color: played ? 'var(--text)' : 'var(--text-4)' }}>{score}</span>
+                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: played ? 'var(--text)' : 'var(--text-4)' }}>{score}</span>
                     </div>
                     {hl.length > 0 && (
                       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 7, padding: '8px 14px 10px', borderTop: '1px solid var(--hairline)', background: 'color-mix(in srgb, var(--accent) 4%, transparent)' }}>
@@ -177,9 +177,9 @@ export function Leagues() {
                         {hl.map((h) => (
                           <span key={h.name} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '3px 9px', fontSize: 12, color: 'var(--text-2)' }}>
                             {h.name}
-                            {h.c180 > 0 && <b style={{ color: '#E0594B', fontFamily: "'JetBrains Mono',monospace" }}>{h.c180}×180</b>}
-                            {h.shortLegs > 0 && <b style={{ color: '#2bd3c0', fontFamily: "'JetBrains Mono',monospace" }} title="Short Legs ≤19 Darts">{h.shortLegs}× SL</b>}
-                            {h.highFinish >= HF_MIN && <b style={{ color: '#F2B829', fontFamily: "'JetBrains Mono',monospace" }} title="Highest Finish (≥100)">{h.highFinish} HF</b>}
+                            {h.c180 > 0 && <b style={{ color: '#E0594B', fontFamily: 'var(--font-num)' }}>{h.c180}×180</b>}
+                            {h.shortLegs > 0 && <b style={{ color: '#2bd3c0', fontFamily: 'var(--font-num)' }} title="Short Legs ≤19 Darts">{h.shortLegs}× SL</b>}
+                            {h.highFinish >= HF_MIN && <b style={{ color: '#F2B829', fontFamily: 'var(--font-num)' }} title="Highest Finish (≥100)">{h.highFinish} HF</b>}
                           </span>
                         ))}
                       </div>

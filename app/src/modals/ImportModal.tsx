@@ -111,7 +111,7 @@ export function ImportModal() {
               style={{
                 width: '100%', boxSizing: 'border-box', minHeight: 120, resize: 'vertical', marginBottom: 16,
                 background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: 12,
-                color: 'var(--text)', fontSize: 12, fontFamily: "'JetBrains Mono',monospace",
+                color: 'var(--text)', fontSize: 12, fontFamily: 'var(--font-num)',
               }}
             />
           )}
@@ -175,7 +175,7 @@ function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
       <span style={{ color: 'var(--text-4)' }}>{label}</span>
-      <strong style={{ color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace" }}>{value}</strong>
+      <strong style={{ color: 'var(--text)', fontFamily: 'var(--font-num)' }}>{value}</strong>
     </div>
   );
 }

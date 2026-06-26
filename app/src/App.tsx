@@ -119,7 +119,7 @@ export default function App() {
   const kioskTab = (label: string, active: boolean, onClick: () => void, hint?: string) => (
     <button onClick={onClick} title={hint ? `${label} (${hint})` : label} style={{ display: 'flex', alignItems: 'center', gap: 7, background: active ? 'var(--accent)' : 'var(--surface-3)', color: active ? 'var(--accent-fg)' : 'var(--text-3)', border: `1px solid ${active ? 'var(--accent)' : 'var(--border-2)'}`, padding: '7px 14px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
       {label}
-      {hint && <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10, fontWeight: 700, opacity: 0.65, background: active ? 'rgba(0,0,0,.16)' : 'var(--btn)', borderRadius: 5, padding: '1px 5px' }}>{hint}</span>}
+      {hint && <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.65, background: active ? 'rgba(0,0,0,.16)' : 'var(--btn)', borderRadius: 5, padding: '1px 5px' }}>{hint}</span>}
     </button>
   );
   const kioskBar = (
@@ -149,7 +149,13 @@ export default function App() {
       style={{
         height: '100vh', width: '100%', background: 'var(--bg)', color: 'var(--text)',
         fontFamily: fontFam(s.settings), overflow: 'hidden', display: 'flex',
-        ...({ '--accent': s.settings.accent, '--accent-fg': accentFg(s.settings.accent) } as React.CSSProperties),
+        fontVariantNumeric: 'tabular-nums', // Ziffern bündig, auch in proportionalen Schriften
+        ...({
+          '--accent': s.settings.accent, '--accent-fg': accentFg(s.settings.accent),
+          // --font-num folgt der gewählten Schrift (Konsistenz); --font-score bleibt Mono für große Spiel-Scores.
+          '--font-num': fontFam(s.settings),
+          '--font-score': "'JetBrains Mono','SFMono-Regular',Consolas,ui-monospace,monospace",
+        } as React.CSSProperties),
       }}
     >
       {needsLogin ? (

@@ -22,7 +22,7 @@ export function TrainingSetup() {
   for (let i = meta.minPlayers; i <= meta.maxPlayers; i++) countOpts.push(i);
 
   const seg = (active: boolean, label: string, onClick: () => void) => (
-    <button key={label} onClick={onClick} style={{ background: active ? accent : 'var(--btn)', color: active ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${active ? accent : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '9px 0', minWidth: 44, borderRadius: 10, fontSize: 14, cursor: 'pointer', fontFamily: "'JetBrains Mono',monospace" }}>{label}</button>
+    <button key={label} onClick={onClick} style={{ background: active ? accent : 'var(--btn)', color: active ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${active ? accent : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '9px 0', minWidth: 44, borderRadius: 10, fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-num)' }}>{label}</button>
   );
 
   const slots = Array.from({ length: su.count }, (_, i) => i);

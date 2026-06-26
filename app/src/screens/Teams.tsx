@@ -116,7 +116,7 @@ export function Teams() {
                       <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{agg.games ? `${agg.games} ${agg.games === 1 ? 'Spiel' : 'Spiele'}` : 'Kaderspieler'}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 16, fontWeight: 800 }}>{agg.avg ? agg.avg.toFixed(1) : '–'}</div>
+                      <div style={{ fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 800 }}>{agg.avg ? agg.avg.toFixed(1) : '–'}</div>
                       <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>Ø 3-Dart</div>
                     </div>
                   </div>
