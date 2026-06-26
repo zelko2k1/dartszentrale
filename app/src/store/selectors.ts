@@ -51,12 +51,12 @@ export function computeStandings(league: League | null): StandingRow[] {
 // ── Spieler-Aggregation aus gespeicherten Matches ──
 export interface PlayerAggregate {
   games: number; wins: number; losses: number; avg: number;
-  c180: number; c140: number; c100: number; c60: number; high: number;
+  c180: number; c140: number; c100: number; c60: number; high: number; shortLegs: number;
   recent: { opp: string; won: boolean; avg: number; score: string; date: string }[];
 }
 
 export function aggregateFor(name: string, matches: Match[]): PlayerAggregate {
-  const out: PlayerAggregate = { games: 0, wins: 0, losses: 0, avg: 0, c180: 0, c140: 0, c100: 0, c60: 0, high: 0, recent: [] };
+  const out: PlayerAggregate = { games: 0, wins: 0, losses: 0, avg: 0, c180: 0, c140: 0, c100: 0, c60: 0, high: 0, shortLegs: 0, recent: [] };
   let avgSum = 0, avgN = 0;
   matches.forEach((m) => {
     const mine = m.perPlayer.find((p) => p.name === name);
@@ -65,6 +65,7 @@ export function aggregateFor(name: string, matches: Match[]): PlayerAggregate {
     const won = m.winnerName === name;
     if (won) out.wins++; else out.losses++;
     out.c180 += mine.c180 || 0; out.c140 += mine.c140 || 0; out.c100 += mine.c100 || 0; out.c60 += mine.c60 || 0;
+    out.shortLegs += mine.shortLegs || 0;
     out.high = Math.max(out.high, mine.highFinish || 0);
     if (mine.avg3) { avgSum += mine.avg3; avgN++; }
     const opp = m.perPlayer.find((p) => p.name !== name);

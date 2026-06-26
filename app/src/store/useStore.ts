@@ -9,6 +9,7 @@ import { downscaleSquare } from '../lib/image';
 import {
   scores as cScores, progress as cProgress, currentPlayer as cCurrentPlayer,
   matchOver as cMatchOver, average as cAverage, countAtLeast,
+  finishStats as cFinishStats, shortLegs as cShortLegs,
   type CounterSlice,
 } from './counter';
 import {
@@ -1499,7 +1500,8 @@ function saveMatch(get: () => AppState, set: (p: Partial<AppState>) => void) {
     legsWon: prog.legsSet[p.id] || 0, setsWon: prog.setsWon[p.id] || 0,
     avg3: cAverage(slice, p.id), c180: countAtLeast(slice, p.id, 180, true), c140: countAtLeast(slice, p.id, 140),
     c100: countAtLeast(slice, p.id, 100), c60: countAtLeast(slice, p.id, 60),
-    highFinish: 0, darts: st.allThrows.filter((t) => t.playerId === p.id).length * 3,
+    highFinish: cFinishStats(slice, p.id).hf, darts: st.allThrows.filter((t) => t.playerId === p.id).length * 3,
+    shortLegs: cShortLegs(slice, p.id),
   }));
   const unit = st.settings.unit;
   const scoreLine = st.gamePlayers.map((p) => unit === 'sets' ? (prog.setsWon[p.id] || 0) : (prog.legsSet[p.id] || 0)).join(':');

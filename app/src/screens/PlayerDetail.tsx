@@ -24,6 +24,7 @@ export function PlayerDetail() {
     { value: String(agg.c100), label: '100+', color: '#19A463' },
     { value: String(agg.c140), label: '140+', color: '#F2B829' },
     { value: String(agg.c180), label: '180', color: '#E0594B' },
+    { value: String(agg.shortLegs), label: 'Short Legs (≤19)', color: '#2bd3c0' },
   ];
 
   return (

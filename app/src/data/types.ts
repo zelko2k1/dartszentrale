@@ -128,6 +128,7 @@ export interface MatchPlayerStat {
   c140: number;
   highFinish: number;
   darts: number;
+  shortLegs?: number; // gewonnene Legs ≤19 Darts (Liga-Highlight); optional für Abwärtskompatibilität alter Matches
 }
 
 export interface Match {

@@ -26,6 +26,24 @@ export function Leagues() {
   const teamNameById = (id: string) => { const t = sel?.teams.find((x) => x.id === id); return t ? t.name : '?'; };
   const fxSorted = sel ? sel.fixtures.slice().sort((a, b) => a.date.localeCompare(b.date)) : [];
 
+  // Liga-Highlights je Begegnung: 180er + Short Legs (≤19) der EIGENEN Spieler aus den verknüpften Board-Spielen.
+  // Match.perPlayer[0] ist stets die eigene Seite (Auto-Eintrag); aggregiert nach Spielername.
+  const highlightsFor = (fixtureId: string) => {
+    const acc: Record<string, { c180: number; shortLegs: number }> = {};
+    for (const m of s.matches) {
+      if (m.fixtureId !== fixtureId) continue;
+      const own = m.perPlayer?.[0];
+      if (!own) continue;
+      const e = (acc[own.name] = acc[own.name] || { c180: 0, shortLegs: 0 });
+      e.c180 += own.c180 || 0;
+      e.shortLegs += own.shortLegs || 0;
+    }
+    return Object.entries(acc)
+      .map(([name, v]) => ({ name, ...v }))
+      .filter((v) => v.c180 > 0 || v.shortLegs > 0)
+      .sort((a, b) => (b.c180 + b.shortLegs) - (a.c180 + a.shortLegs));
+  };
+
   return (
     <div style={{ padding: '28px 32px', maxWidth: 1180, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, marginBottom: 22 }}>
@@ -122,8 +140,10 @@ export function Leagues() {
                   const score = played ? `${f.hs}:${f.as}` : '–';
                   const isOwn = !!sel.teams.find((t) => (t.id === f.homeId || t.id === f.awayId) && t.own);
                   const hasLineup = !!(f.lineup && (f.lineup.positions?.some((e) => e.playerIds.length) || f.lineup.substitutes?.length));
+                  const hl = isOwn ? highlightsFor(f.id) : [];
                   return (
-                    <div key={f.id} className="dh-hover-border" onClick={() => canEdit && s.openEditFixture(f.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', border: '1px solid var(--border-2)', borderRadius: 12, cursor: canEdit ? 'pointer' : 'default', background: 'transparent' }}>
+                    <div key={f.id} style={{ border: '1px solid var(--border-2)', borderRadius: 12, overflow: 'hidden' }}>
+                    <div className="dh-hover-border" onClick={() => canEdit && s.openEditFixture(f.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', cursor: canEdit ? 'pointer' : 'default', background: 'transparent' }}>
                       <div style={{ textAlign: 'center', width: 42, flexShrink: 0 }}>
                         <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>{mon}</div>
                         <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 18, fontWeight: 800 }}>{day}</div>
@@ -147,6 +167,19 @@ export function Leagues() {
                         </button>
                       )}
                       <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 15, fontWeight: 800, color: played ? 'var(--text)' : 'var(--text-4)' }}>{score}</span>
+                    </div>
+                    {hl.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 7, padding: '8px 14px 10px', borderTop: '1px solid var(--hairline)', background: 'color-mix(in srgb, var(--accent) 4%, transparent)' }}>
+                        <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em', textTransform: 'uppercase' }}>Highlights</span>
+                        {hl.map((h) => (
+                          <span key={h.name} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '3px 9px', fontSize: 12, color: 'var(--text-2)' }}>
+                            {h.name}
+                            {h.c180 > 0 && <b style={{ color: '#E0594B', fontFamily: "'JetBrains Mono',monospace" }}>{h.c180}×180</b>}
+                            {h.shortLegs > 0 && <b style={{ color: '#2bd3c0', fontFamily: "'JetBrains Mono',monospace" }} title="Short Legs ≤19 Darts">{h.shortLegs}× SL</b>}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     </div>
                   );
                 })}
