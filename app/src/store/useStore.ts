@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type {
-  Player, Team, Account, League, Fixture, EventItem, Match, Settings, Screen,
+  Player, Team, Account, League, Fixture, EventItem, Match, Season, Settings, Screen,
   GamePlayer, Throw, Role, MatchPlayerStat, LineupPosition, FixtureLineup, LineupSegment, TeamKind,
 } from '../data/types';
 import { AVATARS, DEVICE_LOCAL_SETTING_KEYS, DEVICE_UI_KEYS, LEAGUE_FORMAT_PRESETS } from '../data/constants';
@@ -13,8 +13,9 @@ import {
   type CounterSlice,
 } from './counter';
 import {
-  DEFAULT_SETTINGS, seedPlayers, seedTeams, seedAccounts, seedLeagues, seedEvents, withDefaultPlayers,
+  DEFAULT_SETTINGS, seedPlayers, seedTeams, seedAccounts, seedLeagues, seedEvents, seedSeasons, withDefaultPlayers,
 } from '../data/seed';
+import { activeSeason as pickActiveSeason } from './selectors';
 import {
   newTrainGame, applyTurn as tApplyTurn, trainMeta,
   type TrainGame, type TrainPlayer, type TurnInput,
@@ -35,6 +36,7 @@ const LS = {
   users: 'dartshub_users',
   session: 'dartshub_session',
   leagues: 'dartshub_leagues',
+  seasons: 'dartshub_seasons',
   pburl: 'dartshub_pburl',
   device: 'dartshub_device', // gerätelokale Konfiguration (Board-/Kiosk-Modus, Board-Bezeichnung)
   devui: 'dartshub_devui', // gerätelokale UI-Vorlieben (Eingabe-Modus, Hell/Dunkel, Größen) – Mischbetrieb PC/Tablet
@@ -140,6 +142,11 @@ export interface AppState {
   leagues: League[];
   events: EventItem[];
   matches: Match[];
+  // Saisons + aktive/angezeigte Saison. activeSeasonId = laufende Saison (neue Datensätze hängen hier).
+  // viewSeasonId = aktuell betrachtete Saison (Umschalter); ≠ active → Lesemodus (Soft-Archiv).
+  seasons: Season[];
+  activeSeasonId: string | null;
+  viewSeasonId: string | null;
 
   selectedLeague: number;
   selectedTeam: number;
@@ -198,6 +205,9 @@ export interface AppState {
   // Server-Sync (Verein)
   reloadFromProvider: () => void;
   clearSyncError: () => void;
+
+  // Saison-Umschalter (Soft-Archiv): betrachtete Saison wechseln.
+  setViewSeason: (seasonId: string) => void;
 
   // settings
   setSetting: <K extends keyof Settings>(key: K, val: Settings[K]) => void;
@@ -376,6 +386,9 @@ export const useStore = create<AppState>((set, get) => ({
   leagues: [],
   events: [],
   matches: [],
+  seasons: [],
+  activeSeasonId: null,
+  viewSeasonId: null,
 
   selectedLeague: 0,
   selectedTeam: 0,
@@ -495,15 +508,30 @@ export const useStore = create<AppState>((set, get) => ({
     let events = read<EventItem[]>(LS.events, []);
     if (!Array.isArray(events) || events.length === 0) { events = seedEvents(); write(LS.events, events); }
 
-    const matches = read<Match[]>(LS.matches, []);
+    let matches = read<Match[]>(LS.matches, []);
     const session = read<string | null>(LS.session, null);
     const trainingPlays = read<Record<string, number>>(LS.trainplays, {});
 
-    set({ settings, provider, pbMode: false, players, teams, accounts, leagues, events, matches, session, trainingPlays });
+    // Saisons: mindestens eine aktive Saison sicherstellen, dann Altbestand (ohne seasonId / ohne Match-playerId) migrieren.
+    let seasons = read<Season[]>(LS.seasons, []);
+    if (!Array.isArray(seasons) || seasons.length === 0) { seasons = seedSeasons(); write(LS.seasons, seasons); }
+    const activeSeasonId = (pickActiveSeason(seasons) || seasons[0]).id;
+    const mig = migrateSeasonData({ leagues, teams, events, matches }, activeSeasonId, players);
+    if (mig.lc) { leagues = mig.leagues; write(LS.leagues, leagues); }
+    if (mig.tc) { teams = mig.teams; write(LS.teams, teams); }
+    if (mig.ec) { events = mig.events; write(LS.events, events); }
+    if (mig.mc) { matches = mig.matches; write(LS.matches, matches); }
+
+    set({ settings, provider, pbMode: false, players, teams, accounts, leagues, events, matches, seasons, activeSeasonId, viewSeasonId: activeSeasonId, session, trainingPlays });
   },
 
   reloadFromProvider() { void applySnapshot(get, set); },
   clearSyncError() { set({ syncError: null }); },
+
+  // Betrachtete Saison wechseln (nur Lese-/Filteransicht; ändert nicht die aktive Saison).
+  setViewSeason(seasonId) {
+    set((st) => st.seasons.some((s) => s.id === seasonId) ? { viewSeasonId: seasonId, selectedLeague: 0, selectedTeam: 0 } : {});
+  },
 
   go(screen) { set({ screen }); },
   openPlayer(id) { set({ selectedPlayerId: id, screen: 'playerDetail' }); },
@@ -757,7 +785,8 @@ export const useStore = create<AppState>((set, get) => ({
     set((st) => {
       const captainId = m.captainId && m.memberIds.includes(m.captainId) ? m.captainId : null;
       const viceCaptainIds = m.viceCaptainIds.filter((id) => m.memberIds.includes(id) && id !== captainId).slice(0, 2);
-      const rec: Team = { id: m.id || uid(), name, league: m.league.trim(), memberIds: m.memberIds, captainId, viceCaptainIds, kind: m.kind };
+      const existingTeam = st.teams.find((t) => t.id === m.id);
+      const rec: Team = { id: m.id || uid(), name, league: m.league.trim(), memberIds: m.memberIds, captainId, viceCaptainIds, kind: m.kind, seasonId: existingTeam?.seasonId ?? st.activeSeasonId ?? undefined };
       let teams: Team[]; let selectedTeam = st.selectedTeam;
       if (m.mode === 'add') { teams = [...st.teams, rec]; selectedTeam = teams.length - 1; }
       else teams = st.teams.map((t) => t.id === m.id ? rec : t);
@@ -781,12 +810,15 @@ export const useStore = create<AppState>((set, get) => ({
   // Nur sinnvoll im Vereinsmodus; E-Mail/Passwort/Rolle ergänzt der Admin im Modal.
   openAddUserForPlayer(playerId) {
     const pl = get().players.find((x) => x.id === playerId); if (!pl) return;
-    const teamIds = get().teams.filter((t) => t.memberIds.includes(pl.id)).map((t) => t.id);
+    // Mannschaftszuordnung im Benutzer-Dialog bezieht sich nur auf die AKTIVE Saison (archivierte Kader unangetastet).
+    const asid = get().activeSeasonId;
+    const teamIds = get().teams.filter((t) => t.memberIds.includes(pl.id) && (t.seasonId == null || t.seasonId === asid)).map((t) => t.id);
     set({ userModal: { mode: 'add', id: null, first: firstName(pl.name), last: lastName(pl.name), email: '', role: 'player', playerId: pl.id, active: true, avi: pl.avi ?? 0, position: '', password: '', isBoard: false, boardNumber: null, teamIds } });
   },
   openEditUser(id) {
     const a = get().accounts.find((x) => x.id === id); if (!a) return;
-    const teamIds = a.playerId ? get().teams.filter((t) => t.memberIds.includes(a.playerId!)).map((t) => t.id) : [];
+    const asid = get().activeSeasonId;
+    const teamIds = a.playerId ? get().teams.filter((t) => t.memberIds.includes(a.playerId!) && (t.seasonId == null || t.seasonId === asid)).map((t) => t.id) : [];
     set({ userModal: { mode: 'edit', id: a.id, first: a.first, last: a.last, email: a.email, role: a.role, playerId: a.playerId, active: a.active, avi: a.avi, position: a.position || '', password: '', isBoard: !!a.isBoard, boardNumber: a.boardNumber ?? null, teamIds } });
   },
   closeUserModal() { set({ userModal: null }); },
@@ -797,7 +829,8 @@ export const useStore = create<AppState>((set, get) => ({
       // Beim (Ent-)Verknüpfen eines Spielers die Mannschaftsauswahl auf dessen aktuelle Zugehörigkeit zurücksetzen.
       if (key === 'playerId') {
         const pid = val as string | null;
-        next.teamIds = pid ? st.teams.filter((t) => t.memberIds.includes(pid)).map((t) => t.id) : [];
+        const asid = st.activeSeasonId;
+        next.teamIds = pid ? st.teams.filter((t) => t.memberIds.includes(pid) && (t.seasonId == null || t.seasonId === asid)).map((t) => t.id) : [];
       }
       return { userModal: next };
     });
@@ -845,7 +878,10 @@ export const useStore = create<AppState>((set, get) => ({
       let teams = st.teams;
       if (!m.isBoard && playerId && (role === 'player' || role === 'captain')) {
         const sel = new Set(m.teamIds);
+        const asid = st.activeSeasonId;
         teams = st.teams.map((t) => {
+          // Nur Mannschaften der aktiven Saison angleichen — archivierte Kader bleiben unangetastet.
+          if (t.seasonId != null && t.seasonId !== asid) return t;
           const inSel = sel.has(t.id);
           const wasMember = t.memberIds.includes(playerId);
           if (!inSel && !wasMember) return t; // unbeteiligt → unverändert
@@ -961,7 +997,7 @@ export const useStore = create<AppState>((set, get) => ({
       const existing = st.leagues.find((l) => l.id === m.id);
       // Format: bevorzugt geordnete Segmente (Preset); sonst einfache Einzel/Doppel-Zähler.
       const segs = m.format && m.format.length ? m.format : [{ kind: 'singles' as const, count: m.singlesCount }, { kind: 'doubles' as const, count: m.doublesCount }];
-      const rec: League = { id: m.id || uid(), name, season: m.season.trim(), teams, fixtures: existing ? existing.fixtures : [], format: m.format && m.format.length ? m.format : undefined, singlesCount: segTotal(segs, 'singles'), doublesCount: segTotal(segs, 'doubles'), kind: m.kind };
+      const rec: League = { id: m.id || uid(), name, season: m.season.trim(), seasonId: existing?.seasonId ?? st.activeSeasonId ?? undefined, teams, fixtures: existing ? existing.fixtures : [], format: m.format && m.format.length ? m.format : undefined, singlesCount: segTotal(segs, 'singles'), doublesCount: segTotal(segs, 'doubles'), kind: m.kind };
       let leagues: League[]; let selectedLeague = st.selectedLeague;
       if (m.mode === 'add') { leagues = [...st.leagues, rec]; selectedLeague = leagues.length - 1; }
       else leagues = st.leagues.map((l) => l.id === m.id ? rec : l);
@@ -1263,7 +1299,8 @@ export const useStore = create<AppState>((set, get) => ({
     const m = get().eventModal; if (!m) return;
     const title = m.title.trim(); if (!title) return;
     set((st) => {
-      const rec: EventItem = { id: m.id || uid(), scope: m.scope, title, date: m.date, time: m.time, type: m.type, loc: m.loc.trim() };
+      const existingEvent = st.events.find((e) => e.id === m.id);
+      const rec: EventItem = { id: m.id || uid(), scope: m.scope, title, date: m.date, time: m.time, type: m.type, loc: m.loc.trim(), seasonId: existingEvent?.seasonId ?? st.activeSeasonId ?? undefined };
       const events = m.mode === 'add' ? [...st.events, rec] : st.events.map((e) => e.id === m.id ? rec : e);
       persist(st, set, LS.events, events, (p) => m.mode === 'add'
         ? p.createRecord('events', rec as unknown as ProviderRecord)
@@ -1508,6 +1545,31 @@ function persistSettings(st: AppState, set: SetFn, settings: Settings) {
   }
 }
 
+// Saison-Backfill für den lokalen Modus: bestehenden Ligen/Teams/Terminen/Matches ohne seasonId die aktive
+// Saison zuweisen und Match-Spielerstatistiken per Name→Player.id ergänzen (robuste Mehrjahres-Statistik).
+// Liefert die (ggf. unveränderten) Arrays + Änderungs-Flags, damit nur bei echten Änderungen geschrieben wird.
+function migrateSeasonData(
+  data: { leagues: League[]; teams: Team[]; events: EventItem[]; matches: Match[] },
+  activeSeasonId: string,
+  players: Player[],
+) {
+  const byName = new Map(players.map((p) => [p.name, p.id]));
+  let lc = false, tc = false, ec = false, mc = false;
+  const leagues = data.leagues.map((l) => l.seasonId ? l : (lc = true, { ...l, seasonId: activeSeasonId }));
+  const teams = data.teams.map((t) => t.seasonId ? t : (tc = true, { ...t, seasonId: activeSeasonId }));
+  const events = data.events.map((e) => e.seasonId ? e : (ec = true, { ...e, seasonId: activeSeasonId }));
+  const matches = data.matches.map((m) => {
+    let ppChanged = false;
+    const perPlayer = m.perPlayer.map((pp) =>
+      (pp.playerId === undefined && byName.has(pp.name)) ? (ppChanged = true, { ...pp, playerId: byName.get(pp.name) }) : pp);
+    const needSeason = !m.seasonId;
+    if (!needSeason && !ppChanged) return m;
+    mc = true;
+    return { ...m, ...(needSeason ? { seasonId: activeSeasonId } : {}), perPlayer };
+  });
+  return { leagues, teams, events, matches, lc, tc, ec, mc };
+}
+
 // Lädt den kompletten Datenbestand vom Provider und übernimmt ihn in den Store (inkl. persönlicher Einstellungen).
 async function applySnapshot(get: () => AppState, set: SetFn) {
   try {
@@ -1540,10 +1602,17 @@ async function applySnapshot(get: () => AppState, set: SetFn) {
     normalizeShortcuts(merged); // club_config könnte noch die alten Strg+Alt-Standards tragen → hier heben
     if (snap.clubName !== undefined) merged.clubName = snap.clubName;
     if (snap.clubLogo !== undefined) merged.clubLogo = snap.clubLogo;
+    // Saisons (server-seitig per provision.mjs angelegt/backfilled). Aktive Saison bestimmen; die betrachtete
+    // Saison über einen Reload hinweg beibehalten, solange sie noch existiert (sonst auf aktive zurückfallen).
+    const seasons = snap.seasons || [];
+    const activeSeasonId = seasons.length ? (pickActiveSeason(seasons) || seasons[0]).id : null;
+    const prevView = get().viewSeasonId;
+    const viewSeasonId = (prevView && seasons.some((s) => s.id === prevView)) ? prevView : activeSeasonId;
     set({
       settings: merged,
       players: withDefaultPlayers(snap.players), teams: snap.teams, accounts: snap.accounts,
       leagues: snap.leagues, events: snap.events, matches: snap.matches,
+      seasons, activeSeasonId, viewSeasonId,
       trainingPlays: snap.trainingPlays, syncError: null,
     });
   } catch (e) {
@@ -1574,6 +1643,8 @@ function saveMatch(get: () => AppState, set: (p: Partial<AppState>) => void) {
   const prog = cProgress(slice);
   const w = cMatchOver(slice) ? prog.winnerId : null;
   const winnerName = st.gamePlayers.find((p) => p.id === w)?.name || '';
+  // playerId nur setzen, wenn die Spieler-ID einem echten Spieler entspricht (Gäste haben temporäre numerische IDs).
+  const playerIds = new Set(st.players.map((pl) => pl.id));
   const perPlayer: MatchPlayerStat[] = st.gamePlayers.map((p) => ({
     name: p.name, short: p.short, av: p.av,
     legsWon: prog.legsSet[p.id] || 0, setsWon: prog.setsWon[p.id] || 0,
@@ -1581,6 +1652,7 @@ function saveMatch(get: () => AppState, set: (p: Partial<AppState>) => void) {
     c100: countAtLeast(slice, p.id, 100), c60: countAtLeast(slice, p.id, 60),
     highFinish: cFinishStats(slice, p.id).hf, darts: st.allThrows.filter((t) => t.playerId === p.id).length * 3,
     shortLegs: cShortLegs(slice, p.id),
+    ...(typeof p.id === 'string' && playerIds.has(p.id) ? { playerId: p.id } : {}),
   }));
   const unit = st.settings.unit;
   const scoreLine = st.gamePlayers.map((p) => unit === 'sets' ? (prog.setsWon[p.id] || 0) : (prog.legsSet[p.id] || 0)).join(':');
@@ -1589,6 +1661,7 @@ function saveMatch(get: () => AppState, set: (p: Partial<AppState>) => void) {
     doubleOut: st.settings.doubleOut, doubleIn: st.settings.doubleIn, unit, mode: st.gameMode,
     bestOf: st.settings.bestOf, bestOfSets: st.settings.bestOfSets,
     gameLabel: `X01 ${st.settings.startScore} · Bo${st.settings.bestOf}`, winnerName, scoreLine, perPlayer,
+    ...(st.activeSeasonId ? { seasonId: st.activeSeasonId } : {}),
     ...(st.gameLink ? { leagueId: st.gameLink.leagueId, fixtureId: st.gameLink.fixtureId, positionId: st.gameLink.positionId } : {}),
   };
   const matches = [...st.matches, match];

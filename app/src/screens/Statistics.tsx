@@ -1,13 +1,15 @@
 import { useStore } from '../store/useStore';
-import { aggregateFor } from '../store/selectors';
+import { aggregateFor, inSeason } from '../store/selectors';
 import { Avatar } from '../components/Avatar';
 
 const COLS = '26px 1fr 54px 34px 30px 30px 44px 46px 46px 40px 40px 46px 44px';
 
 export function Statistics() {
   const s = useStore();
+  // Bestenliste je betrachteter Saison (Soft-Archiv): nur Matches dieser Saison aggregieren.
+  const seasonMatches = inSeason(s.matches, s.viewSeasonId);
   const rows = s.players
-    .map((p) => ({ p, agg: aggregateFor(p.name, s.matches) }))
+    .map((p) => ({ p, agg: aggregateFor(p.name, seasonMatches) }))
     .sort((a, b) => b.agg.avg - a.agg.avg)
     .map((row, idx) => {
       const agg = row.agg;

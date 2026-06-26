@@ -16,6 +16,7 @@ const PB_COLLECTION: Record<CollectionName, string> = {
   leagues: 'leagues',
   events: 'events',
   matches: 'matches',
+  seasons: 'seasons',
 };
 
 // PocketBase liefert pro Record Systemfelder mit, die wir aus den App-Objekten heraushalten.
@@ -42,13 +43,15 @@ export class PocketBaseProvider implements DataProvider {
 
   async loadAll(): Promise<Snapshot> {
     const opt = { requestKey: null as null };
-    const [players, teams, accounts, leagues, events, matches] = await Promise.all([
+    const [players, teams, accounts, leagues, events, matches, seasons] = await Promise.all([
       this.pb.collection('players').getFullList(opt),
       this.pb.collection('teams').getFullList(opt),
       this.pb.collection('users').getFullList(opt),
       this.pb.collection('leagues').getFullList(opt),
       this.pb.collection('events').getFullList(opt),
       this.pb.collection('matches').getFullList(opt),
+      // Saisons sind neu (provision.mjs) — fehlt die Collection noch, nicht den ganzen Ladevorgang kippen.
+      this.pb.collection('seasons').getFullList(opt).catch(() => [] as ProviderRecord[]),
     ]);
 
     // Vereinsweite Einstellungen (ein Datensatz) — Name, Logo UND die zentrale UI-/Counter-Konfiguration,
@@ -90,6 +93,7 @@ export class PocketBaseProvider implements DataProvider {
       leagues: as<Snapshot['leagues']>(leagues),
       events: as<Snapshot['events']>(events),
       matches: as<Snapshot['matches']>(matches),
+      seasons: as<Snapshot['seasons']>(seasons),
       settings,
       trainingPlays,
       clubName,
@@ -166,7 +170,7 @@ export class PocketBaseProvider implements DataProvider {
   }
 
   subscribe(onChange: () => void): () => void {
-    const colls = ['players', 'teams', 'users', 'leagues', 'events', 'matches', 'club_config'];
+    const colls = ['players', 'teams', 'users', 'leagues', 'events', 'matches', 'seasons', 'club_config'];
     const unsubs = colls.map((c) => this.pb.collection(c).subscribe('*', () => onChange()).catch(() => () => {}));
     return () => { unsubs.forEach((p) => { void p.then((fn) => fn()).catch(() => {}); }); };
   }

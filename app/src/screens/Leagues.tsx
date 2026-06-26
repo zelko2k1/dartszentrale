@@ -1,5 +1,5 @@
 import { useStore } from '../store/useStore';
-import { computeStandings, perm } from '../store/selectors';
+import { computeStandings, perm, inSeason } from '../store/selectors';
 import { initials } from '../lib/format';
 import { IconPlus, IconUsersSmall } from '../lib/icons';
 import { useIsPhone } from '../lib/useIsPhone';
@@ -19,8 +19,10 @@ export function Leagues() {
   const s = useStore();
   const accent = s.settings.accent;
   const p = perm(s.settings, s.accounts, s.session);
-  const canEdit = p.manageLeagues;
-  const leagues = s.leagues;
+  // Archivierte Saison (betrachtet ≠ aktiv) → nur Lesezugriff: Bearbeiten-Aktionen ausblenden.
+  const readOnly = s.viewSeasonId != null && s.viewSeasonId !== s.activeSeasonId;
+  const canEdit = p.manageLeagues && !readOnly;
+  const leagues = inSeason(s.leagues, s.viewSeasonId);
   const isPhone = useIsPhone();
   const selIdx = Math.max(0, Math.min(leagues.length - 1, s.selectedLeague));
   const sel = leagues[selIdx] || null;
@@ -32,7 +34,7 @@ export function Leagues() {
   // verknüpften Board-Spielen. Match.perPlayer[0] ist stets die eigene Seite (Auto-Eintrag); nach Spielername.
   const highlightsFor = (fixtureId: string) => {
     const acc: Record<string, { c180: number; shortLegs: number; highFinish: number }> = {};
-    for (const m of s.matches) {
+    for (const m of inSeason(s.matches, s.viewSeasonId)) {
       if (m.fixtureId !== fixtureId) continue;
       const own = m.perPlayer?.[0];
       if (!own) continue;

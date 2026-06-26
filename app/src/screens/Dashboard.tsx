@@ -2,7 +2,7 @@ import { useStore } from '../store/useStore';
 import { EVENT_TYPES, TRAIN_MODES, ROLES, TEAM_KINDS, teamKind, type TrainMode } from '../data/constants';
 import { Avatar } from '../components/Avatar';
 import {
-  dashboardMetrics, recentResults, aggregateFor, perm, currentUser, nextOwnFixture, computeStandings,
+  dashboardMetrics, recentResults, aggregateFor, perm, currentUser, nextOwnFixture, computeStandings, inSeason,
 } from '../store/selectors';
 import { longDate, greeting as greetFn, shortLong, todayIso } from '../lib/format';
 import { LiveClock } from '../components/LiveClock';
@@ -27,6 +27,12 @@ function VereinDashboard() {
   const isPhone = useIsPhone();
   const norm = (x: string) => x.replace(/\s+/g, ' ').trim().toLowerCase();
 
+  // Dashboard ist die „Jetzt"-Übersicht → immer die AKTIVE Saison (unabhängig vom Saison-Umschalter).
+  const dLeagues = inSeason(s.leagues, s.activeSeasonId);
+  const dTeams = inSeason(s.teams, s.activeSeasonId);
+  const dMatches = inSeason(s.matches, s.activeSeasonId);
+  const dEvents = inSeason(s.events, s.activeSeasonId);
+
   // ── Wer ist angemeldet? Die Rolle bestimmt den Fokus des Dashboards. ──
   const u = currentUser(s.accounts, s.session);
   const isAdmin = p.admin;
@@ -34,11 +40,11 @@ function VereinDashboard() {
   const myPlayerId = u?.playerId ?? null;
   const myPlayer = myPlayerId ? s.players.find((pl) => pl.id === myPlayerId) : null;
   const myTeams = myPlayerId
-    ? s.teams.filter((t) => t.memberIds.includes(myPlayerId) || t.captainId === myPlayerId || (t.viceCaptainIds || []).includes(myPlayerId))
+    ? dTeams.filter((t) => t.memberIds.includes(myPlayerId) || t.captainId === myPlayerId || (t.viceCaptainIds || []).includes(myPlayerId))
     : [];
   // Persönliche Sicht (Kapitän/Spieler mit eigener Mannschaft) vs. Vereinssicht (Admin / ohne Verknüpfung).
   const personalView = !isAdmin && myTeams.length > 0;
-  const teamsView = personalView ? myTeams : s.teams;
+  const teamsView = personalView ? myTeams : dTeams;
   const namesView = new Set(teamsView.map((t) => norm(t.name)));
 
   // ── Termine (verein-scoped) ──
@@ -48,7 +54,7 @@ function VereinDashboard() {
   if (range === 'week') { const dow = (today.getDay() + 6) % 7; limit = new Date(today); limit.setDate(today.getDate() + (6 - dow)); limit.setHours(23, 59, 59, 999); }
   else if (range === 'month') { limit = new Date(today.getFullYear(), today.getMonth() + 1, 0); limit.setHours(23, 59, 59, 999); }
 
-  const events = s.events
+  const events = dEvents
     .filter((e) => e.scope === scope)
     .map((e) => ({ e, dt: new Date(e.date + 'T' + (e.time || '00:00')) }))
     .filter((x) => { const d = new Date(x.e.date + 'T00:00'); return d >= today && (!limit || d <= limit); })
@@ -69,17 +75,17 @@ function VereinDashboard() {
   // ── Nächste Begegnungen je relevanter Mannschaft (Liga/Pokal über teamKind getrennt) ──
   const todayStr = todayIso();
   const upcoming = teamsView
-    .map((t) => ({ team: t, fx: nextOwnFixture(s.leagues, todayStr, t.name, teamKind(t)) }))
+    .map((t) => ({ team: t, fx: nextOwnFixture(dLeagues, todayStr, t.name, teamKind(t)) }))
     .filter((x) => x.fx)
     .sort((a, b) => (a.fx!.date || '').localeCompare(b.fx!.date || ''));
 
   // ── Tabellen je relevantem Wettbewerb ──
-  const leaguesView = s.leagues
+  const leaguesView = dLeagues
     .filter((lg) => lg.teams.some((t) => t.own && (!personalView || namesView.has(norm(t.name)))));
 
-  const myAgg = myPlayer ? aggregateFor(myPlayer.name, s.matches) : null;
+  const myAgg = myPlayer ? aggregateFor(myPlayer.name, dMatches) : null;
   const results = recentResults(leaguesView, 4);
-  const metrics = dashboardMetrics(s.players, s.teams, s.leagues, s.matches);
+  const metrics = dashboardMetrics(s.players, dTeams, dLeagues, dMatches);
 
   const roleLabel = p.role && (ROLES as Record<string, { label: string }>)[p.role] ? (ROLES as Record<string, { label: string }>)[p.role].label : 'Verein';
   const firstName = u?.first?.trim() || u?.name?.trim() || s.settings.clubName || 'Verein';
@@ -128,8 +134,8 @@ function VereinDashboard() {
   const adminLinks: { label: string; sub: string; icon: React.ReactNode; screen: Parameters<typeof s.go>[0] }[] = [
     { label: 'Spieler', sub: `${s.players.length} in der Liste`, icon: <IconUserCheck size={20} />, screen: 'players' },
     { label: 'Benutzer & Rechte', sub: `${s.accounts.length} Konten`, icon: <IconUsers size={20} />, screen: 'users' },
-    { label: 'Mannschaften', sub: `${s.teams.length} Kader`, icon: <IconShield size={20} />, screen: 'teams' },
-    { label: 'Ligen & Pokale', sub: `${s.leagues.length} Wettbewerbe`, icon: <IconTrophy size={20} />, screen: 'leagues' },
+    { label: 'Mannschaften', sub: `${dTeams.length} Kader`, icon: <IconShield size={20} />, screen: 'teams' },
+    { label: 'Ligen & Pokale', sub: `${dLeagues.length} Wettbewerbe`, icon: <IconTrophy size={20} />, screen: 'leagues' },
     { label: 'Einstellungen', sub: 'Verein, Board-Konten & mehr', icon: <IconSettings size={20} />, screen: 'settings' },
   ];
   const AdminLinksCard = (
@@ -391,10 +397,13 @@ function LocalDashboard() {
   const now = new Date();
   const accent = s.settings.accent;
   const isPhone = useIsPhone();
+  // Auf die aktive Saison eingrenzen (lokal i. d. R. genau eine).
+  const lMatches = inSeason(s.matches, s.activeSeasonId);
+  const lEvents = inSeason(s.events, s.activeSeasonId);
 
   // Termine: nur die nächsten vier anstehenden (lokal)
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const events = s.events
+  const events = lEvents
     .filter((e) => e.scope === 'local')
     .map((e) => ({ e, dt: new Date(e.date + 'T' + (e.time || '00:00')) }))
     .filter((x) => new Date(x.e.date + 'T00:00') >= today)
@@ -420,8 +429,8 @@ function LocalDashboard() {
   const trainStats = playSorted.slice(0, 5).map(([id, n]) => ({ mode: TRAIN_MODES.find((m) => m.id === id), n })).filter((x): x is { mode: TrainMode; n: number } => !!x.mode);
 
   // zuletzt gespielt + Bestenliste
-  const recent = [...s.matches].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4);
-  const top = s.players.map((pl) => ({ pl, agg: aggregateFor(pl.name, s.matches) })).sort((a, b) => b.agg.avg - a.agg.avg).slice(0, 5);
+  const recent = [...lMatches].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4);
+  const top = s.players.map((pl) => ({ pl, agg: aggregateFor(pl.name, lMatches) })).sort((a, b) => b.agg.avg - a.agg.avg).slice(0, 5);
 
   const startX01 = (bestOf: number) => s.quickStart({ startScore: 501, doubleOut: true, outMode: 'double', doubleIn: false, unit: 'legs', bestOf });
   const quickItems: { key: string; color: string; iconPath: string | null; title: string; sub: string; onClick: () => void }[] = [

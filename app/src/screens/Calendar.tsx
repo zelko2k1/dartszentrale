@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { EVENT_TYPES, EVENT_TYPE_ALL } from '../data/constants';
-import { perm } from '../store/selectors';
+import { perm, inSeason } from '../store/selectors';
 import { IconChevronLeft, IconChevronRight, IconPlus } from '../lib/icons';
 
 const MON = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
@@ -11,13 +11,17 @@ export function Calendar() {
   const s = useStore();
   const accent = s.settings.accent;
   const p = perm(s.settings, s.accounts, s.session);
+  const readOnly = s.viewSeasonId != null && s.viewSeasonId !== s.activeSeasonId;
+  const canManageEvents = p.manageEvents && !readOnly;
   const scope = s.settings.appMode === 'local' ? 'local' : 'verein';
+  // Termine der betrachteten Saison (Soft-Archiv): Liga-/Pokal- und übrige Termine pro Saison getrennt.
+  const events = inSeason(s.events, s.viewSeasonId);
   const now = new Date();
   const [ref, setRef] = useState({ y: now.getFullYear(), m: now.getMonth() });
   const todayIso = now.toISOString().slice(0, 10);
 
   const byDate: Record<string, typeof s.events> = {};
-  s.events.filter((e) => e.scope === scope).forEach((e) => { (byDate[e.date] = byDate[e.date] || []).push(e); });
+  events.filter((e) => e.scope === scope).forEach((e) => { (byDate[e.date] = byDate[e.date] || []).push(e); });
 
   const first = new Date(ref.y, ref.m, 1);
   const startDow = (first.getDay() + 6) % 7;
@@ -41,7 +45,7 @@ export function Calendar() {
   for (let w = 0; w < 6; w++) weeks.push(cells.slice(w * 7, w * 7 + 7));
   while (weeks.length > 4 && weeks[weeks.length - 1].every((c) => c.outMonth && c.chips.length === 0)) weeks.pop();
 
-  const monthEvents = s.events.filter((e) => e.scope === scope && e.date.slice(0, 7) === `${ref.y}-${pad2(ref.m + 1)}`).length;
+  const monthEvents = events.filter((e) => e.scope === scope && e.date.slice(0, 7) === `${ref.y}-${pad2(ref.m + 1)}`).length;
   const shift = (dir: number) => setRef((r) => { const d = new Date(r.y, r.m + dir, 1); return { y: d.getFullYear(), m: d.getMonth() }; });
 
   return (
@@ -56,7 +60,7 @@ export function Calendar() {
           <button className="dh-hover-border" onClick={() => shift(-1)} title="Voriger Monat" style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IconChevronLeft size={18} /></button>
           <button className="dh-hover-border" onClick={() => setRef({ y: now.getFullYear(), m: now.getMonth() })} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '0 16px', height: 38, borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Heute</button>
           <button className="dh-hover-border" onClick={() => shift(1)} title="Nächster Monat" style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IconChevronRight size={18} /></button>
-          {p.manageEvents && (
+          {canManageEvents && (
             <button className="dh-primary" onClick={() => s.openAddEvent()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', height: 38, padding: '0 16px', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', marginLeft: 6 }}><IconPlus size={16} />Termin</button>
           )}
         </div>
@@ -71,11 +75,11 @@ export function Calendar() {
         {weeks.map((wk, wi) => (
           <div key={wi} style={{ display: 'grid', gridTemplateColumns: 'repeat(7,minmax(64px,1fr))', borderBottom: '1px solid var(--hairline)', minWidth: 462 }}>
             {wk.map((c) => (
-              <div key={c.iso} className="dh-row" onClick={() => p.manageEvents && s.openAddEvent(c.iso)} style={{ minHeight: 112, padding: '7px 7px 9px', borderRight: '1px solid var(--hairline)', background: c.cellBg, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden' }}>
+              <div key={c.iso} className="dh-row" onClick={() => canManageEvents && s.openAddEvent(c.iso)} style={{ minHeight: 112, padding: '7px 7px 9px', borderRight: '1px solid var(--hairline)', background: c.cellBg, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start', minWidth: 24, height: 24, padding: '0 6px', borderRadius: 7, fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: c.dayColor, background: c.dayBg }}>{c.day}</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
                   {c.chips.map((ch) => (
-                    <div key={ch.id} onClick={(e) => { e.stopPropagation(); s.openEditEvent(ch.id); }} title={ch.title} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 6px', borderRadius: 6, background: ch.bg, cursor: 'pointer', minWidth: 0 }}>
+                    <div key={ch.id} onClick={(e) => { e.stopPropagation(); if (canManageEvents) s.openEditEvent(ch.id); }} title={ch.title} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 6px', borderRadius: 6, background: ch.bg, cursor: 'pointer', minWidth: 0 }}>
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={ch.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d={ch.icon} /></svg>
                       <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ch.title}</span>
                     </div>

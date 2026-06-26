@@ -5,6 +5,16 @@
 export type Role = 'admin' | 'captain' | 'player' | 'viewer' | 'board';
 export type AppMode = 'local' | 'verein';
 
+// Saison — Klammer um Ligen, Mannschaften, Termine und Matches einer Spielzeit.
+// status='active' = laufende Saison (genau eine); 'archived' = abgeschlossen, in der App nur lesbar.
+export interface Season {
+  id: string;
+  name: string;             // z. B. "2025/26"
+  status: 'active' | 'archived';
+  startDate?: string;       // YYYY-MM-DD (optional)
+  endDate?: string;         // YYYY-MM-DD (optional)
+}
+
 export interface Player {
   id: string;
   name: string;
@@ -28,6 +38,7 @@ export interface Team {
   captainId: string | null;
   viceCaptainIds?: string[]; // bis zu 2 Ersatzkapitäne (→ Player.id)
   kind?: TeamKind;     // fehlt = 'league' (Abwärtskompatibilität für Altdaten)
+  seasonId?: string;   // → Season.id; fehlt = Altdaten (Backfill auf aktive Saison)
 }
 
 export interface Account {
@@ -92,7 +103,8 @@ export interface LineupSegment { kind: LineupSegmentKind; count: number; }
 export interface League {
   id: string;
   name: string;
-  season: string;
+  season: string;      // Freitext-Label (z. B. "2025/26"); für Anzeige/Altdaten
+  seasonId?: string;   // → Season.id; maßgeblich für Saison-Filter
   teams: LeagueTeam[];
   fixtures: Fixture[];
   // Art des Wettbewerbs (fehlt = 'league'): trennt Liga- von Pokal-Begegnungen, damit eine
@@ -113,6 +125,7 @@ export interface EventItem {
   time: string;
   type: string;        // EVENT_TYPES key
   loc: string;
+  seasonId?: string;   // → Season.id; bei neuen Terminen = aktive Saison
 }
 
 export interface MatchPlayerStat {
@@ -129,6 +142,7 @@ export interface MatchPlayerStat {
   highFinish: number;
   darts: number;
   shortLegs?: number; // gewonnene Legs ≤19 Darts (Liga-Highlight); optional für Abwärtskompatibilität alter Matches
+  playerId?: string;  // → Player.id; robuste, saisonübergreifende Statistik (Name allein ist mehrdeutig)
 }
 
 export interface Match {
@@ -150,6 +164,7 @@ export interface Match {
   leagueId?: string;
   fixtureId?: string;
   positionId?: string;
+  seasonId?: string;   // → Season.id; bei neuen Matches = aktive Saison
 }
 
 export interface Settings {

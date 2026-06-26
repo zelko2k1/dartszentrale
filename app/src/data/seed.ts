@@ -1,6 +1,12 @@
 // Seed-Daten — 1:1 aus DartsHub.dc.html (componentDidMount / seedLeagues / seedEvents)
-import type { Player, Team, Account, League, EventItem, Settings } from './types';
+import type { Player, Team, Account, League, EventItem, Season, Settings } from './types';
 import { uid, iso, firstName, lastName } from '../lib/format';
+
+// Stabile Seed-Saison-ID, damit Seed-Ligen/-Teams/-Termine zuverlässig auf dieselbe Saison zeigen.
+export const SEED_SEASON_ID = 'season_seed_2025_26';
+export function seedSeasons(): Season[] {
+  return [{ id: SEED_SEASON_ID, name: '2025/26', status: 'active' }];
+}
 
 export const DEFAULT_SETTINGS: Settings = {
   device: 'tablet',
@@ -72,6 +78,7 @@ export function seedTeams(players: Player[]): Team[] {
       league: 'Verbandsliga Nord',
       memberIds: players.map((p) => p.id),
       captainId: players[0] ? players[0].id : null,
+      seasonId: SEED_SEASON_ID,
     },
     {
       id: uid(),
@@ -79,6 +86,7 @@ export function seedTeams(players: Player[]): Team[] {
       league: '',
       memberIds: [],
       captainId: null,
+      seasonId: SEED_SEASON_ID,
     },
   ];
 }
@@ -114,17 +122,18 @@ export function seedLeagues(): League[] {
     fx(adler, falken, 0, 0, 5, false),
     fx(rhein, phoenix, 0, 0, 6, false),
   ];
-  return [{ id: uid(), name: 'Verbandsliga Nord', season: '2025/26', teams, fixtures }];
+  return [{ id: uid(), name: 'Verbandsliga Nord', season: '2025/26', seasonId: SEED_SEASON_ID, teams, fixtures }];
 }
 
 export function seedEvents(): EventItem[] {
+  const s = SEED_SEASON_ID;
   return [
-    { id: uid(), scope: 'verein', title: 'SV Adler — DC Falken', date: iso(2), time: '19:30', type: 'ligaspiel', loc: 'Sportheim Adler · Heim' },
-    { id: uid(), scope: 'verein', title: 'Mannschaftstraining', date: iso(4), time: '19:00', type: 'training', loc: 'Vereinsheim' },
-    { id: uid(), scope: 'verein', title: 'DC Phoenix — SV Adler', date: iso(9), time: '19:30', type: 'ligaspiel', loc: 'Auswärts · Moers' },
-    { id: uid(), scope: 'verein', title: 'Pokal-Achtelfinale vs Phoenix', date: iso(16), time: '19:00', type: 'pokal', loc: 'Sportheim Adler' },
-    { id: uid(), scope: 'verein', title: 'Vereinsabend', date: iso(23), time: '18:00', type: 'verein', loc: 'Vereinsheim' },
-    { id: uid(), scope: 'local', title: 'Training: Doppel & Finishes', date: iso(1), time: '18:00', type: 'training', loc: 'Heim-Board' },
-    { id: uid(), scope: 'local', title: 'Spielabend mit Tom & Lisa', date: iso(5), time: '20:00', type: 'competition', loc: 'Bei mir' },
+    { id: uid(), scope: 'verein', title: 'SV Adler — DC Falken', date: iso(2), time: '19:30', type: 'ligaspiel', loc: 'Sportheim Adler · Heim', seasonId: s },
+    { id: uid(), scope: 'verein', title: 'Mannschaftstraining', date: iso(4), time: '19:00', type: 'training', loc: 'Vereinsheim', seasonId: s },
+    { id: uid(), scope: 'verein', title: 'DC Phoenix — SV Adler', date: iso(9), time: '19:30', type: 'ligaspiel', loc: 'Auswärts · Moers', seasonId: s },
+    { id: uid(), scope: 'verein', title: 'Pokal-Achtelfinale vs Phoenix', date: iso(16), time: '19:00', type: 'pokal', loc: 'Sportheim Adler', seasonId: s },
+    { id: uid(), scope: 'verein', title: 'Vereinsabend', date: iso(23), time: '18:00', type: 'verein', loc: 'Vereinsheim', seasonId: s },
+    { id: uid(), scope: 'local', title: 'Training: Doppel & Finishes', date: iso(1), time: '18:00', type: 'training', loc: 'Heim-Board', seasonId: s },
+    { id: uid(), scope: 'local', title: 'Spielabend mit Tom & Lisa', date: iso(5), time: '20:00', type: 'competition', loc: 'Bei mir', seasonId: s },
   ];
 }

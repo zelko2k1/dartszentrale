@@ -29,6 +29,8 @@ export function UserModal() {
   const needsPw = s.pbMode && m.mode === 'add';
   const canSave = `${m.first}${m.last}`.trim().length > 0 && m.email.trim().length > 0 && (!needsPw || m.password.trim().length >= 8);
   const players = s.players;
+  // Mannschaftszuordnung bezieht sich auf die AKTIVE Saison (archivierte Kader nicht im Benutzer-Dialog).
+  const seasonTeams = s.teams.filter((t) => t.seasonId == null || t.seasonId === s.activeSeasonId);
   const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' };
 
   // Spieler-Verknüpfung: aktuelle Auswahl separat, Suche + bereits anderweitig verknüpfte ausblenden (kein Doppel-Link).
@@ -180,11 +182,11 @@ export function UserModal() {
                   ? `${selectedPlayer.name} wird Mitglied und Kapitän der gewählten Mannschaft(en).`
                   : `${selectedPlayer.name} wird Mitglied der gewählten Mannschaft(en).`}
               </div>
-              {s.teams.length === 0 ? (
+              {seasonTeams.length === 0 ? (
                 <div style={{ background: 'var(--btn)', border: '1px dashed var(--border-strong)', borderRadius: 12, padding: 16, textAlign: 'center', color: 'var(--text-4)', fontSize: 13 }}>Noch keine Mannschaften angelegt.</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 220, overflowY: 'auto' }}>
-                  {s.teams.map((t) => {
+                  {seasonTeams.map((t) => {
                     const on = m.teamIds.includes(t.id);
                     const cup = t.kind === 'cup';
                     return (

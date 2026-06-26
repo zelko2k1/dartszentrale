@@ -52,6 +52,30 @@ export function Sidebar() {
         </div>
       </div>
 
+      {/* Saison-Umschalter (Soft-Archiv): zeigt die betrachtete Saison; ≠ aktive → Lesemodus. */}
+      {isVerein && s.seasons.length > 0 && (
+        <div style={{ padding: '0 16px 12px' }}>
+          <div style={{ position: 'relative' }}>
+            <select
+              value={s.viewSeasonId ?? ''}
+              onChange={(e) => s.setViewSeason(e.target.value)}
+              title="Saison wählen"
+              style={{ width: '100%', appearance: 'none', WebkitAppearance: 'none', background: 'var(--surface-2)', border: `1px solid ${s.viewSeasonId !== s.activeSeasonId ? 'rgba(242,184,41,.5)' : 'var(--border-2)'}`, borderRadius: 10, padding: '8px 28px 8px 11px', color: 'var(--text)', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}
+            >
+              {[...s.seasons]
+                .sort((a, b) => (a.status === 'active' ? 0 : 1) - (b.status === 'active' ? 0 : 1) || b.name.localeCompare(a.name))
+                .map((se) => (
+                  <option key={se.id} value={se.id}>Saison {se.name}{se.status === 'active' ? '' : ' · Archiv'}</option>
+                ))}
+            </select>
+            <span style={{ position: 'absolute', right: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-4)', fontSize: 10 }}>▼</span>
+          </div>
+          {s.viewSeasonId !== s.activeSeasonId && (
+            <div style={{ marginTop: 6, fontSize: 11, color: '#F2B829', fontWeight: 700 }}>Archiviert · nur Lesezugriff</div>
+          )}
+        </div>
+      )}
+
       <nav style={{ flex: 1, padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 3 }}>
         <NavItem icon={<IconDashboard />} label="Dashboard" screen="dashboard" active={active === 'dashboard'} onClick={() => s.go('dashboard')} />
         {p.play && (

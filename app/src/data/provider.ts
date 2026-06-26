@@ -1,9 +1,9 @@
 // Datenschicht-Abstraktion (Phase-1-Vorbereitung).
 // Zwei Implementierungen: LocalProvider (localStorage, synchron) und PocketBaseProvider (API, async).
 // Noch NICHT in den Store eingebunden — rein additiv, ändert das bestehende Verhalten nicht.
-import type { Player, Team, Account, League, EventItem, Match, Settings, Role } from './types';
+import type { Player, Team, Account, League, EventItem, Match, Season, Settings, Role } from './types';
 
-export type CollectionName = 'players' | 'teams' | 'accounts' | 'leagues' | 'events' | 'matches';
+export type CollectionName = 'players' | 'teams' | 'accounts' | 'leagues' | 'events' | 'matches' | 'seasons';
 
 /** Vollständiger Datenbestand, wie ihn der Store beim Start lädt. */
 export interface Snapshot {
@@ -13,6 +13,7 @@ export interface Snapshot {
   leagues: League[];
   events: EventItem[];
   matches: Match[];
+  seasons: Season[];
   settings: Partial<Settings> | null;
   trainingPlays: Record<string, number>;
   clubName?: string;

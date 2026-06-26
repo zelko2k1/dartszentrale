@@ -44,18 +44,23 @@ const BASE_COLLECTIONS = [
     fields: [text('name'), text('short', { max: 3 }), num('avi'), bool('locked'), photo()],
   },
   {
+    // Saison-Klammer: status = 'active' (genau eine) | 'archived' (abgeschlossen, in der App nur lesbar).
+    name: 'seasons', type: 'base', ...editorRules,
+    fields: [text('name'), text('status'), text('startDate'), text('endDate')],
+  },
+  {
     name: 'teams', type: 'base', ...editorRules,
     // kind = 'league' (Standard) | 'cup' (Pokalmannschaft). viceCaptainIds: bis zu 2 Ersatzkapitäne.
-    fields: [text('name'), text('league'), json('memberIds'), json('captainId'), json('viceCaptainIds'), text('kind')],
+    fields: [text('name'), text('league'), json('memberIds'), json('captainId'), json('viceCaptainIds'), text('kind'), text('seasonId')],
   },
   {
     name: 'leagues', type: 'base', ...editorRules,
     // kind = 'league' (Standard) | 'cup' (Pokal-Wettbewerb) – trennt Liga- von Pokal-Begegnungen.
-    fields: [text('name'), text('season'), json('teams'), json('fixtures'), text('kind')],
+    fields: [text('name'), text('season'), text('seasonId'), json('teams'), json('fixtures'), text('kind')],
   },
   {
     name: 'events', type: 'base', ...editorRules,
-    fields: [text('title'), text('date'), text('time'), text('type'), text('loc'), text('scope')],
+    fields: [text('title'), text('date'), text('time'), text('type'), text('loc'), text('scope'), text('seasonId')],
   },
   {
     name: 'matches', type: 'base',
@@ -64,7 +69,7 @@ const BASE_COLLECTIONS = [
     fields: [
       text('date'), num('startScore'), bool('doubleOut'), bool('doubleIn'),
       text('unit'), text('mode'), num('bestOf'), num('bestOfSets'),
-      text('gameLabel'), text('winnerName'), text('scoreLine'), json('perPlayer'),
+      text('gameLabel'), text('winnerName'), text('scoreLine'), json('perPlayer'), text('seasonId'),
     ],
   },
   {
@@ -155,6 +160,40 @@ async function main() {
     });
     console.log(`✓ App-Admin angelegt: ${APP_ADMIN.email} / ${APP_ADMIN.password}`);
   }
+
+  // 5) Saison-Backfill (idempotent): aktive Saison sicherstellen, Altbestand zuordnen,
+  //    Match-Spielerstatistiken um playerId (per Name→Spieler) ergänzen.
+  let activeSeasonId;
+  const seasonsList = await pb.collection('seasons').getFullList({ requestKey: null });
+  const active = seasonsList.find((s) => s.status === 'active') || seasonsList[0];
+  if (active) { activeSeasonId = active.id; console.log(`• Saison vorhanden: ${active.name}`); }
+  else {
+    const created = await pb.collection('seasons').create({ name: '2025/26', status: 'active' });
+    activeSeasonId = created.id;
+    console.log('✓ Saison angelegt: 2025/26 (aktiv)');
+  }
+
+  for (const coll of ['leagues', 'teams', 'events']) {
+    const rows = await pb.collection(coll).getFullList({ requestKey: null });
+    let n = 0;
+    for (const r of rows) if (!r.seasonId) { await pb.collection(coll).update(r.id, { seasonId: activeSeasonId }); n++; }
+    if (n) console.log(`✓ seasonId nachgezogen: ${coll} (${n})`);
+  }
+
+  const playersAll = await pb.collection('players').getFullList({ requestKey: null });
+  const playerByName = new Map(playersAll.map((p) => [p.name, p.id]));
+  const matchesAll = await pb.collection('matches').getFullList({ requestKey: null });
+  let mn = 0;
+  for (const m of matchesAll) {
+    const patch = {};
+    if (!m.seasonId) patch.seasonId = activeSeasonId;
+    const pp = Array.isArray(m.perPlayer) ? m.perPlayer : [];
+    let ppChanged = false;
+    const newPP = pp.map((x) => (x && x.playerId === undefined && playerByName.has(x.name)) ? (ppChanged = true, { ...x, playerId: playerByName.get(x.name) }) : x);
+    if (ppChanged) patch.perPlayer = newPP;
+    if (Object.keys(patch).length) { await pb.collection('matches').update(m.id, patch); mn++; }
+  }
+  if (mn) console.log(`✓ Matches migriert (seasonId/playerId): ${mn}`);
 
   console.log('\nFertig. Schema steht.');
 }

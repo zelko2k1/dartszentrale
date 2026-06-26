@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { TEAM_KINDS, teamKind } from '../data/constants';
 import { Avatar } from '../components/Avatar';
-import { aggregateFor, teamRoster, perm, nextOwnFixture } from '../store/selectors';
+import { aggregateFor, teamRoster, perm, nextOwnFixture, inSeason } from '../store/selectors';
 import { initials, shortLong, todayIso } from '../lib/format';
 import { IconPlus, IconEdit } from '../lib/icons';
 import { TeamKindIcon } from '../modals/TeamModal';
@@ -16,8 +16,9 @@ export function Teams() {
   const accent = s.settings.accent;
   const isPhone = useIsPhone();
   const p = perm(s.settings, s.accounts, s.session);
-  const canManage = p.manageTeams;
-  const teams = s.teams;
+  const readOnly = s.viewSeasonId != null && s.viewSeasonId !== s.activeSeasonId;
+  const canManage = p.manageTeams && !readOnly;
+  const teams = inSeason(s.teams, s.viewSeasonId);
   const order = s.settings.nameOrder ?? 'first';
   const [query, setQuery] = useState('');
   const selIdx = Math.max(0, Math.min(teams.length - 1, s.selectedTeam));
@@ -36,7 +37,7 @@ export function Teams() {
   const teamMeta = sel ? ((sel.league ? sel.league + ' · ' : '') + members.length + ' Spieler' + (captain ? ' · Kapitän: ' + captain.name : '') + (viceCaptains.length ? ' · Vertretung: ' + viceCaptains.map((v) => v.name).join(', ') : '')) : 'Lege eine Mannschaft an';
 
   // Kurzer Weg: nächster offener Spieltag dieser Mannschaft (über alle Ligen), zum direkten Aufstellen.
-  const nextFx = useMemo(() => (sel ? nextOwnFixture(s.leagues, todayIso(), sel.name, teamKind(sel)) : null), [sel, s.leagues]);
+  const nextFx = useMemo(() => (sel ? nextOwnFixture(inSeason(s.leagues, s.viewSeasonId), todayIso(), sel.name, teamKind(sel)) : null), [sel, s.leagues, s.viewSeasonId]);
 
   return (
     <div style={{ padding: '28px 32px', maxWidth: 1100, margin: '0 auto' }}>

@@ -1,6 +1,17 @@
-import type { Account, League, LeagueTeam, Settings, Player, Team, EventItem, Match, Fixture, TeamKind } from '../data/types';
+import type { Account, League, LeagueTeam, Settings, Player, Team, EventItem, Match, Fixture, TeamKind, Season } from '../data/types';
 import { FONTS, THEMES_DARK, THEMES_LIGHT } from '../data/constants';
 import { parseIso } from '../lib/format';
+
+// ── Saison-Helfer ──
+// Aktive Saison (genau eine), sonst die erste vorhandene, sonst null.
+export function activeSeason(seasons: Season[]): Season | null {
+  return seasons.find((s) => s.status === 'active') || seasons[0] || null;
+}
+// Datensätze auf eine Saison eingrenzen. seasonId = null → kein Filter (z. B. wenn noch keine Saisons existieren).
+export function inSeason<T extends { seasonId?: string }>(items: T[], seasonId: string | null): T[] {
+  if (!seasonId) return items;
+  return items.filter((x) => x.seasonId === seasonId);
+}
 
 export interface Perm {
   admin: boolean; manageUsers: boolean; manageClub: boolean; managePlayers: boolean;

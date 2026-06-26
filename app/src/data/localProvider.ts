@@ -10,6 +10,7 @@ const COLL_KEY: Record<CollectionName, string> = {
   leagues: STORAGE_KEYS.leagues,
   events: STORAGE_KEYS.events,
   matches: STORAGE_KEYS.matches,
+  seasons: STORAGE_KEYS.seasons,
 };
 
 function read<T>(key: string, fallback: T): T {
@@ -32,6 +33,7 @@ export class LocalProvider implements DataProvider {
       leagues: read(STORAGE_KEYS.leagues, []),
       events: read(STORAGE_KEYS.events, []),
       matches: read(STORAGE_KEYS.matches, []),
+      seasons: read(STORAGE_KEYS.seasons, []),
       settings,
       trainingPlays: read(STORAGE_KEYS.trainplays, {}),
       clubName: settings?.clubName,
