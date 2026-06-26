@@ -217,6 +217,10 @@ export interface AppState {
   // Neue-Saison-Assistent: Mannschaften und/oder Liga-Strukturen (ohne Ergebnisse) aus einer früheren Saison
   // in die aktive Saison klonen.
   carryOverSeason: (opts: { fromSeasonId: string; teams: boolean; leagues: boolean }) => void;
+  // Phase 4: archivierte Saison auslagern (Bundle herunterladen + Spiele aus der DB entfernen, offloaded=true).
+  offloadSeason: (seasonId: string) => void;
+  // Phase 4: ausgelagerte Saison aus einem Bundle wieder einlesen (Spiele/fehlende Datensätze, offloaded=false).
+  reimportSeason: (bundle: unknown) => { matches: number; restored: number } | null;
 
   // settings
   setSetting: <K extends keyof Settings>(key: K, val: Settings[K]) => void;
@@ -598,6 +602,57 @@ export const useStore = create<AppState>((set, get) => ({
     if (newTeams.length) persist(st, set, LS.teams, teams, (p) => Promise.all(newTeams.map((t) => p.createRecord('teams', t as unknown as ProviderRecord))));
     if (newLeagues.length) persist(st, set, LS.leagues, leagues, (p) => Promise.all(newLeagues.map((l) => p.createRecord('leagues', l as unknown as ProviderRecord))));
     set({ teams, leagues, selectedLeague: 0, selectedTeam: 0 });
+  },
+
+  // Archivierte Saison auslagern: zuerst eine frische Sicherung herunterladen, dann die (schweren) Spiele dieser
+  // Saison aus der DB entfernen und offloaded=true setzen. Tabellen/Kader/Termine bleiben; Einzelstatistik kommt
+  // danach aus dem Snapshot. Per Re-Import vollständig wiederherstellbar.
+  offloadSeason(seasonId) {
+    const st = get();
+    const season = st.seasons.find((s) => s.id === seasonId);
+    if (!season || season.status !== 'archived' || season.offloaded) return;
+    // Sicherung erzwingen (Snapshot bevorzugt aus dem eingefrorenen Stand des Abschlusses).
+    const snapshot = st.seasonSnapshots.find((sn) => sn.seasonId === seasonId) || buildSeasonSnapshot(season, st);
+    downloadJson(bundleFilename(season), buildSeasonBundle(season, snapshot, st));
+    const purge = st.matches.filter((m) => m.seasonId === seasonId);
+    if (!purge.length && season.offloaded) return;
+    const matches = st.matches.filter((m) => m.seasonId !== seasonId);
+    const seasons = st.seasons.map((s) => s.id === seasonId ? { ...s, offloaded: true } : s);
+    if (purge.length) persist(st, set, LS.matches, matches, (p) => Promise.all(purge.map((m) => p.deleteRecord('matches', m.id))));
+    persist(st, set, LS.seasons, seasons, (p) => p.updateRecord('seasons', seasonId, { offloaded: true } as unknown as ProviderRecord));
+    set({ matches, seasons });
+  },
+
+  // Ausgelagerte Saison aus einem Bundle wieder einlesen: fehlende Spiele/Ligen/Teams/Termine (nach id) anlegen,
+  // offloaded=false setzen. Idempotent — bereits vorhandene Datensätze werden übersprungen.
+  reimportSeason(bundle) {
+    const b = bundle as { season?: Season; matches?: Match[]; leagues?: League[]; teams?: Team[]; events?: EventItem[] } | null;
+    if (!b || !b.season || !b.season.id) return null;
+    const st = get();
+    const sid = b.season.id;
+    const missing = <T extends { id: string }>(incoming: T[] | undefined, cur: T[]): T[] => {
+      const have = new Set(cur.map((x) => x.id));
+      return (incoming || []).filter((x) => x && x.id && !have.has(x.id));
+    };
+    const addMatches = missing(b.matches, st.matches);
+    const addLeagues = missing(b.leagues, st.leagues);
+    const addTeams = missing(b.teams, st.teams);
+    const addEvents = missing(b.events, st.events);
+    const matches = [...st.matches, ...addMatches];
+    const leagues = [...st.leagues, ...addLeagues];
+    const teams = [...st.teams, ...addTeams];
+    const events = [...st.events, ...addEvents];
+    // Saison ggf. wieder eintragen (falls auch der Season-Datensatz fehlte) + offloaded zurücksetzen.
+    let seasons = st.seasons;
+    if (!seasons.some((s) => s.id === sid)) seasons = [...seasons, { ...b.season, offloaded: false }];
+    else seasons = seasons.map((s) => s.id === sid ? { ...s, offloaded: false } : s);
+    if (addMatches.length) persist(st, set, LS.matches, matches, (p) => Promise.all(addMatches.map((m) => p.createRecord('matches', m as unknown as ProviderRecord))));
+    if (addLeagues.length) persist(st, set, LS.leagues, leagues, (p) => Promise.all(addLeagues.map((l) => p.createRecord('leagues', l as unknown as ProviderRecord))));
+    if (addTeams.length) persist(st, set, LS.teams, teams, (p) => Promise.all(addTeams.map((t) => p.createRecord('teams', t as unknown as ProviderRecord))));
+    if (addEvents.length) persist(st, set, LS.events, events, (p) => Promise.all(addEvents.map((e) => p.createRecord('events', e as unknown as ProviderRecord))));
+    persist(st, set, LS.seasons, seasons, (p) => p.updateRecord('seasons', sid, { offloaded: false } as unknown as ProviderRecord));
+    set({ matches, leagues, teams, events, seasons });
+    return { matches: addMatches.length, restored: addLeagues.length + addTeams.length + addEvents.length };
   },
 
   go(screen) { set({ screen }); },

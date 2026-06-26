@@ -46,7 +46,7 @@ const BASE_COLLECTIONS = [
   {
     // Saison-Klammer: status = 'active' (genau eine) | 'archived' (abgeschlossen, in der App nur lesbar).
     name: 'seasons', type: 'base', ...editorRules,
-    fields: [text('name'), text('status'), text('startDate'), text('endDate')],
+    fields: [text('name'), text('status'), text('startDate'), text('endDate'), bool('offloaded')],
   },
   {
     // Eingefrorener Abschluss-Stand einer Saison (beim „Saison abschließen" erzeugt). Schreiben nur Admin.

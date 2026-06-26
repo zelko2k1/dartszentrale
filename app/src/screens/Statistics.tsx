@@ -4,29 +4,45 @@ import { Avatar } from '../components/Avatar';
 
 const COLS = '26px 1fr 54px 34px 30px 30px 44px 46px 46px 40px 40px 46px 44px';
 
+type Stat = { id: string; name: string; short: string; photo?: string; avi: number; games: number; wins: number; losses: number; avg: number; c180: number; c140: number; c100: number; c60: number; high: number; shortLegs: number };
+
 export function Statistics() {
   const s = useStore();
   // Bestenliste je betrachteter Saison (Soft-Archiv): nur Matches dieser Saison aggregieren.
+  // Ausgelagerte Saison (Phase 4): Spiele sind weg → Werte aus dem eingefrorenen Snapshot.
   const seasonMatches = inSeason(s.matches, s.viewSeasonId);
-  const rows = s.players
-    .map((p) => ({ p, agg: aggregateFor(p.name, seasonMatches) }))
-    .sort((a, b) => b.agg.avg - a.agg.avg)
-    .map((row, idx) => {
-      const agg = row.agg;
-      return {
-        id: row.p.id, rank: idx + 1, name: row.p.name, short: row.p.short, photo: row.p.photo, avi: row.p.avi,
-        avg: agg.avg ? agg.avg.toFixed(1) : '0.0', sp: String(agg.games), sw: String(agg.wins), sn: String(agg.losses),
-        checkout: agg.games ? Math.round(agg.wins / agg.games * 100) + '%' : '0%',
-        s60: String(agg.c60), s100: String(agg.c100), s140: String(agg.c140), s180: String(agg.c180), shortLegs: String(agg.shortLegs), highFinish: agg.high ? String(agg.high) : '0',
-        rankColor: idx === 0 && agg.games ? '#F2B829' : idx < 3 && agg.games ? 'var(--success)' : 'var(--text-4)',
-        rowBg: idx === 0 && agg.games ? 'rgba(242,184,41,.05)' : 'transparent',
-      };
-    });
+  const viewSeason = s.seasons.find((x) => x.id === s.viewSeasonId);
+  const snap = viewSeason?.offloaded ? s.seasonSnapshots.find((sn) => sn.seasonId === s.viewSeasonId) : null;
+  const stats: Stat[] = snap
+    ? snap.playerStats.map((ps) => {
+        const pl = s.players.find((x) => x.id === ps.playerId) || s.players.find((x) => x.name === ps.name);
+        return { id: ps.playerId || ps.name, name: ps.name, short: pl?.short || ps.name.slice(0, 2).toUpperCase(), photo: pl?.photo, avi: pl?.avi ?? 0, games: ps.games, wins: ps.wins, losses: ps.losses, avg: ps.avg, c180: ps.c180, c140: ps.c140, c100: ps.c100, c60: ps.c60, high: ps.high, shortLegs: ps.shortLegs };
+      })
+    : s.players.map((p) => {
+        const a = aggregateFor(p.name, seasonMatches);
+        return { id: p.id, name: p.name, short: p.short, photo: p.photo, avi: p.avi, games: a.games, wins: a.wins, losses: a.losses, avg: a.avg, c180: a.c180, c140: a.c140, c100: a.c100, c60: a.c60, high: a.high, shortLegs: a.shortLegs };
+      });
+  const rows = stats
+    .sort((a, b) => b.avg - a.avg)
+    .map((agg, idx) => ({
+      id: agg.id, rank: idx + 1, name: agg.name, short: agg.short, photo: agg.photo, avi: agg.avi,
+      avg: agg.avg ? agg.avg.toFixed(1) : '0.0', sp: String(agg.games), sw: String(agg.wins), sn: String(agg.losses),
+      checkout: agg.games ? Math.round(agg.wins / agg.games * 100) + '%' : '0%',
+      s60: String(agg.c60), s100: String(agg.c100), s140: String(agg.c140), s180: String(agg.c180), shortLegs: String(agg.shortLegs), highFinish: agg.high ? String(agg.high) : '0',
+      rankColor: idx === 0 && agg.games ? '#F2B829' : idx < 3 && agg.games ? 'var(--success)' : 'var(--text-4)',
+      rowBg: idx === 0 && agg.games ? 'rgba(242,184,41,.05)' : 'transparent',
+    }));
 
   return (
     <div style={{ padding: '28px 32px', maxWidth: 1180, margin: '0 auto' }}>
       <h1 style={{ margin: '0 0 6px', fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>Statistiken · Bestenliste</h1>
       <p style={{ margin: '0 0 20px', fontSize: 13, color: 'var(--text-4)' }}>Sp / S / N zählen nur X01-Einzelspiele (1 gegen 1).</p>
+      {snap && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'rgba(242,184,41,.1)', border: '1px solid rgba(242,184,41,.35)', borderRadius: 11, padding: '10px 14px', marginBottom: 18, fontSize: 13, color: 'var(--text-2)' }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: '#F2B829', background: 'var(--btn)', border: '1px solid var(--border-2)', padding: '2px 8px', borderRadius: 6 }}>AUSGELAGERT</span>
+          Detaildaten ausgelagert — Werte stammen aus dem eingefrorenen Schnappschuss dieser Saison.
+        </div>
+      )}
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
         <div style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4, padding: '14px 18px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', minWidth: 680 }}>
           <span>#</span><span>Spieler</span><span style={{ textAlign: 'right' }}>Ø 3-D.</span><span style={{ textAlign: 'right' }}>Sp</span><span style={{ textAlign: 'right' }}>S</span><span style={{ textAlign: 'right' }}>N</span><span style={{ textAlign: 'right' }}>60+</span><span style={{ textAlign: 'right' }}>100+</span><span style={{ textAlign: 'right' }}>140+</span><span style={{ textAlign: 'right' }}>180</span><span style={{ textAlign: 'right' }} title="Short Legs (≤19 Darts)">SL</span><span style={{ textAlign: 'right' }}>CO</span><span style={{ textAlign: 'right' }}>HF</span>

@@ -123,6 +123,8 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const [carrySource, setCarrySource] = useState('');
   const [carryTeams, setCarryTeams] = useState(true);
   const [carryLeagues, setCarryLeagues] = useState(true);
+  const [offloadConfirm, setOffloadConfirm] = useState<string | null>(null);
+  const [seasonMsg, setSeasonMsg] = useState('');
   const [activeKey, setActiveKey] = useState<string>('eingabe');
 
   const savePbUrl = () => {
@@ -454,6 +456,18 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const activeIsEmpty = activeSeasonTeams.length === 0 && activeSeasonLeagues.length === 0;
   const otherSeasons = s.seasons.filter((x) => x.id !== s.activeSeasonId);
   const carrySrc = carrySource || otherSeasons[0]?.id || '';
+  const onReimportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; e.target.value = ''; setSeasonMsg('');
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const res = s.reimportSeason(JSON.parse(String(reader.result)));
+        setSeasonMsg(res ? `Wieder eingelesen: ${res.matches} Spiele${res.restored ? `, ${res.restored} weitere Datensätze` : ''}.` : 'Ungültiges Bundle.');
+      } catch { setSeasonMsg('Datei konnte nicht gelesen werden (kein gültiges JSON).'); }
+    };
+    reader.readAsText(f);
+  };
   const saisonNode = (
     <Section title="Saison">
       <Row label="Aktive Saison" sub="Neue Ligen, Mannschaften, Termine und Spiele werden dieser Saison zugeordnet.">
@@ -494,14 +508,29 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         </Row>
       )}
       {archivedSeasons.length > 0 && (
-        <Row label="Archivierte Saisons" sub="Über den Saison-Umschalter links als Lesemodus aufrufbar. Zum Sichern auswählen und exportieren.">
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+        <Row label="Archivierte Saisons" sub="Lesemodus über den Saison-Umschalter links. Auslagern entfernt die Spiele aus der Datenbank (lädt vorher eine Sicherung herunter) und gibt Platz frei; Re-Import liest ein Bundle wieder ein.">
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
             {archivedSeasons.map((se) => (
-              <div key={se.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div key={se.id} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-2)' }}>{se.name}</span>
+                {se.offloaded && <span style={{ fontSize: 10, fontWeight: 800, color: '#F2B829', background: 'rgba(242,184,41,.14)', border: '1px solid rgba(242,184,41,.4)', padding: '2px 7px', borderRadius: 6 }}>AUSGELAGERT</span>}
                 <button className="dh-btn" onClick={() => s.exportSeason(se.id)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Export</button>
+                {se.offloaded ? (
+                  <label className="dh-btn" style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    Re-Import
+                    <input type="file" accept="application/json,.json" onChange={onReimportFile} style={{ display: 'none' }} />
+                  </label>
+                ) : offloadConfirm === se.id ? (
+                  <span style={{ display: 'inline-flex', gap: 6 }}>
+                    <button onClick={() => setOffloadConfirm(null)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
+                    <button onClick={() => { s.offloadSeason(se.id); setOffloadConfirm(null); setSeasonMsg(`„${se.name}" ausgelagert – Sicherung wurde heruntergeladen.`); }} style={{ background: '#E0594B', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Auslagern bestätigen</button>
+                  </span>
+                ) : (
+                  <button onClick={() => { setOffloadConfirm(se.id); setSeasonMsg(''); }} style={{ background: 'transparent', border: '1px solid rgba(224,89,75,.5)', color: '#E0594B', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Auslagern</button>
+                )}
               </div>
             ))}
+            {seasonMsg && <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>{seasonMsg}</span>}
           </div>
         </Row>
       )}

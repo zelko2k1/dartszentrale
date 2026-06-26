@@ -13,6 +13,9 @@ export interface Season {
   status: 'active' | 'archived';
   startDate?: string;       // YYYY-MM-DD (optional)
   endDate?: string;         // YYYY-MM-DD (optional)
+  // true = Detaildaten (Spiele) wurden ausgelagert (Phase 4) → in der App aus dem Snapshot angezeigt,
+  // per Bundle wieder einlesbar. Tabellen/Kader bleiben in der DB.
+  offloaded?: boolean;
 }
 
 // Eingefrorener Abschluss-Stand einer Saison (beim „Saison abschließen" erzeugt). Bleibt auch nach
