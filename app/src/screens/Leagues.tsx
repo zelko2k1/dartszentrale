@@ -4,6 +4,8 @@ import { initials } from '../lib/format';
 import { IconPlus, IconUsersSmall } from '../lib/icons';
 import { useIsPhone } from '../lib/useIsPhone';
 
+const HF_MIN = 100; // High Finish gilt erst ab 100 als Liga-Highlight
+
 function fmtDate(iso: string): { day: string; mon: string } {
   if (!iso) return { day: '', mon: '' };
   const d = new Date(iso + 'T00:00:00');
@@ -26,21 +28,22 @@ export function Leagues() {
   const teamNameById = (id: string) => { const t = sel?.teams.find((x) => x.id === id); return t ? t.name : '?'; };
   const fxSorted = sel ? sel.fixtures.slice().sort((a, b) => a.date.localeCompare(b.date)) : [];
 
-  // Liga-Highlights je Begegnung: 180er + Short Legs (≤19) der EIGENEN Spieler aus den verknüpften Board-Spielen.
-  // Match.perPlayer[0] ist stets die eigene Seite (Auto-Eintrag); aggregiert nach Spielername.
+  // Liga-Highlights je Begegnung: 180er + Short Legs (≤19) + High Finish (≥100) der EIGENEN Spieler aus den
+  // verknüpften Board-Spielen. Match.perPlayer[0] ist stets die eigene Seite (Auto-Eintrag); nach Spielername.
   const highlightsFor = (fixtureId: string) => {
-    const acc: Record<string, { c180: number; shortLegs: number }> = {};
+    const acc: Record<string, { c180: number; shortLegs: number; highFinish: number }> = {};
     for (const m of s.matches) {
       if (m.fixtureId !== fixtureId) continue;
       const own = m.perPlayer?.[0];
       if (!own) continue;
-      const e = (acc[own.name] = acc[own.name] || { c180: 0, shortLegs: 0 });
+      const e = (acc[own.name] = acc[own.name] || { c180: 0, shortLegs: 0, highFinish: 0 });
       e.c180 += own.c180 || 0;
       e.shortLegs += own.shortLegs || 0;
+      e.highFinish = Math.max(e.highFinish, own.highFinish || 0);
     }
     return Object.entries(acc)
       .map(([name, v]) => ({ name, ...v }))
-      .filter((v) => v.c180 > 0 || v.shortLegs > 0)
+      .filter((v) => v.c180 > 0 || v.shortLegs > 0 || v.highFinish >= HF_MIN)
       .sort((a, b) => (b.c180 + b.shortLegs) - (a.c180 + a.shortLegs));
   };
 
@@ -176,6 +179,7 @@ export function Leagues() {
                             {h.name}
                             {h.c180 > 0 && <b style={{ color: '#E0594B', fontFamily: "'JetBrains Mono',monospace" }}>{h.c180}×180</b>}
                             {h.shortLegs > 0 && <b style={{ color: '#2bd3c0', fontFamily: "'JetBrains Mono',monospace" }} title="Short Legs ≤19 Darts">{h.shortLegs}× SL</b>}
+                            {h.highFinish >= HF_MIN && <b style={{ color: '#F2B829', fontFamily: "'JetBrains Mono',monospace" }} title="Highest Finish (≥100)">{h.highFinish} HF</b>}
                           </span>
                         ))}
                       </div>
