@@ -74,13 +74,13 @@ export default function App() {
       if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); setPaletteOpen((v) => !v); return; }
       // Alt-Kürzel feuern bewusst AUCH im Suchfeld (Alt+Taste erzeugt keinen Text) – Setup ist tastatur-first.
       const combo = comboFromEvent(e);
-      // Kiosk-Tabs: Alt+1 Spiel · Alt+2 Training · Alt+E Einstellungen (nicht im laufenden Spiel).
+      // Kiosk-Tabs: Alt+S Spiel · Alt+T Training · Alt+E Einstellungen (nicht im laufenden Spiel).
       const me = st.accounts.find((a) => a.id === st.session) || null;
       const inKiosk = cfg.appMode === 'verein' && !!st.session && !!me?.isBoard && me?.boardNumber != null && !st.kioskUnlocked;
-      if (inKiosk && combo && (combo === 'alt+1' || combo === 'alt+2' || combo === 'alt+e')) {
+      if (inKiosk && combo && (combo === 'alt+s' || combo === 'alt+t' || combo === 'alt+e')) {
         if (st.screen === 'counter' || st.screen === 'trainGame') return; // laufendes Spiel nicht stören
         e.preventDefault();
-        st.go(combo === 'alt+1' ? 'setup' : combo === 'alt+2' ? 'training' : 'settings');
+        st.go(combo === 'alt+s' ? 'setup' : combo === 'alt+t' ? 'training' : 'settings');
         return;
       }
       if (combo) {
@@ -129,8 +129,8 @@ export default function App() {
         : <Logo size={28} />}
       <div style={{ fontWeight: 800, fontSize: 15 }}>{boardNumber != null ? `Board ${boardNumber}` : 'Board'}</div>
       <div style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
-        {kioskTab('Spiel', !kioskInTraining && !kioskInSettings, () => s.go('setup'), 'Alt+1')}
-        {kioskTab('Training', kioskInTraining, () => s.go('training'), 'Alt+2')}
+        {kioskTab('Spiel', !kioskInTraining && !kioskInSettings, () => s.go('setup'), 'Alt+S')}
+        {kioskTab('Training', kioskInTraining, () => s.go('training'), 'Alt+T')}
         {kioskTab('Einstellungen', kioskInSettings, () => s.go('settings'), 'Alt+E')}
       </div>
       <div style={{ flex: 1 }} />

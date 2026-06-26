@@ -23,8 +23,8 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
     const go = (screen: Parameters<typeof s.go>[0]) => () => { s.go(screen); onClose(); };
     if (kiosk) {
       return [
-        { label: 'Spiel', hint: 'Alt+1', run: () => { s.go('setup'); onClose(); } },
-        { label: 'Training', hint: 'Alt+2', run: go('training') },
+        { label: 'Spiel', hint: 'Alt+S', run: () => { s.go('setup'); onClose(); } },
+        { label: 'Training', hint: 'Alt+T', run: go('training') },
         { label: 'Einstellungen', hint: 'Alt+E', run: go('settings') },
       ];
     }
