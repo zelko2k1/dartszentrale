@@ -100,6 +100,7 @@ export default function App() {
   };
 
   const kioskInTraining = s.screen === 'training' || s.screen === 'trainSetup' || s.screen === 'trainGame';
+  const kioskInSettings = s.screen === 'settings';
   const kioskTab = (label: string, active: boolean, onClick: () => void) => (
     <button onClick={onClick} style={{ background: active ? 'var(--accent)' : 'var(--surface-3)', color: active ? 'var(--accent-fg)' : 'var(--text-3)', border: `1px solid ${active ? 'var(--accent)' : 'var(--border-2)'}`, padding: '7px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
   );
@@ -110,8 +111,9 @@ export default function App() {
         : <Logo size={28} />}
       <div style={{ fontWeight: 800, fontSize: 15 }}>{boardNumber != null ? `Board ${boardNumber}` : 'Board'}</div>
       <div style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
-        {kioskTab('Spiel', !kioskInTraining, () => s.go('setup'))}
+        {kioskTab('Spiel', !kioskInTraining && !kioskInSettings, () => s.go('setup'))}
         {kioskTab('Training', kioskInTraining, () => s.go('training'))}
+        {kioskTab('Einstellungen', kioskInSettings, () => s.go('settings'))}
       </div>
       <div style={{ flex: 1 }} />
       <button onClick={() => { setExitForm({ email: '', pw: '', err: '', busy: false }); setExitOpen(true); }}
@@ -145,6 +147,7 @@ export default function App() {
             <main style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: rootBg(s.settings), position: 'relative' }}>
               {s.screen === 'training' ? <Training />
                 : s.screen === 'trainSetup' ? <TrainingSetup />
+                : s.screen === 'settings' ? <Settings kiosk />
                 : <><BoardPanel /><CounterSetup /></>}
             </main>
           </div>

@@ -22,6 +22,15 @@ export const LEAGUE_FORMAT_PRESETS: Record<string, { label: string; short: strin
 export const DEVICE_LOCAL_SETTING_KEYS: (keyof Settings)[] = [
   'pbUrl', 'appMode', 'appModeManual', 'appModeDetected', 'device', 'dashRange',
   'kiosk', 'boardName', 'nameOrder',
+  // Geräteklassen-Mischbetrieb (PC ↔ Tablet): Eingabe-Modus, Hell/Dunkel & alle Größen pro Gerät.
+  'mode', 'scoreArea', 'scoreScale', 'statsSize', 'headerSize', 'deckSize', 'legSize',
+];
+
+// Gerätelokale UI-Vorlieben mit eigener localStorage-Persistenz (LS.devui) – jedes Gerät (PC/Tablet/Board)
+// für sich, unabhängig von den vereinsweiten club_config-Settings. (pbUrl/appMode haben eigene Keys; kiosk/
+// boardName/nameOrder liegen in LS.device – siehe useStore.)
+export const DEVICE_UI_KEYS: (keyof Settings)[] = [
+  'device', 'dashRange', 'mode', 'scoreArea', 'scoreScale', 'statsSize', 'headerSize', 'deckSize', 'legSize',
 ];
 
 export const AVATARS: { bg: string; fg: string }[] = [

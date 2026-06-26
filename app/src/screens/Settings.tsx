@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useStore } from '../store/useStore';
 import { perm } from '../store/selectors';
-import { FONTS } from '../data/constants';
+import { FONTS, DEVICE_LOCAL_SETTING_KEYS } from '../data/constants';
 import type { Settings as SettingsType } from '../data/types';
 import { IconUsers, IconChevronRight, IconTarget } from '../lib/icons';
 import { comboFromEvent, isValidCombo, formatCombo } from '../lib/shortcut';
@@ -77,7 +77,7 @@ function Row({ label, sub, children, top }: { label: string; sub?: string; child
   );
 }
 
-export function Settings() {
+export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const s = useStore();
   const cfg = s.settings;
   const set = s.setSetting;
@@ -217,6 +217,10 @@ export function Settings() {
 
   // Read-only-Dimmen für zentrale (vereinsweite) Einstellungen, wenn der Benutzer nicht bearbeiten darf.
   const dim = (node: ReactNode) => canEdit ? node : <div style={{ pointerEvents: 'none', opacity: 0.55, userSelect: 'none' }}>{node}</div>;
+  // Pro-Zeile-Variante: gerätelokale Keys (Eingabe-Modus, Hell/Dunkel, Größen) bleiben IMMER bedienbar –
+  // jedes Gerät (PC/Tablet/Board) stellt sie selbst ein; nur die vereinsweiten Zeilen werden read-only gedimmt.
+  const ed = (key: keyof SettingsType, node: ReactNode) =>
+    (canEdit || DEVICE_LOCAL_SETTING_KEYS.includes(key)) ? node : dim(node);
 
   const modusNode = (
     <Section title="App-Modus">
@@ -277,53 +281,71 @@ export function Settings() {
 
   const eingabeNode = (
     <Section title="Eingabe & Tasten">
-      <Row label="Eingabe-Modus" sub="Tablet zeigt das Tastenfeld · Desktop nutzt nur die Tastatur">
-        {seg('device', [{ label: 'Tablet', val: 'tablet' }, { label: 'Desktop', val: 'desktop' }])}
+      <Row label="Eingabe-Modus" sub="Tablet zeigt das Tastenfeld · Desktop nutzt nur die Tastatur · gilt nur für dieses Gerät">
+        {ed('device', seg('device', [{ label: 'Tablet', val: 'tablet' }, { label: 'Desktop', val: 'desktop' }]))}
       </Row>
-      <Row label="Funktionstasten F1–F8" sub="Frei belegbare Quick-Scores — als Tastatur-Tasten (Desktop) und als Quick-Score-Buttons (Tablet). F9 = Restscore übernehmen, F10–F12 = Checkout mit 1–3 Darts (nur Desktop)." top>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, width: '100%', maxWidth: 340 }}>
-          {cfg.fkeys.map((v, i) => (
-            <label key={i} style={{ display: 'flex', flexDirection: 'column', gap: 3, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '7px 10px', cursor: 'text' }}>
-              <span style={{ fontSize: 10, fontWeight: 800, color: accent, letterSpacing: '.05em' }}>F{i + 1}</span>
-              <input type="number" min={0} max={180} value={v} onChange={(e) => s.setFKey(i, e.target.value)} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace", fontSize: 16, fontWeight: 700, padding: 0, margin: 0 }} />
-            </label>
-          ))}
-        </div>
-      </Row>
-      <Row label="Neues Spiel — Tastenkürzel" sub="Global. Startet jederzeit ein neues Spiel (mit Spielerauswahl); läuft gerade ein Spiel, wird vorher nachgefragt. Nur Strg + Alt + Buchstabe/Ziffer.">
-        <ShortcutRecorder value={cfg.newGameKey || 'ctrl+alt+n'} accent={accent} fallback="ctrl+alt+n" onChange={(combo) => set('newGameKey', combo)} />
-      </Row>
-      <Row label="Schnellstart 501 · Double Out · Best of 5" sub="Global. Startet sofort ein 501-Spiel (Double Out, Best of 5) mit den zuletzt gewählten Spielern.">
-        <ShortcutRecorder value={cfg.quickBo5Key || 'ctrl+alt+5'} accent={accent} fallback="ctrl+alt+5" onChange={(combo) => set('quickBo5Key', combo)} />
-      </Row>
-      <Row label="Schnellstart 501 · Double Out · Best of 3" sub="Global. Startet sofort ein 501-Spiel (Double Out, Best of 3) mit den zuletzt gewählten Spielern.">
-        <ShortcutRecorder value={cfg.quickBo3Key || 'ctrl+alt+3'} accent={accent} fallback="ctrl+alt+3" onChange={(combo) => set('quickBo3Key', combo)} />
-      </Row>
+      {kiosk ? (
+        // Am Board nur als Info: Tastenkürzel legt der Verein zentral fest. Auf einem Desktop-Board jederzeit per Tastatur nutzbar.
+        <Row label="Tastenkürzel" sub="Legt der Verein zentral fest. Am Board-PC im Eingabe-Modus Desktop direkt per Tastatur nutzbar." top>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+            {([['Neues Spiel', cfg.newGameKey || 'ctrl+alt+n'], ['Schnellstart Bo5', cfg.quickBo5Key || 'ctrl+alt+5'], ['Schnellstart Bo3', cfg.quickBo3Key || 'ctrl+alt+3']] as const).map(([label, combo]) => (
+              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{label}</span>
+                <kbd style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12.5, fontWeight: 700, color: accent, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '4px 10px' }}>{formatCombo(combo)}</kbd>
+              </div>
+            ))}
+          </div>
+        </Row>
+      ) : (
+        <>
+          <Row label="Funktionstasten F1–F8" sub="Frei belegbare Quick-Scores — als Tastatur-Tasten (Desktop) und als Quick-Score-Buttons (Tablet). F9 = Restscore übernehmen, F10–F12 = Checkout mit 1–3 Darts (nur Desktop)." top>
+            {ed('fkeys', (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, width: '100%', maxWidth: 340 }}>
+                {cfg.fkeys.map((v, i) => (
+                  <label key={i} style={{ display: 'flex', flexDirection: 'column', gap: 3, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '7px 10px', cursor: 'text' }}>
+                    <span style={{ fontSize: 10, fontWeight: 800, color: accent, letterSpacing: '.05em' }}>F{i + 1}</span>
+                    <input type="number" min={0} max={180} value={v} onChange={(e) => s.setFKey(i, e.target.value)} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontFamily: "'JetBrains Mono',monospace", fontSize: 16, fontWeight: 700, padding: 0, margin: 0 }} />
+                  </label>
+                ))}
+              </div>
+            ))}
+          </Row>
+          <Row label="Neues Spiel — Tastenkürzel" sub="Global. Startet jederzeit ein neues Spiel (mit Spielerauswahl); läuft gerade ein Spiel, wird vorher nachgefragt. Nur Strg + Alt + Buchstabe/Ziffer.">
+            {ed('newGameKey', <ShortcutRecorder value={cfg.newGameKey || 'ctrl+alt+n'} accent={accent} fallback="ctrl+alt+n" onChange={(combo) => set('newGameKey', combo)} />)}
+          </Row>
+          <Row label="Schnellstart 501 · Double Out · Best of 5" sub="Global. Startet sofort ein 501-Spiel (Double Out, Best of 5) mit den zuletzt gewählten Spielern.">
+            {ed('quickBo5Key', <ShortcutRecorder value={cfg.quickBo5Key || 'ctrl+alt+5'} accent={accent} fallback="ctrl+alt+5" onChange={(combo) => set('quickBo5Key', combo)} />)}
+          </Row>
+          <Row label="Schnellstart 501 · Double Out · Best of 3" sub="Global. Startet sofort ein 501-Spiel (Double Out, Best of 3) mit den zuletzt gewählten Spielern.">
+            {ed('quickBo3Key', <ShortcutRecorder value={cfg.quickBo3Key || 'ctrl+alt+3'} accent={accent} fallback="ctrl+alt+3" onChange={(combo) => set('quickBo3Key', combo)} />)}
+          </Row>
+        </>
+      )}
     </Section>
   );
 
   const darstellungNode = (
     <Section title="Darstellung">
-      <Row label="Modus" sub="Dunkles oder helles Erscheinungsbild">
-        {seg('mode', [{ label: 'Dunkel', val: 'dark' }, { label: 'Hell', val: 'light' }])}
+      <Row label="Modus" sub="Dunkles oder helles Erscheinungsbild · gilt nur für dieses Gerät">
+        {ed('mode', seg('mode', [{ label: 'Dunkel', val: 'dark' }, { label: 'Hell', val: 'light' }]))}
       </Row>
-      <Row label={`Akzentfarbe (${cfg.mode === 'light' ? 'Hell' : 'Dunkel'})`} sub="Buttons & Highlights. Wird je Modus (Hell/Dunkel) separat gespeichert.">{colorPicker('accent', false)}</Row>
-      <Row label={`Score-Farbe (${cfg.mode === 'light' ? 'Hell' : 'Dunkel'})`} sub="Restpunktzahl des aktiven Spielers · „Standard“ folgt dem Akzent · je Modus separat">{colorPicker('scoreColor', true)}</Row>
-      <Row label={`Leg-Anzeige-Farbe (${cfg.mode === 'light' ? 'Hell' : 'Dunkel'})`} sub="Leg-Punkte & Satz-Badge · „Standard“ folgt dem Akzent · je Modus separat">{colorPicker('legColor', true)}</Row>
+      <Row label={`Akzentfarbe (${cfg.mode === 'light' ? 'Hell' : 'Dunkel'})`} sub="Buttons & Highlights. Wird je Modus (Hell/Dunkel) separat gespeichert.">{ed('accent', colorPicker('accent', false))}</Row>
+      <Row label={`Score-Farbe (${cfg.mode === 'light' ? 'Hell' : 'Dunkel'})`} sub="Restpunktzahl des aktiven Spielers · „Standard“ folgt dem Akzent · je Modus separat">{ed('scoreColor', colorPicker('scoreColor', true))}</Row>
+      <Row label={`Leg-Anzeige-Farbe (${cfg.mode === 'light' ? 'Hell' : 'Dunkel'})`} sub="Leg-Punkte & Satz-Badge · „Standard“ folgt dem Akzent · je Modus separat">{ed('legColor', colorPicker('legColor', true))}</Row>
       <Row label="Hintergrund" sub="Farbton der gesamten Oberfläche">
-        {seg('theme', cfg.mode === 'light'
+        {ed('theme', seg('theme', cfg.mode === 'light'
           ? [{ label: 'Mint', val: 'midnight' }, { label: 'Sand', val: 'charcoal' }, { label: 'Nebel', val: 'slate' }]
-          : [{ label: 'Mitternacht', val: 'midnight' }, { label: 'Anthrazit', val: 'charcoal' }, { label: 'Schiefer', val: 'slate' }], '10px 14px')}
+          : [{ label: 'Mitternacht', val: 'midnight' }, { label: 'Anthrazit', val: 'charcoal' }, { label: 'Schiefer', val: 'slate' }], '10px 14px'))}
       </Row>
       <Row label="Schriftart" sub="Wirkt im gesamten Counter">
-        {seg('font', (Object.keys(FONTS) as (keyof typeof FONTS)[]).map((f) => ({ label: f, val: f as SettingsType['font'], fam: FONTS[f] })))}
+        {ed('font', seg('font', (Object.keys(FONTS) as (keyof typeof FONTS)[]).map((f) => ({ label: f, val: f as SettingsType['font'], fam: FONTS[f] }))))}
       </Row>
-      <Row label="Score-Bereich" sub="Anteil des Restscores am Spielbrett">{stepper('scoreArea', 35, 80)}</Row>
-      <Row label="Score-Schriftgröße" sub="Größe der Restpunktzahl">{stepper('scoreScale', 70, 140)}</Row>
-      <Row label="Statistik-Schriftgröße" sub="Text in der Werte-Box (Ø, First 9, …)">{stepper('statsSize', 70, 150)}</Row>
-      <Row label="Spielername-Größe" sub="Kopfzeile mit Name, Avatar & „am Wurf“">{stepper('headerSize', 70, 150)}</Row>
-      <Row label="Eingabefeld-Größe" sub="Höhe von Quick-Score & Tastenfeld (nur Tablet)">{stepper('deckSize', 70, 140)}</Row>
-      <Row label="Leg-Anzeige-Größe" sub="Punkte & Satz-Badge neben dem Spielernamen">{stepper('legSize', 60, 180)}</Row>
+      <Row label="Score-Bereich" sub="Anteil des Restscores am Spielbrett · pro Gerät">{ed('scoreArea', stepper('scoreArea', 35, 80))}</Row>
+      <Row label="Score-Schriftgröße" sub="Größe der Restpunktzahl · pro Gerät">{ed('scoreScale', stepper('scoreScale', 70, 140))}</Row>
+      <Row label="Statistik-Schriftgröße" sub="Text in der Werte-Box (Ø, First 9, …) · pro Gerät">{ed('statsSize', stepper('statsSize', 70, 150))}</Row>
+      <Row label="Spielername-Größe" sub="Kopfzeile mit Name, Avatar & „am Wurf“ · pro Gerät">{ed('headerSize', stepper('headerSize', 70, 150))}</Row>
+      <Row label="Eingabefeld-Größe" sub="Höhe von Quick-Score & Tastenfeld (nur Tablet) · pro Gerät">{ed('deckSize', stepper('deckSize', 70, 140))}</Row>
+      <Row label="Leg-Anzeige-Größe" sub="Punkte & Satz-Badge neben dem Spielernamen · pro Gerät">{ed('legSize', stepper('legSize', 60, 180))}</Row>
     </Section>
   );
 
@@ -388,13 +410,15 @@ export function Settings() {
     { key: 'verein', label: 'Verein', show: isVerein && p.manageClub, node: vereinNode },
     { key: 'benutzer', label: 'Benutzer & Rechte', show: isVerein && p.manageUsers, node: benutzerNode },
     { key: 'board', label: 'Board-Rechner', show: isVerein && p.manageUsers, node: boardNode },
-    { key: 'eingabe', label: 'Eingabe & Tasten', show: true, node: dim(eingabeNode) },
-    { key: 'darstellung', label: 'Darstellung', show: true, node: dim(darstellungNode) },
+    { key: 'eingabe', label: 'Eingabe & Tasten', show: true, node: eingabeNode },
+    { key: 'darstellung', label: 'Darstellung', show: true, node: darstellungNode },
     { key: 'hilfen', label: 'Hilfen & Anzeige', show: true, node: dim(hilfenNode) },
     { key: 'listen', label: 'Listen', show: true, node: listenNode },
     { key: 'daten', label: 'Daten', show: true, node: dim(datenNode) },
   ];
-  const shown = categories.filter((c) => c.show);
+  // Im Kiosk nur die gerätenahen Counter-Rubriken (kein Admin/Daten) – als eigener Board-Tab.
+  const KIOSK_KEYS = ['eingabe', 'darstellung', 'hilfen', 'listen'];
+  const shown = categories.filter((c) => c.show && (!kiosk || KIOSK_KEYS.includes(c.key)));
   const active = shown.find((c) => c.key === activeKey) || shown[0];
 
   return (
@@ -422,7 +446,7 @@ export function Settings() {
 
       {active?.node}
 
-      {p.play && (
+      {p.play && !kiosk && (
         <button className="dh-primary" onClick={() => s.go('counter')} style={{ display: 'inline-flex', alignItems: 'center', gap: 9, marginTop: 4, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '13px 22px', borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 24%, transparent)' }}>
           <IconTarget size={18} sw={2.2} />
           Zum Darts Counter

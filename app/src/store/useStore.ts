@@ -3,7 +3,7 @@ import type {
   Player, Team, Account, League, Fixture, EventItem, Match, Settings, Screen,
   GamePlayer, Throw, Role, MatchPlayerStat, LineupPosition, FixtureLineup, LineupSegment, TeamKind,
 } from '../data/types';
-import { AVATARS, DEVICE_LOCAL_SETTING_KEYS, LEAGUE_FORMAT_PRESETS } from '../data/constants';
+import { AVATARS, DEVICE_LOCAL_SETTING_KEYS, DEVICE_UI_KEYS, LEAGUE_FORMAT_PRESETS } from '../data/constants';
 import { uid, firstName, lastName, initials } from '../lib/format';
 import { downscaleSquare } from '../lib/image';
 import {
@@ -36,7 +36,16 @@ const LS = {
   leagues: 'dartshub_leagues',
   pburl: 'dartshub_pburl',
   device: 'dartshub_device', // gerätelokale Konfiguration (Board-/Kiosk-Modus, Board-Bezeichnung)
+  devui: 'dartshub_devui', // gerätelokale UI-Vorlieben (Eingabe-Modus, Hell/Dunkel, Größen) – Mischbetrieb PC/Tablet
 };
+
+// Schreibt die gerätelokalen UI-Vorlieben (DEVICE_UI_KEYS) in den eigenen localStorage-Key – diese Settings
+// gelten NUR auf diesem Gerät und werden bewusst nicht ins vereinsweite club_config synchronisiert.
+function writeDevUi(settings: Settings) {
+  const blob: Partial<Settings> = {};
+  for (const k of DEVICE_UI_KEYS) (blob as Record<string, unknown>)[k] = settings[k];
+  write(LS.devui, blob);
+}
 
 function read<T>(key: string, fallback: T): T {
   try {
@@ -407,6 +416,12 @@ export const useStore = create<AppState>((set, get) => ({
       if (savedSettings.legColorDark === undefined) settings.legColorDark = settings.legColor ?? null;
       if (savedSettings.legColorLight === undefined) settings.legColorLight = settings.legColor ?? null;
     }
+    // Gerätelokale UI-Vorlieben (Eingabe-Modus, Hell/Dunkel, Größen) über die zentralen Settings legen –
+    // jedes Gerät behält seine eigenen Werte. VOR der Farb-Ableitung, da settings.mode hier einfließt.
+    const devui = read<Partial<Settings>>(LS.devui, {});
+    const devuiRec = devui as unknown as Record<string, unknown>;
+    const settingsRec = settings as unknown as Record<string, unknown>;
+    for (const k of DEVICE_UI_KEYS) { const v = devuiRec[k as string]; if (v !== undefined) settingsRec[k as string] = v; }
     // sync live colours to the active mode
     settings.accent = (settings.mode === 'light' ? settings.accentLight : settings.accentDark) || settings.accent;
     settings.scoreColor = settings.mode === 'light' ? settings.scoreColorLight : settings.scoreColorDark;
@@ -540,7 +555,10 @@ export const useStore = create<AppState>((set, get) => ({
         settings.scoreColor = m === 'light' ? settings.scoreColorLight : settings.scoreColorDark;
         settings.legColor = m === 'light' ? settings.legColorLight : settings.legColorDark;
       }
-      persistSettings(st, set, settings);
+      // Gerätelokale UI-Keys (Eingabe-Modus, Hell/Dunkel, Größen) bleiben auf DIESEM Gerät: eigener
+      // localStorage-Key statt vereinsweitem Server-Sync (Mischbetrieb PC/Tablet/Board).
+      if (DEVICE_UI_KEYS.includes(key)) writeDevUi(settings);
+      if (!(st.provider.mode === 'verein' && DEVICE_LOCAL_SETTING_KEYS.includes(key))) persistSettings(st, set, settings);
       const patch: Partial<AppState> = { settings };
       if (key === 'appMode' && val === 'local' && ['leagues', 'teams', 'users'].includes(st.screen)) patch.screen = 'dashboard';
       return patch;
@@ -1427,10 +1445,19 @@ async function applySnapshot(get: () => AppState, set: SetFn) {
         return;
       }
     }
-    const merged: Settings = { ...get().settings, ...(snap.settings || {}) };
+    const cur = get().settings;
+    const merged: Settings = { ...cur, ...(snap.settings || {}) };
+    // Gerätelokale Keys (Verbindung, Eingabe-Modus, Hell/Dunkel, Größen, Namens-Sortierung …) NIE vom
+    // Server übernehmen – sie gehören diesem Gerät (Mischbetrieb PC/Tablet/Board).
+    const curRec = cur as unknown as Record<string, unknown>;
+    const mergedRec = merged as unknown as Record<string, unknown>;
+    for (const k of DEVICE_LOCAL_SETTING_KEYS) mergedRec[k as string] = curRec[k as string];
     merged.appMode = 'verein';
-    merged.pbUrl = get().settings.pbUrl; // gerätelokal behalten — nie vom Server übernehmen
-    merged.nameOrder = get().settings.nameOrder; // Namens-Sortierung ist gerätelokal, nicht vom Server überschreiben
+    // Live-Farben passend zum (gerätelokalen) Hell/Dunkel-Modus ableiten.
+    const lightMode = merged.mode === 'light';
+    merged.accent = (lightMode ? merged.accentLight : merged.accentDark) || merged.accent;
+    merged.scoreColor = lightMode ? merged.scoreColorLight : merged.scoreColorDark;
+    merged.legColor = lightMode ? merged.legColorLight : merged.legColorDark;
     if (snap.clubName !== undefined) merged.clubName = snap.clubName;
     if (snap.clubLogo !== undefined) merged.clubLogo = snap.clubLogo;
     set({
