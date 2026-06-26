@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { Avatar } from '../components/Avatar';
+import { SearchInput } from '../components/SearchInput';
 import { IconTarget } from '../lib/icons';
 import { useIsPhone } from '../lib/useIsPhone';
 
@@ -20,6 +21,8 @@ export function CounterSetup() {
   }, [s.players]);
   const sets = su.unit === 'sets';
   const isPhone = useIsPhone();
+  // Suchbegriff je Slot, damit man bei großen Kadern nicht durch die ganze Liste scrollen muss.
+  const [pQuery, setPQuery] = useState<{ p1: string; p2: string }>({ p1: '', p2: '' });
 
   const seg = (active: boolean, label: string, onClick: () => void, mono?: boolean, key?: React.Key) => (
     <button key={key} onClick={onClick} style={{ background: active ? accent : 'var(--btn)', color: active ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${active ? accent : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '10px 18px', borderRadius: 10, fontSize: mono ? 14 : 13, cursor: 'pointer', fontFamily: mono ? "'JetBrains Mono',monospace" : 'inherit' }}>{label}</button>
@@ -41,6 +44,11 @@ export function CounterSetup() {
     const guest = (su[guestKey] || '').trim();
     const selPlayer = players[su[idx]] || players[0];
     const otherIdx = idx === 'p1' ? su.p2 : su.p1;
+    // Gefilterte Liste, aber mit ORIGINAL-Index (su[idx] speichert den Index in `players`).
+    const q = pQuery[idx].trim().toLowerCase();
+    const filtered = players
+      .map((p, i) => ({ p, i }))
+      .filter(({ p }) => !q || p.name.toLowerCase().includes(q));
     const headName = guest || selPlayer?.name || '';
     const headShort = guest ? (guest.slice(0, 2).toUpperCase()) : (selPlayer?.short || '');
     return (
@@ -55,8 +63,13 @@ export function CounterSetup() {
           </div>
         </div>
         <input value={su[guestKey] || ''} onChange={(e) => s.setSetup(guestKey, e.target.value)} placeholder="oder Gastname eingeben …" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: `1px solid ${guest ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 10, padding: '9px 11px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', marginBottom: 8 }} />
+        {players.length > 6 && !guest && (
+          <div style={{ marginBottom: 8 }}>
+            <SearchInput value={pQuery[idx]} onChange={(v) => setPQuery((cur) => ({ ...cur, [idx]: v }))} placeholder="Spieler suchen …" width="100%" />
+          </div>
+        )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 200, overflowY: 'auto', opacity: guest ? 0.4 : 1, pointerEvents: guest ? 'none' : 'auto' }}>
-          {players.map((p, i) => {
+          {filtered.map(({ p, i }) => {
             const on = su[idx] === i; const disabled = i === otherIdx;
             return (
               <button key={p.id} onClick={() => !disabled && s.setSetup(idx, i)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px', background: on ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 10, cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit', textAlign: 'left', opacity: disabled ? 0.4 : 1 }}>
@@ -65,6 +78,9 @@ export function CounterSetup() {
               </button>
             );
           })}
+          {!filtered.length && (
+            <div style={{ fontSize: 13, color: 'var(--text-4)', padding: '10px 11px' }}>Kein Spieler gefunden.</div>
+          )}
         </div>
       </div>
     );
