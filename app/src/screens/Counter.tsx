@@ -639,8 +639,9 @@ function WinOverlay() {
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#F2B829" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z" /></svg>
         </div>
         <div style={{ fontSize: 13, color: '#F2B829', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 8 }}>Match gewonnen</div>
-        <div style={{ fontSize: 34, fontWeight: 800, marginBottom: 6 }}>{w?.name}</div>
-        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 18, color: 'var(--text-3)', marginBottom: 28 }}>{legs} · Ø {avg}</div>
+        {/* Overlay liegt immer auf dunklem Schleier → Textfarben fest hell, unabhängig vom Hell/Dunkel-Modus. */}
+        <div style={{ fontSize: 34, fontWeight: 800, marginBottom: 6, color: '#fff' }}>{w?.name}</div>
+        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 18, color: 'rgba(255,255,255,.6)', marginBottom: 28 }}>{legs} · Ø {avg}</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
           <button onClick={() => s.endGameTo('dashboard')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Zum Dashboard</button>
           <button onClick={() => s.endGameTo('setup')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Neues Spiel</button>
