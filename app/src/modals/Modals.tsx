@@ -6,6 +6,7 @@ import { LeagueModal } from './LeagueModal';
 import { LineupModal } from './LineupModal';
 import { ResultModal } from './ResultModal';
 import { FixtureModal } from './FixtureModal';
+import { FriendlyModal } from './FriendlyModal';
 import { EventModal } from './EventModal';
 import { ImportModal } from './ImportModal';
 import { RulesModal } from '../screens/Training';
@@ -21,6 +22,7 @@ export function Modals() {
       {s.lineupModal && <LineupModal />}
       {s.resultModal && <ResultModal />}
       {s.fixtureModal && <FixtureModal />}
+      {s.friendlyModal && <FriendlyModal />}
       {s.eventModal && <EventModal />}
       {s.importOpen && <ImportModal />}
       {s.rulesMode && <RulesModal />}

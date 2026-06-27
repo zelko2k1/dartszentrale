@@ -15,7 +15,7 @@ import {
 import {
   DEFAULT_SETTINGS, seedPlayers, seedTeams, seedAccounts, seedLeagues, seedEvents, seedSeasons, withDefaultPlayers,
 } from '../data/seed';
-import { activeSeason as pickActiveSeason, computeStandings, aggregateFor } from './selectors';
+import { activeSeason as pickActiveSeason, computeStandings, aggregateFor, inSeason } from './selectors';
 import {
   newTrainGame, applyTurn as tApplyTurn, trainMeta,
   type TrainGame, type TrainPlayer, type TurnInput,
@@ -115,6 +115,8 @@ export function leagueSegments(lg: Pick<League, 'format' | 'singlesCount' | 'dou
 const segTotal = (segs: LineupSegment[], kind: LineupSegment['kind']) =>
   segs.filter((s) => s.kind === kind).reduce((a, b) => a + b.count, 0);
 export interface FixtureModalState { mode: 'add' | 'edit'; id: string | null; leagueId: string; homeId: string | null; awayId: string | null; date: string; time: string; loc: string; played: boolean; hs: string; as: string; }
+// Freundschaftsspiel anlegen: eigene Mannschaft vs. frei wählbarer Gegner (aus allen Saisons/Ligen suchbar).
+export interface FriendlyModalState { ownTeam: string; opponent: string; homeIsOwn: boolean; date: string; time: string; loc: string; }
 export interface EventModalState { mode: 'add' | 'edit'; id: string | null; scope: 'local' | 'verein'; title: string; date: string; time: string; type: string; loc: string; }
 
 export interface SetupState {
@@ -172,6 +174,7 @@ export interface AppState {
   lineupModal: LineupModalState | null;
   resultModal: ResultModalState | null;
   fixtureModal: FixtureModalState | null;
+  friendlyModal: FriendlyModalState | null;
   eventModal: EventModalState | null;
   importOpen: boolean;
 
@@ -337,6 +340,12 @@ export interface AppState {
   saveFixtureModal: () => void;
   deleteFixture: (id: string) => void;
 
+  // Freundschaftsspiel
+  openFriendly: () => void;
+  closeFriendly: () => void;
+  setFriendlyField: (key: keyof FriendlyModalState, val: string | boolean) => void;
+  saveFriendly: () => void;
+
   // event modal
   openAddEvent: (iso?: string) => void;
   openEditEvent: (id: string) => void;
@@ -425,6 +434,7 @@ export const useStore = create<AppState>((set, get) => ({
   lineupModal: null,
   resultModal: null,
   fixtureModal: null,
+  friendlyModal: null,
   eventModal: null,
   importOpen: false,
 
@@ -1164,6 +1174,61 @@ export const useStore = create<AppState>((set, get) => ({
     });
   },
 
+  // ── Freundschaftsspiel (eigene Mannschaft vs. frei wählbarer Gegner; eigener „Freundschaft"-Wettbewerb) ──
+  openFriendly() {
+    const st = get();
+    const asid = st.activeSeasonId ?? undefined;
+    const inAct = <T extends { seasonId?: string }>(x: T) => (x.seasonId ?? asid) === asid;
+    const ownNames = st.teams.filter(inAct).map((t) => t.name);
+    const fallback = st.leagues.filter(inAct).flatMap((l) => l.teams.filter((t) => t.own).map((t) => t.name));
+    const first = ownNames[0] || fallback[0] || '';
+    const d = new Date(); d.setDate(d.getDate() + 7);
+    set({ friendlyModal: { ownTeam: first, opponent: '', homeIsOwn: true, date: d.toISOString().slice(0, 10), time: '', loc: '' } });
+  },
+  closeFriendly() { set({ friendlyModal: null }); },
+  setFriendlyField(key, val) { set((st) => st.friendlyModal ? { friendlyModal: { ...st.friendlyModal, [key]: val } as FriendlyModalState } : {}); },
+  saveFriendly() {
+    const m = get().friendlyModal; if (!m) return;
+    const own = m.ownTeam.trim(); const opp = m.opponent.trim();
+    if (!own || !opp) return;
+    set((st) => {
+      const asid = st.activeSeasonId ?? undefined;
+      const inAct = (l: League) => (l.seasonId ?? asid) === asid;
+      let league = st.leagues.find((l) => l.kind === 'friendly' && inAct(l)) || null;
+      const seasonLabel = st.seasons.find((x) => x.id === asid)?.name || '';
+      const findTeam = (name: string, isOwn: boolean) =>
+        league?.teams.find((t) => t.name.toLowerCase() === name.toLowerCase() && !!t.own === isOwn) || { id: uid(), name, own: isOwn };
+      const ownT = findTeam(own, true);
+      const oppT = findTeam(opp, false);
+      const homeId = m.homeIsOwn ? ownT.id : oppT.id;
+      const awayId = m.homeIsOwn ? oppT.id : ownT.id;
+      const fx: Fixture = { id: uid(), homeId, awayId, date: m.date, time: m.time.trim() || undefined, loc: m.loc.trim() || undefined, played: false, hs: '', as: '' };
+      let isNew = false;
+      if (league) {
+        const teams = [...league.teams];
+        if (!teams.some((t) => t.id === ownT.id)) teams.push(ownT);
+        if (!teams.some((t) => t.id === oppT.id)) teams.push(oppT);
+        league = { ...league, teams, fixtures: [...league.fixtures, fx] };
+      } else {
+        isNew = true;
+        league = { id: uid(), name: 'Freundschaftsspiele', season: seasonLabel, seasonId: asid, kind: 'friendly', teams: [ownT, oppT], fixtures: [fx] };
+      }
+      const lg = league;
+      const leagues = isNew ? [...st.leagues, lg] : st.leagues.map((l) => l.id === lg.id ? lg : l);
+      persist(st, set, LS.leagues, leagues, (p) => isNew
+        ? p.createRecord('leagues', lg as unknown as ProviderRecord)
+        : p.updateRecord('leagues', lg.id, lg as unknown as ProviderRecord));
+      // Kalender-Termin (Typ „Freundschaft") erzeugen.
+      const ev = fixtureEvent(lg, fx);
+      const events = [...st.events, ev];
+      persist(st, set, LS.events, events, (p) => p.createRecord('events', ev as unknown as ProviderRecord));
+      // die neue Freundschaft im Ligen-Screen auswählen.
+      const view = inSeason(leagues, st.viewSeasonId);
+      const selIdx = view.findIndex((l) => l.id === lg.id);
+      return { leagues, events, friendlyModal: null, selectedLeague: selIdx >= 0 ? selIdx : st.selectedLeague };
+    });
+  },
+
   // ── Mannschaftsaufstellung (frei konfigurierbar pro Begegnung, nur eigene Mannschaft) ──
   openLineup(fixtureId) {
     const st = get();
@@ -1783,7 +1848,7 @@ function fixtureEvent(league: League, fx: Fixture, prev?: EventItem): EventItem 
     title: `${hn} – ${an}`,
     date: fx.date,
     time: fx.time || prev?.time || '',
-    type: 'ligaspiel',
+    type: league.kind === 'friendly' ? 'freundschaft' : league.kind === 'cup' ? 'pokal' : 'ligaspiel',
     loc: fx.loc || prev?.loc || (ownIsHome ? 'Heim' : 'Auswärts'),
     seasonId: league.seasonId ?? prev?.seasonId,
     fixtureId: fx.id,

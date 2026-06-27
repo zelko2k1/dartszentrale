@@ -26,7 +26,8 @@ export function Leagues() {
   const isPhone = useIsPhone();
   const selIdx = Math.max(0, Math.min(leagues.length - 1, s.selectedLeague));
   const sel = leagues[selIdx] || null;
-  const standings = sel ? computeStandings(sel) : [];
+  const isFriendly = sel?.kind === 'friendly';
+  const standings = sel && !isFriendly ? computeStandings(sel) : [];
   const teamNameById = (id: string) => { const t = sel?.teams.find((x) => x.id === id); return t ? t.name : '?'; };
   const fxSorted = sel ? sel.fixtures.slice().sort((a, b) => a.date.localeCompare(b.date)) : [];
 
@@ -58,6 +59,10 @@ export function Leagues() {
             <button className="dh-btn" onClick={() => s.openImport()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 16px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
               Import
+            </button>
+            <button className="dh-btn" onClick={() => s.openFriendly()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 16px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <IconPlus size={16} />
+              Freundschaft
             </button>
             <button className="dh-primary" onClick={() => s.openAddLeague()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
               <IconPlus size={17} />
@@ -108,8 +113,9 @@ export function Leagues() {
             )}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: isPhone ? 'minmax(0, 1fr)' : '1.5fr 1fr', gap: 18, alignItems: 'start' }}>
-            {/* standings */}
+          <div style={{ display: 'grid', gridTemplateColumns: (isFriendly || isPhone) ? 'minmax(0, 1fr)' : '1.5fr 1fr', gap: 18, alignItems: 'start' }}>
+            {/* standings – bei Freundschaften ausgeblendet (keine Tabellenwertung) */}
+            {!isFriendly && (
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '28px minmax(120px,1fr) 30px 30px 30px 30px 44px 40px', gap: 5, padding: '13px 18px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', minWidth: 440 }}>
                 <span>#</span><span>Mannschaft</span><span style={{ textAlign: 'center' }}>Sp</span><span style={{ textAlign: 'center' }}>S</span><span style={{ textAlign: 'center' }}>U</span><span style={{ textAlign: 'center' }}>N</span><span style={{ textAlign: 'center' }}>Diff</span><span style={{ textAlign: 'right' }}>Pkt</span>
@@ -135,6 +141,7 @@ export function Leagues() {
                 );
               })}
             </div>
+            )}
 
             {/* fixtures */}
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 22px', minWidth: 0 }}>

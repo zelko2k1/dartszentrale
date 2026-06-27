@@ -3,11 +3,12 @@ import type { Role, Settings, LineupSegment, TeamKind } from './types';
 
 // Mannschafts-Arten: Liga vs. Pokal. Icon wird in der UI über die Art gewählt (IconShield / IconTrophy).
 export const TEAM_KINDS: Record<TeamKind, { label: string; short: string; color: string }> = {
-  league: { label: 'Liga-Mannschaft', short: 'Liga', color: '#19A463' },
-  cup:    { label: 'Pokalmannschaft', short: 'Pokal', color: '#F2B829' },
+  league:   { label: 'Liga-Mannschaft',  short: 'Liga',         color: '#19A463' },
+  cup:      { label: 'Pokalmannschaft',  short: 'Pokal',        color: '#F2B829' },
+  friendly: { label: 'Freundschaft',     short: 'Freundschaft', color: '#2BD3C0' },
 };
 // Robuster Zugriff inkl. Altdaten ohne kind-Feld → Standard 'league'.
-export const teamKind = (t: { kind?: TeamKind }): TeamKind => (t.kind === 'cup' ? 'cup' : 'league');
+export const teamKind = (t: { kind?: TeamKind }): TeamKind => (t.kind === 'cup' ? 'cup' : t.kind === 'friendly' ? 'friendly' : 'league');
 
 // Spielformat-Vorlagen laut Wettkampfordnung. Reihenfolge der Segmente = realer Spielablauf.
 export const LEAGUE_FORMAT_PRESETS: Record<string, { label: string; short: string; segments: LineupSegment[] }> = {
@@ -71,8 +72,9 @@ export const EVENT_TYPES: Record<string, EventTypeDef> = {
   sonstiges:   { label: 'Sonstiges',   color: '#9B6DFF', icon: 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 7.5v5l3.2 1.9' },
   spieltag:    { label: 'Ligaspiel',   color: '#19A463', icon: 'M17 20v-1.5a4 4 0 00-4-4H7a4 4 0 00-4 4V20M10 10.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7M21 20v-1.5a4 4 0 00-3-3.85M15.5 3.65a3.5 3.5 0 010 6.8' },
   spiel:       { label: 'Competition', color: '#EC5CA8', icon: 'M5 21V4M5 4h12l-2.5 4L17 12H5' },
+  freundschaft:{ label: 'Freundschaft', color: '#2BD3C0', icon: 'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z' },
 };
-export const EVENT_TYPE_ALL = ['training', 'ligaspiel', 'verein', 'competition', 'pokal', 'sonstiges'];
+export const EVENT_TYPE_ALL = ['training', 'ligaspiel', 'verein', 'freundschaft', 'competition', 'pokal', 'sonstiges'];
 
 export interface TrainMode {
   id: string; name: string; desc: string; icon: string; color: string;

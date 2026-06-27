@@ -52,7 +52,7 @@ export interface Player {
 
 // Art der Mannschaft: 'league' = Liga-Mannschaft (Standard), 'cup' = Pokalmannschaft.
 // Ein Spieler kann gleichzeitig in einer Liga- UND einer Pokalmannschaft stehen.
-export type TeamKind = 'league' | 'cup';
+export type TeamKind = 'league' | 'cup' | 'friendly';
 
 export interface Team {
   id: string;
