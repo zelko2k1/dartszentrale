@@ -100,6 +100,10 @@ export function Leagues() {
                   <IconPlus size={15} />
                   Begegnung
                 </button>
+                <button className="dh-btn" onClick={() => { if (window.confirm(`Liga „${sel.name}" mit komplettem Spielplan und allen zugehörigen Spieltag-Terminen wirklich löschen? Das lässt sich nicht rückgängig machen.`)) s.deleteLeague(sel.id); }} title="Liga löschen" style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(224,89,75,.1)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" /></svg>
+                  Löschen
+                </button>
               </div>
             )}
           </div>
