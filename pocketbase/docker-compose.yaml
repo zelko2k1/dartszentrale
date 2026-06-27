@@ -4,29 +4,28 @@
 #          Ohne dieses Volume wären die Daten nach einem Redeploy weg.
 services:
   pocketbase:
-    # Community-Image, das die PocketBase-Releases spiegelt.
-    # In Produktion eine konkrete Version pinnen (aktuelle stabile statt :latest).
-    image: ghcr.io/muchobien/pocketbase:latest
+    # Eigenes Image (Basis: muchobien/pocketbase) mit fest eingebackenem Schema +
+    # Hooks — siehe Dockerfile. Robuster als Bind-Mounts, die in Coolify je nach
+    # Arbeitsverzeichnis leer bleiben.
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: unless-stopped
-    # Command explizit pinnen, damit Hooks- und Migrations-Verzeichnis garantiert
-    # aus dem Git-Repo gelesen werden (unabhängig von Image-Defaults).
+    # Command explizit pinnen → Hooks-/Migrations-Verzeichnis auf die ins Image
+    # gebackenen Pfade (NICHT /pb_migrations|/pb_hooks, das sind evtl. Volumes).
     command:
       - serve
       - --http=0.0.0.0:8090
       - --dir=/pb_data
-      - --hooksDir=/pb_hooks
-      - --migrationsDir=/pb_migrations
+      - --hooksDir=/pb/hooks
+      - --migrationsDir=/pb/migrations
     # Zielport für Coolifys Proxy (in der UI db.<domain> → Port 8090 verdrahten).
     ports:
       - "8090:8090"
     volumes:
       # Persistente Laufzeitdaten (SQLite + Uploads + Backups) – named volume.
+      # Migrations/Hooks liegen im Image (Dockerfile), brauchen daher KEIN Volume.
       - pb_data:/pb_data
-      # Schema & serverseitige Hooks kommen aus dem Git-Repo (read-only).
-      # → PocketBase wendet pb_migrations beim Start automatisch an (Auto-Schema),
-      #   die Hooks aktivieren den Vereinsmodus (Passwort-Endpunkt, Board-Rollen-Guard).
-      - ./pb_migrations:/pb_migrations:ro
-      - ./pb_hooks:/pb_hooks:ro
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8090/api/health"]
       interval: 30s
