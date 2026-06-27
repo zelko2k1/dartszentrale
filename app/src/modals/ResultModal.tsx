@@ -67,7 +67,7 @@ export function ResultModal() {
       </div>
 
       <div style={{ fontSize: 11, color: 'var(--text-5)', lineHeight: 1.5, marginBottom: 16 }}>
-        Jedes Spiel zählt einen Punkt für den Sieger. Das Gesamtergebnis ({ownWins}:{oppWins}) wird als Begegnungsergebnis übernommen und fließt in die Tabelle. Legs sind optional.
+        Trage pro Brett die Legs ein – der Brett-Punkt ergibt sich automatisch (mehr Legs = Sieg). Das Gesamtergebnis ({ownWins}:{oppWins}) wird als Begegnungsergebnis übernommen; daraus folgen die Tabellenpunkte (Sieg 2, Unentschieden 1). Sieg/Niederlage lässt sich bei Bedarf weiterhin manuell setzen.
       </div>
 
       <ModalFooter onCancel={() => s.closeResult()} onSave={() => s.saveResult()} saveLabel="Ergebnis speichern" />

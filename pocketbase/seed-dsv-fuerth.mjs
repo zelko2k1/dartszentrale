@@ -138,10 +138,32 @@ async function main() {
   const OPP2 = OPP1.map((n) => n + ' II');
   const league1Teams = [tm('DSV Fürth 86 I', true), ...OPP1.map((n) => tm(n))];
   const league2Teams = [tm('DSV Fürth 86 II', true), ...OPP2.map((n) => tm(n))];
-  await pb.collection('leagues').create({ id: uid(), name: 'Bezirksoberliga Mittelfranken', season: SEASON, seasonId: SID, kind: 'league', teams: league1Teams, fixtures: buildFixtures(league1Teams) });
-  await pb.collection('leagues').create({ id: uid(), name: 'Bezirksliga Mittelfranken', season: SEASON, seasonId: SID, kind: 'league', teams: league2Teams, fixtures: buildFixtures(league2Teams) });
+  const ligen = [
+    { name: 'Bezirksoberliga Mittelfranken', teams: league1Teams, fixtures: buildFixtures(league1Teams) },
+    { name: 'Bezirksliga Mittelfranken', teams: league2Teams, fixtures: buildFixtures(league2Teams) },
+  ];
+  for (const lg of ligen) {
+    await pb.collection('leagues').create({ id: uid(), name: lg.name, season: SEASON, seasonId: SID, kind: 'league', teams: lg.teams, fixtures: lg.fixtures });
+  }
   const perLeague = (league1Teams.length - 1) * league1Teams.length; // 90 bei 10 Teams
   console.log(`✓ 2 Ligen à 10 Teams angelegt, je ${perLeague} Begegnungen (Hin-/Rückrunde, ohne Ergebnis)`);
+
+  // 4b) Spieltage der EIGENEN Mannschaften als Kalender-Termine (Ligaspiel), verknüpft per fixtureId
+  let spieltage = 0;
+  for (const lg of ligen) {
+    const own = lg.teams.find((t) => t.own); if (!own) continue;
+    const nameById = Object.fromEntries(lg.teams.map((t) => [t.id, t.name]));
+    for (const fx of lg.fixtures) {
+      if (fx.homeId !== own.id && fx.awayId !== own.id) continue;
+      const ownIsHome = fx.homeId === own.id;
+      await pb.collection('events').create({
+        id: uid(), scope: 'verein', title: `${nameById[fx.homeId]} – ${nameById[fx.awayId]}`,
+        date: fx.date, time: '', type: 'ligaspiel', loc: ownIsHome ? 'Heim' : 'Auswärts', seasonId: SID, fixtureId: fx.id,
+      });
+      spieltage++;
+    }
+  }
+  console.log(`✓ ${spieltage} Spieltage der eigenen Mannschaften in den Kalender eingetragen`);
 
   // 5) Ein paar Vereinstermine über die Saison
   const events = [

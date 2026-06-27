@@ -1305,7 +1305,18 @@ export const useStore = create<AppState>((set, get) => ({
   },
   setResultLeg(id, side, val) {
     const v = val.replace(/[^0-9]/g, '').slice(0, 2);
-    set((st) => st.resultModal ? { resultModal: { ...st.resultModal, rows: st.resultModal.rows.map((r) => r.id === id ? { ...r, [side === 'own' ? 'ownLegs' : 'oppLegs']: v, auto: false } : r) } } : {});
+    set((st) => st.resultModal ? { resultModal: { ...st.resultModal, rows: st.resultModal.rows.map((r) => {
+      if (r.id !== id) return r;
+      const ownLegs = side === 'own' ? v : r.ownLegs;
+      const oppLegs = side === 'opp' ? v : r.oppLegs;
+      // Brett-Punkt automatisch aus den Legs ableiten: mehr Legs = Sieg dieser Seite (= 1 Punkt fürs Team).
+      // So ergibt sich aus den Leg-Eingaben der Endstand und daraus die Tabellenpunkte – ohne extra Klick.
+      const o = parseInt(ownLegs, 10); const p = parseInt(oppLegs, 10);
+      let won = r.won;
+      if (!isNaN(o) && !isNaN(p) && o !== p) won = o > p ? 'own' : 'opp';
+      else if (ownLegs === '' && oppLegs === '') won = null; // beide geleert → Brett wieder offen
+      return { ...r, ownLegs, oppLegs, won, auto: false };
+    }) } } : {});
   },
   saveResult() {
     const m = get().resultModal; if (!m) return;
@@ -1413,15 +1424,34 @@ export const useStore = create<AppState>((set, get) => ({
     if (!m.homeId || !m.awayId || m.homeId === m.awayId) return;
     set((st) => {
       let changed: League | null = null;
+      let rec: Fixture | null = null;
       const leagues = st.leagues.map((l) => {
         if (l.id !== m.leagueId) return l;
-        const rec: Fixture = { id: m.id || uid(), homeId: m.homeId!, awayId: m.awayId!, date: m.date, played: m.played, hs: m.played ? (parseInt(m.hs, 10) || 0) : '', as: m.played ? (parseInt(m.as, 10) || 0) : '' };
-        const fixtures = m.mode === 'add' ? [...l.fixtures, rec] : l.fixtures.map((f) => f.id === m.id ? rec : f);
+        const prev = l.fixtures.find((f) => f.id === m.id);
+        rec = { id: m.id || uid(), homeId: m.homeId!, awayId: m.awayId!, date: m.date, played: m.played, hs: m.played ? (parseInt(m.hs, 10) || 0) : '', as: m.played ? (parseInt(m.as, 10) || 0) : '' };
+        if (prev?.lineup) rec.lineup = prev.lineup; // Aufstellung beim Bearbeiten erhalten
+        const fixtures = m.mode === 'add' ? [...l.fixtures, rec] : l.fixtures.map((f) => f.id === m.id ? rec! : f);
         changed = { ...l, fixtures };
         return changed;
       });
       if (changed) persist(st, set, LS.leagues, leagues, (p) => p.updateRecord('leagues', changed!.id, changed! as unknown as ProviderRecord));
-      return { leagues, fixtureModal: null };
+      // Kalender-Termin (Ligaspiel) automatisch pflegen – nur für Begegnungen der eigenen Mannschaft.
+      let events = st.events;
+      if (changed && rec) {
+        const lg: League = changed; const fx: Fixture = rec;
+        const prevEv = st.events.find((e) => e.fixtureId === fx.id) || null;
+        if (isOwnFixture(lg, fx)) {
+          const ev = fixtureEvent(lg, fx, prevEv || undefined);
+          events = prevEv ? st.events.map((e) => e.id === ev.id ? ev : e) : [...st.events, ev];
+          persist(st, set, LS.events, events, (p) => prevEv
+            ? p.updateRecord('events', ev.id, ev as unknown as ProviderRecord)
+            : p.createRecord('events', ev as unknown as ProviderRecord));
+        } else if (prevEv) { // Begegnung betrifft nicht mehr die eigene Mannschaft → Termin entfernen
+          events = st.events.filter((e) => e.id !== prevEv.id);
+          persist(st, set, LS.events, events, (p) => p.deleteRecord('events', prevEv.id));
+        }
+      }
+      return { leagues, events, fixtureModal: null };
     });
   },
   deleteFixture(id) {
@@ -1434,7 +1464,14 @@ export const useStore = create<AppState>((set, get) => ({
         return changed;
       });
       if (changed) persist(st, set, LS.leagues, leagues, (p) => p.updateRecord('leagues', changed!.id, changed! as unknown as ProviderRecord));
-      return { leagues, fixtureModal: null };
+      // Automatisch erzeugten Kalender-Termin der Begegnung ebenfalls entfernen.
+      const linkedEv = st.events.find((e) => e.fixtureId === id) || null;
+      let events = st.events;
+      if (linkedEv) {
+        events = st.events.filter((e) => e.id !== linkedEv.id);
+        persist(st, set, LS.events, events, (p) => p.deleteRecord('events', linkedEv.id));
+      }
+      return { leagues, events, fixtureModal: null };
     });
   },
 
@@ -1699,6 +1736,30 @@ function persistSettings(st: AppState, set: SetFn, settings: Settings) {
   } else {
     write(LS.settings, settings);
   }
+}
+
+// Begegnung der EIGENEN Mannschaft? (Heim oder Gast ist das eigene Team) – nur solche kommen in den Kalender.
+function isOwnFixture(league: League, fx: Fixture): boolean {
+  const teams = league.teams || [];
+  return !!(teams.find((t) => t.id === fx.homeId)?.own || teams.find((t) => t.id === fx.awayId)?.own);
+}
+// Kalender-Termin (Ligaspiel) zu einer Begegnung bauen. prev erhält vom Nutzer gepflegte Uhrzeit/Ort.
+function fixtureEvent(league: League, fx: Fixture, prev?: EventItem): EventItem {
+  const teams = league.teams || [];
+  const hn = teams.find((t) => t.id === fx.homeId)?.name || 'Heim';
+  const an = teams.find((t) => t.id === fx.awayId)?.name || 'Gast';
+  const ownIsHome = !!teams.find((t) => t.id === fx.homeId)?.own;
+  return {
+    id: prev?.id || uid(),
+    scope: 'verein',
+    title: `${hn} – ${an}`,
+    date: fx.date,
+    time: prev?.time || '',
+    type: 'ligaspiel',
+    loc: prev?.loc || (ownIsHome ? 'Heim' : 'Auswärts'),
+    seasonId: league.seasonId ?? prev?.seasonId,
+    fixtureId: fx.id,
+  };
 }
 
 // Saison-Backfill für den lokalen Modus: bestehenden Ligen/Teams/Terminen/Matches ohne seasonId die aktive

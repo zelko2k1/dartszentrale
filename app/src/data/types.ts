@@ -150,6 +150,7 @@ export interface EventItem {
   type: string;        // EVENT_TYPES key
   loc: string;
   seasonId?: string;   // → Season.id; bei neuen Terminen = aktive Saison
+  fixtureId?: string;  // → Fixture.id; gesetzt, wenn der Termin automatisch zu einer Begegnung gehört
 }
 
 export interface MatchPlayerStat {
