@@ -16,7 +16,7 @@ Zwei A-Records auf die Server-IP zeigen lassen:
 1. In Coolify: **Project → New Resource → Docker Compose** und als Quelle **dieses Git-Repository**
    wählen. Wichtig: nicht den YAML-Inhalt von Hand einfügen, sondern aus Git ziehen — nur so sind
    die Bind-Mounts `./pb_migrations` und `./pb_hooks` (relativ zur Compose-Datei) verfügbar.
-2. **Compose-Pfad** auf `pocketbase/docker-compose.yml` setzen (Base Directory `pocketbase/`).
+2. **Compose-Pfad** auf `pocketbase/docker-compose.yaml` setzen (Base Directory `pocketbase/`).
 3. **Domain** für den Service auf `db.<domain>` setzen, **Port 8090**.
 4. Sicherstellen, dass das **Volume `pb_data` persistent** ist (Coolify: Persistent Storage).
    Die Verzeichnisse `pb_migrations`/`pb_hooks` sind read-only aus Git und brauchen kein Volume.
@@ -30,7 +30,7 @@ Zwei A-Records auf die Server-IP zeigen lassen:
 3. **Settings → CORS / Allowed origins** → `https://app.<domain>` eintragen.
 4. **Settings → Backups** → automatische Backups aktivieren (optional Ziel: Hetzner Storage Box / S3).
 5. **Collections + API-Rules** entstehen **automatisch**: PocketBase wendet beim Start die
-   versionierten Migrations aus `pocketbase/pb_migrations/` an (per `docker-compose.yml` ins
+   versionierten Migrations aus `pocketbase/pb_migrations/` an (per `docker-compose.yaml` ins
    Container-Verzeichnis `/pb_migrations` gemountet). Kein manuelles Anlegen nötig.
    - `pocketbase/SCHEMA.md` bleibt als **lesbare Referenz** (welche Felder/Rules existieren) —
      maßgeblich für die Laufzeit sind aber die Migrations.
@@ -70,5 +70,5 @@ Die echte Zugriffskontrolle sind die **PocketBase-API-Rules** (serverseitig) —
 - **Passwort eines App-Kontos vergessen?** Der Superuser ist der Rettungsanker:
   `USER_EMAIL=… NEW_PW=<min-8> PB_URL=https://db.<domain> PB_SU_EMAIL=… PB_SU_PASS=… node pocketbase/reset-password.mjs`
   (setzt Passwort + reaktiviert das Konto). Superuser-PW selbst weg → `./pocketbase superuser upsert <email> "<pw>" --dir ./pb_data`.
-- PocketBase-Version in der `docker-compose.yml` pinnen und Updates kontrolliert einspielen.
+- PocketBase-Version in der `docker-compose.yaml` pinnen und Updates kontrolliert einspielen.
 - Der **lokale Modus** der App ist davon unabhängig und braucht nichts davon.

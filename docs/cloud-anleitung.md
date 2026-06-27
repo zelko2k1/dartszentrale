@@ -101,7 +101,7 @@ Coolify-Admin-Konto anlegen.
 Ab hier folgst du **[`pocketbase/COOLIFY-SETUP.md`](../pocketbase/COOLIFY-SETUP.md)**.
 Das Wichtigste in Kürze:
 
-- **PocketBase:** in Coolify als *Docker Compose* aus `pocketbase/docker-compose.yml`,
+- **PocketBase:** in Coolify als *Docker Compose* aus `pocketbase/docker-compose.yaml`,
   Domain `db.deinedomain.de`, Port **8090**, **Volume `pb_data` persistent** (sonst Datenverlust!).
 - **Frontend:** in Coolify *aus Git-Repo* (`zelko2k1/dartscounter`, Pfad `app/`).
   Eine **Environment-Variable** ist entscheidend:
@@ -138,7 +138,7 @@ Das Wichtigste in Kürze:
 - **Backups:** in PocketBase automatische Backups aktivieren und gelegentlich einen
   Restore testen. Die Daten liegen alle im Volume `pb_data`.
 - **Updates der App:** Code pushen → Coolify neu deployen (oder Auto-Deploy aktivieren).
-- **PocketBase-Version pinnen:** in `docker-compose.yml` statt `:latest` eine feste
+- **PocketBase-Version pinnen:** in `docker-compose.yaml` statt `:latest` eine feste
   Version eintragen und Updates kontrolliert einspielen.
 - **Passwort vergessen?** Der **PocketBase-Superuser** ist der Notfall-Schlüssel: in
   `…/_/` → Collection `users` neu setzen, oder per Skript

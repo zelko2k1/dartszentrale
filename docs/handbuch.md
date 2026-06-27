@@ -259,7 +259,7 @@ automatische Sicherungen aktivieren (ideal extern, z. B. Hetzner Storage Box / S
 > einziger Rückweg, wenn du dich aus der App aussperrst.
 
 **Updates.** Neue App-Version: Code-Stand in Coolify neu deployen (oder Auto-Deploy).
-PocketBase-Version kontrolliert aktualisieren (in `docker-compose.yml` fest pinnen statt
+PocketBase-Version kontrolliert aktualisieren (in `docker-compose.yaml` fest pinnen statt
 `:latest`).
 
 ---
