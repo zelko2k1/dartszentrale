@@ -1,5 +1,12 @@
 # Handoff: DartsHub — Darts-Verein Verwaltung & Counter
 
+> **📖 Dokumentation — wo finde ich was?**
+> - **App aufsetzen (eigener Server):** [`docs/cloud-anleitung.md`](docs/cloud-anleitung.md) + [`pocketbase/COOLIFY-SETUP.md`](pocketbase/COOLIFY-SETUP.md)
+> - **App im Alltag nutzen (Vereins-Admins):** [`docs/handbuch.md`](docs/handbuch.md)
+> - **Datenmodell & Rechte:** [`DATA_MODEL.md`](DATA_MODEL.md) · [`docs/verein-pocketbase-plan.md`](docs/verein-pocketbase-plan.md) · [`pocketbase/SCHEMA.md`](pocketbase/SCHEMA.md)
+>
+> Dieses README selbst ist ein **Entwickler-/Design-Handoff** (Prototyp & Design-Tokens), kein Endnutzer-Dokument.
+
 ## Overview
 DartsHub ist eine Verwaltungs- und Scoring-App für Darts-Vereine. Sie deckt zwei
 Betriebsmodi ab: **Lokal** (ein Gerät am Board, kein Login) und **Verein**
