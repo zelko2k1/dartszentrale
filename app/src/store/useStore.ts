@@ -22,7 +22,7 @@ import {
 } from './training';
 import { createProvider, type DataProvider } from '../data/dataProvider';
 import type { ProviderRecord } from '../data/provider';
-import { mergeSchedule, deriveOwnTeams, deriveLeagueEvents, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
+import { mergeSchedule, deriveOwnTeams, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
 
 const LS = {
   settings: 'dartshub_settings',
@@ -1372,10 +1372,24 @@ export const useStore = create<AppState>((set, get) => ({
     const newTeams = deriveOwnTeams(seasonLeagues, activeTeams).map(tagSeason);
     counts.ownTeamsNew = newTeams.length;
     const teams = newTeams.length ? [...otherTeams, ...activeTeams, ...newTeams] : st.teams;
-    // Kalender-Termine für eigene Begegnungen ableiten (idempotent gegen vorhandene der aktiven Saison).
-    const newEvents = deriveLeagueEvents(parsed, activeEvents).map(tagSeason);
+    // Kalender-Termine für eigene Begegnungen aus den gemergten Fixtures ableiten – verknüpft per fixtureId,
+    // idempotent: vorhandener Termin derselben Begegnung wird aktualisiert statt dupliziert.
+    const evByFixture = new Map(activeEvents.filter((e) => e.fixtureId).map((e) => [e.fixtureId as string, e]));
+    const newEvents: EventItem[] = []; const updatedEvents: EventItem[] = [];
+    for (const lg of seasonLeagues) {
+      for (const fx of lg.fixtures) {
+        if (!isOwnFixture(lg, fx)) continue;
+        const prev = evByFixture.get(fx.id);
+        const ev = tagSeason(fixtureEvent(lg, fx, prev));
+        if (!prev) newEvents.push(ev);
+        else if (prev.date !== ev.date || prev.title !== ev.title) updatedEvents.push(ev);
+      }
+    }
     counts.eventsNew = newEvents.length;
-    const events = newEvents.length ? [...otherEvents, ...activeEvents, ...newEvents] : st.events;
+    const updById = new Map(updatedEvents.map((e) => [e.id, e]));
+    const events = (newEvents.length || updatedEvents.length)
+      ? [...otherEvents, ...activeEvents.map((e) => updById.get(e.id) || e), ...newEvents]
+      : st.events;
     if (st.provider.mode === 'verein') {
       // Pro betroffener Liga anlegen/aktualisieren (PocketBase speichert teams/fixtures als JSON).
       touched.forEach(({ id, isNew }) => {
@@ -1394,10 +1408,14 @@ export const useStore = create<AppState>((set, get) => ({
         void st.provider.createRecord('events', e as unknown as ProviderRecord)
           .catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht angelegt werden.' }); });
       });
+      updatedEvents.forEach((e) => {
+        void st.provider.updateRecord('events', e.id, e as unknown as ProviderRecord)
+          .catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht aktualisiert werden.' }); });
+      });
     } else {
       write(LS.leagues, leagues);
       if (newTeams.length) write(LS.teams, teams);
-      if (newEvents.length) write(LS.events, events);
+      if (newEvents.length || updatedEvents.length) write(LS.events, events);
     }
     set({ leagues, teams, events, selectedLeague: 0 });
     return counts;
