@@ -59,11 +59,15 @@ export function FixtureModal() {
 
       {m.played && (
         <>
-          <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 8 }}>Ergebnis (Legs)</label>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 22 }}>
+          <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 2 }}>Ergebnis (Punkte)</label>
+          <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 8 }}>Gewonnene Spiele/Punkte je Mannschaft (Heim : Gast) — zählt für die Tabelle.</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 8 }}>
             <input className="dh-input" value={m.hs} onChange={(e) => s.setFixtureField('hs', e.target.value)} inputMode="numeric" placeholder="0" style={numInput} />
             <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-4)' }}>:</span>
             <input className="dh-input" value={m.as} onChange={(e) => s.setFixtureField('as', e.target.value)} inputMode="numeric" placeholder="0" style={numInput} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 22, fontSize: 11, color: 'var(--text-5)', fontWeight: 600 }}>
+            <span style={{ width: 80, textAlign: 'center' }}>Heim</span><span style={{ width: 8 }} /><span style={{ width: 80, textAlign: 'center' }}>Gast</span>
           </div>
         </>
       )}
