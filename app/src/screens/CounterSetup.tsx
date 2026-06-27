@@ -3,12 +3,14 @@ import { useStore } from '../store/useStore';
 import { Avatar } from '../components/Avatar';
 import { SearchInput } from '../components/SearchInput';
 import { IconTarget } from '../lib/icons';
-import { formatCombo } from '../lib/shortcut';
+import { formatCombo, comboFromEvent } from '../lib/shortcut';
 import { useIsPhone } from '../lib/useIsPhone';
 
 const START_OPTS = [301, 501, 701, 1001];
 const LEG_OPTS = [1, 3, 5, 7, 9, 11];
 const SET_OPTS = [3, 5];
+// Spieltyp-Box ein-/ausklappen. Alt+S ist bereits für den Kiosk-Tab „Spiel" belegt → Alt+P (sPieltyp).
+const TYPE_KEY = 'alt+p';
 
 export function CounterSetup() {
   const s = useStore();
@@ -29,8 +31,16 @@ export function CounterSetup() {
   const [hi, setHi] = useState<{ p1: number; p2: number }>({ p1: 0, p2: 0 });
   const searchRefs = { p1: useRef<HTMLInputElement>(null), p2: useRef<HTMLInputElement>(null) };
   const startRef = useRef<HTMLButtonElement>(null);
+  // Spieltyp standardmäßig eingeklappt (weniger Scrollen) – per Klick oder Alt+P aufklappen.
+  const [typeOpen, setTypeOpen] = useState(false);
   // Beim Öffnen direkt ins Spieler-1-Suchfeld springen (sofern vorhanden) – kein Tab-Marathon.
   useEffect(() => { searchRefs.p1.current?.focus(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Alt+P klappt die Spieltyp-Box auf/zu (tastatur-first, kein Maus-Scrollen am Board nötig).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (comboFromEvent(e) === TYPE_KEY) { e.preventDefault(); setTypeOpen((v) => !v); } };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   // Liste eines Slots gefiltert + mit ORIGINAL-Index (su[idx] zeigt in `players`).
   const filteredFor = (idx: 'p1' | 'p2') => {
@@ -142,24 +152,6 @@ export function CounterSetup() {
       </div>
 
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '8px 22px', marginBottom: 18 }}>
-        <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', padding: '16px 0 10px' }}>Spieltyp</div>
-        {row('Startpunktzahl', null, <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>{START_OPTS.map((v) => seg(su.startScore === v, String(v), () => s.setSetup('startScore', v), true, v))}</div>)}
-        {row('Format', 'Nach Legs oder nach Sätzen werten', <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>{seg(su.unit === 'legs', 'Legs', () => s.setSetup('unit', 'legs'))}{seg(su.unit === 'sets', 'Sätze', () => s.setSetup('unit', 'sets'))}</div>)}
-        {sets && row('Sätze', 'Best of … Sätze (max. 5)', (
-          <select value={su.bestOfSets} onChange={(e) => s.setSetup('bestOfSets', Number(e.target.value))} style={{ background: 'var(--btn)', color: 'var(--text)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', minWidth: 185 }}>
-            {SET_OPTS.map((n) => <option key={n} value={n}>Best of {n}</option>)}
-          </select>
-        ))}
-        {row(sets ? 'Legs pro Satz' : 'Legs', sets ? 'Best of … Legs je Satz' : 'Best of … Legs', (
-          <select value={su.bestOf} onChange={(e) => s.setSetup('bestOf', Number(e.target.value))} style={{ background: 'var(--btn)', color: 'var(--text)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', minWidth: 185 }}>
-            {LEG_OPTS.map((n) => <option key={n} value={n}>Best of {n}</option>)}
-          </select>
-        ))}
-        {row('Auscheck-Modus', 'Single = beliebiges Feld · Double = Doppel/Bull · Master = Doppel oder Triple', <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>{seg(su.outMode === 'single', 'Single Out', () => s.setSetup('outMode', 'single'))}{seg(su.outMode === 'double', 'Double Out', () => s.setSetup('outMode', 'double'))}{seg(su.outMode === 'master', 'Master Out', () => s.setSetup('outMode', 'master'))}</div>)}
-        {row('Double In', 'Leg muss mit einem Doppel eröffnet werden', toggle(su.doubleIn, () => s.setSetup('doubleIn', !su.doubleIn)))}
-      </div>
-
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '8px 22px', marginBottom: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0 12px' }}>
           <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Teilnehmer</div>
         </div>
@@ -169,6 +161,36 @@ export function CounterSetup() {
           {slot('p2', false, 'Spieler 2')}
         </div>
         {row('Freies Spiel', 'Spaßspiel ohne Wertung – wird nicht gespeichert', toggle(!!su.freePlay, () => s.setSetup('freePlay', !su.freePlay)))}
+      </div>
+
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '8px 22px', marginBottom: 18 }}>
+        {/* Spieltyp: eingeklappt nur ein Einzeiler mit der aktuellen Einstellung (weniger Scrollen) – Klick oder Alt+P klappt auf. */}
+        <button onClick={() => setTypeOpen((v) => !v)} title={`Spieltyp anpassen (${formatCombo(TYPE_KEY)})`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: '16px 0', textAlign: 'left' }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Spieltyp</div>
+            {!typeOpen && <div style={{ fontSize: 13, color: 'var(--text-2)', fontFamily: 'var(--font-num)', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{summary}</div>}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+            <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 700, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '3px 8px' }}>{formatCombo(TYPE_KEY)}</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" style={{ color: 'var(--text-3)', transform: typeOpen ? 'rotate(180deg)' : 'none', transition: 'transform .15s ease' }}><polyline points="6 9 12 15 18 9" /></svg>
+          </div>
+        </button>
+        {typeOpen && (<>
+          {row('Startpunktzahl', null, <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>{START_OPTS.map((v) => seg(su.startScore === v, String(v), () => s.setSetup('startScore', v), true, v))}</div>)}
+          {row('Format', 'Nach Legs oder nach Sätzen werten', <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>{seg(su.unit === 'legs', 'Legs', () => s.setSetup('unit', 'legs'))}{seg(su.unit === 'sets', 'Sätze', () => s.setSetup('unit', 'sets'))}</div>)}
+          {sets && row('Sätze', 'Best of … Sätze (max. 5)', (
+            <select value={su.bestOfSets} onChange={(e) => s.setSetup('bestOfSets', Number(e.target.value))} style={{ background: 'var(--btn)', color: 'var(--text)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', minWidth: 185 }}>
+              {SET_OPTS.map((n) => <option key={n} value={n}>Best of {n}</option>)}
+            </select>
+          ))}
+          {row(sets ? 'Legs pro Satz' : 'Legs', sets ? 'Best of … Legs je Satz' : 'Best of … Legs', (
+            <select value={su.bestOf} onChange={(e) => s.setSetup('bestOf', Number(e.target.value))} style={{ background: 'var(--btn)', color: 'var(--text)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 14px', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', minWidth: 185 }}>
+              {LEG_OPTS.map((n) => <option key={n} value={n}>Best of {n}</option>)}
+            </select>
+          ))}
+          {row('Auscheck-Modus', 'Single = beliebiges Feld · Double = Doppel/Bull · Master = Doppel oder Triple', <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>{seg(su.outMode === 'single', 'Single Out', () => s.setSetup('outMode', 'single'))}{seg(su.outMode === 'double', 'Double Out', () => s.setSetup('outMode', 'double'))}{seg(su.outMode === 'master', 'Master Out', () => s.setSetup('outMode', 'master'))}</div>)}
+          {row('Double In', 'Leg muss mit einem Doppel eröffnet werden', toggle(su.doubleIn, () => s.setSetup('doubleIn', !su.doubleIn)))}
+        </>)}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>

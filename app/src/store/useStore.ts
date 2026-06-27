@@ -41,7 +41,11 @@ const LS = {
   pburl: 'dartshub_pburl',
   device: 'dartshub_device', // gerätelokale Konfiguration (Board-/Kiosk-Modus, Board-Bezeichnung)
   devui: 'dartshub_devui', // gerätelokale UI-Vorlieben (Eingabe-Modus, Hell/Dunkel, Größen) – Mischbetrieb PC/Tablet
+  setupDefaults: 'dartshub_setup_defaults', // gerätelokale Spieltyp-Voreinstellung (Startpunkte/Format/Out) – bleibt bis zur nächsten Änderung
 };
+
+// Spieltyp-Felder, die als Voreinstellung gerätelokal erhalten bleiben (Spieler/Gäste/Liga NICHT).
+const SETUP_DEFAULT_KEYS = ['startScore', 'unit', 'bestOf', 'bestOfSets', 'outMode', 'doubleIn', 'doubleOut'] as const;
 
 // Tastenkürzel auf gültige Werte bringen + die früheren Strg+Alt-Standards auf die neuen Alt-Standards heben.
 // Wird in init UND nach jedem Server-Snapshot angewandt (club_config-Werte würden die Migration sonst überschreiben).
@@ -72,6 +76,13 @@ function read<T>(key: string, fallback: T): T {
 }
 function write(key: string, val: unknown) {
   try { localStorage.setItem(key, JSON.stringify(val)); } catch { /* ignore */ }
+}
+
+// Spieltyp-Voreinstellung gerätelokal sichern (nur die SETUP_DEFAULT_KEYS, keine Spieler/Gäste).
+function writeSetupDefaults(setup: SetupState) {
+  const blob: Record<string, unknown> = {};
+  for (const k of SETUP_DEFAULT_KEYS) blob[k] = (setup as unknown as Record<string, unknown>)[k];
+  write(LS.setupDefaults, blob);
 }
 
 // ── Modal-Typen ──
@@ -485,6 +496,12 @@ export const useStore = create<AppState>((set, get) => ({
     settings.kiosk = !!dev.kiosk;
     settings.boardName = dev.boardName || '';
     settings.nameOrder = dev.nameOrder || settings.nameOrder || 'first';
+
+    // Spieltyp-Voreinstellung (gerätelokal) wiederherstellen → bleibt über Neuladen erhalten, bis sie geändert wird.
+    const savedSetup = read<Record<string, unknown>>(LS.setupDefaults, {});
+    const setupPatch: Record<string, unknown> = {};
+    for (const k of SETUP_DEFAULT_KEYS) if (savedSetup[k] !== undefined) setupPatch[k] = savedSetup[k];
+    if (Object.keys(setupPatch).length) set((st) => ({ setup: { ...st.setup, ...(setupPatch as Partial<SetupState>) } }));
 
     // Datenquelle wählen. provider.mode === 'verein' nur, wenn eine URL vorliegt (Einstellung
     // oder VITE_PB_URL); sonst Fallback auf LocalProvider → lokaler & Demo-Pfad unverändert.
@@ -1531,6 +1548,8 @@ export const useStore = create<AppState>((set, get) => ({
       if (key === 'outMode') setup.doubleOut = setup.outMode !== 'single'; // keep doubleOut in sync
       return { setup };
     });
+    // Spieltyp-Voreinstellung gerätelokal sichern, sobald sich eine davon ändert (Spieler/Gäste lösen das nicht aus).
+    if ((SETUP_DEFAULT_KEYS as readonly string[]).includes(key as string)) writeSetupDefaults(get().setup);
   },
   startGame() {
     const st = get(); const su = st.setup;
