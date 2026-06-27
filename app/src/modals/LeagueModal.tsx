@@ -101,7 +101,7 @@ export function LeagueModal() {
       </button>
 
       <ModalFooter
-        onDelete={m.mode === 'edit' ? () => s.deleteLeague(m.id!) : undefined}
+        onDelete={m.mode === 'edit' ? () => { if (window.confirm(`Liga „${m.name}" mit komplettem Spielplan und allen zugehörigen Spieltag-Terminen wirklich löschen? Das lässt sich nicht rückgängig machen.`)) s.deleteLeague(m.id!); } : undefined}
         onCancel={() => s.closeLeagueModal()}
         onSave={() => s.saveLeagueModal()}
         saveDisabled={!canSave}

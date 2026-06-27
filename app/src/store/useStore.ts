@@ -1148,9 +1148,19 @@ export const useStore = create<AppState>((set, get) => ({
   },
   deleteLeague(id) {
     set((st) => {
+      const removed = st.leagues.find((l) => l.id === id);
+      const fixIds = new Set((removed?.fixtures || []).map((f) => f.id));
       const leagues = st.leagues.filter((l) => l.id !== id);
       persist(st, set, LS.leagues, leagues, (p) => p.deleteRecord('leagues', id));
-      return { leagues, leagueModal: null, selectedLeague: Math.max(0, Math.min(leagues.length - 1, st.selectedLeague)) };
+      // Verknüpfte Spieltag-Termine dieser Liga ebenfalls aus dem Kalender entfernen (keine Waisen).
+      const orphans = st.events.filter((e) => e.fixtureId && fixIds.has(e.fixtureId));
+      let events = st.events;
+      if (orphans.length) {
+        const orphanIds = new Set(orphans.map((e) => e.id));
+        events = st.events.filter((e) => !orphanIds.has(e.id));
+        persist(st, set, LS.events, events, (p) => Promise.all(orphans.map((e) => p.deleteRecord('events', e.id))));
+      }
+      return { leagues, events, leagueModal: null, selectedLeague: Math.max(0, Math.min(leagues.length - 1, st.selectedLeague)) };
     });
   },
 
