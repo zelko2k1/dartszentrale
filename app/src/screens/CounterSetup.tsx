@@ -160,18 +160,6 @@ export function CounterSetup() {
       </div>
 
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '8px 22px', marginBottom: 18 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0 12px' }}>
-          <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Teilnehmer</div>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : '1fr 48px 1fr', gap: 14, alignItems: 'start', paddingBottom: 18, borderTop: '1px solid var(--hairline)', paddingTop: 16 }}>
-          {slot('p1', true, 'Spieler 1')}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 64 }}><span style={{ fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 800, color: 'var(--text-4)' }}>VS</span></div>
-          {slot('p2', false, 'Spieler 2')}
-        </div>
-        {row('Freies Spiel', 'Spaßspiel ohne Wertung – wird nicht gespeichert', toggle(!!su.freePlay, () => s.setSetup('freePlay', !su.freePlay)))}
-      </div>
-
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '8px 22px', marginBottom: 18 }}>
         {/* Spieltyp: Einzeiler mit der aktuellen Einstellung; Klick oder Alt+P öffnet den zentrierten Dialog. */}
         <button onClick={openType} title={`Spieltyp anpassen (${formatCombo(TYPE_KEY)})`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: '16px 0', textAlign: 'left' }}>
           <div style={{ minWidth: 0 }}>
@@ -213,6 +201,18 @@ export function CounterSetup() {
           </div>
         </div>
       </dialog>
+
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '8px 22px', marginBottom: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0 12px' }}>
+          <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Teilnehmer</div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : '1fr 48px 1fr', gap: 14, alignItems: 'start', paddingBottom: 18, borderTop: '1px solid var(--hairline)', paddingTop: 16 }}>
+          {slot('p1', true, 'Spieler 1')}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 64 }}><span style={{ fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 800, color: 'var(--text-4)' }}>VS</span></div>
+          {slot('p2', false, 'Spieler 2')}
+        </div>
+        {row('Freies Spiel', 'Spaßspiel ohne Wertung – wird nicht gespeichert', toggle(!!su.freePlay, () => s.setSetup('freePlay', !su.freePlay)))}
+      </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
         <div>
