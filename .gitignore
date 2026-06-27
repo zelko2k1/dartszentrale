@@ -17,6 +17,8 @@ npm-debug.log*
 .env
 .env.*
 !.env.example
+# Lokaler Seed-Runner mit Zugangsdaten – bleibt lokal
+pocketbase/seed-remote.sh
 
 # Claude Code local settings
 .claude/settings.local.json
