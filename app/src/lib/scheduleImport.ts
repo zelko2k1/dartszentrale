@@ -12,6 +12,7 @@ import { parseCsv } from './csv';
 export interface ParsedFixture {
   date: string;        // YYYY-MM-DD ('' = unbekannt)
   time: string;        // HH:MM ('' = unbekannt)
+  loc: string;         // Spielort ('' = unbekannt)
   homeName: string;
   awayName: string;
   homeOwn: boolean;
@@ -117,6 +118,8 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
     awayVereinName: colIndex(headers, ['gastvereinname']),
     hs: colIndex(headers, ['toreheim', 'heimlegs', 'heimtore', 'heimpunkte', 'hs', 'heimscore']),
     as: colIndex(headers, ['toregast', 'gastlegs', 'gasttore', 'gastpunkte', 'as', 'gastscore']),
+    time: colIndex(headers, ['uhrzeit', 'zeit', 'time', 'anwurf', 'beginn']),
+    loc: colIndex(headers, ['ort', 'spielort', 'location', 'halle', 'spielstaette', 'spielstätte']),
   };
 
   const leagueCol = idx.staffel >= 0 ? idx.staffel : (idx.liga >= 0 ? idx.liga : idx.meisterschaft);
@@ -158,7 +161,9 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
     const homeName = clean(cell(r, idx.home));
     const awayName = clean(cell(r, idx.away));
     const date = parseDate(cell(r, idx.date));
-    const time = parseTime(cell(r, idx.date));
+    // Uhrzeit: eigene Spalte bevorzugen, sonst aus dem Datums-/Termin-Feld ableiten.
+    const time = (idx.time >= 0 ? parseTime(cell(r, idx.time)) : '') || parseTime(cell(r, idx.date));
+    const loc = idx.loc >= 0 ? clean(cell(r, idx.loc)) : '';
     if (!homeName || !awayName || BYE.has(norm(homeName)) || BYE.has(norm(awayName)) || !date) {
       skipped++;
       continue;
@@ -176,7 +181,7 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
     const key = `${season}|||${leagueName}`;
     let g = groups.get(key);
     if (!g) { g = { name: leagueName, season, fixtures: [] }; groups.set(key, g); }
-    g.fixtures.push({ date, time, homeName, awayName, homeOwn, awayOwn, played, hs: hs ?? 0, as: as ?? 0 });
+    g.fixtures.push({ date, time, loc, homeName, awayName, homeOwn, awayOwn, played, hs: hs ?? 0, as: as ?? 0 });
     total++;
   }
 
@@ -255,9 +260,13 @@ export function mergeSchedule(existing: League[], parsed: ParsedSchedule): Merge
           counts.resultsSet++;
           dirty.add(league.id);
         }
+        // Uhrzeit/Ort aus dem Import nachtragen, falls an der Begegnung noch nicht gesetzt.
+        if (pf.time && !fx.time) { fx.time = pf.time; dirty.add(league.id); }
+        if (pf.loc && !fx.loc) { fx.loc = pf.loc; dirty.add(league.id); }
       } else {
         const rec: Fixture = {
           id: uid(), homeId: home.id, awayId: away.id, date: pf.date,
+          time: pf.time || undefined, loc: pf.loc || undefined,
           played: pf.played, hs: pf.played ? pf.hs : '', as: pf.played ? pf.as : '',
         };
         league.fixtures.push(rec);
@@ -329,8 +338,8 @@ export function deriveLeagueEvents(parsed: ParsedSchedule, existingEvents: Event
 /** CSV-Vorlage (generisches Format) zum Befüllen von Hand. */
 export function scheduleTemplate(): string {
   return [
-    'Liga;Saison;Datum;Heim;Gast;HeimLegs;GastLegs',
-    'Verbandsliga Nord;2025/26;20.09.2025;Eigene Mannschaft 1;Gastverein A;6;3',
-    'Verbandsliga Nord;2025/26;27.09.2025;Gastverein A;Eigene Mannschaft 1;;',
+    'Liga;Saison;Datum;Uhrzeit;Ort;Heim;Gast;HeimLegs;GastLegs',
+    'Verbandsliga Nord;2025/26;20.09.2025;19:30;Vereinsheim Eigene;Eigene Mannschaft 1;Gastverein A;6;3',
+    'Verbandsliga Nord;2025/26;27.09.2025;19:00;Gaststätte Gastverein A;Gastverein A;Eigene Mannschaft 1;;',
   ].join('\r\n');
 }

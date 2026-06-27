@@ -33,8 +33,19 @@ export function FixtureModal() {
         {teams.map((t) => chip(t.id, t.name, m.awayId === t.id, m.homeId === t.id, () => s.setFixtureField('awayId', t.id)))}
       </div>
 
-      <FieldLabel>Datum</FieldLabel>
-      <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setFixtureField('date', e.target.value)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 18 }} />
+      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+        <div style={{ flex: 1 }}>
+          <FieldLabel>Datum</FieldLabel>
+          <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setFixtureField('date', e.target.value)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+        </div>
+        <div style={{ width: 130 }}>
+          <FieldLabel>Uhrzeit</FieldLabel>
+          <input className="dh-input" type="time" value={m.time} onChange={(e) => s.setFixtureField('time', e.target.value)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+        </div>
+      </div>
+
+      <FieldLabel>Ort</FieldLabel>
+      <input className="dh-input" value={m.loc} onChange={(e) => s.setFixtureField('loc', e.target.value)} placeholder="z. B. Vereinsheim, Gaststätte …" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 18 }} />
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 16px', background: 'var(--btn)', borderRadius: 12, marginBottom: 16 }}>
         <div>

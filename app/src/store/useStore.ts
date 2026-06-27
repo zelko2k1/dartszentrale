@@ -114,7 +114,7 @@ export function leagueSegments(lg: Pick<League, 'format' | 'singlesCount' | 'dou
 }
 const segTotal = (segs: LineupSegment[], kind: LineupSegment['kind']) =>
   segs.filter((s) => s.kind === kind).reduce((a, b) => a + b.count, 0);
-export interface FixtureModalState { mode: 'add' | 'edit'; id: string | null; leagueId: string; homeId: string | null; awayId: string | null; date: string; played: boolean; hs: string; as: string; }
+export interface FixtureModalState { mode: 'add' | 'edit'; id: string | null; leagueId: string; homeId: string | null; awayId: string | null; date: string; time: string; loc: string; played: boolean; hs: string; as: string; }
 export interface EventModalState { mode: 'add' | 'edit'; id: string | null; scope: 'local' | 'verein'; title: string; date: string; time: string; type: string; loc: string; }
 
 export interface SetupState {
@@ -1438,12 +1438,12 @@ export const useStore = create<AppState>((set, get) => ({
     const own = ts.find((t) => t.own) || ts[0] || null;
     const other = ts.find((t) => own && t.id !== own.id) || null;
     const d = new Date(); d.setDate(d.getDate() + 7);
-    set({ fixtureModal: { mode: 'add', id: null, leagueId: lg.id, homeId: own ? own.id : null, awayId: other ? other.id : null, date: d.toISOString().slice(0, 10), played: false, hs: '', as: '' } });
+    set({ fixtureModal: { mode: 'add', id: null, leagueId: lg.id, homeId: own ? own.id : null, awayId: other ? other.id : null, date: d.toISOString().slice(0, 10), time: '', loc: '', played: false, hs: '', as: '' } });
   },
   openEditFixture(id) {
     const st = get(); const lg = st.leagues[Math.max(0, Math.min(st.leagues.length - 1, st.selectedLeague))]; if (!lg) return;
     const f = lg.fixtures.find((x) => x.id === id); if (!f) return;
-    set({ fixtureModal: { mode: 'edit', id: f.id, leagueId: lg.id, homeId: f.homeId, awayId: f.awayId, date: f.date || '', played: !!f.played, hs: f.hs === '' ? '' : String(f.hs), as: f.as === '' ? '' : String(f.as) } });
+    set({ fixtureModal: { mode: 'edit', id: f.id, leagueId: lg.id, homeId: f.homeId, awayId: f.awayId, date: f.date || '', time: f.time || '', loc: f.loc || '', played: !!f.played, hs: f.hs === '' ? '' : String(f.hs), as: f.as === '' ? '' : String(f.as) } });
   },
   closeFixtureModal() { set({ fixtureModal: null }); },
   setFixtureField(key, val) { set((st) => st.fixtureModal ? { fixtureModal: { ...st.fixtureModal, [key]: val } as FixtureModalState } : {}); },
@@ -1456,7 +1456,7 @@ export const useStore = create<AppState>((set, get) => ({
       const leagues = st.leagues.map((l) => {
         if (l.id !== m.leagueId) return l;
         const prev = l.fixtures.find((f) => f.id === m.id);
-        rec = { id: m.id || uid(), homeId: m.homeId!, awayId: m.awayId!, date: m.date, played: m.played, hs: m.played ? (parseInt(m.hs, 10) || 0) : '', as: m.played ? (parseInt(m.as, 10) || 0) : '' };
+        rec = { id: m.id || uid(), homeId: m.homeId!, awayId: m.awayId!, date: m.date, time: m.time.trim() || undefined, loc: m.loc.trim() || undefined, played: m.played, hs: m.played ? (parseInt(m.hs, 10) || 0) : '', as: m.played ? (parseInt(m.as, 10) || 0) : '' };
         if (prev?.lineup) rec.lineup = prev.lineup; // Aufstellung beim Bearbeiten erhalten
         const fixtures = m.mode === 'add' ? [...l.fixtures, rec] : l.fixtures.map((f) => f.id === m.id ? rec! : f);
         changed = { ...l, fixtures };
@@ -1782,9 +1782,9 @@ function fixtureEvent(league: League, fx: Fixture, prev?: EventItem): EventItem 
     scope: 'verein',
     title: `${hn} – ${an}`,
     date: fx.date,
-    time: prev?.time || '',
+    time: fx.time || prev?.time || '',
     type: 'ligaspiel',
-    loc: prev?.loc || (ownIsHome ? 'Heim' : 'Auswärts'),
+    loc: fx.loc || prev?.loc || (ownIsHome ? 'Heim' : 'Auswärts'),
     seasonId: league.seasonId ?? prev?.seasonId,
     fixtureId: fx.id,
   };

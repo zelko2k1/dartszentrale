@@ -159,7 +159,7 @@ export function Leagues() {
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{teamNameById(f.homeId)} — {teamNameById(f.awayId)}</div>
-                        <div style={{ fontSize: 11, color: played ? 'var(--text-4)' : 'var(--success)', fontWeight: 600, marginTop: 2 }}>{played ? 'Beendet' : 'Geplant'}</div>
+                        <div style={{ fontSize: 11, color: played ? 'var(--text-4)' : 'var(--success)', fontWeight: 600, marginTop: 2 }}>{[played ? 'Beendet' : 'Geplant', f.time, f.loc].filter(Boolean).join(' · ')}</div>
                       </div>
                       {isOwn && canEdit && (
                         <button onClick={(e) => { e.stopPropagation(); s.openLineup(f.id); }} title="Aufstellung"

@@ -113,6 +113,8 @@ export interface Fixture {
   homeId: string;
   awayId: string;
   date: string;        // YYYY-MM-DD
+  time?: string;       // HH:MM ('' / fehlend = unbekannt)
+  loc?: string;        // Spielort (Freitext)
   played: boolean;
   hs: number | '';
   as: number | '';
