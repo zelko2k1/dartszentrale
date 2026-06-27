@@ -9,8 +9,10 @@ import { useIsPhone } from '../lib/useIsPhone';
 const START_OPTS = [301, 501, 701, 1001];
 const LEG_OPTS = [1, 3, 5, 7, 9, 11];
 const SET_OPTS = [3, 5];
-// Spieltyp-Box ein-/ausklappen. Alt+S ist bereits für den Kiosk-Tab „Spiel" belegt → Alt+P (sPieltyp).
+// Spieltyp-Dialog öffnen. Alt+S ist bereits für den Kiosk-Tab „Spiel" belegt → Alt+P (sPieltyp).
 const TYPE_KEY = 'alt+p';
+// In die Spielersuche springen (Finden).
+const FIND_KEY = 'alt+f';
 
 export function CounterSetup() {
   const s = useStore();
@@ -31,16 +33,22 @@ export function CounterSetup() {
   const [hi, setHi] = useState<{ p1: number; p2: number }>({ p1: 0, p2: 0 });
   const searchRefs = { p1: useRef<HTMLInputElement>(null), p2: useRef<HTMLInputElement>(null) };
   const startRef = useRef<HTMLButtonElement>(null);
-  // Spieltyp standardmäßig eingeklappt (weniger Scrollen) – per Klick oder Alt+P aufklappen.
-  const [typeOpen, setTypeOpen] = useState(false);
+  // Spieltyp-Dialog: natives <dialog> → Tab bleibt gefangen, Esc schließt von selbst (kein Maus-Scrollen am Board).
+  const dlgRef = useRef<HTMLDialogElement>(null);
+  const openType = () => { if (!dlgRef.current?.open) dlgRef.current?.showModal(); };
+  const closeType = () => dlgRef.current?.close();
   // Beim Öffnen direkt ins Spieler-1-Suchfeld springen (sofern vorhanden) – kein Tab-Marathon.
   useEffect(() => { searchRefs.p1.current?.focus(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  // Alt+P klappt die Spieltyp-Box auf/zu (tastatur-first, kein Maus-Scrollen am Board nötig).
+  // Tastatur-Kürzel: Alt+P öffnet/schließt den Spieltyp-Dialog, Alt+F springt in die Spielersuche.
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (comboFromEvent(e) === TYPE_KEY) { e.preventDefault(); setTypeOpen((v) => !v); } };
+    const onKey = (e: KeyboardEvent) => {
+      const c = comboFromEvent(e);
+      if (c === TYPE_KEY) { e.preventDefault(); if (dlgRef.current?.open) dlgRef.current.close(); else dlgRef.current?.showModal(); }
+      else if (c === FIND_KEY) { e.preventDefault(); (searchRefs.p1.current || searchRefs.p2.current)?.focus(); }
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Liste eines Slots gefiltert + mit ORIGINAL-Index (su[idx] zeigt in `players`).
   const filteredFor = (idx: 'p1' | 'p2') => {
@@ -105,7 +113,7 @@ export function CounterSetup() {
         <input value={su[guestKey] || ''} onChange={(e) => s.setSetup(guestKey, e.target.value)} placeholder="oder Gastname eingeben …" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: `1px solid ${guest ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 10, padding: '9px 11px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', marginBottom: 8 }} />
         {players.length > 6 && !guest && (
           <div style={{ marginBottom: 8 }}>
-            <SearchInput value={pQuery[idx]} onChange={(v) => { setPQuery((cur) => ({ ...cur, [idx]: v })); setHi((h) => ({ ...h, [idx]: 0 })); }} placeholder="Spieler suchen … (↑/↓ · Enter)" width="100%" inputRef={searchRefs[idx]} onKeyDown={onSearchKey(idx)} />
+            <SearchInput value={pQuery[idx]} onChange={(v) => { setPQuery((cur) => ({ ...cur, [idx]: v })); setHi((h) => ({ ...h, [idx]: 0 })); }} placeholder="Spieler suchen … (Alt+F · ↑/↓ · Enter)" width="100%" inputRef={searchRefs[idx]} onKeyDown={onSearchKey(idx)} />
           </div>
         )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 200, overflowY: 'auto', opacity: guest ? 0.4 : 1, pointerEvents: guest ? 'none' : 'auto' }}>
@@ -164,18 +172,28 @@ export function CounterSetup() {
       </div>
 
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '8px 22px', marginBottom: 18 }}>
-        {/* Spieltyp: eingeklappt nur ein Einzeiler mit der aktuellen Einstellung (weniger Scrollen) – Klick oder Alt+P klappt auf. */}
-        <button onClick={() => setTypeOpen((v) => !v)} title={`Spieltyp anpassen (${formatCombo(TYPE_KEY)})`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: '16px 0', textAlign: 'left' }}>
+        {/* Spieltyp: Einzeiler mit der aktuellen Einstellung; Klick oder Alt+P öffnet den zentrierten Dialog. */}
+        <button onClick={openType} title={`Spieltyp anpassen (${formatCombo(TYPE_KEY)})`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, width: '100%', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: '16px 0', textAlign: 'left' }}>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Spieltyp</div>
-            {!typeOpen && <div style={{ fontSize: 13, color: 'var(--text-2)', fontFamily: 'var(--font-num)', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{summary}</div>}
+            <div style={{ fontSize: 13, color: 'var(--text-2)', fontFamily: 'var(--font-num)', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{summary}</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
             <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 700, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '3px 8px' }}>{formatCombo(TYPE_KEY)}</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" style={{ color: 'var(--text-3)', transform: typeOpen ? 'rotate(180deg)' : 'none', transition: 'transform .15s ease' }}><polyline points="6 9 12 15 18 9" /></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" style={{ color: 'var(--text-3)' }}><polyline points="9 6 15 12 9 18" /></svg>
           </div>
         </button>
-        {typeOpen && (<>
+      </div>
+
+      {/* Klick auf den Backdrop (Ziel = Dialog selbst) schließt; Esc/Alt+P ebenfalls. */}
+      <dialog ref={dlgRef} className="dh-dialog" onClick={(e) => { if (e.target === dlgRef.current) closeType(); }}>
+        <div style={{ padding: '0 24px 22px', maxHeight: '85vh', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: 'var(--surface)', padding: '20px 0 6px', zIndex: 1 }}>
+            <div style={{ fontSize: 16, fontWeight: 800 }}>Spieltyp</div>
+            <button onClick={closeType} title="Schließen (Esc)" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 9, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+            </button>
+          </div>
           {row('Startpunktzahl', null, <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>{START_OPTS.map((v) => seg(su.startScore === v, String(v), () => s.setSetup('startScore', v), true, v))}</div>)}
           {row('Format', 'Nach Legs oder nach Sätzen werten', <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>{seg(su.unit === 'legs', 'Legs', () => s.setSetup('unit', 'legs'))}{seg(su.unit === 'sets', 'Sätze', () => s.setSetup('unit', 'sets'))}</div>)}
           {sets && row('Sätze', 'Best of … Sätze (max. 5)', (
@@ -190,8 +208,11 @@ export function CounterSetup() {
           ))}
           {row('Auscheck-Modus', 'Single = beliebiges Feld · Double = Doppel/Bull · Master = Doppel oder Triple', <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>{seg(su.outMode === 'single', 'Single Out', () => s.setSetup('outMode', 'single'))}{seg(su.outMode === 'double', 'Double Out', () => s.setSetup('outMode', 'double'))}{seg(su.outMode === 'master', 'Master Out', () => s.setSetup('outMode', 'master'))}</div>)}
           {row('Double In', 'Leg muss mit einem Doppel eröffnet werden', toggle(su.doubleIn, () => s.setSetup('doubleIn', !su.doubleIn)))}
-        </>)}
-      </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
+            <button onClick={closeType} className="dh-primary" style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 22px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Übernehmen</button>
+          </div>
+        </div>
+      </dialog>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
         <div>
