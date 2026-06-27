@@ -8,11 +8,25 @@ services:
     # In Produktion eine konkrete Version pinnen (aktuelle stabile statt :latest).
     image: ghcr.io/muchobien/pocketbase:latest
     restart: unless-stopped
+    # Command explizit pinnen, damit Hooks- und Migrations-Verzeichnis garantiert
+    # aus dem Git-Repo gelesen werden (unabhängig von Image-Defaults).
+    command:
+      - serve
+      - --http=0.0.0.0:8090
+      - --dir=/pb_data
+      - --hooksDir=/pb_hooks
+      - --migrationsDir=/pb_migrations
     # Zielport für Coolifys Proxy (in der UI db.<domain> → Port 8090 verdrahten).
     ports:
       - "8090:8090"
     volumes:
+      # Persistente Laufzeitdaten (SQLite + Uploads + Backups) – named volume.
       - pb_data:/pb_data
+      # Schema & serverseitige Hooks kommen aus dem Git-Repo (read-only).
+      # → PocketBase wendet pb_migrations beim Start automatisch an (Auto-Schema),
+      #   die Hooks aktivieren den Vereinsmodus (Passwort-Endpunkt, Board-Rollen-Guard).
+      - ./pb_migrations:/pb_migrations:ro
+      - ./pb_hooks:/pb_hooks:ro
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8090/api/health"]
       interval: 30s

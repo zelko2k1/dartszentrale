@@ -1,13 +1,12 @@
 # Lokale PocketBase-Laufzeit – nicht versionieren.
-# Schema & Beispieldaten sind reproduzierbar über provision.mjs / seed.mjs (+ SCHEMA.md).
+# pb_migrations/ ist jetzt VERSIONIERT: Coolify wendet das Schema beim Deploy
+# automatisch an (siehe docker-compose.yml + COOLIFY-SETUP.md).
 
-# Heruntergeladenes Binary (plattformspezifisch, ~31 MB)
+# Heruntergeladenes Binary (plattformspezifisch, ~31 MB) – im Container kommt das Image-Binary
 /pocketbase
 pocketbase.exe
 # Mit dem Binary-Download entpackte Begleitdateien
 CHANGELOG.md
 LICENSE.md
-# Lokale SQLite-DB, Uploads, Superuser-Hashes
+# Lokale SQLite-DB, Uploads, Superuser-Hashes – Laufzeitdaten, nie ins Repo
 pb_data/
-# Automatisch erzeugte Schema-Snapshots
-pb_migrations/
