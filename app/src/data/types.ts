@@ -116,8 +116,10 @@ export interface Fixture {
   time?: string;       // HH:MM ('' / fehlend = unbekannt)
   loc?: string;        // Spielort (Freitext)
   played: boolean;
-  hs: number | '';
-  as: number | '';
+  hs: number | '';     // Spiele (gewonnene Bretter) Heim → Mannschaftspunkte
+  as: number | '';     // Spiele Gast
+  hl?: number | '';    // Heim-Legs gesamt → Leg-Differenz (fehlt = Diff fällt auf Spiele-Differenz zurück)
+  al?: number | '';    // Gast-Legs gesamt
   lineup?: FixtureLineup; // Aufstellung der eigenen Mannschaft (nur bei eigenen Begegnungen)
 }
 

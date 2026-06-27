@@ -59,12 +59,23 @@ export function FixtureModal() {
 
       {m.played && (
         <>
-          <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 2 }}>Ergebnis (Punkte)</label>
-          <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 8 }}>Gewonnene Spiele/Punkte je Mannschaft (Heim : Gast) — zählt für die Tabelle.</div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 8 }}>
+          <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 2 }}>Spiele (Punkte)</label>
+          <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 8 }}>Gewonnene Spiele je Mannschaft (Heim : Gast) — bestimmt Sieg/Remis → Tabellenpunkte.</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 6 }}>
             <input className="dh-input" value={m.hs} onChange={(e) => s.setFixtureField('hs', e.target.value)} inputMode="numeric" placeholder="0" style={numInput} />
             <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-4)' }}>:</span>
             <input className="dh-input" value={m.as} onChange={(e) => s.setFixtureField('as', e.target.value)} inputMode="numeric" placeholder="0" style={numInput} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 18, fontSize: 11, color: 'var(--text-5)', fontWeight: 600 }}>
+            <span style={{ width: 80, textAlign: 'center' }}>Heim</span><span style={{ width: 8 }} /><span style={{ width: 80, textAlign: 'center' }}>Gast</span>
+          </div>
+
+          <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 2 }}>Legs gesamt (Differenz)</label>
+          <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 8 }}>Summe aller Legs (Heim : Gast) — bestimmt die Leg-Differenz in der Tabelle. Optional; leer = Diff aus den Spielen.</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 6 }}>
+            <input className="dh-input" value={m.hl} onChange={(e) => s.setFixtureField('hl', e.target.value)} inputMode="numeric" placeholder="0" style={numInput} />
+            <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-4)' }}>:</span>
+            <input className="dh-input" value={m.al} onChange={(e) => s.setFixtureField('al', e.target.value)} inputMode="numeric" placeholder="0" style={numInput} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 22, fontSize: 11, color: 'var(--text-5)', fontWeight: 600 }}>
             <span style={{ width: 80, textAlign: 'center' }}>Heim</span><span style={{ width: 8 }} /><span style={{ width: 80, textAlign: 'center' }}>Gast</span>

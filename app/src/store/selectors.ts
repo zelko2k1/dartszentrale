@@ -49,8 +49,11 @@ export function computeStandings(league: League | null): StandingRow[] {
     if (!f.played) return;
     const h = table[f.homeId], a = table[f.awayId];
     if (!h || !a) return;
-    const hs = +f.hs || 0, as = +f.as || 0;
-    h.sp++; a.sp++; h.lf += hs; h.la += as; a.lf += as; a.la += hs;
+    const hs = +f.hs || 0, as = +f.as || 0;                 // Spiele (Bretter) → Mannschaftspunkte
+    // Differenz aus den Legs; fehlen Legs (Altdaten/Import), Fallback auf die Spiele-Differenz.
+    const hl = (f.hl != null && f.hl !== '') ? +f.hl || 0 : hs;
+    const al = (f.al != null && f.al !== '') ? +f.al || 0 : as;
+    h.sp++; a.sp++; h.lf += hl; h.la += al; a.lf += al; a.la += hl;
     if (hs > as) { h.s++; a.n++; h.pts += 2; }
     else if (hs < as) { a.s++; h.n++; a.pts += 2; }
     else { h.u++; a.u++; h.pts++; a.pts++; }
