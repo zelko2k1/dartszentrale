@@ -76,6 +76,21 @@ async function main() {
   const delUsers = await wipe('users', `email != "${KEEP_ADMIN_EMAIL}"`);
   console.log(`  geleert: users (${delUsers}, App-Admin behalten)\n`);
 
+  // App-Admin sicherstellen (idempotent): auf frischer DB existiert er noch nicht,
+  // der wipe oben behält ihn nur. Hier anlegen bzw. Rolle/Passwort geradeziehen.
+  const found = await pb.collection('users').getList(1, 1, { filter: `email="${KEEP_ADMIN_EMAIL}"` });
+  if (found.items.length) {
+    await pb.collection('users').update(found.items[0].id, { password: MEMBER_PW, passwordConfirm: MEMBER_PW, role: 'admin', active: true, verified: true });
+    console.log(`✓ App-Admin aktualisiert: ${KEEP_ADMIN_EMAIL} / ${MEMBER_PW}`);
+  } else {
+    await pb.collection('users').create({
+      email: KEEP_ADMIN_EMAIL, password: MEMBER_PW, passwordConfirm: MEMBER_PW,
+      emailVisibility: true, verified: true, active: true,
+      name: 'Vereins-Admin', first: 'Vereins', last: 'Admin', role: 'admin', last_login: '—',
+    });
+    console.log(`✓ App-Admin angelegt: ${KEEP_ADMIN_EMAIL} / ${MEMBER_PW}`);
+  }
+
   // 1) Saison 2026/27 (Anfang Sept – Ende Juli)
   const season = await pb.collection('seasons').create({ id: uid(), name: SEASON, status: 'active', startDate: SEASON_START, endDate: SEASON_END });
   const SID = season.id;
