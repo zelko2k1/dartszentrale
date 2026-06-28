@@ -20,6 +20,13 @@ services:
       - --hooksDir=/pb/hooks
       - --migrationsDir=/pb/migrations
     # Zielport für Coolifys Proxy (in der UI db.<domain> → Port 8090 verdrahten).
+    # ⚠ SICHERHEIT (Internet-Betrieb): "8090:8090" veröffentlicht PocketBase als
+    # KLARTEXT-HTTP auf dem Host (0.0.0.0:8090) – am TLS-Proxy vorbei. Solange die
+    # App PB direkt über die LAN-IP erreicht (VITE_PB_URL=http://<lan-ip>:8090), wird
+    # dieses Mapping gebraucht. Sobald PB AUSSCHLIESSLICH hinter dem HTTPS-Proxy läuft:
+    # dieses Mapping ENTFERNEN (Coolify routet intern) ODER auf "127.0.0.1:8090:8090"
+    # binden und Port 8090 in der Host-Firewall vom Internet sperren. Siehe
+    # docs/security-audit.md (Befund #3).
     ports:
       - "8090:8090"
     volumes:
