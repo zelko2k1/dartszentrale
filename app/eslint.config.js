@@ -18,5 +18,13 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      // eslint-plugin-react-hooks v7 bringt React-Compiler-Advisories als Fehler mit.
+      // Wir setzen den React Compiler (noch) nicht ein – das sind Optimierungs-Hinweise,
+      // keine Korrektheits-Bugs → als Warnungen statt Fehler. rules-of-hooks bleibt Fehler.
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/preserve-manual-memoization': 'warn',
+      'react-hooks/refs': 'warn',
+    },
   },
 ])

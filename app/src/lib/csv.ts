@@ -65,8 +65,8 @@ export function detectDelimiter(headerLine: string): string {
  * (inkl. verdoppelter "" im Feld) und beliebige Trennzeichen.
  */
 export function parseCsv(text: string, delimiter?: string): string[][] {
-  // BOM entfernen
-  let src = text.replace(/^﻿/, '');
+  // BOM (U+FEFF) am Anfang entfernen
+  const src = text.replace(/^\uFEFF/, '');
   // Erste nicht-leere Zeile für die Trennzeichen-Erkennung
   const firstLine = src.split(/\r?\n/).find((l) => l.trim().length > 0) || '';
   const delim = delimiter || detectDelimiter(firstLine);

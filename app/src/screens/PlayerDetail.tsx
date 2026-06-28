@@ -6,10 +6,10 @@ import { useIsPhone } from '../lib/useIsPhone';
 
 export function PlayerDetail() {
   const s = useStore();
+  const isPhone = useIsPhone(); // Hooks vor dem early return aufrufen (rules-of-hooks)
   const player = s.players.find((p) => p.id === s.selectedPlayerId) || s.players[0];
   if (!player) { return <div style={{ padding: '28px 32px' }}>Kein Spieler ausgewählt.</div>; }
   const agg = aggregateFor(player.name, s.matches);
-  const isPhone = useIsPhone();
 
   const stats: { value: string; label: string; color: string }[] = [
     { value: agg.avg ? agg.avg.toFixed(1) : '–', label: 'Ø 3-Dart', color: '#2BD377' },
