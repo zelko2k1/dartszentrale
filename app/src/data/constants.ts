@@ -12,7 +12,7 @@ export const teamKind = (t: { kind?: TeamKind }): TeamKind => (t.kind === 'cup' 
 
 // Spielformat-Vorlagen laut Wettkampfordnung. Reihenfolge der Segmente = realer Spielablauf.
 export const LEAGUE_FORMAT_PRESETS: Record<string, { label: string; short: string; segments: LineupSegment[] }> = {
-  BZ: { label: 'Bezirksliga', short: '8 Einzel + 2 Doppel', segments: [{ kind: 'singles', count: 8 }, { kind: 'doubles', count: 2 }] },
+  BZ: { label: 'Bezirksliga', short: '8 Einzel + 4 Doppel', segments: [{ kind: 'singles', count: 8 }, { kind: 'doubles', count: 4 }] },
   BL: { label: 'Bayernliga', short: '8 Einzel + 4 Doppel', segments: [{ kind: 'singles', count: 8 }, { kind: 'doubles', count: 4 }] },
   LL: { label: 'Landesliga', short: '6 Einzel · 3 Doppel · 6 Einzel', segments: [{ kind: 'singles', count: 6 }, { kind: 'doubles', count: 3 }, { kind: 'singles', count: 6 }] },
 };

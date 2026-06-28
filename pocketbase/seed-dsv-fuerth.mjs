@@ -143,8 +143,8 @@ async function main() {
     { name: 'Bezirksliga Mittelfranken', teams: league2Teams, fixtures: buildFixtures(league2Teams) },
   ];
   for (const lg of ligen) {
-    // Bezirksliga-Format: 8 Einzel + 2 Doppel
-    await pb.collection('leagues').create({ id: uid(), name: lg.name, season: SEASON, seasonId: SID, kind: 'league', teams: lg.teams, fixtures: lg.fixtures, singlesCount: 8, doublesCount: 2, format: [{ kind: 'singles', count: 8 }, { kind: 'doubles', count: 2 }] });
+    // Bezirksliga-Format: 8 Einzel + 4 Doppel
+    await pb.collection('leagues').create({ id: uid(), name: lg.name, season: SEASON, seasonId: SID, kind: 'league', teams: lg.teams, fixtures: lg.fixtures, singlesCount: 8, doublesCount: 4, format: [{ kind: 'singles', count: 8 }, { kind: 'doubles', count: 4 }] });
   }
   const perLeague = (league1Teams.length - 1) * league1Teams.length; // 90 bei 10 Teams
   console.log(`✓ 2 Ligen à 10 Teams angelegt, je ${perLeague} Begegnungen (Hin-/Rückrunde, ohne Ergebnis)`);
