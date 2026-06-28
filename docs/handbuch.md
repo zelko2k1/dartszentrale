@@ -25,8 +25,9 @@ Mannschaften und Benutzerverwaltung sind ausgeblendet. Der **Vereinsmodus** brin
 Anmeldung, Rollen und die volle Verwaltung. Dieses Handbuch beschreibt vor allem den
 Vereinsmodus.
 
-Den Modus stellt jedes Gerät selbst in **Einstellungen** ein (er ist gerätelokal, also
-nicht vereinsweit).
+**Beim allerersten Start** fragt jedes Gerät, ob es **Lokal** oder im **Vereinsmodus**
+laufen soll. Die Wahl merkt sich das Gerät; ändern kannst du sie jederzeit in
+**Einstellungen → Nutzungsart** (der Modus ist gerätelokal, also nicht vereinsweit).
 
 ---
 
@@ -86,6 +87,13 @@ Detaillierte Matrix:
 
 > Die Rechte werden **serverseitig** durchgesetzt (PocketBase-API-Regeln) — die
 > ausgeblendeten Knöpfe sind nur die Oberfläche dazu.
+
+> **Anlegen/Löschen großer Strukturen ist Admin-Sache.** Kapitäne pflegen Mannschaften,
+> Aufstellungen und Ergebnisse, aber **Mannschaften, Ligen und Saisons löschen** sowie
+> **Ligen und Saisons neu anlegen** darf nur ein **Admin**. So kann ein einzelnes
+> Kapitänskonto nicht versehentlich den ganzen Vereinsbestand verändern. Außerdem ist jedes
+> gezählte Spiel an seinen **Ersteller** gebunden — korrigieren darf es der Admin oder wer
+> es eingetragen hat.
 
 Die Rolle **Board-Rechner** lässt sich nicht von Hand vergeben; sie gehört fest zu
 dedizierten Board-Konten (§11).
@@ -185,8 +193,10 @@ Ligaspiel, Verein, Competition, Pokal, Sonstiges**. Termine anlegen darf, wer
 
 **Darts Counter** zählt X01-Spiele (Einzel oder Mannschaft).
 
-1. **Setup:** Startscore (301/501/701/1001), **Double-In/Double-Out**, **Best of Legs**
-   oder **Sätze**, Spieler/Teams wählen, „Wer beginnt?" (auch Ausbullen).
+1. **Setup:** Startscore (301/501/701/1001), **Auscheck-Modus** (Single / Double / Master
+   Out), **Best of Legs** oder **Sätze**, Spieler/Teams wählen, „Wer beginnt?" (auch
+   Ausbullen). *(„Double In" ist nur ein Hinweis — bei reiner Punkteingabe nicht automatisch
+   geprüft.)*
 2. **Spielen:** große Score-Anzeige; Eingabe per **Tablet-Tastenfeld** oder am PC per
    **Tastatur** (F1–F8 = Schnellscores). Checkout-Vorschläge werden eingeblendet.
 3. Abgeschlossene Spiele werden gespeichert und fließen in die **Statistiken** ein.
@@ -223,11 +233,16 @@ Einstellungen**, keine Verwaltung.
 
 ## 12. Einstellungen
 
-- **Verein** (nur Admin): App-Modus, **Vereinsname**, **Logo**.
+Die Einstellungen sind in Reiter gegliedert (u. a. **Nutzungsart · Eingabe & Tasten ·
+Darstellung · Hilfen & Anzeige · Listen · Daten**):
+
+- **Nutzungsart:** zwischen **Lokal** und **Vereinsmodus** umschalten (gerätelokal; dieselbe
+  Wahl wie beim Erst-Start, §1). **Vereinsname** und **Logo** pflegt hier der Admin.
 - **Darstellung:** Akzentfarbe, Theme (Midnight/Charcoal/Slate), Schrift (Inter,
-  Archivo, Rubik, Oswald, Space Grotesk), Hell/Dunkel, Größen für Score/Statistik.
-- **Eingabe & Tasten:** Schnellscore-Tasten, Geräteart (PC/Tablet).
-- **Namens-Sortierung:** Personenlisten nach **Vor-** oder **Nachname**.
+  Archivo, Rubik, Oswald, Space Grotesk), Hell/Dunkel und **Größen** — Score-Schrift sowie
+  **Statistik-, Spielername- und Leg-Anzeige-Größe** (wirken direkt im Counter, pro Gerät).
+- **Eingabe & Tasten:** Schnellscore-Tasten (F1–F8), Geräteart (PC/Tablet).
+- **Namens-Sortierung** (unter „Listen"): Personenlisten nach **Vor-** oder **Nachname**.
 
 > Manche Einstellungen sind **gerätelokal** (App-Modus, Hell/Dunkel, Größen, Geräteart,
 > Board-/Kiosk, Namens-Sortierung, Serveradresse) — jeder PC/Tablet/Board hält sie für

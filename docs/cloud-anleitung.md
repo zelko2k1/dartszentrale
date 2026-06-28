@@ -108,7 +108,7 @@ Das Wichtigste in Kürze:
   ```
   VITE_PB_URL = https://db.deinedomain.de
   ```
-  Ohne sie startet die App im lokalen Modus statt mit dem Server.
+  Ohne sie kennt die App die Server-Adresse nicht.
   Domain: `app.deinedomain.de`.
 - **CORS** in PocketBase: `https://app.deinedomain.de` als erlaubte Origin eintragen.
 - **Collections + Rechte** anlegen (Datenmodell siehe `docs/verein-pocketbase-plan.md`).
@@ -117,7 +117,8 @@ Das Wichtigste in Kürze:
 
 ## 5. Fertig — so nutzt ihr es
 
-- `https://app.deinedomain.de` im Browser öffnen → mit dem **App-Admin-Konto** anmelden.
+- `https://app.deinedomain.de` im Browser öffnen → beim **ersten Start „Vereinsmodus"
+  wählen** → mit dem **App-Admin-Konto** anmelden. (Jedes Gerät wird einmalig gefragt.)
 - In Edge/Chrome **„Als App installieren"** (PWA, funktioniert weil HTTPS vorhanden ✔).
 - Weitere Mitglieder: Konten legt der **Admin in der App** an (Self-Registration ist aus
   Sicherheitsgründen deaktiviert).
@@ -135,6 +136,15 @@ Das Wichtigste in Kürze:
 
 ## 6. Laufender Betrieb (nicht vergessen)
 
+- **Sicherheit vor dem Online-Gang** (Haken-Liste in [`security-audit.md`](security-audit.md)).
+  Das Wichtigste in Kürze:
+  - **Keine Demo-/Seed-Skripte gegen die Produktiv-DB** laufen lassen — den App-Admin
+    **manuell mit starkem Passwort** anlegen. Die `demo-*.mjs` sind nur für lokale Tests
+    (sie verweigern sich gegen ein nicht-lokales Ziel ohnehin von selbst).
+  - **PocketBase-Konsole `/_/`** nicht offen ins Internet stellen (per Coolify/Proxy bzw.
+    Firewall absichern); **Superuser-Passwort** stark wählen und sicher verwahren.
+  - **HTTPS erzwingen** (Coolify macht das) — nie Klartext-HTTP; Port **8090** nicht direkt
+    aus dem Internet erreichbar machen.
 - **Backups:** in PocketBase automatische Backups aktivieren und gelegentlich einen
   Restore testen. Die Daten liegen alle im Volume `pb_data`.
 - **Updates der App:** Code pushen → Coolify neu deployen (oder Auto-Deploy aktivieren).
