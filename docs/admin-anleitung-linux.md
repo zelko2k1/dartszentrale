@@ -184,3 +184,37 @@ Das Skript übernimmt die neuen Dateien, installiert Abhängigkeiten und baut ne
 - **App-Passwort vergessen** → mit dem **Superuser** zurücksetzen: `…:8090/_/` → `users` → Konto → neues Passwort.
 - **Superuser-Passwort weg** → neu setzen: `./pocketbase superuser upsert <mail> "<neues-pw>" --dir ./pb_data`.
 - **Vorsorge:** Superuser-Passwort im **Passwortmanager** sichern und früh einen **zweiten App-Admin** anlegen.
+
+---
+
+## Anhang A — Welche Dateien braucht der Betrieb?
+
+**Müssen da sein (Betrieb):**
+- `app/` — das **Frontend**. Ohne `node_modules/` und `dist/` (die entstehen beim ersten
+  `npm install` / `npm run build`).
+- **Nur Vereinsmodus:** `pocketbase/pb_migrations/` + `pocketbase/pb_hooks/` (Schema & Funktionen),
+  die selbst geladene **`pocketbase`**-Binärdatei, und `pocketbase/pb_data/` (deine Datenbank —
+  entsteht beim Start). Außerdem `app/.env.local` (Server-Adresse).
+- Die Start-/Autostart-/Update-Skripte (siehe Tabelle).
+
+**Beim Update austauschen:** das neue `app/src`, `app/public` und die Konfig-Dateien
+(`package.json` usw.). **`pb_data` und `app/.env.local` bleiben unangetastet** — `./update.sh`
+macht genau das.
+
+## Anhang B — Welches Skript wofür?
+
+| Datei | Zweck |
+|---|---|
+| `./start-dartshub.sh` | **Startet** (lokal: Frontend · Verein: PocketBase **und** Frontend) |
+| `./autostart-einrichten.sh` | **Autostart** beim Hochfahren einrichten (systemd) |
+| `./update.sh` | **Update** einspielen (Daten bleiben) |
+| *Vereinsmodus, einmalig/selten (`node …`):* | |
+| `pocketbase/provision.mjs` | Schema anlegen/aktualisieren + Admin (Alternative zum Auto-Schema) |
+| `pocketbase/add-board-account.mjs` | Board-Konto fürs Brett anlegen |
+| `pocketbase/reset-password.mjs` | App-Passwort per Superuser zurücksetzen |
+| `pocketbase/season-export\|import\|offload.mjs` | Saison sichern · zurückspielen · auslagern |
+| `pocketbase/_security-guard.mjs` | interner Helfer (nicht direkt starten) |
+| `pocketbase/demo-*.mjs` | **nur Testdaten — NICHT im Betrieb verwenden** |
+
+> Fertige Verteil-Pakete (genau diese Dateien je Betriebsart, ohne Test-/Secret-Dateien) erzeugt der
+> Einrichter mit dem `copy2share`-Vorgang — du bekommst dann einen einzelnen, passenden Ordner.
