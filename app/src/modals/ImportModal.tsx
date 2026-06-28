@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { Modal, ModalTitle } from '../components/Modal';
-import { decodeBytes } from '../lib/csv';
+import { decodeBytes, countReplacementChars } from '../lib/csv';
 import { parseSchedule, scheduleTemplate, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
 
 function teamCount(g: ParsedSchedule['groups'][number]): number {
@@ -18,10 +18,15 @@ export function ImportModal() {
   const [fileName, setFileName] = useState('');
   const [parsed, setParsed] = useState<ParsedSchedule | null>(null);
   const [error, setError] = useState('');
+  const [warning, setWarning] = useState('');
   const [result, setResult] = useState<ImportCounts | null>(null);
 
   const runParse = (raw: string, name: string) => {
     setText(raw); setFileName(name); setResult(null); setError('');
+    const bad = countReplacementChars(raw);
+    setWarning(bad > 0
+      ? `${bad} Zeichen konnten nicht dekodiert werden (�). Die betroffenen Namen sind bereits in der Quelldatei beschädigt — meist ein fehlerhafter Verbands-Export. Lade die Datei erneut herunter oder korrigiere die Namen nach dem Import.`
+      : '');
     try {
       const p = parseSchedule(raw, s.settings.clubName);
       setParsed(p);
@@ -122,6 +127,10 @@ export function ImportModal() {
 
           {error && (
             <div style={{ background: 'rgba(224,89,75,.1)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', borderRadius: 11, padding: 14, fontSize: 13, marginBottom: 16 }}>{error}</div>
+          )}
+
+          {warning && (
+            <div style={{ background: 'rgba(224,168,75,.12)', border: '1px solid rgba(224,168,75,.45)', color: '#C9882E', borderRadius: 11, padding: 14, fontSize: 13, marginBottom: 16, lineHeight: 1.5 }}>⚠️ {warning}</div>
           )}
 
           {parsed && parsed.total > 0 && (
