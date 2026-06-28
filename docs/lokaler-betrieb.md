@@ -3,7 +3,7 @@
 Zwei Wege: **A) Lokaler Modus** (nur Browser, kein Server – am einfachsten) und
 **B) Vereinsmodus** (mit PocketBase + Test-Daten + echten Logins).
 
-Alle Pfade relativ zum Projekt `/mnt/Data/claudebase/dartscounter`.
+Alle Pfade relativ zum Projekt `/mnt/Data/claudebase/dartshub`.
 
 ---
 
@@ -197,7 +197,7 @@ Prüfen: `node -v` (≥ 20), `npm -v`, `git --version`.
 ## 0c. Einmalig: Abhängigkeiten installieren
 
 ```bash
-cd /mnt/Data/claudebase/dartscounter/app
+cd /mnt/Data/claudebase/dartshub/app
 npm install
 ```
 
@@ -209,7 +209,7 @@ Schnellster Weg für die eigene Nutzung auf einem Gerät. Daten liegen im Browse
 (localStorage), Beispieldaten werden beim ersten Start automatisch angelegt.
 
 ```bash
-cd /mnt/Data/claudebase/dartscounter/app
+cd /mnt/Data/claudebase/dartshub/app
 # sicherstellen, dass NICHT auf einen Server gezeigt wird:
 #   app/.env.local löschen ODER VITE_PB_URL leer lassen
 npm run dev
@@ -232,12 +232,12 @@ Im **eigenen Terminal** (läuft im Vordergrund — offen lassen), aus dem `pocke
 
 ```bash
 # Linux / Git Bash
-cd /mnt/Data/claudebase/dartscounter/pocketbase
+cd /mnt/Data/claudebase/dartshub/pocketbase
 ./pocketbase serve --http=127.0.0.1:8090 --dir ./pb_data
 ```
 ```powershell
 # Windows / PowerShell
-cd C:\Pfad\zu\dartscounter\pocketbase
+cd C:\Pfad\zu\dartshub\pocketbase
 .\pocketbase.exe serve --http=127.0.0.1:8090 --dir .\pb_data
 ```
 Läuft auf http://127.0.0.1:8090 · Verwaltungs-Konsole: **http://127.0.0.1:8090/_/**
@@ -255,7 +255,7 @@ Läuft auf http://127.0.0.1:8090 · Verwaltungs-Konsole: **http://127.0.0.1:8090
 ### 2. Schema + App-Admin anlegen (idempotent)
 In einem zweiten Terminal:
 ```bash
-cd /mnt/Data/claudebase/dartscounter/pocketbase
+cd /mnt/Data/claudebase/dartshub/pocketbase
 node provision.mjs
 ```
 Legt alle Collections (inkl. `seasons`/`season_snapshots`) + App-Admin
@@ -291,7 +291,7 @@ node add-board-account.mjs    # rechtearmes Board-Konto für Kiosk-Tests
 
 ### 5. App starten
 ```bash
-cd /mnt/Data/claudebase/dartscounter/app
+cd /mnt/Data/claudebase/dartshub/app
 npm run dev
 ```
 **http://localhost:5173** öffnen und anmelden.
@@ -342,7 +342,7 @@ Cloud `PB_URL`, `PB_SU_EMAIL`, `PB_SU_PASS` als Umgebungsvariablen voranstellen.
 4. Aus dem **`pocketbase/`-Verzeichnis** aufrufen (die relativen Pfade gehen davon aus).
 
 ```bash
-cd /mnt/Data/claudebase/dartscounter/pocketbase
+cd /mnt/Data/claudebase/dartshub/pocketbase
 
 node provision.mjs                                   # einfacher Aufruf
 USER_EMAIL=chef@dartshub.local NEW_PW="abc12345" node reset-password.mjs   # mit Variablen
@@ -382,7 +382,7 @@ Mehrere einfach hintereinander (durch Leerzeichen getrennt) voranstellen.
 
 ## Production-Build prüfen
 ```bash
-cd /mnt/Data/claudebase/dartscounter/app
+cd /mnt/Data/claudebase/dartshub/app
 npm run build      # tsc + vite build → dist/
 npm run preview    # statisches dist/ lokal testen
 ```
