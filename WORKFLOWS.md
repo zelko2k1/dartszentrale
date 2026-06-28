@@ -8,20 +8,20 @@ Ergänzt [DATA_MODEL.md](DATA_MODEL.md) (Datenmodell) und [docs/COOLIFY-SETUP.md
 | | **Lokal** (Einzelgerät / Heim) | **Verein** (Server) |
 |---|---|---|
 | Daten | nur im Browser (localStorage) | zentral in PocketBase (Cloud) |
-| Login | keiner, alle Rechte | Login + Rollen (admin / captain / player / viewer) |
+| Login | keiner, alle Rechte | Login + Rollen (admin / captain / player / viewer / board) |
 | Bereiche | Dashboard, Counter, Training, Spieler, Statistik | + Ligen, Mannschaften, Benutzer, Board-/Kiosk-Modus |
 | Wofür | privates Board zuhause | Verein + die ~8 Board-PCs |
 
-Umschalten: **Einstellungen → App-Modus** (nur Admin). Die Board-PCs laufen im **Verein-Modus**
+Umschalten: beim **ersten Start** fragt jedes Gerät Lokal/Verein; ändern in **Einstellungen → Nutzungsart** (gerätelokal). Die Board-PCs laufen im **Verein-Modus**
 (brauchen zentrale Daten + Rückschreiben). Einstellungen sind im Verein **vereinsweit zentral** (nur Admin ändert sie).
 
 ## Rollen & Logins
 
-- **Board-PCs:** dediziertes, rechtearmes **Board-Konto** (Rolle `player`) bleibt dauerhaft angemeldet.
+- **Board-PCs:** dediziertes, rechtearmes **Board-Konto** (Rolle `board`) bleibt dauerhaft angemeldet.
   Darf nur Matches anlegen + lesen, nichts verwalten. Anlegen: `pocketbase/add-board-account.mjs`.
 - **Kapitän/Admin:** eigenes Login für Aufstellung, Ergebnis-Bestätigung und Verwaltung —
   am eigenen Gerät (Handy/PWA) **oder** indem ein Board kurz entsperrt wird (Kiosk → „Verlassen" → Login).
-- Statistik hängt am **Spieler (Name)**, nicht am Login → man wählt sich am Board einfach aus dem Kader.
+- Statistik hängt am **Spieler**, nicht am Login → man wählt sich am Board einfach aus dem Kader.
 
 ## Trainingstag (am Board-PC)
 
@@ -54,7 +54,7 @@ Auswärts gibt es keine eigenen Board-PCs → keine Automatik.
 ## Board-Konten & Board-PC einrichten (einmalig)
 
 1. **Board-Konten anlegen** (Admin): **Einstellungen → Benutzer verwalten → „Board-Konten"** → Anzahl der Bretter (Board 1…N)
-   + gemeinsames Passwort. Es entstehen `board1…boardN@board.local` (Rolle Spieler, rechtearm, **nie** mit einem Spieler verknüpft).
+   + gemeinsames Passwort. Es entstehen `board1…boardN@board.local` (Rolle `board`, rechtearm, **nie** mit einem Spieler verknüpft).
 2. **Pro Brett-Rechner:** mit dem zugehörigen Board-Konto anmelden (z. B. `board3@board.local`) → der Rechner ist damit
    automatisch **Board 3** und startet im **gesperrten Kiosk**. Keine weitere Geräte-Einstellung nötig.
 3. **In der Aufstellung** trägst du pro Position nur die **Board-Nummer** ein → das passende Brett zeigt sein Spiel.

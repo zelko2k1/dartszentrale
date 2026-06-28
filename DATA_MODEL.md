@@ -8,6 +8,17 @@ offenen Punkte des Prototyps `DartsHub.dc.html`, damit die Umsetzung in eine ech
 > Für den Verein-Modus ist ein **Server-Backend mit Datenbank + Auth** vorgesehen.
 > Die Anmeldung ist im Prototyp nur **simuliert** (Passwort wird ignoriert).
 
+> **Status (Stand 2026-06-28): App ist umgesetzt.** Dieses Dokument war die ursprüngliche
+> Entwickler-Übergabe des HTML-Prototyps. Die App läuft inzwischen als Vite/React-Frontend mit
+> **PocketBase**-Backend. Maßgeblich sind heute: **[`pocketbase/SCHEMA.md`](pocketbase/SCHEMA.md)**
+> (PB-Collections/Rules) und die TypeScript-Typen in `app/src/data/types.ts`.
+>
+> **Inzwischen umgesetzt** (unten teils noch als „offen" gelistet): echte Auth + Passwort-Reset;
+> Matches referenzieren Spieler per **`playerId`** (nicht mehr nur per Name) und tragen **`createdBy`**
+> + `seasonId`; Liga-Ergebnis ↔ Counter-Automatik (Board-Spiel → Spielbericht). **Neu hinzugekommen:**
+> **Saison-Lifecycle** (`seasons`/`season_snapshots`, Soft-Archiv) und die Rolle **`board`**
+> (Maschinen-Konten). Die localStorage-Strukturen unten beschreiben weiterhin den **Lokal-Modus**.
+
 ---
 
 ## 1. Zwei Betriebsmodi
@@ -51,7 +62,7 @@ Vereinsmannschaft. Kader = Referenzen auf `Player.id`.
 Login-Konto für den Vereinsmodus. **Getrennt** vom Spieler.
 ```
 { id: string, first: string, last: string, name: string (abgeleitet "first last"),
-  email: string, role: "admin"|"captain"|"player"|"viewer",
+  email: string, role: "admin"|"captain"|"player"|"viewer"|"board",
   playerId: string|null → Player.id (optionale 1:1-Verknüpfung),
   position?: string (Vereinsfunktion, Freitext, optional),
   active: boolean, avi: number, last_login?: string }
