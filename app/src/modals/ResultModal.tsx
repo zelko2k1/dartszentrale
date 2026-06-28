@@ -12,10 +12,6 @@ export function ResultModal() {
   const oppWins = m.rows.filter((r) => r.won === 'opp').length;
   const open = m.rows.length - ownWins - oppWins;
 
-  const legStyle: React.CSSProperties = {
-    width: 38, textAlign: 'center', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)',
-    borderRadius: 8, padding: '7px 4px', color: 'var(--text)', fontSize: 13, fontFamily: 'var(--font-num)',
-  };
   const resBtn = (active: boolean, color: string, label: string, onClick: () => void) => (
     <button onClick={onClick} style={{ background: active ? color : 'var(--btn)', color: active ? '#fff' : 'var(--text-3)', border: `1px solid ${active ? color : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '7px 12px', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{label}</button>
   );
@@ -53,11 +49,6 @@ export function ResultModal() {
               {r.playerNames.join(' / ') || <span style={{ color: 'var(--text-5)' }}>—</span>}
               {r.auto && <span title="Automatisch vom Board übernommen – bitte bestätigen" style={{ fontSize: 9, fontWeight: 800, color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '1px 6px', borderRadius: 5, letterSpacing: '.04em' }}>AUTO</span>}
             </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <input value={r.ownLegs} onChange={(e) => s.setResultLeg(r.id, 'own', e.target.value)} placeholder="–" title="eigene Legs" style={legStyle} />
-              <span style={{ color: 'var(--text-5)', fontWeight: 700 }}>:</span>
-              <input value={r.oppLegs} onChange={(e) => s.setResultLeg(r.id, 'opp', e.target.value)} placeholder="–" title="gegnerische Legs" style={legStyle} />
-            </div>
             <div style={{ display: 'flex', gap: 6 }}>
               {resBtn(r.won === 'own', 'var(--success)', 'Sieg', () => s.setResultWon(r.id, 'own'))}
               {resBtn(r.won === 'opp', '#E0594B', 'Niederlage', () => s.setResultWon(r.id, 'opp'))}
@@ -67,7 +58,7 @@ export function ResultModal() {
       </div>
 
       <div style={{ fontSize: 11, color: 'var(--text-5)', lineHeight: 1.5, marginBottom: 16 }}>
-        Trage pro Brett die Legs ein – der Brett-Punkt ergibt sich automatisch (mehr Legs = Sieg). Das Gesamtergebnis ({ownWins}:{oppWins}) wird als Begegnungsergebnis übernommen; daraus folgen die Tabellenpunkte (Sieg 2, Unentschieden 1). Sieg/Niederlage lässt sich bei Bedarf weiterhin manuell setzen.
+        Pro Brett Sieg oder Niederlage wählen. Das Gesamtergebnis ({ownWins}:{oppWins}) wird als Begegnungspunkte übernommen; daraus folgen Tabellenpunkte (Sieg 2, Unentschieden 1) und Differenz.
       </div>
 
       <ModalFooter onCancel={() => s.closeResult()} onSave={() => s.saveResult()} saveLabel="Ergebnis speichern" />
