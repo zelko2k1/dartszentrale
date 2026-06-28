@@ -58,7 +58,7 @@ export function ResultModal() {
       </div>
 
       <div style={{ fontSize: 11, color: 'var(--text-5)', lineHeight: 1.5, marginBottom: 16 }}>
-        Pro Brett Sieg oder Niederlage wählen. Das Gesamtergebnis ({ownWins}:{oppWins}) wird als Begegnungspunkte übernommen; daraus folgen Tabellenpunkte (Sieg 2, Unentschieden 1) und Differenz.
+        Pro Brett Sieg oder Niederlage wählen. Das Gesamtergebnis ({ownWins}:{oppWins}) wird als Spiele-Ergebnis der Begegnung übernommen; daraus folgen Mannschaftspunkte (Sieg 2, Unentschieden 1) und Differenz.
       </div>
 
       <ModalFooter onCancel={() => s.closeResult()} onSave={() => s.saveResult()} saveLabel="Ergebnis speichern" />

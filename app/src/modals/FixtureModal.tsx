@@ -59,8 +59,8 @@ export function FixtureModal() {
 
       {m.played && (
         <>
-          <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 2 }}>Ergebnis (Punkte)</label>
-          <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 8 }}>Gewonnene Spiele je Mannschaft (Heim : Gast) — zählt für Tabellenpunkte und Differenz.</div>
+          <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 2 }}>Ergebnis (Spiele)</label>
+          <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 8 }}>Gewonnene Spiele je Mannschaft (Heim : Gast). Daraus ergeben sich Mannschaftspunkte (Sieg 2 / Remis 1) und die Differenz.</div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 6 }}>
             <input className="dh-input" value={m.hs} onChange={(e) => s.setFixtureField('hs', e.target.value)} inputMode="numeric" placeholder="0" style={numInput} />
             <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-4)' }}>:</span>
