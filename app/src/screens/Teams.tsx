@@ -106,6 +106,7 @@ export function Teams() {
               {roster.map((m) => {
                 const agg = aggregateFor(m.name, s.matches);
                 const isCaptain = sel.captainId === m.id;
+                const isVice = (sel.viceCaptainIds || []).includes(m.id);
                 return (
                   <div key={m.id} className="dh-row" onClick={() => s.openPlayer(m.id)} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '13px 20px', borderBottom: '1px solid var(--hairline)', cursor: 'pointer' }}>
                     <Avatar photo={m.photo} short={m.short} avi={m.avi} size={38} />
@@ -113,6 +114,7 @@ export function Teams() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap' }}>{m.name}</span>
                         {isCaptain && <span style={{ fontSize: 10, fontWeight: 800, color: '#F2B829', background: 'rgba(242,184,41,.12)', padding: '2px 6px', borderRadius: 5, letterSpacing: '.04em' }}>C</span>}
+                        {isVice && <span title="Ersatzkapitän" style={{ fontSize: 10, fontWeight: 800, color: '#3B9EFF', background: 'rgba(59,158,255,.12)', padding: '2px 6px', borderRadius: 5, letterSpacing: '.04em' }}>VC</span>}
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{agg.games ? `${agg.games} ${agg.games === 1 ? 'Spiel' : 'Spiele'}` : 'Kaderspieler'}</div>
                     </div>
