@@ -192,6 +192,7 @@ export interface Match {
   fixtureId?: string;
   positionId?: string;
   seasonId?: string;   // → Season.id; bei neuen Matches = aktive Saison
+  createdBy?: string;  // → users.id des Erstellers (Vereinsmodus; serverseitige Owner-Bindung)
 }
 
 export interface Settings {

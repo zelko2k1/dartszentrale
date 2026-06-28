@@ -2051,6 +2051,8 @@ function saveMatch(get: () => AppState, set: (p: Partial<AppState>) => void) {
     doubleOut: st.settings.doubleOut, doubleIn: st.settings.doubleIn, unit, mode: st.gameMode,
     bestOf: st.settings.bestOf, bestOfSets: st.settings.bestOfSets,
     gameLabel: `X01 ${st.settings.startScore} · Bo${st.settings.bestOf}`, winnerName, scoreLine, perPlayer,
+    // #4: Ersteller stempeln (Vereinsmodus: muss == auth.id sein, sonst lehnt die API ab).
+    ...(st.session ? { createdBy: st.session } : {}),
     ...(st.activeSeasonId ? { seasonId: st.activeSeasonId } : {}),
     ...(st.gameLink ? { leagueId: st.gameLink.leagueId, fixtureId: st.gameLink.fixtureId, positionId: st.gameLink.positionId } : {}),
   };

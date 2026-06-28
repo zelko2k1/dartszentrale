@@ -37,6 +37,10 @@ const LOGGED_IN = '@request.auth.id != ""';
 const ADMIN = '@request.auth.role = "admin"';
 const ADMIN_OR_CAPTAIN = '@request.auth.role = "admin" || @request.auth.role = "captain"';
 const NOT_VIEWER = '@request.auth.role != "viewer"';
+// #4: Ergebnisse — Ersteller wird gestempelt und kann nur SICH SELBST eintragen;
+//     ändern darf Admin ODER der Ersteller (Korrektur der eigenen Eingabe).
+const MATCH_CREATE = '@request.auth.id != "" && @request.body.createdBy = @request.auth.id';
+const MATCH_UPDATE = '@request.auth.role = "admin" || createdBy = @request.auth.id';
 
 // players/teams/leagues/events: lesen für alle Angemeldeten, schreiben Admin/Captain
 const editorRules = {
@@ -51,7 +55,8 @@ const BASE_COLLECTIONS = [
   },
   {
     // Saison-Klammer: status = 'active' (genau eine) | 'archived' (abgeschlossen, in der App nur lesbar).
-    name: 'seasons', type: 'base', ...editorRules,
+    // #6: anlegen/löschen nur Admin (Kapitän darf keine ganze Saison anlegen/löschen).
+    name: 'seasons', type: 'base', ...editorRules, createRule: ADMIN, deleteRule: ADMIN,
     fields: [text('name'), text('status'), text('startDate'), text('endDate'), bool('offloaded')],
   },
   {
@@ -62,12 +67,14 @@ const BASE_COLLECTIONS = [
     fields: [text('seasonId'), text('seasonName'), json('standings'), json('playerStats'), json('teamRosters'), json('meta')],
   },
   {
-    name: 'teams', type: 'base', ...editorRules,
+    // #6: löschen nur Admin (Kapitän darf keine fremde Mannschaft löschen).
+    name: 'teams', type: 'base', ...editorRules, deleteRule: ADMIN,
     // kind = 'league' (Standard) | 'cup' (Pokalmannschaft). viceCaptainIds: bis zu 2 Ersatzkapitäne.
     fields: [text('name'), text('league'), json('memberIds'), json('captainId'), json('viceCaptainIds'), text('kind'), text('seasonId')],
   },
   {
-    name: 'leagues', type: 'base', ...editorRules,
+    // #6: anlegen/löschen nur Admin (Liga-Strukturen sind Admin-Sache).
+    name: 'leagues', type: 'base', ...editorRules, createRule: ADMIN, deleteRule: ADMIN,
     // kind = 'league' (Standard) | 'cup' (Pokal-Wettbewerb) – trennt Liga- von Pokal-Begegnungen.
     // singlesCount/doublesCount/format: Match-Format der Liga (die App liest sie, z. B. useStore).
     fields: [text('name'), text('season'), text('seasonId'), json('teams'), json('fixtures'), text('kind'), num('singlesCount'), num('doublesCount'), json('format')],
@@ -79,11 +86,12 @@ const BASE_COLLECTIONS = [
   {
     name: 'matches', type: 'base',
     listRule: LOGGED_IN, viewRule: LOGGED_IN,
-    createRule: NOT_VIEWER, updateRule: ADMIN, deleteRule: ADMIN,
+    // #4: Ersteller-Stempel statt „jeder Nicht-Viewer darf beliebige Ergebnisse anlegen".
+    createRule: MATCH_CREATE, updateRule: MATCH_UPDATE, deleteRule: ADMIN,
     fields: [
       text('date'), num('startScore'), bool('doubleOut'), bool('doubleIn'),
       text('unit'), text('mode'), num('bestOf'), num('bestOfSets'),
-      text('gameLabel'), text('winnerName'), text('scoreLine'), json('perPlayer'), text('seasonId'),
+      text('gameLabel'), text('winnerName'), text('scoreLine'), json('perPlayer'), text('seasonId'), text('createdBy'),
     ],
   },
   {
