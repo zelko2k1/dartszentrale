@@ -68,7 +68,8 @@ const BASE_COLLECTIONS = [
   {
     name: 'leagues', type: 'base', ...editorRules,
     // kind = 'league' (Standard) | 'cup' (Pokal-Wettbewerb) – trennt Liga- von Pokal-Begegnungen.
-    fields: [text('name'), text('season'), text('seasonId'), json('teams'), json('fixtures'), text('kind')],
+    // singlesCount/doublesCount/format: Match-Format der Liga (die App liest sie, z. B. useStore).
+    fields: [text('name'), text('season'), text('seasonId'), json('teams'), json('fixtures'), text('kind'), num('singlesCount'), num('doublesCount'), json('format')],
   },
   {
     name: 'events', type: 'base', ...editorRules,
@@ -103,7 +104,13 @@ async function main() {
   for (const def of BASE_COLLECTIONS) {
     const cur = byName.get(def.name);
     if (cur) {
-      await pb.collections.update(cur.id, def);
+      // Felder MERGEN statt ersetzen: bestehende Felder (inkl. ihrer IDs und per Migration
+      // ergänzter wie events.fixtureId) behalten, nur in der Definition fehlende anhängen.
+      // (Ein nacktes update(cur.id, def) würde das Schema durch def.fields ersetzen und
+      //  migrationsergänzte Spalten samt Daten löschen — siehe users-Pfad weiter unten.)
+      const have = new Set(cur.fields.map((f) => f.name));
+      const merged = { ...def, fields: [...cur.fields, ...def.fields.filter((f) => !have.has(f.name))] };
+      await pb.collections.update(cur.id, merged);
       console.log(`✓ aktualisiert: ${def.name}`);
     } else {
       const created = await pb.collections.create(def);
