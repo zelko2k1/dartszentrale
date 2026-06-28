@@ -2,11 +2,15 @@
 // Zum Befuellen von Kadern und Testen des Ligamodus.
 // Aufruf:  node add-players.mjs
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
+import { assertSafePassword } from './_security-guard.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
 const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartshub.local';
 const SU_PASS = process.env.PB_SU_PASS || 'dartshub-admin-2026';
 const COUNT = Number(process.env.COUNT || 70);
+
+// Sicherheits-Guard: kein Default-Superuser-Passwort gegen ein nicht-lokales Ziel.
+assertSafePassword(URL, 'Superuser-Login', SU_PASS, 'PB_SU_PASS=…');
 
 const pb = new PocketBase(URL);
 pb.autoCancellation(false);

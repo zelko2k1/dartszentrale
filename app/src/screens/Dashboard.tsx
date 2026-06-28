@@ -307,7 +307,7 @@ function VereinDashboard() {
       </div>
 
       {/* TERMINE */}
-      {s.events.some((e) => e.scope === scope) && (
+      {dEvents.some((e) => e.scope === scope) && (
         <div style={{ marginBottom: 18, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 22px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, marginBottom: 16, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--text-3)' }}>

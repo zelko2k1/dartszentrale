@@ -1784,7 +1784,27 @@ export const useStore = create<AppState>((set, get) => ({
     set({ restEntry: false });
     get().apply(scored); // records the actual scored value so it counts toward the average
   },
-  undo() { set((st) => ({ allThrows: st.allThrows.slice(0, -1), input: '' })); persistLive(get); },
+  undo() {
+    const st = get();
+    if (!st.allThrows.length) return;
+    const base = { gamePlayers: st.gamePlayers, startOffset: st.startOffset, settings: st.settings };
+    const wasOver = cMatchOver({ ...base, allThrows: st.allThrows });
+    const allThrows = st.allThrows.slice(0, -1);
+    const nowOver = cMatchOver({ ...base, allThrows });
+    // Wird ein beendendes Checkout zurückgenommen, war der zuletzt gespeicherte Match dessen
+    // Resultat → entfernen, damit ein neu zu Ende gespieltes Leg wieder gespeichert werden kann
+    // (sonst bliebe das alte Ergebnis dauerhaft bestehen und ein Resave würde geblockt/dupliziert).
+    if (st.matchSaved && wasOver && !nowOver) {
+      const saved = st.matches[st.matches.length - 1];
+      const matches = st.matches.slice(0, -1);
+      set({ allThrows, input: '', matchSaved: false, matches });
+      if (saved) persist(st, set, LS.matches, matches, (p) => p.deleteRecord('matches', saved.id));
+      persistLive(get);
+      return;
+    }
+    set({ allThrows, input: '' });
+    persistLive(get);
+  },
   newMatch() { get().requestNew({ kind: 'setup' }); },
   requestNew(action) {
     const st = get();
@@ -2020,7 +2040,7 @@ function saveMatch(get: () => AppState, set: (p: Partial<AppState>) => void) {
     legsWon: prog.legsSet[p.id] || 0, setsWon: prog.setsWon[p.id] || 0,
     avg3: cAverage(slice, p.id), c180: countAtLeast(slice, p.id, 180, true), c140: countAtLeast(slice, p.id, 140),
     c100: countAtLeast(slice, p.id, 100), c60: countAtLeast(slice, p.id, 60),
-    highFinish: cFinishStats(slice, p.id).hf, darts: st.allThrows.filter((t) => t.playerId === p.id).length * 3,
+    highFinish: cFinishStats(slice, p.id).hf, darts: st.allThrows.filter((t) => t.playerId === p.id).reduce((a, t) => a + (t.darts ?? 3), 0),
     shortLegs: cShortLegs(slice, p.id),
     ...(typeof p.id === 'string' && playerIds.has(p.id) ? { playerId: p.id } : {}),
   }));

@@ -9,15 +9,21 @@ export function uid(): string {
   return s;
 }
 
+/** YYYY-MM-DD aus LOKALEN Datumsteilen (nicht UTC – sonst Tagesversatz nachts in DE-Zeitzonen). */
+function ymdLocal(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
 /** YYYY-MM-DD, off Tage von heute */
 export function iso(off: number): string {
   const d = new Date();
   d.setDate(d.getDate() + off);
-  return d.toISOString().slice(0, 10);
+  return ymdLocal(d);
 }
 
 export function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
+  return ymdLocal(new Date());
 }
 
 const WD_LONG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];

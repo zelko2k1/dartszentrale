@@ -4,11 +4,15 @@
 // Aufruf:  node season-import.mjs <bundle.json>
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
 import { readFileSync } from 'fs';
+import { assertSafePassword } from './_security-guard.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
 const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartshub.local';
 const SU_PASS = process.env.PB_SU_PASS || 'dartshub-admin-2026';
 const FILE = process.argv[2];
+
+// Sicherheits-Guard: kein Default-Superuser-Passwort gegen ein nicht-lokales Ziel.
+assertSafePassword(URL, 'Superuser-Login', SU_PASS, 'PB_SU_PASS=…');
 
 if (!FILE) { console.error('FEHLER: Bundle-Datei angeben: node season-import.mjs <bundle.json>'); process.exit(1); }
 

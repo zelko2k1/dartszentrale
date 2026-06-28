@@ -10,12 +10,17 @@
 // Falls auch das Superuser-Passwort weg ist, vorher per CLI neu setzen:
 //   ./pocketbase superuser upsert <su-email> "<neues-su-pw>" --dir ./pb_data
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
+import { assertSafePassword } from './_security-guard.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
 const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartshub.local';
 const SU_PASS = process.env.PB_SU_PASS || 'dartshub-admin-2026';
 const USER_EMAIL = process.env.USER_EMAIL || 'chef@dartshub.local';
 const NEW_PW = process.env.NEW_PW || 'dartshub123'; // BITTE überschreiben!
+
+// Sicherheits-Guard: keine bekannten Default-Passwörter gegen ein nicht-lokales Ziel.
+assertSafePassword(URL, 'Superuser-Login', SU_PASS, 'PB_SU_PASS=…');
+assertSafePassword(URL, 'Neues App-Passwort', NEW_PW, 'NEW_PW=…');
 
 if (!NEW_PW || NEW_PW.length < 8) {
   console.error('FEHLER: NEW_PW muss mindestens 8 Zeichen haben.');

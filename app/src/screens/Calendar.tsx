@@ -18,7 +18,7 @@ export function Calendar() {
   const events = inSeason(s.events, s.viewSeasonId);
   const now = new Date();
   const [ref, setRef] = useState({ y: now.getFullYear(), m: now.getMonth() });
-  const todayIso = now.toISOString().slice(0, 10);
+  const todayIso = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate());
 
   const byDate: Record<string, typeof s.events> = {};
   events.filter((e) => e.scope === scope).forEach((e) => { (byDate[e.date] = byDate[e.date] || []).push(e); });

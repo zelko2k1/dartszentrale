@@ -60,7 +60,8 @@ export function average(s: CounterSlice, pid: string | number) {
   return ts.reduce((a, t) => a + (t.bust ? 0 : t.score), 0) / ts.length;
 }
 export function first9(s: CounterSlice, pid: string | number) {
-  const ts = s.allThrows.filter((t) => t.playerId === pid).slice(0, 3);
+  // Erste 9 Darts (3 Aufnahmen) des AKTUELLEN Legs – nicht des gesamten Matches.
+  const ts = legThrows(s).filter((t) => t.playerId === pid).slice(0, 3);
   if (!ts.length) return 0;
   return ts.reduce((a, t) => a + (t.bust ? 0 : t.score), 0) / ts.length;
 }
