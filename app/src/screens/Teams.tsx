@@ -114,7 +114,7 @@ export function Teams() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap' }}>{m.name}</span>
                         {isCaptain && <span style={{ fontSize: 10, fontWeight: 800, color: '#F2B829', background: 'rgba(242,184,41,.12)', padding: '2px 6px', borderRadius: 5, letterSpacing: '.04em' }}>C</span>}
-                        {isVice && <span title="Ersatzkapitän" style={{ fontSize: 10, fontWeight: 800, color: '#3B9EFF', background: 'rgba(59,158,255,.12)', padding: '2px 6px', borderRadius: 5, letterSpacing: '.04em' }}>VC</span>}
+                        {isVice && <span title="Ersatzkapitän" style={{ fontSize: 10, fontWeight: 800, color: '#3B9EFF', background: 'rgba(59,158,255,.12)', padding: '2px 6px', borderRadius: 5, letterSpacing: '.04em' }}>EK</span>}
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{agg.games ? `${agg.games} ${agg.games === 1 ? 'Spiel' : 'Spiele'}` : 'Kaderspieler'}</div>
                     </div>
