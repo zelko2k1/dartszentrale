@@ -153,6 +153,34 @@ Danach:
 > unterscheiden will: einfach den ganzen `app/`-Ordner vom Stick (ohne `node_modules/`) mitnehmen —
 > das Skript ersetzt `src/`+`public/` ohnehin komplett.
 
+### Linux: Vereinsmodus als Dienst (Autostart)
+
+Auf Linux müssen im **Vereinsmodus** zwei Dinge laufen — **PocketBase** (Backend, `:8090`) und das
+**Frontend** (`:4173`). Zwei Skripte im Projekt-Root übernehmen das:
+
+- **Manuell starten** (zum Testen; Strg+C beendet beide):
+  ```bash
+  ./start-dartshub.sh
+  ```
+- **Als Daemon einrichten** (systemd-User-Dienste: Autostart beim Boot, Auto-Restart, journald-Logs):
+  ```bash
+  ./autostart-einrichten.sh        # baut + installiert + startet beide Dienste
+  ```
+  Verwaltung danach:
+  ```bash
+  systemctl --user status dartshub-web dartshub-pocketbase
+  journalctl --user -u dartshub-pocketbase -f     # Logs live
+  systemctl --user restart dartshub-web           # nach einem Rebuild (z. B. update.sh --build)
+  ./autostart-entfernen.sh                         # Autostart wieder entfernen (Daten bleiben)
+  ```
+
+**Voraussetzung:** PocketBase einmalig einrichten (Superuser + Schema):
+```bash
+cd pocketbase && ./pocketbase superuser upsert <mail> '<pw>' --dir ./pb_data && node provision.mjs
+```
+Mehrere Boards im LAN? `VITE_PB_URL` auf die LAN-IP setzen, neu bauen, und in den Units
+`127.0.0.1 → 0.0.0.0` ändern. (Windows-Pendant: `start-dartshub.bat` / `autostart-einrichten.bat`.)
+
 ### Wichtigste Git-Befehle
 
 Repo ist **privat** → auf neuem Rechner zuerst anmelden, sonst geht kein clone/push.

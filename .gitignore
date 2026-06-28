@@ -25,3 +25,6 @@ pocketbase/seed-remote.sh
 
 # Generierte PDF-Artefakte (Quelle ist die jeweilige .md)
 docs/*.pdf
+
+# vom Linux-Autostart-Setup generiert (maschinenspezifische Pfade)
+autostart-entfernen.sh
