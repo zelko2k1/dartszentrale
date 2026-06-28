@@ -298,7 +298,7 @@ export interface AppState {
   closeLeagueModal: () => void;
   setLeagueField: (key: 'name' | 'season' | 'kind', val: string) => void;
   setLeagueCount: (key: 'singlesCount' | 'doublesCount', val: number) => void;
-  setLeagueFormatPreset: (key: 'BL' | 'LL' | 'custom') => void;
+  setLeagueFormatPreset: (key: 'BZ' | 'BL' | 'LL' | 'custom') => void;
   addLeagueTeam: () => void;
   setLeagueTeamName: (id: string, val: string) => void;
   toggleLeagueTeamOwn: (id: string) => void;

@@ -16,7 +16,7 @@ export function LeagueModal() {
   const presetBtn = (key: string, label: string, sub: string) => {
     const on = activePreset === key;
     return (
-      <button key={key} onClick={() => s.setLeagueFormatPreset(key as 'BL' | 'LL' | 'custom')} style={{ flex: 1, minWidth: 140, textAlign: 'left', background: on ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1.5px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 11, padding: '10px 13px', cursor: 'pointer', fontFamily: 'inherit' }}>
+      <button key={key} onClick={() => s.setLeagueFormatPreset(key as 'BZ' | 'BL' | 'LL' | 'custom')} style={{ flex: 1, minWidth: 140, textAlign: 'left', background: on ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1.5px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 11, padding: '10px 13px', cursor: 'pointer', fontFamily: 'inherit' }}>
         <div style={{ fontSize: 13, fontWeight: 800, color: on ? 'var(--accent)' : 'var(--text)' }}>{label}</div>
         <div style={{ fontSize: 11, color: 'var(--text-4)', marginTop: 2 }}>{sub}</div>
       </button>
@@ -53,6 +53,7 @@ export function LeagueModal() {
 
       <FieldLabel>Spielformat</FieldLabel>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+        {presetBtn('BZ', LEAGUE_FORMAT_PRESETS.BZ.label, LEAGUE_FORMAT_PRESETS.BZ.short)}
         {presetBtn('BL', LEAGUE_FORMAT_PRESETS.BL.label, LEAGUE_FORMAT_PRESETS.BL.short)}
         {presetBtn('LL', LEAGUE_FORMAT_PRESETS.LL.label, LEAGUE_FORMAT_PRESETS.LL.short)}
         {presetBtn('custom', 'Eigenes', 'Einzel/Doppel frei wählen')}
