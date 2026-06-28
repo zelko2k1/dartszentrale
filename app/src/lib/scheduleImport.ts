@@ -338,8 +338,8 @@ export function deriveLeagueEvents(parsed: ParsedSchedule, existingEvents: Event
 /** CSV-Vorlage (generisches Format) zum Befüllen von Hand. */
 export function scheduleTemplate(): string {
   return [
-    'Liga;Saison;Datum;Uhrzeit;Ort;Heim;Gast;HeimLegs;GastLegs',
-    'Verbandsliga Nord;2025/26;20.09.2025;19:30;Vereinsheim Eigene;Eigene Mannschaft 1;Gastverein A;6;3',
-    'Verbandsliga Nord;2025/26;27.09.2025;19:00;Gaststätte Gastverein A;Gastverein A;Eigene Mannschaft 1;;',
+    'Termin;Saison;Staffel;SpiellokalName;HeimMannschaftName;GastMannschaftName;ToreHeim;ToreGast',
+    '06.09.2025 19:30;2025/26;Bezirksoberliga Mittelfranken;Vereinsheim DSV Fürth;DSV Fürth 86 I;DC Falken Nürnberg;8;4',
+    '13.09.2025 19:30;2025/26;Bezirksoberliga Mittelfranken;Sportheim Falken;DC Falken Nürnberg;DSV Fürth 86 I;;',
   ].join('\r\n');
 }
