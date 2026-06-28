@@ -142,6 +142,8 @@ export interface AppState {
   provider: DataProvider;
   // true, wenn ein echtes PocketBase-Backend aktiv ist (Login/Schreiben gehen an den Server)
   pbMode: boolean;
+  // Erst-Start: noch keine Lokal/Verein-Wahl getroffen → Auswahl-Screen zeigen.
+  needsModeChoice: boolean;
   // Board-Modus für diese Sitzung entsperrt (z. B. Kapitän hat sich zum Ändern angemeldet);
   // nicht persistiert → nach Neuladen ist das Board wieder gesperrt, sofern settings.kiosk gilt.
   kioskUnlocked: boolean;
@@ -238,6 +240,7 @@ export interface AppState {
 
   // settings
   setSetting: <K extends keyof Settings>(key: K, val: Settings[K]) => void;
+  chooseMode: (mode: 'local' | 'verein') => void;
   setFKey: (i: number, val: string) => void;
   // Board-/Kiosk-Modus (gerätelokal). kioskUnlocked = laufzeit-Entsperrung (nicht persistiert).
   setDeviceSetting: (key: 'kiosk' | 'boardName' | 'nameOrder', val: boolean | string) => void;
@@ -410,6 +413,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   provider: createProvider('local'),
   pbMode: false,
+  needsModeChoice: false,
   kioskUnlocked: false,
   syncError: null,
   settings: DEFAULT_SETTINGS,
@@ -468,6 +472,7 @@ export const useStore = create<AppState>((set, get) => ({
   init() {
     const detected: 'local' | 'verein' = 'verein';
     const savedSettings = read<Partial<Settings> | null>(LS.settings, null);
+    const firstRun = !savedSettings; // frisches Gerät (noch nichts gespeichert) → Lokal/Verein-Auswahl zeigen
     const settings: Settings = { ...DEFAULT_SETTINGS, ...(savedSettings || {}) };
     // migrate older saves that only had doubleOut
     if (savedSettings && savedSettings.outMode === undefined) settings.outMode = settings.doubleOut === false ? 'single' : 'double';
@@ -493,7 +498,10 @@ export const useStore = create<AppState>((set, get) => ({
     // shortcuts must be Strg+Alt+<letter/digit> — reset any legacy/invalid value
     // Kürzel = Alt + Buchstabe/Ziffer (optional Strg). Standard Alt+N / Alt+5 / Alt+3; alte Strg+Alt-Standards migrieren.
     normalizeShortcuts(settings);
-    if (!savedSettings || savedSettings.appModeManual !== true) settings.appMode = detected;
+    // Erst-Start: neutral im Local-Mode hochfahren und den Auswahl-Screen zeigen (s. needsModeChoice).
+    // Bestehende Geräte ohne explizite Wahl behalten ihr bisheriges Verhalten (detected).
+    if (firstRun) settings.appMode = 'local';
+    else if (savedSettings.appModeManual !== true) settings.appMode = detected;
     settings.appModeDetected = detected;
 
     // PocketBase-URL ist GERÄTE-LOKAL (eigener Key, nicht serverseitig) — jeder Rechner/Verein
@@ -522,7 +530,7 @@ export const useStore = create<AppState>((set, get) => ({
       const restored = provider.currentUser();
       if (restored && !restored.active) { void provider.logout(); }
       const session = restored && restored.active ? restored.id : null;
-      set({ settings, provider, pbMode: true, session });
+      set({ settings, provider, pbMode: true, session, needsModeChoice: firstRun });
       void applySnapshot(get, set);
       // Realtime: bei serverseitigen Änderungen neu laden (entprellt) → mehrere Geräte bleiben synchron.
       provider.subscribe(() => scheduleReload(get, set));
@@ -564,7 +572,7 @@ export const useStore = create<AppState>((set, get) => ({
     if (mig.mc) { matches = mig.matches; write(LS.matches, matches); }
     const seasonSnapshots = read<SeasonSnapshot[]>(LS.seasonSnapshots, []);
 
-    set({ settings, provider, pbMode: false, players, teams, accounts, leagues, events, matches, seasons, seasonSnapshots, activeSeasonId, viewSeasonId: activeSeasonId, session, trainingPlays });
+    set({ settings, provider, pbMode: false, players, teams, accounts, leagues, events, matches, seasons, seasonSnapshots, activeSeasonId, viewSeasonId: activeSeasonId, session, trainingPlays, needsModeChoice: firstRun });
   },
 
   reloadFromProvider() { void applySnapshot(get, set); },
@@ -754,6 +762,13 @@ export const useStore = create<AppState>((set, get) => ({
       if (key === 'appMode' && val === 'local' && ['leagues', 'teams', 'users'].includes(st.screen)) patch.screen = 'dashboard';
       return patch;
     });
+  },
+  chooseMode(mode) {
+    // Erst-Start-Wahl festschreiben: setSetting setzt appModeManual=true und persistiert (Local-Mode → LS.settings).
+    get().setSetting('appMode', mode);
+    set({ needsModeChoice: false });
+    // Vereinsmodus braucht den Provider-/Auth-Aufbau aus init() → einmalig neu laden. Lokal ist schon aktiv.
+    if (mode === 'verein') location.reload();
   },
   setFKey(i, val) {
     set((st) => {

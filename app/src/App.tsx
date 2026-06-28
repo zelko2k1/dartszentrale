@@ -6,6 +6,7 @@ import { comboFromEvent } from './lib/shortcut';
 import { Logo } from './lib/icons';
 import { Sidebar } from './layout/Sidebar';
 import { Login } from './screens/Login';
+import { ModePicker } from './screens/ModePicker';
 import { Dashboard } from './screens/Dashboard';
 import { Leagues } from './screens/Leagues';
 import { Teams } from './screens/Teams';
@@ -207,7 +208,9 @@ export default function App() {
         } as React.CSSProperties),
       }}
     >
-      {needsLogin ? (
+      {s.needsModeChoice ? (
+        <ModePicker />
+      ) : needsLogin ? (
         <Login />
       ) : kioskLocked ? (
         isCounter ? (
