@@ -48,22 +48,10 @@ export function greeting(date: Date = new Date()): string {
   return 'Gute Nacht';
 }
 
-/** Datums-Badge: { mon: "JUN", day: "24", wd: "Mi" } */
-export function dateBadge(isoStr: string): { mon: string; day: string; wd: string } {
-  const d = parseIso(isoStr);
-  return { mon: MON_SHORT[d.getMonth()].toUpperCase(), day: String(d.getDate()), wd: WD_SHORT[d.getDay()] };
-}
-
 /** "Sa., 27. Juni" */
 export function shortLong(isoStr: string): string {
   const d = parseIso(isoStr);
   return `${WD_SHORT[d.getDay()]}., ${d.getDate()}. ${MON_LONG[d.getMonth()]}`;
-}
-
-/** "FR 19. SEP" — Aufstellungs-Kopf */
-export function lineupDate(isoStr: string): string {
-  const d = parseIso(isoStr);
-  return `${WD_SHORT[d.getDay()].toUpperCase()} ${d.getDate()}. ${MON_SHORT[d.getMonth()].toUpperCase()}`;
 }
 
 export { WD_SHORT, WD_LONG, MON_SHORT, MON_LONG };

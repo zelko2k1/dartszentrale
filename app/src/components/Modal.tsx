@@ -31,29 +31,6 @@ export function FieldLabel({ children, note }: { children: ReactNode; note?: Rea
   );
 }
 
-export function TextInput({ value, onChange, placeholder, maxLength, mono, style, type = 'text', inputMode }: {
-  value: string; onChange: (v: string) => void; placeholder?: string; maxLength?: number;
-  mono?: boolean; style?: CSSProperties; type?: string; inputMode?: 'numeric' | 'text';
-}) {
-  return (
-    <input
-      className="dh-input"
-      type={type}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      maxLength={maxLength}
-      inputMode={inputMode}
-      style={{
-        width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)',
-        borderRadius: 11, padding: '12px 14px', fontSize: 15, color: 'var(--text)',
-        fontFamily: mono ? 'var(--font-num)' : 'inherit', textTransform: mono ? 'uppercase' : 'none',
-        ...style,
-      }}
-    />
-  );
-}
-
 export function ModalFooter({ onDelete, onCancel, onSave, saveDisabled, saveLabel = 'Speichern' }: {
   onDelete?: () => void; onCancel?: () => void; onSave?: () => void; saveDisabled?: boolean; saveLabel?: string;
 }) {

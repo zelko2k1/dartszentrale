@@ -206,7 +206,7 @@ export interface Settings {
   accent: string;
   mode: 'dark' | 'light';
   theme: 'midnight' | 'charcoal' | 'slate';
-  font: 'Inter' | 'Archivo' | 'Rubik' | 'Oswald';
+  font: 'Inter' | 'Archivo' | 'Rubik' | 'Oswald' | 'Space Grotesk';
   scoreScale: number;
   scoreArea: number;
   statsSize: number;

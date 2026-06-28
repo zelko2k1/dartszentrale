@@ -110,27 +110,6 @@ export function dashboardMetrics(players: Player[], teams: Team[], leagues: Leag
   return { playerCount, teamCount, teamAvg, tablePos, leagueName };
 }
 
-// ── "Nächster Spieltag": nächste offene Begegnung der eigenen Mannschaft ──
-export interface NextMatchDay {
-  date: string; home: LeagueTeam; away: LeagueTeam; ownIsHome: boolean; leagueName: string;
-}
-export function nextMatchDay(leagues: League[]): NextMatchDay | null {
-  for (const lg of leagues) {
-    const own = lg.teams.find((t) => t.own);
-    if (!own) continue;
-    const open = lg.fixtures
-      .filter((f) => !f.played && (f.homeId === own.id || f.awayId === own.id))
-      .sort((a, b) => a.date.localeCompare(b.date));
-    if (open.length) {
-      const f = open[0];
-      const home = lg.teams.find((t) => t.id === f.homeId)!;
-      const away = lg.teams.find((t) => t.id === f.awayId)!;
-      return { date: f.date, home, away, ownIsHome: f.homeId === own.id, leagueName: lg.name };
-    }
-  }
-  return null;
-}
-
 // ── "Letzte Ergebnisse": gespielte Begegnungen der eigenen Mannschaft ──
 export interface ResultRow { opp: string; leagueName: string; hs: number; as: number; outcome: 'S' | 'U' | 'N'; date: string; }
 export function recentResults(leagues: League[], limit = 4): ResultRow[] {

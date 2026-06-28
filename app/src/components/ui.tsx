@@ -45,26 +45,6 @@ export function SecondaryButton({ children, onClick, style, title, ghost }: {
   );
 }
 
-// ── Toggle (44×24 Pille) ──
-export function Toggle({ on, onClick, accent = '#19A463', size = 'md' }: {
-  on: boolean; onClick?: () => void; accent?: string; size?: 'md' | 'lg';
-}) {
-  const w = size === 'lg' ? 46 : 44, h = size === 'lg' ? 26 : 24, knob = size === 'lg' ? 22 : 20;
-  return (
-    <button onClick={onClick} style={{
-      width: w, height: h, borderRadius: 999, background: on ? accent : 'var(--btn)',
-      border: `1px solid ${on ? accent : 'var(--border-2)'}`, position: 'relative', cursor: 'pointer',
-      transition: 'background .15s ease, border-color .15s ease', flexShrink: 0, padding: 0,
-    }}>
-      <span style={{
-        position: 'absolute', top: 1, left: 1, width: knob, height: knob, borderRadius: '50%',
-        background: on ? accentFg(accent) : 'var(--text-4)', transition: 'transform .15s ease',
-        transform: on ? `translateX(${w - knob - 2}px)` : 'translateX(0)',
-      }} />
-    </button>
-  );
-}
-
 // ── Karte ──
 export function Card({ children, style, hover = false, onClick }: {
   children: ReactNode; style?: CSSProperties; hover?: boolean; onClick?: () => void;

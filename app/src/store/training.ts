@@ -246,8 +246,7 @@ export function applyTurn(g: TrainGame, input: TurnInput): TrainGame {
     }
     case 'killer': {
       if (input.kind !== 'killer') break;
-      const lives = data.lives!; const isK = data.isKiller!; const num = data.num!;
-      const byNum: Record<number, string> = {}; g.players.forEach((p) => { byNum[num[p.id]] = p.id; });
+      const lives = data.lives!; const isK = data.isKiller!;
       const events: string[] = [];
       for (const target of input.darts) {
         if (target == null) continue;
