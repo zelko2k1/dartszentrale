@@ -119,7 +119,7 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
     hs: colIndex(headers, ['toreheim', 'heimlegs', 'heimtore', 'heimpunkte', 'hs', 'heimscore']),
     as: colIndex(headers, ['toregast', 'gastlegs', 'gasttore', 'gastpunkte', 'as', 'gastscore']),
     time: colIndex(headers, ['uhrzeit', 'zeit', 'time', 'anwurf', 'beginn']),
-    loc: colIndex(headers, ['ort', 'spielort', 'location', 'halle', 'spielstaette', 'spielstätte']),
+    loc: colIndex(headers, ['ort', 'spielort', 'location', 'halle', 'spielstaette', 'spielstätte', 'spiellokalname', 'spiellokal']),
   };
 
   const leagueCol = idx.staffel >= 0 ? idx.staffel : (idx.liga >= 0 ? idx.liga : idx.meisterschaft);
