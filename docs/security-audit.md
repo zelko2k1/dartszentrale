@@ -53,10 +53,11 @@ ergänzt. **Sobald PB ausschließlich hinter dem HTTPS-Proxy läuft:** Mapping e
 
 ### 🟠 Hoch
 
-**#4 — Match-Ergebnisse fälschbar ⏳ (braucht Migration)**
-`matches.createRule = role != "viewer"` ohne Owner-Bindung → jeder Spieler/Kapitän kann beliebige
-Match-Datensätze einfügen (fließen in Tabellen/Snapshots), Korrektur nur Admin. **Fix:** `createdBy`-
-Feld + Create an Teilnehmer binden, Update für Ersteller erlauben.
+**#4 — Match-Ergebnisse fälschbar ✅ (behoben)**
+`matches.createRule` zwingt jetzt `@request.body.createdBy = @request.auth.id` (Ersteller-Stempel),
+`updateRule` erlaubt Admin ODER den Ersteller. Neues Feld `createdBy`; die App stempelt es beim
+Speichern. Gesetzt in Migration `1782600000_harden_authz` UND `provision.mjs`. Gegen PB 0.39.4 getestet:
+Forge mit fremder `createdBy` abgelehnt, eigener Eintrag erlaubt.
 
 ### 🟡 Mittel
 
@@ -65,9 +66,11 @@ Login-Panel ist Brute-Force-Ziel; CORS-Allowlist ist ein manueller UI-Schritt. *
 IP/VPN/Proxy-Auth einschränken, PB-Rate-Limit + Superuser-MFA aktivieren, CORS-Allowlist verpflichtend
 setzen (geht nicht via Compose → Deploy-Gate).
 
-**#6 — Kapitän-Rolle ist global ⏳ (braucht Migration)**
-Nicht team-gebunden → Kapitän kann fremde Teams/Spieler/Ligen ändern/löschen und ganze Saisons löschen.
-**Fix:** Schreibrechte auf eigenes Team scopen; `seasons` create/delete → admin-only.
+**#6 — Kapitän-Rolle ist global ✅ teilweise behoben (Rest bewusst offen)**
+`seasons`/`leagues` anlegen+löschen → nur Admin; `teams` löschen → nur Admin (Migration + provision,
+getestet: Spieler/Kapitän kann keine Saison anlegen / kein Team löschen). **Bewusst offen:** das
+*Editieren* einer fremden Mannschaft (Roster) durch einen Kapitän — sauberes Scoping bräuchte
+`team.captainId == auth.playerId` (User- vs. Player-ID, JSON-Felder) und ist fragil; separat zu lösen.
 
 **#7 — Hardcodierte Default-Superuser-Creds ✅ (gehärtet)**
 Skripte hatten `admin@dartshub.local` / `dartshub-admin-2026` als Default. Der `_security-guard.mjs`
@@ -113,11 +116,12 @@ aktivieren (#9). Kein XSS-Sink im Code vorhanden.
 - [ ] **#3** PB nicht als Klartext-HTTP im Internet: Port-Mapping entfernt/loopback + Firewall, oder bewusst nur LAN.
 - [ ] **#5** PB-Admin-Konsole `/_/` abgeschirmt (IP/VPN), Superuser-MFA + Rate-Limit an, **CORS-Allowlist gesetzt**.
 - [ ] **#9** CSP in `nginx.conf` auf die echte PB-Domain angepasst, einkommentiert und getestet.
-- [ ] **#4** (empfohlen) Match-Create an Owner/Teilnehmer gebunden (Migration).
-- [ ] **#6** (empfohlen) Kapitän-Rechte team-gescoped; `seasons` admin-only (Migration).
+- [x] **#4** Match-Create an Ersteller gebunden (`createdBy`-Stempel) — erledigt.
+- [x] **#6** `seasons`/`leagues`/`teams` anlegen/löschen admin-only — erledigt (Rest: Kapitän-Roster-Editing offen).
 - [ ] HTTPS erzwungen (Proxy/Cloudflare), HSTS aktiv.
 - [ ] Starke, einzigartige Passwörter für alle Konten (Passwortmanager).
 
 ## Noch offen (separate Arbeitspakete)
-- **#4 + #6**: Server-Regel-Fixes via neue Migrations (Sorgfalt nötig — Verhalten der App testen).
+- **#4 + #6 erledigt** (Migration `1782600000_harden_authz` + provision, getestet). Rest von #6:
+  Kapitän-Roster-Editing einer *fremden* Mannschaft sauber scopen (`captainId == auth.playerId`).
 - Optional: 2FA für Admins (siehe `docs/plan-2fa.md`).
