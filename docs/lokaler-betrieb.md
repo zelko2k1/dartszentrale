@@ -10,11 +10,11 @@ Alle Pfade relativ zum Projekt `/mnt/Data/claudebase/dartshub`.
 ## Auf einen anderen Rechner mitnehmen
 
 **Empfohlen:** das Repo per `git clone` holen → bringt allen Code + Skripte
-(`provision.mjs`, `seed.mjs`, `season-*.mjs`, `pb_hooks/` …) automatisch mit.
+(`provision.mjs`, `demo-seed.mjs`, `season-*.mjs`, `pb_hooks/` …) automatisch mit.
 
 **Zusätzlich manuell** mitnehmen (diese sind **gitignored**, kommen nicht per git):
 - `docs/lokaler-betrieb.md` — dieses Runbook (⚠️ unbedingt)
-- `pocketbase/seed-dsv-fuerth.mjs` — Vereins-Import-Skript (falls gewünscht)
+- `pocketbase/demo-seed-dsv-fuerth.mjs` — Vereins-Import-Skript (falls gewünscht)
 - *(optional)* `pocketbase/pb_data/` — die echte DB; nur wenn du den exakten Datenstand
   übernehmen willst statt neu zu seeden (portables SQLite, OS-unabhängig)
 
@@ -29,7 +29,7 @@ Alle Pfade relativ zum Projekt `/mnt/Data/claudebase/dartshub`.
 **Auf den Stick kopieren:**
 - `app/` — komplett, **aber ohne** `app/node_modules/`
 - `pocketbase/` mit:
-  - **allen `.mjs`-Skripten** (`provision.mjs`, `seed.mjs`, `seed-dsv-fuerth.mjs`,
+  - **allen `.mjs`-Skripten** (`provision.mjs`, `demo-seed.mjs`, `demo-seed-dsv-fuerth.mjs`,
     `reset-password.mjs`, `add-*.mjs`, `season-*.mjs`) ← werden für Schema + Daten gebraucht!
   - **`pb_hooks/`** (beide `.pb.js` — Passwort-Reset & Board-Schutz)
   - **nicht** die Binärdatei (pro OS neu laden), **nicht** `pb_data/` (entsteht neu)
@@ -107,7 +107,7 @@ cd C:\dartshub\pocketbase
 **6) Schema + Daten** (zweites Terminal, im `pocketbase/`-Ordner — Befehle gleich auf beiden OS)
 ```bash
 node provision.mjs          # Schema + App-Admin (chef@dartshub.local / dartshub123)
-node seed-dsv-fuerth.mjs    # Beispieldaten DSV Fürth 86
+node demo-seed-dsv-fuerth.mjs    # Beispieldaten DSV Fürth 86
 ```
 
 **7) App starten** (eigenes Terminal, aus dem Projektordner — gleich auf beiden OS)
@@ -298,13 +298,13 @@ falls sich das Schema geändert hat.
 
 ### 3. Test-Daten einspielen
 ```bash
-node seed.mjs                 # Beispiel-Verein: 10 Spieler, 2 Teams, Liga + Spielplan,
+node demo-seed.mjs                 # Beispiel-Verein: 10 Spieler, 2 Teams, Liga + Spielplan,
                               # Termine, 6 Konten, 3 Matches, aktive Saison 2025/26
 # optional:
-node add-players.mjs          # +70 zusätzliche Spieler (Kader/Last-Test)
+node demo-add-players.mjs          # +70 zusätzliche Spieler (Kader/Last-Test)
 node add-board-account.mjs    # rechtearmes Board-Konto für Kiosk-Tests
 ```
-> `seed.mjs` **leert** die Inhalts-Collections vorher und legt frisch an
+> `demo-seed.mjs` **leert** die Inhalts-Collections vorher und legt frisch an
 > (App-Admin bleibt). Ideal zum Zurücksetzen auf einen sauberen Stand.
 
 ### 4. App auf den Server zeigen lassen — zwei Wege
@@ -383,7 +383,7 @@ USER_EMAIL=chef@dartshub.local NEW_PW="abc12345" node reset-password.mjs   # mit
 node season-import.mjs dartshub-saison-2024-25.json  # mit Datei-Argument
 
 # gegen eine Cloud-Instanz statt lokal:
-PB_URL=https://db.deinverein.de PB_SU_EMAIL=admin@… PB_SU_PASS=… node seed.mjs
+PB_URL=https://db.deinverein.de PB_SU_EMAIL=admin@… PB_SU_PASS=… node demo-seed.mjs
 ```
 
 `VAR=wert node skript.mjs` setzt eine Umgebungsvariable nur für diesen einen Aufruf.
@@ -392,9 +392,9 @@ Mehrere einfach hintereinander (durch Leerzeichen getrennt) voranstellen.
 | Skript | Zweck | Aufruf |
 |--------|-------|--------|
 | **provision.mjs** | **Schema-Setup.** Legt alle Collections an/aktualisiert sie (players, teams, leagues, events, matches, users, seasons, season_snapshots …), setzt die API-Rechte und den ersten App-Admin. Macht außerdem den Saison-Backfill (aktive Saison + `seasonId`/`playerId` nachziehen). **Pflicht nach jedem Schema-Update / `git pull`.** | `node provision.mjs` |
-| **seed.mjs** | **Test-Daten (generischer Beispielverein).** Leert die Inhalts-Collections und legt neu an: 10 Spieler, 2 Mannschaften, Liga mit Spielplan, Termine, 6 Konten, 3 gespielte Matches, aktive Saison 2025/26. App-Admin bleibt. Ideal zum Zurücksetzen. | `node seed.mjs` |
-| **seed-dsv-fuerth.mjs** | **Import „DSV Fürth 86".** Frische DB: Saison 2026/27 (Sept–Juli), 20 Mitglieder (als Spieler + Konten), 2 Mannschaften (je 8 + Kapitän), 2 Ligen à 10 Teams mit vollständigem Hin-/Rückrunden-Spielplan (ohne Ergebnisse, Termine über die Saison verteilt). | `node seed-dsv-fuerth.mjs` |
-| **add-players.mjs** | Legt **70 zusätzliche Spieler** an (additiv, löscht nichts). Zum Befüllen großer Kader / Last-Test der Listen. | `COUNT=70 node add-players.mjs` |
+| **demo-seed.mjs** | **Test-Daten (generischer Beispielverein).** Leert die Inhalts-Collections und legt neu an: 10 Spieler, 2 Mannschaften, Liga mit Spielplan, Termine, 6 Konten, 3 gespielte Matches, aktive Saison 2025/26. App-Admin bleibt. Ideal zum Zurücksetzen. | `node demo-seed.mjs` |
+| **demo-seed-dsv-fuerth.mjs** | **Import „DSV Fürth 86".** Frische DB: Saison 2026/27 (Sept–Juli), 20 Mitglieder (als Spieler + Konten), 2 Mannschaften (je 8 + Kapitän), 2 Ligen à 10 Teams mit vollständigem Hin-/Rückrunden-Spielplan (ohne Ergebnisse, Termine über die Saison verteilt). | `node demo-seed-dsv-fuerth.mjs` |
+| **demo-add-players.mjs** | Legt **70 zusätzliche Spieler** an (additiv, löscht nichts). Zum Befüllen großer Kader / Last-Test der Listen. | `COUNT=70 node demo-add-players.mjs` |
 | **add-board-account.mjs** | Legt ein **rechtearmes Board-Konto** (Rolle „board") für Kiosk-Rechner an (darf nur spielen, nichts verwalten). | `BOARD_EMAIL=board@… BOARD_PW=… node add-board-account.mjs` |
 | **reset-password.mjs** | **Passwort eines App-Kontos zurücksetzen** + Konto reaktivieren. Notfall, wenn man sich aus der App ausgesperrt hat (Superuser ist der Rettungsanker). | `USER_EMAIL=… NEW_PW=… node reset-password.mjs` |
 | **season-export.mjs** | **Saison als JSON-Bundle sichern** (Ligen, Teams, Termine, Spiele, Snapshot). Wegsicherung / Re-Import-Grundlage / Grafana-Feed. | `SEASON_NAME="2024/25" node season-export.mjs` |

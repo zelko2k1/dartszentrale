@@ -1,5 +1,6 @@
 # ============================================================================
 # DartsHub - Update ohne git (Windows / PowerShell)
+# [ PRODUKTIV / OPS ] - fuer den Produktivbetrieb gedacht
 # ----------------------------------------------------------------------------
 # Uebernimmt eine neue App-Version von einem Stick/Ordner in den Projektordner,
 # installiert Abhaengigkeiten und (optional) baut das Produktions-Bundle.

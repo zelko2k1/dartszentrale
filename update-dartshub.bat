@@ -1,6 +1,7 @@
 @echo off
 chcp 65001 >nul
 title DartsHub aktualisieren
+REM ====== [ PRODUKTIV / OPS ] - Windows-Update (Board/Kiosk) ======
 cd /d "%~dp0app"
 
 where node >nul 2>nul

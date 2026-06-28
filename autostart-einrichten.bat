@@ -1,6 +1,7 @@
 @echo off
 chcp 65001 >nul
 title DartsHub Autostart einrichten
+REM ====== [ PRODUKTIV / OPS ] - Windows-Einrichtung (Board/Kiosk) ======
 
 echo Richtet DartsHub so ein, dass es beim Anmelden automatisch startet.
 echo.

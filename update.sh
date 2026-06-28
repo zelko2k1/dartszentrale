@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================================
 # DartsHub – Update ohne git (Linux / Raspberry Pi / Git Bash)
+# [ PRODUKTIV / OPS ] — für den Produktivbetrieb gedacht
 # ----------------------------------------------------------------------------
 # Übernimmt eine neue App-Version von einem Stick/Ordner in den Projektordner,
 # installiert Abhängigkeiten und (optional) baut das Produktions-Bundle.

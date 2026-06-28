@@ -1,3 +1,4 @@
+// ═══════ [ PRODUKTIV / OPS ] — für den Produktivbetrieb gedacht ═══════
 // Legt ein dediziertes, rechtearmes Board-Konto an (Rolle "board") für die Kiosk-Rechner.
 // Damit melden sich die ~8 Board-PCs an – getrennt von echten Spieler-/Admin-Konten.
 // Rolle board = darf nur Matches anlegen + lesen, nichts verwalten (siehe API-Rules + pb_hooks).

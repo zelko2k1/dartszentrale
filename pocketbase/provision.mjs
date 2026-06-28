@@ -1,3 +1,4 @@
+// ═══════ [ PRODUKTIV / OPS ] — für den Produktivbetrieb gedacht (Schema-Setup) ═══════
 // Provisioniert das DartsHub-Vereinsmodus-Schema in einer lokalen PocketBase-Instanz.
 // Idempotent: mehrfaches Ausführen aktualisiert vorhandene Collections, statt zu duplizieren.
 // Aufruf:  node provision.mjs

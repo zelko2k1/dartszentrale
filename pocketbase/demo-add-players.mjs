@@ -1,6 +1,7 @@
+// ═══════ [ NUR TEST / DEMO ] — NICHT gegen die Produktiv-DB ausführen! ═══════
 // Legt 70 zusaetzliche Spieler in der lokalen PocketBase an (additiv, loescht nichts).
 // Zum Befuellen von Kadern und Testen des Ligamodus.
-// Aufruf:  node add-players.mjs
+// Aufruf:  node demo-add-players.mjs
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
 import { assertSafePassword } from './_security-guard.mjs';
 

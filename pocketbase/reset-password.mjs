@@ -1,3 +1,4 @@
+// ═══════ [ PRODUKTIV / OPS ] — Rettungswerkzeug für den Produktivbetrieb ═══════
 // Setzt das Passwort eines App-Kontos (Collection "users") per Superuser-Recht zurück.
 // Rettungsanker, falls sich der (einzige) App-Admin ausgesperrt hat — der Superuser ist davon unabhängig.
 // Reaktiviert das Konto zugleich (active=true), damit ein deaktiviertes Admin-Konto nicht aussperrt.

@@ -1,3 +1,4 @@
+// ═══════ [ PRODUKTIV / OPS ] — für den Produktivbetrieb gedacht ═══════
 // Liest ein Saison-Bundle (von season-export.mjs / In-App-Export) zurück in die DB.
 // Legt fehlende Datensätze (nach id) neu an und setzt offloaded=false. Idempotent (Vorhandenes wird übersprungen).
 //

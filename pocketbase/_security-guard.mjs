@@ -1,3 +1,4 @@
+// ═══════ [ INTERNER HELFER ] — wird importiert, nicht direkt ausgeführt ═══════
 // Gemeinsamer Sicherheits-Guard für die Provisioning-/Seed-Skripte.
 //
 // Zweck: verhindern, dass bekannte Default-Passwörter aus diesem Repo gegen ein

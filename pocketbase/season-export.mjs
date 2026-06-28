@@ -1,3 +1,4 @@
+// ═══════ [ PRODUKTIV / OPS ] — für den Produktivbetrieb gedacht ═══════
 // Exportiert eine Saison als JSON-Bundle (Wegsicherung / Re-Import-Grundlage / Grafana-Feed).
 // Aufruf:  SEASON_NAME="2025/26" node season-export.mjs        (oder SEASON_ID=...)
 // Cloud:   PB_URL=https://db.deinverein.de PB_SU_EMAIL=… PB_SU_PASS=… SEASON_NAME="2025/26" node season-export.mjs

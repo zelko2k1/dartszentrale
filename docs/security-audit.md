@@ -37,7 +37,7 @@ committed** — verifiziert). Trotzdem: **Passwort jetzt rotieren** und den Lite
 entfernen (per `read -s`-Prompt oder Env außerhalb des Repos). Es wurde im Review sichtbar.
 
 **#2 — Seed/Provision nie gegen die Produktiv-DB ✅ (gehärtet) + Betriebsregel ⏳**
-`provision.mjs`/`seed.mjs`/`seed-dsv-fuerth.mjs` legen Konten mit dem Default `dartshub123` an (inkl.
+`provision.mjs`/`demo-seed.mjs`/`demo-seed-dsv-fuerth.mjs` legen Konten mit dem Default `dartshub123` an (inkl.
 `chef@dartshub.local` als **admin**). Ein reiner Coolify-Deploy tut das nicht (nur Migrations+Hooks).
 **Gehärtet:** neuer `_security-guard.mjs` — die Skripte **brechen ab**, wenn ein bekanntes
 Default-Passwort gegen ein **nicht-lokales** Ziel verwendet würde (localhost bleibt bequem). Member-
@@ -100,8 +100,8 @@ aktivieren (#9). Kein XSS-Sink im Code vorhanden.
 
 ## In diesem Commit umgesetzt (Quick-Wins)
 
-- `pocketbase/_security-guard.mjs` (neu) + eingebunden in `provision.mjs`, `seed.mjs`,
-  `seed-dsv-fuerth.mjs`, `add-board-account.mjs` → **Abbruch bei Default-Passwörtern gegen
+- `pocketbase/_security-guard.mjs` (neu) + eingebunden in `provision.mjs`, `demo-seed.mjs`,
+  `demo-seed-dsv-fuerth.mjs`, `add-board-account.mjs` → **Abbruch bei Default-Passwörtern gegen
   nicht-lokale Ziele** (#2, #7, #8). `MEMBER_PW` nun env-überschreibbar.
 - `app/nginx.conf` → Security-Header + `server_tokens off` + CSP-Vorlage (#9, #13).
 - `pocketbase/docker-compose.yaml` → Sicherheits-Kommentar zum Port-Mapping (#3, nicht-brechend).

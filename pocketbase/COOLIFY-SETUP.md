@@ -40,8 +40,8 @@ Zwei A-Records auf die Server-IP zeigen lassen:
    - Nach Schema-Änderungen lokal die neuen Migrations committen → beim nächsten Coolify-Redeploy
      werden sie automatisch angewandt.
 6. **Ersten App-Admin** anlegen: Collection `users` → Record hinzufügen, `role = admin`, E-Mail + Passwort.
-   Damit meldest du dich später in der App an. (Alternativ per Skript: `seed.mjs` legt einen Test-Admin
-   + Beispieldaten an, `seed-dsv-fuerth.mjs` einen kompletten Vereins-Testdatensatz.)
+   Damit meldest du dich später in der App an. (Alternativ per Skript: `demo-seed.mjs` legt einen Test-Admin
+   + Beispieldaten an, `demo-seed-dsv-fuerth.mjs` einen kompletten Vereins-Testdatensatz.)
 
 ## 4. Frontend deployen
 1. In Coolify: **New Resource → aus Git-Repository** (dieses Repo, Pfad `app/`).

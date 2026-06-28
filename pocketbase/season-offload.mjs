@@ -1,3 +1,4 @@
+// ═══════ [ PRODUKTIV / OPS ] — für den Produktivbetrieb gedacht ═══════
 // Lagert eine ARCHIVIERTE Saison aus: löscht ihre Spiele (matches) aus der DB und setzt offloaded=true.
 // Gibt Plattenplatz frei; Tabellen/Kader/Termine bleiben, Einzelstatistik kommt danach aus dem Snapshot.
 // WICHTIG: Vorher unbedingt `node season-export.mjs` ausführen (Wegsicherung)! Per Bundle wieder einlesbar.

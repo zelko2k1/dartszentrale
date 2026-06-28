@@ -1,7 +1,8 @@
+// ═══════ [ NUR TEST / DEMO ] — NICHT gegen die Produktiv-DB ausführen! ═══════
 // Befüllt die lokale PocketBase mit realistischen DartsHub-Beispieldaten (Vereinsmodus).
 // Idempotent: leert die Inhalts-Collections vorher und legt frisch an. Der App-Admin
 // (chef@dartshub.local) bleibt erhalten; weitere Benutzer werden neu erzeugt.
-// Aufruf:  node seed.mjs
+// Aufruf:  node demo-seed.mjs
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
 import { assertSafePassword } from './_security-guard.mjs';
 
