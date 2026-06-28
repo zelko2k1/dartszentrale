@@ -195,7 +195,7 @@ export function CounterSetup() {
             </select>
           ))}
           {row('Auscheck-Modus', 'Single = beliebiges Feld · Double = Doppel/Bull · Master = Doppel oder Triple', <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>{seg(su.outMode === 'single', 'Single Out', () => s.setSetup('outMode', 'single'))}{seg(su.outMode === 'double', 'Double Out', () => s.setSetup('outMode', 'double'))}{seg(su.outMode === 'master', 'Master Out', () => s.setSetup('outMode', 'master'))}</div>)}
-          {row('Double In', 'Leg muss mit einem Doppel eröffnet werden', toggle(su.doubleIn, () => s.setSetup('doubleIn', !su.doubleIn)))}
+          {row('Double In', 'Nur Hinweis — bei reiner Punkteingabe nicht automatisch geprüft', toggle(su.doubleIn, () => s.setSetup('doubleIn', !su.doubleIn)))}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
             <button onClick={closeType} className="dh-primary" style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 22px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Übernehmen</button>
           </div>

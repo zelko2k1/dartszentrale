@@ -154,14 +154,14 @@ export function Counter() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
                     <Avatar photo={p.photo} short={p.short} avi={p.av} size={40} />
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 17, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.15 }}>{p.name}</div>
+                      <div style={{ fontSize: Math.round(17 * cfg.headerSize / 100), fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.15 }}>{p.name}</div>
                       <div style={{ fontSize: 11, color: accentInk, fontWeight: 700, height: 14, letterSpacing: '.04em' }}>{turnLabel}</div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                    {cfg.unit === 'sets' && <div style={{ fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: legInk, background: `color-mix(in srgb, ${legInk} 14%, transparent)`, padding: '3px 9px', borderRadius: 999 }}>{prog.setsWon[p.id] || 0}</div>}
+                    {cfg.unit === 'sets' && <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(15 * cfg.legSize / 100), fontWeight: 800, color: legInk, background: `color-mix(in srgb, ${legInk} 14%, transparent)`, padding: '3px 9px', borderRadius: 999 }}>{prog.setsWon[p.id] || 0}</div>}
                     <div style={{ display: 'flex', gap: 5 }}>
-                      {pips.map((on, k) => <div key={k} style={{ width: 9, height: 9, borderRadius: '50%', background: on ? legInk : 'transparent', border: `2px solid ${on ? legInk : 'var(--border-strong)'}` }} />)}
+                      {pips.map((on, k) => <div key={k} style={{ width: Math.round(9 * cfg.legSize / 100), height: Math.round(9 * cfg.legSize / 100), borderRadius: '50%', background: on ? legInk : 'transparent', border: `2px solid ${on ? legInk : 'var(--border-strong)'}` }} />)}
                     </div>
                   </div>
                 </div>
@@ -219,8 +219,8 @@ export function Counter() {
                       <div style={{ flexShrink: 0, display: 'flex', gap: 1, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-2)', background: 'var(--border)' }}>
                         {[['Ø 3-Dart', average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['Letzter', lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
                           <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '8px 3px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, textAlign: 'center', minWidth: 0 }}>
-                            <div style={{ fontSize: 9, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
-                            <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, lineHeight: 1 }}>{val}</div>
+                            <div style={{ fontSize: Math.round(9 * cfg.statsSize / 100), color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
+                            <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(13 * cfg.statsSize / 100), fontWeight: 700, lineHeight: 1 }}>{val}</div>
                           </div>
                         ))}
                       </div>
