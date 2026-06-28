@@ -13,7 +13,7 @@ export function LineupModal() {
 
   const roster: Player[] = useMemo(() => {
     if (!m) return [];
-    const list = m.rosterIds.map((id) => s.players.find((p) => p.id === id)).filter((p): p is Player => !!p);
+    const list = m.rosterIds.map((id) => s.players.find((p) => p.id === id)).filter((p): p is Player => !!p && !p.locked);
     return list.sort((a, b) => compareName(nameParts(a.name), nameParts(b.name), order));
   }, [m, s.players, order]);
 

@@ -1243,8 +1243,9 @@ export const useStore = create<AppState>((set, get) => ({
     const opp = ownIsHome ? away : home;
     // Kader der eigenen Mannschaft über Namensabgleich; Fallback: alle Spieler.
     const team = st.teams.find((t) => norm(t.name) === norm(ownTeam.name));
-    let rosterIds = team ? team.memberIds.slice() : [];
-    if (rosterIds.length === 0) rosterIds = st.players.map((p) => p.id);
+    // Gesperrte Platzhalter (Spieler 1/2) nie in die Aufstellung übernehmen.
+    let rosterIds = team ? team.memberIds.filter((id) => !st.players.find((p) => p.id === id)?.locked) : [];
+    if (rosterIds.length === 0) rosterIds = st.players.filter((p) => !p.locked).map((p) => p.id);
     const ex = fx.lineup;
     let positions: LineupPosition[];
     if (ex?.positions?.length) {
@@ -1980,7 +1981,9 @@ async function applySnapshot(get: () => AppState, set: SetFn) {
     const viewSeasonId = (prevView && seasons.some((s) => s.id === prevView)) ? prevView : activeSeasonId;
     set({
       settings: merged,
-      players: withDefaultPlayers(snap.players), teams: snap.teams, accounts: snap.accounts,
+      // Vereinsmodus: nur echte Spieler aus PocketBase – KEINE Platzhalter „Spieler 1/2".
+      // (Im Lokalmodus bleiben die Platzhalter als Fallback erhalten, siehe init().)
+      players: snap.players, teams: snap.teams, accounts: snap.accounts,
       leagues: snap.leagues, events: snap.events, matches: snap.matches,
       seasons, seasonSnapshots: snap.seasonSnapshots || [], activeSeasonId, viewSeasonId,
       trainingPlays: snap.trainingPlays, syncError: null,
