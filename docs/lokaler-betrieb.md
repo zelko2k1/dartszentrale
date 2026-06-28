@@ -119,6 +119,40 @@ npm --prefix app run dev -- --port 5174 --strictPort   # Kiosk    → http://loc
 > Zum **Testen** reicht `npm install` + `npm run dev` — ein `npm run build` ist nur für die
 > Produktion (statisches `dist/`) nötig.
 
+### Updates einspielen (ohne git)
+
+Liegt eine neue Version vor (neuer Stick/Ordner mit frischem `app/` + `pocketbase/`), übernimmt das
+mitgelieferte **Update-Skript** alles in einem Rutsch: Code übernehmen → `npm install` → (optional)
+bauen. **`pb_data/` (deine Daten), `node_modules/`, `app/.env.local` und die PocketBase-Binärdatei
+bleiben unangetastet.**
+
+**Linux / Raspberry Pi / Git Bash** (im Projektordner ausführen, Stick als Quelle):
+```bash
+cd ~/dartshub
+./update.sh /media/usb            # Quelle = Stick (ohne Argument: /media/usb)
+./update.sh /media/usb --build    # zusätzlich app/dist bauen (nur wenn ihr dist/ ausliefert)
+```
+
+**Windows / PowerShell:**
+```powershell
+cd C:\dartshub
+.\update.ps1 -Source E:\          # Quelle = Stick
+.\update.ps1 -Source E:\ -Build   # zusätzlich app\dist bauen
+```
+
+Danach:
+1. **App-Terminal(s) neu starten** (`npm --prefix app run dev …`) — der Dev-Server übernimmt die
+   neuen Dateien sauber erst nach Neustart.
+2. Hat sich das **Schema** geändert, **PocketBase neu starten** (Migrations laufen beim Start
+   automatisch; bei Bedarf `node provision.mjs`).
+3. An den **Boards die Seite neu laden** (ggf. zweimal — der PWA-Cache hält die alte Version evtl.
+   noch einen Ladevorgang lang).
+
+> **Wichtig:** das **lokale** `update.sh`/`update.ps1` im Projektordner starten (nicht die Kopie auf
+> dem Stick) — es nimmt seinen eigenen Ort als Ziel. Wer nicht zwischen geänderten Dateien
+> unterscheiden will: einfach den ganzen `app/`-Ordner vom Stick (ohne `node_modules/`) mitnehmen —
+> das Skript ersetzt `src/`+`public/` ohnehin komplett.
+
 ### Wichtigste Git-Befehle
 
 Repo ist **privat** → auf neuem Rechner zuerst anmelden, sonst geht kein clone/push.
