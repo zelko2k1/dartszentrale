@@ -46,7 +46,7 @@ Leg dir diese Dinge **vorher** zurecht — du brauchst sie während der Einricht
 | **SSH-Zugang zum Server** | SSH-Key oder root-Passwort (bei Hetzner beim Erstellen festgelegt) |
 | **Domain + DNS-Zugang** | Login bei deinem Domain-Anbieter |
 | **Zwei Subdomains** | `app.deinedomain.de` (App) + `db.deinedomain.de` (Datenbank) |
-| **GitHub-Repo-URL** | `https://github.com/zelko2k1/dartscounter` (hast du ✔) |
+| **GitHub-Repo-URL** | `https://github.com/zelko2k1/dartshub` (hast du ✔) |
 | **PocketBase-Admin-Login** | E-Mail + sicheres Passwort, das du dir **jetzt ausdenkst** |
 | **Erster App-Admin-Login** | E-Mail + Passwort für deinen Login *in der App* (separat vom PB-Admin!) |
 
@@ -103,7 +103,7 @@ Das Wichtigste in Kürze:
 
 - **PocketBase:** in Coolify als *Docker Compose* aus `pocketbase/docker-compose.yaml`,
   Domain `db.deinedomain.de`, Port **8090**, **Volume `pb_data` persistent** (sonst Datenverlust!).
-- **Frontend:** in Coolify *aus Git-Repo* (`zelko2k1/dartscounter`, Pfad `app/`).
+- **Frontend:** in Coolify *aus Git-Repo* (`zelko2k1/dartshub`, Pfad `app/`).
   Eine **Environment-Variable** ist entscheidend:
   ```
   VITE_PB_URL = https://db.deinedomain.de

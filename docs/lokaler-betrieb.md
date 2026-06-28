@@ -128,7 +128,7 @@ Repo ist **privat** → auf neuem Rechner zuerst anmelden, sonst geht kein clone
 gh auth login && gh auth setup-git          # GitHub-Anmeldung (oder Token beim push)
 git config --global user.name  "Heiko Frenzel"
 git config --global user.email "hfrenzel2k1@gmail.com"
-git clone https://github.com/zelko2k1/dartscounter.git
+git clone https://github.com/zelko2k1/dartshub.git
 
 # täglich
 git status                  # was ist geändert?
