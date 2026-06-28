@@ -95,6 +95,26 @@ function parseScore(raw: string): number | null {
 
 const BYE = new Set(['spielfrei', 'freilos', 'frei']);
 
+// Mannschaftsnummer → römische Ziffer (1 → I, 2 → II …).
+function toRoman(n: number): string {
+  if (!(n >= 1) || n > 3999) return '';
+  const map: [number, string][] = [[1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'], [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
+  let out = ''; let r = Math.floor(n);
+  for (const [v, sym] of map) while (r >= v) { out += sym; r -= v; }
+  return out;
+}
+// Anzeigename einer Mannschaft. Hängt die römische Mannschaftsnr an, wenn eine Nr vorliegt und der
+// Mannschaftsname die Mannschaft noch nicht unterscheidet (BDV-Export: MannschaftName == VereinName,
+// bzw. MannschaftName leer). Selbst gebaute CSVs mit vollem Namen ("… I") bleiben unverändert.
+function teamDisplayName(mannschaftName: string, vereinName: string, nrRaw: string): string {
+  const mn = clean(mannschaftName); const vn = clean(vereinName);
+  const base = mn || vn;
+  if (!base) return '';
+  const nr = parseInt((nrRaw || '').trim(), 10);
+  const undifferentiated = !mn || (!!vn && mn.toLowerCase() === vn.toLowerCase());
+  return (!isNaN(nr) && nr >= 1 && undifferentiated) ? `${base} ${toRoman(nr)}` : base;
+}
+
 /**
  * Parst CSV-Text eines Spielplans. clubName dient nur als Notbehelf, wenn keine
  * Vereinsnummern vorhanden sind (eigene Mannschaft per Namensabgleich).
@@ -116,6 +136,8 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
     awayVereinNr: colIndex(headers, ['gastvereinnr', 'gastvereinnummer']),
     homeVereinName: colIndex(headers, ['heimvereinname']),
     awayVereinName: colIndex(headers, ['gastvereinname']),
+    homeMannschaftNr: colIndex(headers, ['heimmannschaftnr', 'heimmannschaftnummer']),
+    awayMannschaftNr: colIndex(headers, ['gastmannschaftnr', 'gastmannschaftnummer']),
     hs: colIndex(headers, ['toreheim', 'heimlegs', 'heimtore', 'heimpunkte', 'hs', 'heimscore']),
     as: colIndex(headers, ['toregast', 'gastlegs', 'gasttore', 'gastpunkte', 'as', 'gastscore']),
     time: colIndex(headers, ['uhrzeit', 'zeit', 'time', 'anwurf', 'beginn']),
@@ -158,8 +180,8 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
   const warnings: string[] = [];
 
   for (const r of data) {
-    const homeName = clean(cell(r, idx.home));
-    const awayName = clean(cell(r, idx.away));
+    const homeName = teamDisplayName(cell(r, idx.home), cell(r, idx.homeVereinName), cell(r, idx.homeMannschaftNr));
+    const awayName = teamDisplayName(cell(r, idx.away), cell(r, idx.awayVereinName), cell(r, idx.awayMannschaftNr));
     const date = parseDate(cell(r, idx.date));
     // Uhrzeit: eigene Spalte bevorzugen, sonst aus dem Datums-/Termin-Feld ableiten.
     const time = (idx.time >= 0 ? parseTime(cell(r, idx.time)) : '') || parseTime(cell(r, idx.date));
