@@ -8,7 +8,7 @@ Datensicherung. Es ist bewusst nicht-technisch gehalten.
 > → **[`admin-anleitung.md`](admin-anleitung.md)** — Inbetriebnahme (lokal & Vereinsmodus) +
 >   Updates, mit den wichtigsten Befehlen.
 > → Online/Cloud: [`cloud-anleitung.md`](cloud-anleitung.md) (Einkaufsliste, Kosten, Schritte)
->   und [`../pocketbase/COOLIFY-SETUP.md`](../pocketbase/COOLIFY-SETUP.md).
+>   und [`COOLIFY-SETUP.md`](COOLIFY-SETUP.md).
 >
 > Dieses Handbuch beginnt da, wo die App bereits läuft.
 

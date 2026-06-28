@@ -34,7 +34,7 @@ Zwei A-Records auf die Server-IP zeigen lassen:
 5. **Collections + API-Rules** entstehen **automatisch**: PocketBase wendet beim Start die
    versionierten Migrations an, die ins Image gebacken sind (`/pb/migrations`, gepinnt per
    `--migrationsDir` im Compose-Command). Kein manuelles Anlegen nötig.
-   - `pocketbase/SCHEMA.md` bleibt als **lesbare Referenz** (welche Felder/Rules existieren) —
+   - `../pocketbase/SCHEMA.md` bleibt als **lesbare Referenz** (welche Felder/Rules existieren) —
      maßgeblich für die Laufzeit sind aber die Migrations.
    - Der Vereinsmodus (Passwort-Endpunkt, Board-Rollen-Guard) wird über die ebenfalls ins Image
      gebackenen **Hooks** (`/pb/hooks`) aktiv.
@@ -58,7 +58,7 @@ Zwei A-Records auf die Server-IP zeigen lassen:
 - `https://app.<domain>` öffnen → im **Vereinsmodus** anmelden (App-`users`-Konto).
 - In Edge „Als App installieren" (PWA, HTTPS vorhanden ✔).
 - Weitere Mitglieder: Konten legt der Admin in der App (bzw. PB-Admin-UI) an.
-- **Tägliche Bedienung** (Spieler/Mannschaften/Ligen/Counter/Board): siehe [`../docs/handbuch.md`](../docs/handbuch.md).
+- **Tägliche Bedienung** (Spieler/Mannschaften/Ligen/Counter/Board): siehe [`handbuch.md`](handbuch.md).
 
 ## 6. Sicherheit / Härtung
 Die echte Zugriffskontrolle sind die **PocketBase-API-Rules** (serverseitig) — der Kiosk-/Board-Modus ist nur Oberfläche.
@@ -69,7 +69,7 @@ Die echte Zugriffskontrolle sind die **PocketBase-API-Rules** (serverseitig) —
 - **HTTPS** ist Pflicht (Coolify stellt es automatisch) — sonst wandern Login-Tokens im Klartext.
 - **PocketBase nicht im Klartext exponieren:** Port **8090** nicht direkt aus dem Internet erreichbar
   machen (über den Coolify-Proxy laufen lassen + Host-Firewall), und die **Admin-Konsole `/_/`**
-  abschirmen (IP/VPN). Vollständige Pre-Go-live-Liste: [`../docs/security-audit.md`](../docs/security-audit.md).
+  abschirmen (IP/VPN). Vollständige Pre-Go-live-Liste: [`security-audit.md`](security-audit.md).
 - **Superuser-/Admin-Passwort** stark wählen und **nie auf den Board-PCs** speichern. Board-PW regelmäßig rotieren (Skript erneut ausführen).
 - Self-Registration bleibt aus (`users` create = admin). Unauthentifiziert ist nichts lesbar (alle list/view-Rules verlangen Login).
 - Kiosk-Ausstieg am Board verlangt Admin/Kapitän-Login → ein Board-Konto (player) kann den Board-Modus nicht selbst verlassen.

@@ -1,5 +1,8 @@
 # Plan: Saison-Lebenszyklus (Abschluss · Neubeginn · Soft-Archiv · Auslagern)
 
+> **Status: umgesetzt (Phasen 1–4).** Saison-Entität, Soft-Archiv + Read-only, Abschluss/Snapshot/Export,
+> „Neue Saison"-Assistent und Auslagern/Re-Import sind im Code. Dieses Dokument bleibt als Konzept/Plan.
+
 Stand: 2026-06-26. Ziel: Datenbestand sauber nach Saisons trennen, abgeschlossene
 Saisons als **Soft-Archiv** in der DB behalten und bei Platzbedarf eine Saison
 **auslagern** (wegsichern + aus der Live-DB entfernen), ohne die History in der App zu

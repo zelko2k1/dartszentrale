@@ -17,7 +17,7 @@ Die App kennt zwei Modi (umschaltbar in den Einstellungen, mit automatischer Erk
 - **Verein** — mit Login und Rollen (admin / captain / player / viewer),
   Daten über ein **PocketBase**-Backend. Der passende Data-Provider liegt in
   `src/data/pocketbaseProvider.ts`; das Deploy-Setup (Coolify auf Hetzner)
-  ist unter `../pocketbase/COOLIFY-SETUP.md` dokumentiert.
+  ist unter `../docs/COOLIFY-SETUP.md` dokumentiert.
 
 Die Datenquelle ist über austauschbare Provider gekapselt (`src/data/provider.ts`,
 `localProvider.ts`, `pocketbaseProvider.ts`).

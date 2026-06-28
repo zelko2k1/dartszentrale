@@ -4,8 +4,8 @@ Diese Anleitung sagt dir **was du brauchst**, **was es kostet** und **was du in 
 Reihenfolge tun musst**, um die fertige App online laufen zu lassen.
 
 Die rein technischen Details stehen in:
-- [`pocketbase/COOLIFY-SETUP.md`](../pocketbase/COOLIFY-SETUP.md) — Klick-für-Klick im Coolify
-- [`docs/verein-pocketbase-plan.md`](verein-pocketbase-plan.md) — Datenmodell & Rechte
+- [`COOLIFY-SETUP.md`](COOLIFY-SETUP.md) — Klick-für-Klick im Coolify
+- [`pocketbase/SCHEMA.md`](../pocketbase/SCHEMA.md) — Datenmodell & Rechte (aktuelle Lese-Referenz)
 
 Wenn die App läuft: **[`docs/handbuch.md`](handbuch.md)** erklärt die tägliche Nutzung
 (Anmelden, Spieler/Mannschaften/Ligen, Counter, Board-Modus, Rollen, Backups).
@@ -69,7 +69,7 @@ Leg dir diese Dinge **vorher** zurecht — du brauchst sie während der Einricht
 7. Ersten App-Admin anlegen      →  einloggen, fertig
 ```
 
-Details zu Schritt 4–7: **[`pocketbase/COOLIFY-SETUP.md`](../pocketbase/COOLIFY-SETUP.md)**.
+Details zu Schritt 4–7: **[`COOLIFY-SETUP.md`](COOLIFY-SETUP.md)**.
 
 ---
 
@@ -98,7 +98,7 @@ Danach Coolify im Browser öffnen (`http://203.0.113.10:8000`) und das
 Coolify-Admin-Konto anlegen.
 
 ### Schritt 4–7 — App & Datenbank deployen
-Ab hier folgst du **[`pocketbase/COOLIFY-SETUP.md`](../pocketbase/COOLIFY-SETUP.md)**.
+Ab hier folgst du **[`COOLIFY-SETUP.md`](COOLIFY-SETUP.md)**.
 Das Wichtigste in Kürze:
 
 - **PocketBase:** in Coolify als *Docker Compose* aus `pocketbase/docker-compose.yaml`,
@@ -111,7 +111,7 @@ Das Wichtigste in Kürze:
   Ohne sie kennt die App die Server-Adresse nicht.
   Domain: `app.deinedomain.de`.
 - **CORS** in PocketBase: `https://app.deinedomain.de` als erlaubte Origin eintragen.
-- **Collections + Rechte** anlegen (Datenmodell siehe `docs/verein-pocketbase-plan.md`).
+- **Collections + Rechte** entstehen beim Start **automatisch** (Migrations) — Übersicht: [`pocketbase/SCHEMA.md`](../pocketbase/SCHEMA.md).
 
 ---
 

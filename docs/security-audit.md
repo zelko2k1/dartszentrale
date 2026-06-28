@@ -95,9 +95,9 @@ aktivieren (#9). Kein XSS-Sink im Code vorhanden.
 **#12 — Kompletter Kader für jeden eingeloggten Nutzer lesbar ⏳** → als Vereins-Verzeichnis vertretbar (E-Mails geschützt); bei Minderjährigen abwägen.
 **#13 — nginx Versions-Disclosure ✅ (behoben)** → `server_tokens off;` gesetzt.
 
-### ℹ️ Nebenbefund (kein Security)
-`COOLIFY-SETUP.md` beschreibt noch Bind-Mounts für `pb_migrations`/`pb_hooks`, die die echte
-`docker-compose.yaml` nicht hat (ins Image gebacken) — stale Doku, bei Gelegenheit angleichen.
+### ℹ️ Nebenbefund (kein Security) — ✅ erledigt
+`COOLIFY-SETUP.md` (jetzt unter `docs/`) ist angeglichen: Migrations/Hooks werden ins Image **gebacken**
+(Dockerfile `COPY`), nicht gemountet; Frontend baut über `app/Dockerfile` (nicht Nixpacks).
 
 ---
 
