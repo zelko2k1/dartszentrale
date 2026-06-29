@@ -20,19 +20,53 @@ Wenn die App läuft: **[`docs/handbuch.md`](handbuch.md)** erklärt die täglich
 
 | # | Was | Wofür | Kosten (ca.) |
 |---|-----|-------|--------------|
-| 1 | **Cloud-Server (VPS)** bei Hetzner | Läuft die App + Datenbank | ~5–8 €/Monat (CX22) |
+| 1 | **Cloud-Server (VPS)** bei Hetzner | Läuft die App + Datenbank | ~4–8 €/Monat (Sizing s. u.) |
 | 2 | **Domain** (z. B. `dartshub.de`) | Adresse + HTTPS für die PWA | ~10–15 €/Jahr |
 | 3 | **Coolify** (kostenlose Software) | Verwaltet Deploy, HTTPS, Updates | 0 € (läuft auf dem Server) |
 | 4 | **GitHub-Konto** (hast du schon ✔) | Coolify holt die App von hier | 0 € |
 | 5 | *(optional)* Hetzner **Storage Box / S3** | Externe Backups der Datenbank | ~3–4 €/Monat |
 
-**Gesamtkosten:** rund **6–9 € im Monat** plus einmal ~12 €/Jahr für die Domain.
+**Gesamtkosten:** rund **5–9 € im Monat** (mit ARM/Spar-Optionen ab ~4 €) plus einmal ~12 €/Jahr für die Domain.
 
 ### Konkrete Empfehlung
-- **Server:** Hetzner Cloud, Typ **CX22** (2 vCPU, 4 GB RAM) — für einen Verein dick ausreichend.
-  Beim Anlegen **Ubuntu 24.04** wählen.
+- **Server (Sweet Spot):** Hetzner **CAX11** (ARM, 2 vCPU, **4 GB** RAM, 40 GB) — **~4 €/Monat**
+  und damit günstiger als der x86-**CX22** (gleiche Eckdaten). PocketBase, nginx und der Build
+  laufen sauber auf ARM. Beim Anlegen **Ubuntu 24.04** wählen.
 - **Domain:** bei einem beliebigen Anbieter (Hetzner, Namecheap, INWX …). Hauptsache du
   kommst an die **DNS-Einstellungen** (A-Records).
+
+### Wie groß muss der Server sein? (und wie man spart)
+
+**Wichtig:** Die App selbst ist winzig — der Bedarf kommt fast nur von **Coolify** und vom
+**Build**. Drei sehr unterschiedliche Lasten:
+
+| Last | RAM | CPU | Bemerkung |
+|---|---|---|---|
+| **Coolify** (Steuerebene, läuft dauerhaft) | ~0,8–1,2 GB | ~1 vCPU idle | der eigentliche „Mieter" |
+| **DartsHub-Laufzeit** (PocketBase + nginx) | ~50–100 MB | praktisch 0 | schlankes Go-Binary + SQLite |
+| **Build-Spitze** (`npm install` + Vite-Build) | kurz 1–2 GB | 1–2 Kerne | **Engpass** auf kleinen Servern, nur beim Deploy |
+
+**Sizing:**
+
+| Variante | vCPU | RAM | Disk | Tauglich? |
+|---|---|---|---|---|
+| Coolify **knapp** | 2 | **2 GB + 2 GB Swap** | 30–40 GB | ✅ Swap fängt die Build-Spitze ab |
+| Coolify **komfortabel** | 2 | **4 GB** | 40 GB | ✅ empfohlen (CAX11/CX22) |
+| **Ohne Coolify** (nur Docker Compose) | 1 | **1–2 GB** | 20 GB | ✅ billigste Variante, etwas mehr Handarbeit |
+
+**Disk:** Coolify+Docker-Basis ~5–8 GB · Images/Build-Cache wächst auf 5–15 GB
+(⚠️ regelmäßig aufräumen: Coolify-Cleanup aktivieren bzw. `docker system prune -af`) ·
+`pb_data` (DB + Spielerfotos) realistisch 50 MB – einige hundert MB. → **20 GB Minimum,
+40 GB entspannt.**
+
+**Spar-Hebel:**
+1. **ARM statt x86** (Hetzner CAX-Linie): gleiches RAM, günstiger — voll kompatibel.
+2. **2 GB + Swap** statt 4 GB: 2-GB-Box + 2-GB-Swap-Datei (kostenlos) übersteht die Builds.
+3. **Build auslagern:** Image in GitHub Actions bauen → in die GitHub-Registry pushen →
+   Coolify zieht nur das fertige Image. Dann reichen 2 GB locker.
+4. **Coolify weglassen:** nur `docker-compose` (PocketBase + nginx + Caddy für HTTPS) auf einem
+   1-GB-Nano (~3–4 €). Spart Coolifys ~1-GB-Dauergewicht, kostet dafür dessen Komfort-UI
+   (Auto-Deploy, Klick-HTTPS, Log-Ansicht).
 
 ---
 
@@ -77,7 +111,7 @@ Details zu Schritt 4–7: **[`COOLIFY-SETUP.md`](COOLIFY-SETUP.md)**.
 
 ### Schritt 1 — Server bestellen
 1. Bei [hetzner.com/cloud](https://www.hetzner.com/cloud) Konto anlegen.
-2. Neuen Server **CX22 / Ubuntu 24.04** erstellen, SSH-Key hinterlegen.
+2. Neuen Server **CAX11 (ARM) oder CX22**, jeweils **Ubuntu 24.04**, erstellen — SSH-Key hinterlegen.
 3. **IP-Adresse notieren.**
 
 ### Schritt 2 — DNS einrichten
