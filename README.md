@@ -4,6 +4,7 @@
 > - **App aufsetzen (eigener Server):** [`docs/cloud-anleitung.md`](docs/cloud-anleitung.md) + [`docs/COOLIFY-SETUP.md`](docs/COOLIFY-SETUP.md)
 > - **App im Alltag nutzen (Vereins-Admins):** [`docs/handbuch.md`](docs/handbuch.md)
 > - **Datenmodell & Rechte:** [`pocketbase/SCHEMA.md`](pocketbase/SCHEMA.md) (aktuelles PB-Schema) · [`DATA_MODEL.md`](DATA_MODEL.md) (App-Datenmodell) · [`docs/verein-pocketbase-plan.md`](docs/verein-pocketbase-plan.md) (ursprünglicher Plan, historisch)
+> - **Offene Punkte bis 1.0:** [`ROADMAP.md`](ROADMAP.md) (Master-Überblick aller Arbeitspakete)
 >
 > Dieses README selbst ist ein **Entwickler-/Design-Handoff** (Prototyp & Design-Tokens), kein Endnutzer-Dokument.
 
