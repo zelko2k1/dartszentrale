@@ -32,6 +32,11 @@ copy_pb(){ local d="$1/pocketbase"; mkdir -p "$d"
 copy_scripts(){ for f in start-dartshub.sh start-dartshub.bat autostart-einrichten.sh autostart-entfernen.sh autostart-einrichten.bat update.sh update.ps1 update-dartshub.bat; do cpf "$REPO/$f" "$1/"; done; }
 copy_docs(){ local d="$1/docs"; mkdir -p "$d"; shift; for f in "$@"; do cpf "$REPO/docs/$f" "$d/"; done; }
 
+# Schlanke Cloud-Variante (ohne Coolify/Docker): Installer + Caddy-Referenzkonfig
+copy_deploy_schlank(){ local d="$1/deploy/cloud-schlank"; mkdir -p "$d"
+  for f in setup.sh Caddyfile.example; do cpf "$REPO/deploy/cloud-schlank/$f" "$d/"; done
+}
+
 echo "▶ Ziel: $TARGET"
 rm -rf "$TARGET"; mkdir -p "$TARGET"
 
@@ -67,18 +72,24 @@ Du musst zusätzlich besorgen: Node.js (nodejs.org) UND die PocketBase-Binary (v
 pocketbase.org/docs) in den Ordner pocketbase/ legen. pb_data (deine DB) entsteht beim Start.
 TXT
 
-# ── 03 — Vereinsmodus in der Cloud (Docker / Coolify) ───────────────────────
+# ── 03 — Vereinsmodus in der Cloud (Docker/Coolify ODER schlank) ────────────
 C="$TARGET/03-cloud-vereinsmodus"; mkdir -p "$C"
 copy_app "$C" 1
 copy_pb "$C" 1
-copy_docs "$C" COOLIFY-SETUP.md cloud-anleitung.md security-audit.md handbuch.md
+copy_deploy_schlank "$C"
+copy_docs "$C" COOLIFY-SETUP.md cloud-anleitung.md cloud-schlank-anleitung.md security-audit.md handbuch.md
 cat > "$C/LIESMICH.txt" <<'TXT'
-DartsHub — Vereinsmodus in der Cloud (Docker / Coolify)
--------------------------------------------------------
-Deployment über Coolify (zieht aus Git) oder direkt per Docker. Enthält Dockerfiles +
-docker-compose.yaml, Migrations/Hooks und die Ops-Skripte. Start-/Update-Skripte sind hier
-NICHT nötig (Coolify/Docker übernimmt das).
-Anleitung: docs/cloud-anleitung.md (Einkaufsliste/Schritte) + docs/COOLIFY-SETUP.md (Klick-für-Klick).
+DartsHub — Vereinsmodus in der Cloud (zwei Wege)
+------------------------------------------------
+WEG 1 — Docker / Coolify (Komfort-UI): Deployment über Coolify (zieht aus Git) oder direkt per
+  Docker. Enthält Dockerfiles + docker-compose.yaml. Start-/Update-Skripte hier NICHT nötig.
+  Anleitung: docs/cloud-anleitung.md + docs/COOLIFY-SETUP.md (Klick-für-Klick).
+
+WEG 2 — Schlank, ohne Coolify & Docker (günstiger, etwas mehr Kommandozeile):
+  native systemd-Dienste + Caddy (Auto-HTTPS). Ein Befehl:
+    sudo APP_DOMAIN=app.deinedomain.de DB_DOMAIN=db.deinedomain.de deploy/cloud-schlank/setup.sh
+  Anleitung: docs/cloud-schlank-anleitung.md (Caddyfile.example liegt in deploy/cloud-schlank/).
+
 WICHTIG: Sicherheits-Checkliste in docs/security-audit.md vor dem Online-Gang abarbeiten.
 TXT
 
