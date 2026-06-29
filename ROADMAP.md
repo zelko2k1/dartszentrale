@@ -23,7 +23,7 @@
 **Offen — Code:**
 - [x] 🧑‍💻 **#6-Rest:** Kapitän-Roster-Editing auf die *eigene* Mannschaft gescoped (`captainId == auth.playerId`)
       — Migration `1782600100_scope_team_update_to_captain` + provision; gegen lokale PB verifiziert.
-- [ ] 🧑‍💻 #11 `reset-password.mjs`: `NEW_PW` erzwingen statt Default `dartshub123`
+- [x] 🧑‍💻 #11 `reset-password.mjs`: `NEW_PW` ist Pflicht (kein stiller Default `dartshub123` mehr) — Fehlerpfade getestet.
 - [ ] 🧑‍💻 #12 (abwägen) Kader-Lesbarkeit für eingeloggte Nutzer — bei Minderjährigen einschränken
 
 **Offen — Betreiber / Pre-Go-live-Checkliste** (⚙️ nicht von Claude erledigbar, nur vorbereitbar):

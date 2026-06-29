@@ -94,7 +94,8 @@ aktivieren (#9). Kein XSS-Sink im Code vorhanden.
 
 ### 🟢 Niedrig
 
-**#11 — `reset-password.mjs` Default-Neu-Passwort `dartshub123` ⏳** → `NEW_PW` erzwingen (hat bereits Warnung).
+**#11 — `reset-password.mjs` Default-Neu-Passwort `dartshub123` ✅ (behoben)** → `NEW_PW` ist jetzt Pflicht;
+kein stiller Rückfall auf ein Default mehr. Fehlt `NEW_PW`, bricht das Skript mit klarer Anleitung ab (auch lokal).
 **#12 — Kompletter Kader für jeden eingeloggten Nutzer lesbar ⏳** → als Vereins-Verzeichnis vertretbar (E-Mails geschützt); bei Minderjährigen abwägen.
 **#13 — nginx Versions-Disclosure ✅ (behoben)** → `server_tokens off;` gesetzt.
 

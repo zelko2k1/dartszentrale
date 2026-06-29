@@ -17,16 +17,22 @@ const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
 const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartshub.local';
 const SU_PASS = process.env.PB_SU_PASS || 'dartshub-admin-2026';
 const USER_EMAIL = process.env.USER_EMAIL || 'chef@dartshub.local';
-const NEW_PW = process.env.NEW_PW || 'dartshub123'; // BITTE überschreiben!
+const NEW_PW = process.env.NEW_PW; // Pflicht – kein Default mehr (Sicherheits-Audit #11).
+
+// #11: NEW_PW ist verpflichtend; kein stiller Rückfall auf ein bekanntes Default-Passwort.
+if (!NEW_PW) {
+  console.error('FEHLER: NEW_PW ist nicht gesetzt. Bitte explizit ein neues Passwort vorgeben:');
+  console.error('  USER_EMAIL=chef@dartshub.local NEW_PW="dein-neues-pw-min-8" node reset-password.mjs');
+  process.exit(1);
+}
+if (NEW_PW.length < 8) {
+  console.error('FEHLER: NEW_PW muss mindestens 8 Zeichen haben.');
+  process.exit(1);
+}
 
 // Sicherheits-Guard: keine bekannten Default-Passwörter gegen ein nicht-lokales Ziel.
 assertSafePassword(URL, 'Superuser-Login', SU_PASS, 'PB_SU_PASS=…');
 assertSafePassword(URL, 'Neues App-Passwort', NEW_PW, 'NEW_PW=…');
-
-if (!NEW_PW || NEW_PW.length < 8) {
-  console.error('FEHLER: NEW_PW muss mindestens 8 Zeichen haben.');
-  process.exit(1);
-}
 
 const pb = new PocketBase(URL);
 pb.autoCancellation(false);
