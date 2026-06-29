@@ -37,8 +37,9 @@ committed** — verifiziert). Trotzdem: **Passwort jetzt rotieren** und den Lite
 entfernen (per `read -s`-Prompt oder Env außerhalb des Repos). Es wurde im Review sichtbar.
 
 **#2 — Seed/Provision nie gegen die Produktiv-DB ✅ (gehärtet) + Betriebsregel ⏳**
-`provision.mjs`/`demo-seed.mjs`/`demo-seed-dsv-fuerth.mjs` legen Konten mit dem Default `dartshub123` an (inkl.
-`chef@dartshub.local` als **admin**). Ein reiner Coolify-Deploy tut das nicht (nur Migrations+Hooks).
+`demo-seed.mjs`/`demo-seed-dsv-fuerth.mjs` legen Demo-Konten mit dem Default `dartshub123` an.
+`provision.mjs` hat **kein hartcodiertes Admin-Konto mehr** — der erste Admin wird interaktiv
+abgefragt (oder per `APP_ADMIN_EMAIL`/`APP_ADMIN_PASS`). Ein reiner Coolify-Deploy tut das nicht (nur Migrations+Hooks).
 **Gehärtet:** neuer `_security-guard.mjs` — die Skripte **brechen ab**, wenn ein bekanntes
 Default-Passwort gegen ein **nicht-lokales** Ziel verwendet würde (localhost bleibt bequem). Member-
 Passwörter sind jetzt per `MEMBER_PW=…` überschreibbar. **Betriebsregel bleibt:** Produktiv-Admin

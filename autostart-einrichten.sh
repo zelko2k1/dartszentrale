@@ -78,16 +78,9 @@ EOF
 echo "• Unit-Dateien geschrieben → $UNIT_DIR"
 
 # --- Begleitskript zum Entfernen ---
-cat > "$ROOT/autostart-entfernen.sh" <<EOF
-#!/usr/bin/env bash
-# ═══════ [ PRODUKTIV / OPS ] — DartsHub-Autostart wieder entfernen ═══════
-set -e
-systemctl --user disable --now dartshub-web.service dartshub-pocketbase.service 2>/dev/null || true
-rm -f "$UNIT_DIR/dartshub-web.service" "$UNIT_DIR/dartshub-pocketbase.service"
-systemctl --user daemon-reload
-echo "DartsHub-Autostart entfernt. (Daten in pocketbase/pb_data bleiben erhalten.)"
-EOF
-chmod +x "$ROOT/autostart-entfernen.sh"
+# Liegt fest im Projekt als ./autostart-entfernen.sh (portabel, ermittelt UNIT_DIR selbst) —
+# wird hier nicht mehr generiert, nur ausführbar gemacht, falls das Exec-Bit fehlt.
+[ -f "$ROOT/autostart-entfernen.sh" ] && chmod +x "$ROOT/autostart-entfernen.sh" 2>/dev/null || true
 
 # --- Aktivieren + beim Boot starten (ohne Login) ---
 systemctl --user daemon-reload

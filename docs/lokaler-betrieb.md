@@ -106,7 +106,7 @@ cd C:\dartshub\pocketbase
 
 **6) Schema + Daten** (zweites Terminal, im `pocketbase/`-Ordner — Befehle gleich auf beiden OS)
 ```bash
-node provision.mjs          # Schema + App-Admin (chef@dartshub.local / dartshub123)
+node provision.mjs          # Schema + App-Admin (fragt beim 1. Mal E-Mail/Passwort ab)
 node demo-seed-dsv-fuerth.mjs    # Beispieldaten DSV Fürth 86
 ```
 
@@ -320,9 +320,15 @@ In einem zweiten Terminal:
 cd /mnt/Data/claudebase/dartshub/pocketbase
 node provision.mjs
 ```
-Legt alle Collections (inkl. `seasons`/`season_snapshots`) + App-Admin
-`chef@dartshub.local / dartshub123` an. **Nach jedem `git pull` erneut ausführen**,
-falls sich das Schema geändert hat.
+Legt alle Collections (inkl. `seasons`/`season_snapshots`) an und fragt — falls noch
+**kein** Admin existiert — interaktiv nach E-Mail + Passwort des ersten App-Admins
+(nicht-interaktiv per `APP_ADMIN_EMAIL=… APP_ADMIN_PASS=… node provision.mjs`).
+**Nach jedem `git pull` erneut ausführen**, falls sich das Schema geändert hat
+(ein vorhandener Admin bleibt unberührt).
+
+> **Dev-Konvention:** Wer die Demo-Skripte/Test-Logins unten 1:1 nutzen will, tippt beim
+> Prompt `chef@dartshub.local` / `dartshub123` — dann passen `demo-seed*.mjs` und die
+> Test-Login-Tabelle zusammen. (Das ist nur eine lokale Empfehlung, kein fest verdrahtetes Konto.)
 
 ### 3. Test-Daten einspielen
 ```bash
@@ -358,10 +364,10 @@ npm run dev
 ```
 **http://localhost:5173** öffnen und anmelden.
 
-### Test-Logins (alle Passwort `dartshub123`)
+### Test-Logins (Demo-Konten aus `demo-seed*.mjs`, alle Passwort `dartshub123`)
 | Rolle | E-Mail |
 |------|--------|
-| Admin | `chef@dartshub.local` |
+| Admin | der beim `provision.mjs`-Prompt gewählte Admin (Dev-Konvention: `chef@dartshub.local`) |
 | Kapitän | `sandra.koester@sv-adler.de` |
 | Spieler | `daniel.weber@sv-adler.de` |
 | Betrachter (nur lesen) | `schriftfuehrung@sv-adler.de` |

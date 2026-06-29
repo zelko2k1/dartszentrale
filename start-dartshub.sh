@@ -15,7 +15,15 @@ WEB_PORT="${WEB_PORT:-4173}"
 PB_URL="http://127.0.0.1:${PB_PORT}"
 
 command -v node >/dev/null || { echo "✗ Node.js fehlt — bitte installieren (https://nodejs.org)"; exit 1; }
-[ -x "$ROOT/pocketbase/pocketbase" ] || { echo "✗ PocketBase-Binary fehlt: $ROOT/pocketbase/pocketbase (siehe docs/lokaler-betrieb.md)"; exit 1; }
+# PocketBase ist nur für den Vereinsmodus nötig. Fehlt das Binary, starten wir trotzdem das
+# Frontend (Lokalmodus) — analog zu start-dartshub.bat (kein harter Abbruch mehr).
+HAVE_PB=0
+if [ -x "$ROOT/pocketbase/pocketbase" ]; then
+  HAVE_PB=1
+else
+  echo "• Hinweis: PocketBase-Binary fehlt — starte nur das Frontend (Lokalmodus)."
+  echo "  Für den Vereinsmodus siehe docs/lokaler-betrieb.md."
+fi
 
 # Frontend gegen die lokale PB bauen (VITE_PB_URL wird zur BUILD-Zeit ins Bundle gebacken).
 if ! grep -q "VITE_PB_URL=" "$ROOT/app/.env.local" 2>/dev/null; then
@@ -27,14 +35,17 @@ if [ ! -f "$ROOT/app/dist/index.html" ]; then
   echo "• Baue Frontend (einmalig) …"; ( cd "$ROOT/app" && npm run build )
 fi
 
-# PocketBase starten
-echo "▶ PocketBase  → ${PB_URL}"
-( cd "$ROOT/pocketbase" && ./pocketbase serve \
-    --http="127.0.0.1:${PB_PORT}" \
-    --dir="$ROOT/pocketbase/pb_data" \
-    --migrationsDir="$ROOT/pocketbase/pb_migrations" \
-    --hooksDir="$ROOT/pocketbase/pb_hooks" ) &
-PB_PID=$!
+# PocketBase starten (nur im Vereinsmodus, wenn das Binary vorhanden ist)
+PB_PID=""
+if [ "$HAVE_PB" = "1" ]; then
+  echo "▶ PocketBase  → ${PB_URL}"
+  ( cd "$ROOT/pocketbase" && ./pocketbase serve \
+      --http="127.0.0.1:${PB_PORT}" \
+      --dir="$ROOT/pocketbase/pb_data" \
+      --migrationsDir="$ROOT/pocketbase/pb_migrations" \
+      --hooksDir="$ROOT/pocketbase/pb_hooks" ) &
+  PB_PID=$!
+fi
 
 # Frontend (vite preview) starten
 echo "▶ Frontend    → http://127.0.0.1:${WEB_PORT}"
@@ -42,7 +53,7 @@ echo "▶ Frontend    → http://127.0.0.1:${WEB_PORT}"
 WEB_PID=$!
 
 # Beide beim Beenden (Strg+C) sauber stoppen
-trap 'echo; echo "⏹  stoppe …"; kill "$PB_PID" "$WEB_PID" 2>/dev/null; wait 2>/dev/null; exit 0' INT TERM
+trap 'echo; echo "⏹  stoppe …"; kill ${PB_PID:-} "$WEB_PID" 2>/dev/null; wait 2>/dev/null; exit 0' INT TERM
 
 # Browser öffnen (falls Desktop vorhanden), dann auf die Prozesse warten
 ( command -v xdg-open >/dev/null && sleep 3 && xdg-open "http://127.0.0.1:${WEB_PORT}" >/dev/null 2>&1 || true ) &

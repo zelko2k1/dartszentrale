@@ -124,8 +124,10 @@ Browser → **`http://localhost:4173`** → beim **ersten Start „Vereinsmodus"
 Eine neue Version sind neue Dateien für `app`. **Deine Daten (`pb_data`) und Konfiguration bleiben
 unangetastet.**
 
-**Einfach (neue Version auf USB-Stick):** Doppelklick auf **`update-dartshub.bat`**.
-*(Alternativ in PowerShell: `.\update.ps1 -Source E:\`, wobei `E:\` dein USB-Laufwerk ist.)*
+**Einfach (neue Version auf USB-Stick):** Doppelklick auf **`update-dartshub.bat`** — übernimmt die
+neuen Dateien vom Stick und baut die App neu. Per Doppelklick wird **Laufwerk `E:\`** angenommen;
+hat dein Stick einen anderen Buchstaben, im Terminal mit Laufwerk aufrufen, z. B. `update-dartshub.bat F:\`.
+*(Alternativ in PowerShell: `.\update.ps1 -Source E:\`.)*
 
 **Nach dem Update:**
 1. **App neu starten** (`start-dartshub.bat` erneut).

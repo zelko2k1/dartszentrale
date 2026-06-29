@@ -26,8 +26,5 @@ pocketbase/seed-remote.sh
 # Generierte PDF-Artefakte (Quelle ist die jeweilige .md)
 docs/*.pdf
 
-# vom Linux-Autostart-Setup generiert (maschinenspezifische Pfade)
-autostart-entfernen.sh
-
 # vom copy2share-Skill erzeugte Verteil-Bundles (nur im Projekt-Root, NICHT der Skill selbst)
 /copy2share/

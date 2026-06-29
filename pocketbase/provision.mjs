@@ -2,6 +2,7 @@
 // Provisioniert das DartsHub-Vereinsmodus-Schema in einer lokalen PocketBase-Instanz.
 // Idempotent: mehrfaches Ausführen aktualisiert vorhandene Collections, statt zu duplizieren.
 // Aufruf:  node provision.mjs
+import readline from 'node:readline';
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
 import { assertSafePassword } from './_security-guard.mjs';
 
@@ -9,17 +10,20 @@ const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
 const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartshub.local';
 const SU_PASS = process.env.PB_SU_PASS || 'dartshub-admin-2026';
 
-// Erster App-Admin (damit man sich sofort in der App anmelden kann)
-const APP_ADMIN = {
-  email: process.env.APP_ADMIN_EMAIL || 'chef@dartshub.local',
-  password: process.env.APP_ADMIN_PASS || 'dartshub123',
-  first: 'Heiko',
-  last: 'Frenzel',
-};
-
 // Sicherheits-Guard: keine bekannten Default-Passwörter gegen ein nicht-lokales Ziel.
 assertSafePassword(URL, 'Superuser-Login', SU_PASS, 'PB_SU_PASS=…');
-assertSafePassword(URL, 'App-Admin', APP_ADMIN.password, 'APP_ADMIN_PASS=…');
+
+// Kleiner Terminal-Prompt-Helfer für die interaktive Admin-Anlage (Schritt 4).
+// hidden:true blendet die Eingabe aus (Passwort wird beim Tippen nicht angezeigt).
+function ask(query, { hidden = false } = {}) {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: true });
+  if (hidden) {
+    let first = true;
+    const orig = rl._writeToOutput.bind(rl);
+    rl._writeToOutput = (str) => { if (first) { orig(str); first = false; } else if (str.includes('\n')) orig('\n'); };
+  }
+  return new Promise((resolve) => rl.question(query, (a) => { rl.close(); resolve(a); }));
+}
 
 const pb = new PocketBase(URL);
 pb.autoCancellation(false);
@@ -175,22 +179,48 @@ async function main() {
   if (prefsCur) { await pb.collections.update(prefsCur.id, prefsDef); console.log('✓ aktualisiert: user_prefs'); }
   else { await pb.collections.create(prefsDef); console.log('✓ angelegt:     user_prefs'); }
 
-  // 4) Ersten App-Admin anlegen (falls noch nicht vorhanden)
-  try {
-    await pb.collection('users').getFirstListItem(`email="${APP_ADMIN.email}"`, { requestKey: null });
-    console.log(`• App-Admin existiert bereits: ${APP_ADMIN.email}`);
-  } catch {
+  // 4) Ersten App-Admin anlegen — NUR wenn noch gar kein Admin existiert.
+  //    Kein hartcodiertes Konto mehr: E-Mail/Passwort werden interaktiv abgefragt
+  //    (oder per APP_ADMIN_EMAIL/APP_ADMIN_PASS gesetzt — z. B. Cloud/CI ohne Terminal).
+  const admins = await pb.collection('users')
+    .getList(1, 1, { filter: 'role="admin"', requestKey: null })
+    .catch(() => ({ items: [] }));
+  if (admins.items.length) {
+    console.log(`• App-Admin existiert bereits: ${admins.items[0].email} — kein neuer angelegt.`);
+  } else {
+    let email = (process.env.APP_ADMIN_EMAIL || '').trim();
+    let password = process.env.APP_ADMIN_PASS || '';
+    if (!email || !password) {
+      // Headless (Container/CI ohne Terminal): nicht ins Leere prompten → klar abbrechen.
+      if (!process.stdin.isTTY) {
+        console.error('\n✗ Kein App-Admin vorhanden und keine interaktive Eingabe möglich (kein TTY, z. B. Container/CI).');
+        console.error('  → Env-Variablen setzen und erneut starten:');
+        console.error('    APP_ADMIN_EMAIL=… APP_ADMIN_PASS=<starkes-pw> node provision.mjs');
+        console.error('  (In der Cloud wird der erste Admin üblicherweise direkt im PocketBase-Admin-UI angelegt.)\n');
+        process.exit(1);
+      }
+      console.log('\nNoch kein App-Admin vorhanden — bitte den ersten Admin anlegen:');
+      while (!email) {
+        email = (await ask('  Admin-E-Mail:         ')).trim();
+        if (!email) console.log('  ✗ E-Mail darf nicht leer sein.');
+      }
+      while (!password) {
+        const p1 = await ask('  Admin-Passwort:       ', { hidden: true });
+        const p2 = await ask('  Passwort wiederholen: ', { hidden: true });
+        if (!p1) console.log('  ✗ Passwort darf nicht leer sein.');
+        else if (p1 !== p2) console.log('  ✗ Passwörter stimmen nicht überein — bitte erneut.');
+        else password = p1;
+      }
+    }
+    // Auch interaktiv getippte Passwörter gegen die bekannten Repo-Defaults absichern.
+    assertSafePassword(URL, 'App-Admin', password, 'APP_ADMIN_PASS=…');
     await pb.collection('users').create({
-      email: APP_ADMIN.email,
-      password: APP_ADMIN.password,
-      passwordConfirm: APP_ADMIN.password,
-      emailVisibility: true,
-      verified: true,
-      name: `${APP_ADMIN.first} ${APP_ADMIN.last}`,
-      first: APP_ADMIN.first, last: APP_ADMIN.last,
-      role: 'admin', active: true, avi: 0, playerId: null, position: 'Vorsitzender', last_login: '—',
+      email, password, passwordConfirm: password,
+      emailVisibility: true, verified: true,
+      name: 'Administrator', first: 'Administrator', last: '',
+      role: 'admin', active: true, avi: 0, playerId: null, position: 'Administrator', last_login: '—',
     });
-    console.log(`✓ App-Admin angelegt: ${APP_ADMIN.email} / ${APP_ADMIN.password}`);
+    console.log(`✓ App-Admin angelegt: ${email}`);
   }
 
   // 5) Saison-Backfill (idempotent): aktive Saison sicherstellen, Altbestand zuordnen,

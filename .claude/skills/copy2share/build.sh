@@ -29,7 +29,7 @@ copy_pb(){ local d="$1/pocketbase"; mkdir -p "$d"
   if [ "${2:-0}" = "1" ]; then for f in Dockerfile docker-compose.yaml; do cpf "$REPO/pocketbase/$f" "$d/"; done; fi
 }
 
-copy_scripts(){ for f in start-dartshub.sh start-dartshub.bat autostart-einrichten.sh autostart-einrichten.bat update.sh update.ps1 update-dartshub.bat; do cpf "$REPO/$f" "$1/"; done; }
+copy_scripts(){ for f in start-dartshub.sh start-dartshub.bat autostart-einrichten.sh autostart-entfernen.sh autostart-einrichten.bat update.sh update.ps1 update-dartshub.bat; do cpf "$REPO/$f" "$1/"; done; }
 copy_docs(){ local d="$1/docs"; mkdir -p "$d"; shift; for f in "$@"; do cpf "$REPO/docs/$f" "$d/"; done; }
 
 echo "▶ Ziel: $TARGET"

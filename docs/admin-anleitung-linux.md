@@ -134,9 +134,11 @@ unangetastet.**
 
 **Einfach (neue Version auf USB-Stick):**
 ```bash
-./update.sh /media/usb        # /media/usb = Pfad deines Sticks
+./update.sh /media/usb --build      # /media/usb = Pfad deines Sticks
 ```
-Das Skript übernimmt die neuen Dateien, installiert Abhängigkeiten und baut neu.
+Übernimmt die neuen Dateien, installiert Abhängigkeiten **und baut `app/dist` neu**.
+> **`--build` ist im Vereinsmodus wichtig:** ausgeliefert wird das gebaute `dist/`. Ohne `--build`
+> würden die Bretter nach dem Update weiter die **alte** Version zeigen.
 
 **Nach dem Update:**
 1. **App neu starten** (`./start-dartshub.sh` erneut, bzw. `systemctl --user restart dartshub-web`).
@@ -153,7 +155,7 @@ Das Skript übernimmt die neuen Dateien, installiert Abhängigkeiten und baut ne
 |---|---|
 | **Starten** (lokal/Verein) | `./start-dartshub.sh` |
 | **Autostart einrichten** | `./autostart-einrichten.sh` |
-| **Update (USB)** | `./update.sh /media/usb` |
+| **Update (USB)** | `./update.sh /media/usb --build` |
 | Lokal von Hand | `cd app && npm run dev` |
 | PocketBase-Superuser setzen | `./pocketbase superuser upsert <mail> "<pw>" --dir ./pb_data` |
 | PocketBase starten | `./pocketbase serve --http=0.0.0.0:8090 --dir ./pb_data --migrationsDir ./pb_migrations --hooksDir ./pb_hooks` |
