@@ -88,6 +88,9 @@ bricht jetzt ab, wenn dieser Default gegen ein nicht-lokales Ziel benutzt würde
 `app/nginx.conf` ergänzt: `X-Frame-Options DENY`, `X-Content-Type-Options nosniff`, `Referrer-Policy`,
 `Permissions-Policy`, `server_tokens off`. **CSP als Vorlage auskommentiert** — muss pro Deployment auf
 die PB-Domain angepasst und getestet werden (`connect-src` MUSS die PB-URL enthalten). HSTS am Proxy.
+**Schlanke Cloud-Variante (ohne Docker/nginx):** dieselben Header setzt das `security_headers`-Snippet
+im Caddyfile (`deploy/cloud-schlank/`, von `setup.sh` erzeugt) — inkl. **HSTS aktiv** und CSP-Vorlage
+mit bereits vorausgefülltem `connect-src https://db.<domain>` (auskommentiert bis getestet).
 
 **#10 — JWT im localStorage ⏳ (durch CSP mitigiert)**
 PB-Default speichert das Token JS-lesbar → bei XSS exfiltrierbar. Primäre Mitigation: strikte **CSP**

@@ -64,9 +64,11 @@ Wenn die App läuft: **[`docs/handbuch.md`](handbuch.md)** erklärt die täglich
 2. **2 GB + Swap** statt 4 GB: 2-GB-Box + 2-GB-Swap-Datei (kostenlos) übersteht die Builds.
 3. **Build auslagern:** Image in GitHub Actions bauen → in die GitHub-Registry pushen →
    Coolify zieht nur das fertige Image. Dann reichen 2 GB locker.
-4. **Coolify weglassen:** nur `docker-compose` (PocketBase + nginx + Caddy für HTTPS) auf einem
-   1-GB-Nano (~3–4 €). Spart Coolifys ~1-GB-Dauergewicht, kostet dafür dessen Komfort-UI
-   (Auto-Deploy, Klick-HTTPS, Log-Ansicht).
+4. **Coolify *und* Docker weglassen:** native systemd-Dienste (PocketBase-Binary +
+   `serve-dist.mjs`) hinter **Caddy** (Auto-HTTPS) auf einem 1–2-GB-Nano (~3–4 €). Spart
+   Coolifys ~1-GB-Dauergewicht, kostet dafür dessen Komfort-UI (Auto-Deploy, Klick-HTTPS,
+   Log-Ansicht). **Fertige Anleitung + Setup-Skript:**
+   [`cloud-schlank-anleitung.md`](cloud-schlank-anleitung.md).
 
 ---
 
