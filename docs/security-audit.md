@@ -66,11 +66,14 @@ Login-Panel ist Brute-Force-Ziel; CORS-Allowlist ist ein manueller UI-Schritt. *
 IP/VPN/Proxy-Auth einschränken, PB-Rate-Limit + Superuser-MFA aktivieren, CORS-Allowlist verpflichtend
 setzen (geht nicht via Compose → Deploy-Gate).
 
-**#6 — Kapitän-Rolle ist global ✅ teilweise behoben (Rest bewusst offen)**
+**#6 — Kapitän-Rolle ist global ✅ behoben**
 `seasons`/`leagues` anlegen+löschen → nur Admin; `teams` löschen → nur Admin (Migration + provision,
-getestet: Spieler/Kapitän kann keine Saison anlegen / kein Team löschen). **Bewusst offen:** das
-*Editieren* einer fremden Mannschaft (Roster) durch einen Kapitän — sauberes Scoping bräuchte
-`team.captainId == auth.playerId` (User- vs. Player-ID, JSON-Felder) und ist fragil; separat zu lösen.
+getestet: Spieler/Kapitän kann keine Saison anlegen / kein Team löschen). **Rest ebenfalls behoben:**
+`teams` *ändern* ist auf `@request.auth.role = "admin" || (cap && captainId = @request.auth.playerId)`
+gescoped — ein Kapitän kann nur **seine eigene** Mannschaft (Roster) editieren. Der JSON-zu-JSON-Vergleich
+`captainId = @request.auth.playerId` greift (gegen lokale PocketBase verifiziert: eigenes Update klappt,
+fremdes wird mit 404 geblockt). Migration `1782600100_scope_team_update_to_captain`. Vize-Kapitäne haben
+i. d. R. Rolle `player` und sind bewusst nicht eingeschlossen.
 
 **#7 — Hardcodierte Default-Superuser-Creds ✅ (gehärtet)**
 Skripte hatten `admin@dartshub.local` / `dartshub-admin-2026` als Default. Der `_security-guard.mjs`
@@ -117,11 +120,11 @@ aktivieren (#9). Kein XSS-Sink im Code vorhanden.
 - [ ] **#5** PB-Admin-Konsole `/_/` abgeschirmt (IP/VPN), Superuser-MFA + Rate-Limit an, **CORS-Allowlist gesetzt**.
 - [ ] **#9** CSP in `nginx.conf` auf die echte PB-Domain angepasst, einkommentiert und getestet.
 - [x] **#4** Match-Create an Ersteller gebunden (`createdBy`-Stempel) — erledigt.
-- [x] **#6** `seasons`/`leagues`/`teams` anlegen/löschen admin-only — erledigt (Rest: Kapitän-Roster-Editing offen).
+- [x] **#6** `seasons`/`leagues`/`teams` anlegen/löschen admin-only **+** `teams`-Ändern auf eigenen Kapitän gescoped — vollständig erledigt.
 - [ ] HTTPS erzwungen (Proxy/Cloudflare), HSTS aktiv.
 - [ ] Starke, einzigartige Passwörter für alle Konten (Passwortmanager).
 
 ## Noch offen (separate Arbeitspakete)
-- **#4 + #6 erledigt** (Migration `1782600000_harden_authz` + provision, getestet). Rest von #6:
-  Kapitän-Roster-Editing einer *fremden* Mannschaft sauber scopen (`captainId == auth.playerId`).
+- **#4 + #6 vollständig erledigt** (Migrationen `1782600000_harden_authz` + `1782600100_scope_team_update_to_captain`
+  + provision, gegen lokale PB getestet). Inkl. Roster-Editing-Scoping (`captainId == auth.playerId`).
 - Optional: 2FA für Admins (siehe `docs/plan-2fa.md`).

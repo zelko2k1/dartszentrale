@@ -65,7 +65,7 @@
 |---|---|---|---|---|
 | `players` | authed | admin \|\| cap | admin \|\| cap | admin \|\| cap |
 | `events` | authed | admin \|\| cap | admin \|\| cap | admin \|\| cap |
-| `teams` | authed | admin \|\| cap | admin \|\| cap | **admin** |
+| `teams` | authed | admin \|\| cap | **admin \|\| (cap && `captainId = auth.playerId`)** | **admin** |
 | `leagues` | authed | **admin** | admin \|\| cap | **admin** |
 | `seasons` | authed | **admin** | admin \|\| cap | **admin** |
 | `season_snapshots` | authed | admin | admin | admin |
@@ -79,6 +79,9 @@
   nur Admin oder Ersteller. Feld `createdBy` ist Pflicht beim Schreiben.
 - **#6:** `teams` löschen sowie `leagues`/`seasons` anlegen+löschen → **nur Admin** (Kapitän kann keine
   fremden Strukturen anlegen/löschen).
+- **#6 (Rest):** `teams` **ändern** → Admin oder der Kapitän **genau seiner** Mannschaft
+  (`captainId = @request.auth.playerId`). Kein Roster-Editing fremder Teams mehr. (Vize-Kapitäne
+  haben i. d. R. Rolle `player` und sind bewusst nicht eingeschlossen.)
 
 Damit werden die Rollen **echt** (vom Server erzwungen, nicht nur in der Oberfläche).
 

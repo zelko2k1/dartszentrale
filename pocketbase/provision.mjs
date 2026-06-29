@@ -37,6 +37,10 @@ const LOGGED_IN = '@request.auth.id != ""';
 const ADMIN = '@request.auth.role = "admin"';
 const ADMIN_OR_CAPTAIN = '@request.auth.role = "admin" || @request.auth.role = "captain"';
 const NOT_VIEWER = '@request.auth.role != "viewer"';
+// #6 (Rest): Mannschaft ändern darf Admin ODER der Kapitän GENAU SEINER Mannschaft
+//   (teams.captainId == eigene users.playerId). Verhindert Roster-Editing fremder Teams.
+//   captainId/playerId sind json-Skalare (eine Spieler-ID|null) → direkter Vergleich.
+const TEAM_UPDATE = '@request.auth.role = "admin" || (@request.auth.role = "captain" && captainId = @request.auth.playerId)';
 // #4: Ergebnisse — Ersteller wird gestempelt und kann nur SICH SELBST eintragen;
 //     ändern darf Admin ODER der Ersteller (Korrektur der eigenen Eingabe).
 const MATCH_CREATE = '@request.auth.id != "" && @request.body.createdBy = @request.auth.id';
@@ -67,8 +71,8 @@ const BASE_COLLECTIONS = [
     fields: [text('seasonId'), text('seasonName'), json('standings'), json('playerStats'), json('teamRosters'), json('meta')],
   },
   {
-    // #6: löschen nur Admin (Kapitän darf keine fremde Mannschaft löschen).
-    name: 'teams', type: 'base', ...editorRules, deleteRule: ADMIN,
+    // #6: löschen nur Admin; ändern nur Admin oder der eigene Kapitän (kein fremdes Roster-Editing).
+    name: 'teams', type: 'base', ...editorRules, updateRule: TEAM_UPDATE, deleteRule: ADMIN,
     // kind = 'league' (Standard) | 'cup' (Pokalmannschaft). viceCaptainIds: bis zu 2 Ersatzkapitäne.
     fields: [text('name'), text('league'), json('memberIds'), json('captainId'), json('viceCaptainIds'), text('kind'), text('seasonId')],
   },

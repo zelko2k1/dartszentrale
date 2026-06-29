@@ -21,7 +21,8 @@
 - [x] 🧑‍💻 #9/#13 nginx Security-Header, `server_tokens off`, CSP-Vorlage
 
 **Offen — Code:**
-- [ ] 🧑‍💻 **#6-Rest:** Kapitän-Roster-Editing auf die *eigene* Mannschaft scopen (`captainId == auth.playerId`)
+- [x] 🧑‍💻 **#6-Rest:** Kapitän-Roster-Editing auf die *eigene* Mannschaft gescoped (`captainId == auth.playerId`)
+      — Migration `1782600100_scope_team_update_to_captain` + provision; gegen lokale PB verifiziert.
 - [ ] 🧑‍💻 #11 `reset-password.mjs`: `NEW_PW` erzwingen statt Default `dartshub123`
 - [ ] 🧑‍💻 #12 (abwägen) Kader-Lesbarkeit für eingeloggte Nutzer — bei Minderjährigen einschränken
 
