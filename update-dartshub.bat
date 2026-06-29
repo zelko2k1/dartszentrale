@@ -45,7 +45,7 @@ robocopy "%SRC%\app\src"    "%ROOT%app\src"    /MIR /NFL /NDL /NJH /NJS /NP >nul
 if errorlevel 8 goto :error
 robocopy "%SRC%\app\public" "%ROOT%app\public" /MIR /NFL /NDL /NJH /NJS /NP >nul
 if errorlevel 8 goto :error
-for %%f in (package.json package-lock.json index.html vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json eslint.config.js Dockerfile nginx.conf .dockerignore) do (
+for %%f in (package.json package-lock.json index.html vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json eslint.config.js serve-dist.mjs Dockerfile nginx.conf .dockerignore) do (
   if exist "%SRC%\app\%%f" copy /Y "%SRC%\app\%%f" "%ROOT%app\%%f" >nul
 )
 

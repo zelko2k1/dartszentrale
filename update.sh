@@ -55,7 +55,7 @@ replace_dir "$SRC/app/src"    "$ROOT/app/src"
 replace_dir "$SRC/app/public" "$ROOT/app/public"
 for f in package.json package-lock.json index.html vite.config.ts \
          tsconfig.json tsconfig.app.json tsconfig.node.json \
-         eslint.config.js Dockerfile nginx.conf .dockerignore; do
+         eslint.config.js serve-dist.mjs Dockerfile nginx.conf .dockerignore; do
   copy_file "$SRC/app/$f" "$ROOT/app/$f"
 done
 

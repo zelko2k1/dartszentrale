@@ -4,7 +4,7 @@ title DartsHub
 REM ====== [ PRODUKTIV / OPS ] - Windows-Starthilfe (Vereinsmodus: PocketBase + Frontend) ======
 REM Startet im Vereinsmodus BEIDE Dienste auf diesem Rechner:
 REM   - PocketBase (Backend)  -> http://127.0.0.1:8090   (nur wenn pocketbase.exe vorhanden)
-REM   - Frontend (vite preview) -> http://localhost:4173
+REM   - Frontend (statischer Server fuer dist/) -> http://localhost:4173
 REM Jeder Dienst laeuft in einem eigenen Fenster; zum Beenden die Fenster schliessen.
 cd /d "%~dp0app"
 
@@ -46,7 +46,7 @@ if exist "%~dp0pocketbase\pocketbase.exe" (
 
 REM --- Frontend ---
 echo [DartsHub] Starte Frontend auf http://localhost:4173 ...
-start "DartsHub Frontend" /D "%~dp0app" cmd /k "npm run preview -- --port 4173 --strictPort"
+start "DartsHub Frontend" /D "%~dp0app" cmd /k "set HOST=127.0.0.1&& set PORT=4173&& node serve-dist.mjs"
 
 REM Kurz warten, bis die Dienste oben sind, dann Browser oeffnen
 timeout /t 5 >nul

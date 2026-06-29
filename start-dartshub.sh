@@ -2,7 +2,7 @@
 # ═══════ [ PRODUKTIV / OPS ] — Linux-Starthilfe (Vereinsmodus, manuell) ═══════
 # Startet im Vereinsmodus BEIDE Dienste auf diesem Rechner:
 #   • PocketBase (Backend)  → http://127.0.0.1:8090
-#   • Frontend (vite preview, gebautes dist/) → http://127.0.0.1:4173
+#   • Frontend (statischer Server für gebautes dist/) → http://127.0.0.1:4173
 # Zum Beenden: Strg+C (stoppt beide). Für Autostart beim Boot: ./autostart-einrichten.sh
 #
 # Voraussetzung Vereinsmodus: PocketBase ist einmalig eingerichtet (Superuser + Schema),
@@ -12,6 +12,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PB_PORT="${PB_PORT:-8090}"
 WEB_PORT="${WEB_PORT:-4173}"
+WEB_HOST="${WEB_HOST:-127.0.0.1}"   # für LAN-Zugriff: WEB_HOST=0.0.0.0 ./start-dartshub.sh
 PB_URL="http://127.0.0.1:${PB_PORT}"
 
 command -v node >/dev/null || { echo "✗ Node.js fehlt — bitte installieren (https://nodejs.org)"; exit 1; }
@@ -47,9 +48,9 @@ if [ "$HAVE_PB" = "1" ]; then
   PB_PID=$!
 fi
 
-# Frontend (vite preview) starten
-echo "▶ Frontend    → http://127.0.0.1:${WEB_PORT}"
-( cd "$ROOT/app" && npm run preview -- --host 127.0.0.1 --port "${WEB_PORT}" --strictPort ) &
+# Frontend (statischer Server für dist/) starten
+echo "▶ Frontend    → http://${WEB_HOST}:${WEB_PORT}"
+( cd "$ROOT/app" && HOST="${WEB_HOST}" PORT="${WEB_PORT}" node serve-dist.mjs ) &
 WEB_PID=$!
 
 # Beide beim Beenden (Strg+C) sauber stoppen

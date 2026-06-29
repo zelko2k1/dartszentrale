@@ -18,7 +18,7 @@ cpf(){ [ -e "$1" ] && cp -f "$1" "$2"; }   # kopiere Datei, falls vorhanden
 # Frontend-Quellen (ohne node_modules/dist/.env.local); $2=withDocker (1=ja)
 copy_app(){ local d="$1/app"; mkdir -p "$d"
   cp -r "$REPO/app/src" "$REPO/app/public" "$d/"
-  for f in package.json package-lock.json index.html vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json eslint.config.js; do cpf "$REPO/app/$f" "$d/"; done
+  for f in package.json package-lock.json index.html vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json eslint.config.js serve-dist.mjs; do cpf "$REPO/app/$f" "$d/"; done
   if [ "${2:-0}" = "1" ]; then for f in Dockerfile nginx.conf .dockerignore; do cpf "$REPO/app/$f" "$d/"; done; fi
 }
 

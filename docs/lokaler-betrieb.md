@@ -443,7 +443,8 @@ Mehrere einfach hintereinander (durch Leerzeichen getrennt) voranstellen.
 |--------|-------|
 | `npm run dev` | Entwicklungs-Server mit Hot-Reload (http://localhost:5173) |
 | `npm run build` | Production-Build: TypeScript prüfen + Bundle nach `dist/` |
-| `npm run preview` | das gebaute `dist/` statisch lokal ausliefern (Test des Builds) |
+| `npm run preview` | das gebaute `dist/` zum **Testen** ausliefern (via Vite, braucht Dev-Abhängigkeiten) |
+| `npm run serve` | das gebaute `dist/` im **Betrieb** ausliefern (`node serve-dist.mjs`, abhängigkeitsfrei, SPA-Fallback; `HOST`/`PORT` per Env) |
 | `npm run lint` | ESLint über den Code |
 
 ---
@@ -466,7 +467,9 @@ sonst etwas. Voraussetzung bleibt **Node.js + npm** auf dem Zielrechner.
   auf demselben Betriebssystem**. ⚠️ Linux ↔ Windows schlägt fehl (plattformspezifische
   Binärdateien wie esbuild/Rollup). Dann `node_modules` löschen und `npm install` neu.
 - **Nur ausführen, nicht bauen:** der fertige **`dist/`-Ordner** ist statisch und läuft
-  ohne `node_modules` (per `npm run preview` oder beliebigem Webserver).
+  ohne `node_modules` — z. B. mit `node app/serve-dist.mjs` (nur Node-Standardbibliothek,
+  via `npm run serve`) oder einem beliebigen Webserver. (`npm run preview` braucht dagegen
+  die Dev-Abhängigkeiten.)
 
 > Nie `node_modules` zwischen verschiedenen Betriebssystemen kopieren.
 

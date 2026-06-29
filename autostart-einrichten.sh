@@ -2,7 +2,7 @@
 # ═══════ [ PRODUKTIV / OPS ] — Linux-Autostart (Vereinsmodus als Daemon) ═══════
 # Richtet DartsHub im Vereinsmodus als systemd-USER-Dienste ein:
 #   • dartshub-pocketbase.service  → Backend  http://127.0.0.1:8090
-#   • dartshub-web.service         → Frontend http://127.0.0.1:4173 (vite preview)
+#   • dartshub-web.service         → Frontend http://127.0.0.1:4173 (statischer dist-Server)
 # Beide starten automatisch beim Boot (via linger), starten bei Absturz neu,
 # und loggen nach journald. Idempotent — erneutes Ausführen aktualisiert die Dienste.
 #
@@ -27,6 +27,7 @@ command -v systemctl >/dev/null || { echo "✗ systemd (systemctl) nicht gefunde
 command -v node >/dev/null      || { echo "✗ Node.js fehlt (https://nodejs.org)"; exit 1; }
 NPM_BIN="$(command -v npm)"      || { echo "✗ npm fehlt"; exit 1; }
 NODE_DIR="$(dirname "$(command -v node)")"
+NODE_BIN="$(command -v node)"
 [ -x "$ROOT/pocketbase/pocketbase" ] || { echo "✗ PocketBase-Binary fehlt: $ROOT/pocketbase/pocketbase"; exit 1; }
 systemctl --user show-environment >/dev/null 2>&1 || { echo "✗ Keine systemd-User-Session aktiv (systemctl --user). Bei SSH-only ggf. 'loginctl enable-linger' + neu anmelden."; exit 1; }
 
@@ -60,7 +61,7 @@ EOF
 
 cat > "$UNIT_DIR/dartshub-web.service" <<EOF
 [Unit]
-Description=DartsHub Frontend (vite preview)
+Description=DartsHub Frontend (statischer dist-Server)
 After=dartshub-pocketbase.service
 Wants=dartshub-pocketbase.service
 
@@ -68,7 +69,9 @@ Wants=dartshub-pocketbase.service
 Type=simple
 WorkingDirectory=${ROOT}/app
 Environment=PATH=${NODE_DIR}:/usr/local/bin:/usr/bin:/bin
-ExecStart=${NPM_BIN} run preview -- --host 127.0.0.1 --port ${WEB_PORT} --strictPort
+Environment=HOST=127.0.0.1
+Environment=PORT=${WEB_PORT}
+ExecStart=${NODE_BIN} ${ROOT}/app/serve-dist.mjs
 Restart=on-failure
 RestartSec=3
 
@@ -99,4 +102,4 @@ echo
 echo "ℹ Falls noch nicht geschehen: PocketBase einmalig einrichten (Superuser + Schema):"
 echo "   cd pocketbase && ./pocketbase superuser upsert <mail> '<pw>' --dir ./pb_data && node provision.mjs"
 echo "ℹ Mehrere Geräte/Boards im LAN? Dann VITE_PB_URL auf die LAN-IP setzen, neu bauen,"
-echo "   und in beiden Units 127.0.0.1 → 0.0.0.0 ändern."
+echo "   in der PB-Unit --http=127.0.0.1 → 0.0.0.0 und in der Web-Unit 'Environment=HOST=0.0.0.0' setzen."

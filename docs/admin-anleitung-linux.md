@@ -109,8 +109,11 @@ printf 'VITE_PB_URL=http://<server-ip>:8090\n' > .env.local
 cd app
 npm install
 npm run build
-npm run preview -- --port 4173 --strictPort
+npm run serve                       # liefert das gebaute dist/ aus → http://localhost:4173
 ```
+> Sollen **andere Geräte im LAN** dieses Frontend erreichen (statt je Gerät ein eigenes):
+> `HOST=0.0.0.0 npm run serve` — dann über `http://<server-ip>:4173`.
+
 Browser → **`http://localhost:4173`** → beim **ersten Start „Vereinsmodus"** wählen → mit dem
 **App-Admin** (2a, Schritt 4) anmelden. **Fenster offen lassen.**
 

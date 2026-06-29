@@ -44,7 +44,7 @@ Replace-Dir "$Source\app\src"    "$Root\app\src"
 Replace-Dir "$Source\app\public" "$Root\app\public"
 foreach ($f in @("package.json","package-lock.json","index.html","vite.config.ts",
                  "tsconfig.json","tsconfig.app.json","tsconfig.node.json",
-                 "eslint.config.js","Dockerfile","nginx.conf",".dockerignore")) {
+                 "eslint.config.js","serve-dist.mjs","Dockerfile","nginx.conf",".dockerignore")) {
   Copy-File "$Source\app\$f" "$Root\app\$f"
 }
 
