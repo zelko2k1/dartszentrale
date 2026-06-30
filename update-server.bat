@@ -4,7 +4,7 @@ title DartsHub aktualisieren
 REM ====== [ PRODUKTIV / OPS ] - Windows-Update: neue Version vom Stick uebernehmen + neu bauen ======
 REM Uebernimmt app\ (Quelltext + Konfig) und pocketbase\ (Schema/Hooks/Skripte) von einem
 REM Stick/Ordner in DIESEN Projektordner und baut die App neu.
-REM   Aufruf:  update-dartshub.bat [QUELLE]
+REM   Aufruf:  update-server.bat [QUELLE]
 REM            QUELLE = Laufwerk/Ordner mit frischem app\ und pocketbase\  (Default: E:\)
 REM   Per Doppelklick wird die Default-Quelle E:\ genommen.
 REM Bleibt unangetastet:  pocketbase\pb_data\ (Daten) - app\node_modules\ - app\.env.local -
@@ -29,7 +29,7 @@ if errorlevel 1 (
 
 if not exist "%SRC%\app" (
   echo [DartsHub] FEHLER: "%SRC%\app" nicht gefunden - Stick verbunden? Stimmt die QUELLE?
-  echo            Mit anderem Laufwerk z.B.:  update-dartshub.bat F:\
+  echo            Mit anderem Laufwerk z.B.:  update-server.bat F:\
   pause
   exit /b 1
 )
@@ -66,11 +66,11 @@ call npm install || goto :error
 call npm run build || goto :error
 
 REM --- 4) Server-Installation? -> Dienste gezielt neu starten ---
-if exist "%ROOT%start-dartshub-server.bat" (
+if exist "%ROOT%start-lan-server.bat" (
   echo [DartsHub] Server-Installation erkannt - Dienste neu starten ...
   taskkill /FI "WINDOWTITLE eq DartsHub PocketBase" /T /F >nul 2>nul
   taskkill /FI "WINDOWTITLE eq DartsHub Frontend"   /T /F >nul 2>nul
-  start "" "%ROOT%start-dartshub-server.bat"
+  start "" "%ROOT%start-lan-server.bat"
   echo [DartsHub] Update aktiv, Dienste neu gestartet. An den Boards die Seite neu laden.
   pause
   exit /b 0

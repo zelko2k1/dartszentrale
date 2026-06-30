@@ -34,7 +34,7 @@ copy_common(){ for f in start-lokal.sh start-lokal.bat; do cpf "$REPO/$f" "$1/";
 # Nur 01 (lokal, ein Board): Autostart + Update fürs Kiosk-Board, NUR Frontend, kein PocketBase
 copy_lokal(){ for f in autostart-lokal.sh autostart-lokal.bat update-lokal.sh update-lokal.bat; do cpf "$REPO/$f" "$1/"; done; }
 # Nur 02 (Vereinsmodus): manueller Start + Autostart + geführte Einrichtung + Update (mit PocketBase)
-copy_verein(){ for f in start-dartshub.sh start-dartshub.bat autostart-einrichten.sh autostart-entfernen.sh autostart-einrichten.bat einrichten-lan.sh einrichten-lan.ps1 einrichten-lan.bat update.sh update.ps1 update-dartshub.bat; do cpf "$REPO/$f" "$1/"; done; }
+copy_verein(){ for f in start-lan.sh start-lan.bat autostart-lan.sh autostart-lan-entfernen.sh autostart-lan.bat einrichten-lan.sh einrichten-lan.ps1 einrichten-lan.bat update-server.sh update-server.ps1 update-server.bat; do cpf "$REPO/$f" "$1/"; done; }
 copy_docs(){ local d="$1/docs"; mkdir -p "$d"; shift; for f in "$@"; do cpf "$REPO/docs/$f" "$d/"; done; }
 
 # Schlanke Cloud-Variante (ohne Coolify/Docker): Installer + Caddy-Referenzkonfig
@@ -82,7 +82,7 @@ Das lädt PocketBase automatisch, baut die App, richtet Autostart ein und legt d
 Voraussetzung: nur Node.js (nodejs.org). Die PocketBase-Binary holt das Skript selbst.
 
 UPDATE später (neue ZIP entpacken/überspielen, dann):
-  Windows  -> update-dartshub.bat        Linux/Pi -> ./update.sh <quelle>
+  Windows  -> update-server.bat        Linux/Pi -> ./update-server.sh <quelle>
 Die Dienste werden automatisch neu gestartet. pb_data (deine DB) bleibt erhalten.
 
 Anleitung mit Details: docs/admin-anleitung-windows.md bzw. -linux.md, Abschnitt 2.
@@ -93,7 +93,7 @@ C="$TARGET/03-cloud-vereinsmodus"; mkdir -p "$C"
 copy_app "$C" 1
 copy_pb "$C" 1
 copy_deploy_schlank "$C"
-cpf "$REPO/update.sh" "$C/"
+cpf "$REPO/update-server.sh" "$C/"
 copy_docs "$C" COOLIFY-SETUP.md cloud-anleitung.md cloud-schlank-anleitung.md security-audit.md handbuch.md
 cat > "$C/LIESMICH.txt" <<'TXT'
 DartsHub — Vereinsmodus in der Cloud (zwei Wege)
@@ -106,7 +106,7 @@ WEG 2 — Schlank, ohne Coolify & Docker (günstiger, geführt per Skript):
   native systemd-Dienste + Caddy (Auto-HTTPS). EIN Befehl, fragt alles Nötige ab
   (Domains, Superuser, erster Admin) und läuft bis alles steht:
     sudo deploy/cloud-schlank/setup.sh
-  Update später: neue Dateien einspielen, dann  ./update.sh  (erkennt die Dienste,
+  Update später: neue Dateien einspielen, dann  ./update-server.sh  (erkennt die Dienste,
   baut neu, startet neu). Anleitung: docs/cloud-schlank-anleitung.md.
   (Voraussetzung: DNS-A-Records app.* / db.* zeigen auf die Server-IP.)
 

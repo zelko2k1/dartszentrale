@@ -6,7 +6,7 @@
 # Übernimmt eine neue App-Version von einem Stick/Ordner in den Projektordner,
 # installiert Abhängigkeiten und (optional) baut das Produktions-Bundle.
 #
-#   ./update.sh [QUELLE] [--build]
+#   ./update-server.sh [QUELLE] [--build]
 #     QUELLE  = Ordner mit frischem  app/  und  pocketbase/  (Default: /media/usb)
 #     --build = zusätzlich  app/dist  bauen (nur nötig, wenn ihr dist/ ausliefert)
 #
@@ -107,7 +107,7 @@ case "$SVC_MODE" in
     ;;
   none)
     echo "✅ Update übernommen."
-    echo "   → App NEU STARTEN:  ./start-dartshub.sh   (oder: npm --prefix app run dev -- --port 5173 --strictPort)"
+    echo "   → App NEU STARTEN:  ./start-lan.sh   (oder: npm --prefix app run dev -- --port 5173 --strictPort)"
     [ "$PB_TOUCHED" = "1" ] && echo "   → Schema evtl. geändert: PocketBase NEU STARTEN (Migrations laufen beim Start) – bei Bedarf:  node provision.mjs"
     ;;
 esac

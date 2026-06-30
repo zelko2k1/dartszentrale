@@ -12,8 +12,8 @@
 # Verwaltung danach:
 #   systemctl --user status  dartshub-web dartshub-pocketbase
 #   journalctl --user -u dartshub-pocketbase -f      # Logs live
-#   systemctl --user restart dartshub-web            # nach einem Rebuild (update.sh --build)
-#   ./autostart-entfernen.sh   (oder: systemctl --user disable --now dartshub-web dartshub-pocketbase)
+#   systemctl --user restart dartshub-web            # nach einem Rebuild (update-server.sh --build)
+#   ./autostart-lan-entfernen.sh   (oder: systemctl --user disable --now dartshub-web dartshub-pocketbase)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -81,9 +81,9 @@ EOF
 echo "• Unit-Dateien geschrieben → $UNIT_DIR"
 
 # --- Begleitskript zum Entfernen ---
-# Liegt fest im Projekt als ./autostart-entfernen.sh (portabel, ermittelt UNIT_DIR selbst) —
+# Liegt fest im Projekt als ./autostart-lan-entfernen.sh (portabel, ermittelt UNIT_DIR selbst) —
 # wird hier nicht mehr generiert, nur ausführbar gemacht, falls das Exec-Bit fehlt.
-[ -f "$ROOT/autostart-entfernen.sh" ] && chmod +x "$ROOT/autostart-entfernen.sh" 2>/dev/null || true
+[ -f "$ROOT/autostart-lan-entfernen.sh" ] && chmod +x "$ROOT/autostart-lan-entfernen.sh" 2>/dev/null || true
 
 # --- Aktivieren + beim Boot starten (ohne Login) ---
 systemctl --user daemon-reload
@@ -97,7 +97,7 @@ echo "   Backend  : ${PB_URL}"
 echo "   Frontend : http://127.0.0.1:${WEB_PORT}"
 echo "   Status   : systemctl --user status dartshub-web dartshub-pocketbase"
 echo "   Logs     : journalctl --user -u dartshub-pocketbase -f"
-echo "   Entfernen: ./autostart-entfernen.sh"
+echo "   Entfernen: ./autostart-lan-entfernen.sh"
 echo
 echo "ℹ Falls noch nicht geschehen: PocketBase einmalig einrichten (Superuser + Schema):"
 echo "   cd pocketbase && ./pocketbase superuser upsert <mail> '<pw>' --dir ./pb_data && node provision.mjs"

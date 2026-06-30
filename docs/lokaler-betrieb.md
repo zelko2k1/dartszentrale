@@ -129,15 +129,15 @@ bleiben unangetastet.**
 **Linux / Raspberry Pi / Git Bash** (im Projektordner ausführen, Stick als Quelle):
 ```bash
 cd ~/dartshub
-./update.sh /media/usb            # Quelle = Stick (ohne Argument: /media/usb)
-./update.sh /media/usb --build    # zusätzlich app/dist bauen (nur wenn ihr dist/ ausliefert)
+./update-server.sh /media/usb            # Quelle = Stick (ohne Argument: /media/usb)
+./update-server.sh /media/usb --build    # zusätzlich app/dist bauen (nur wenn ihr dist/ ausliefert)
 ```
 
 **Windows / PowerShell:**
 ```powershell
 cd C:\dartshub
-.\update.ps1 -Source E:\          # Quelle = Stick
-.\update.ps1 -Source E:\ -Build   # zusätzlich app\dist bauen
+.\update-server.ps1 -Source E:\          # Quelle = Stick
+.\update-server.ps1 -Source E:\ -Build   # zusätzlich app\dist bauen
 ```
 
 Danach:
@@ -148,7 +148,7 @@ Danach:
 3. An den **Boards die Seite neu laden** (ggf. zweimal — der PWA-Cache hält die alte Version evtl.
    noch einen Ladevorgang lang).
 
-> **Wichtig:** das **lokale** `update.sh`/`update.ps1` im Projektordner starten (nicht die Kopie auf
+> **Wichtig:** das **lokale** `update-server.sh`/`update-server.ps1` im Projektordner starten (nicht die Kopie auf
 > dem Stick) — es nimmt seinen eigenen Ort als Ziel. Wer nicht zwischen geänderten Dateien
 > unterscheiden will: einfach den ganzen `app/`-Ordner vom Stick (ohne `node_modules/`) mitnehmen —
 > das Skript ersetzt `src/`+`public/` ohnehin komplett.
@@ -160,18 +160,18 @@ Auf Linux müssen im **Vereinsmodus** zwei Dinge laufen — **PocketBase** (Back
 
 - **Manuell starten** (zum Testen; Strg+C beendet beide):
   ```bash
-  ./start-dartshub.sh
+  ./start-lan.sh
   ```
 - **Als Daemon einrichten** (systemd-User-Dienste: Autostart beim Boot, Auto-Restart, journald-Logs):
   ```bash
-  ./autostart-einrichten.sh        # baut + installiert + startet beide Dienste
+  ./autostart-lan.sh        # baut + installiert + startet beide Dienste
   ```
   Verwaltung danach:
   ```bash
   systemctl --user status dartshub-web dartshub-pocketbase
   journalctl --user -u dartshub-pocketbase -f     # Logs live
-  systemctl --user restart dartshub-web           # nach einem Rebuild (z. B. update.sh --build)
-  ./autostart-entfernen.sh                         # Autostart wieder entfernen (Daten bleiben)
+  systemctl --user restart dartshub-web           # nach einem Rebuild (z. B. update-server.sh --build)
+  ./autostart-lan-entfernen.sh                         # Autostart wieder entfernen (Daten bleiben)
   ```
 
 **Voraussetzung:** PocketBase einmalig einrichten (Superuser + Schema):
@@ -179,7 +179,7 @@ Auf Linux müssen im **Vereinsmodus** zwei Dinge laufen — **PocketBase** (Back
 cd pocketbase && ./pocketbase superuser upsert <mail> '<pw>' --dir ./pb_data && node provision.mjs
 ```
 Mehrere Boards im LAN? `VITE_PB_URL` auf die LAN-IP setzen, neu bauen, und in den Units
-`127.0.0.1 → 0.0.0.0` ändern. (Windows-Pendant: `start-dartshub.bat` / `autostart-einrichten.bat`.)
+`127.0.0.1 → 0.0.0.0` ändern. (Windows-Pendant: `start-lan.bat` / `autostart-lan.bat`.)
 
 ### Wichtigste Git-Befehle
 

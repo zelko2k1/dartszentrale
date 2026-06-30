@@ -3,7 +3,7 @@
 # Startet im Vereinsmodus BEIDE Dienste auf diesem Rechner:
 #   • PocketBase (Backend)  → http://127.0.0.1:8090
 #   • Frontend (statischer Server für gebautes dist/) → http://127.0.0.1:4173
-# Zum Beenden: Strg+C (stoppt beide). Für Autostart beim Boot: ./autostart-einrichten.sh
+# Zum Beenden: Strg+C (stoppt beide). Für Autostart beim Boot: ./autostart-lan.sh
 #
 # Voraussetzung Vereinsmodus: PocketBase ist einmalig eingerichtet (Superuser + Schema),
 # siehe docs/lokaler-betrieb.md (Superuser anlegen + `node provision.mjs`).
@@ -12,12 +12,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PB_PORT="${PB_PORT:-8090}"
 WEB_PORT="${WEB_PORT:-4173}"
-WEB_HOST="${WEB_HOST:-127.0.0.1}"   # für LAN-Zugriff: WEB_HOST=0.0.0.0 ./start-dartshub.sh
+WEB_HOST="${WEB_HOST:-127.0.0.1}"   # für LAN-Zugriff: WEB_HOST=0.0.0.0 ./start-lan.sh
 PB_URL="http://127.0.0.1:${PB_PORT}"
 
 command -v node >/dev/null || { echo "✗ Node.js fehlt — bitte installieren (https://nodejs.org)"; exit 1; }
 # PocketBase ist nur für den Vereinsmodus nötig. Fehlt das Binary, starten wir trotzdem das
-# Frontend (Lokalmodus) — analog zu start-dartshub.bat (kein harter Abbruch mehr).
+# Frontend (Lokalmodus) — analog zu start-lan.bat (kein harter Abbruch mehr).
 HAVE_PB=0
 if [ -x "$ROOT/pocketbase/pocketbase" ]; then
   HAVE_PB=1

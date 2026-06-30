@@ -162,5 +162,5 @@ echo "   Status         :  systemctl --user status dartshub-web dartshub-pocketb
 echo "   Logs           :  journalctl --user -u dartshub-pocketbase -f"
 echo
 echo "ℹ Beim ersten App-Aufruf 'Vereinsmodus' wählen und mit dem App-Admin anmelden."
-echo "ℹ Update später:  ./update.sh <stick>   (erkennt die Dienste, baut neu, startet neu)."
+echo "ℹ Update später:  ./update-server.sh <stick>   (erkennt die Dienste, baut neu, startet neu)."
 [ "$BIND" = "0.0.0.0" ] && echo "ℹ LAN: ggf. Firewall für Ports ${PB_PORT} und ${WEB_PORT} öffnen (z. B. 'sudo ufw allow ${PB_PORT},${WEB_PORT}/tcp')."

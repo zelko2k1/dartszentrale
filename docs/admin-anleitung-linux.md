@@ -78,7 +78,7 @@ Autostart-Dienst einrichten, Schema + ersten Admin anlegen. Danach läuft alles 
 unter **`http://<server-ip>:4173`** erreichbar.
 
 > Voraussetzung: nur **Node.js** (0b). Die PocketBase-Binärdatei lädt das Skript selbst herunter.
-> Update später: **`./update.sh <quelle>`** — baut neu **und startet die Dienste automatisch neu**.
+> Update später: **`./update-server.sh <quelle>`** — baut neu **und startet die Dienste automatisch neu**.
 
 Wer lieber jeden Schritt selbst kontrolliert, folgt **2a + 2b von Hand**:
 
@@ -131,8 +131,8 @@ npm run serve                       # liefert das gebaute dist/ aus → http://l
 Browser → **`http://localhost:4173`** → beim **ersten Start „Vereinsmodus"** wählen → mit dem
 **App-Admin** (2a, Schritt 4) anmelden. **Fenster offen lassen.**
 
-> **Bequemer:** `./start-dartshub.sh` startet PocketBase **und** Frontend zusammen.
-> **Autostart beim Hochfahren:** `./autostart-einrichten.sh` (richtet systemd-Dienste ein; Voraussetzung: 2a erledigt).
+> **Bequemer:** `./start-lan.sh` startet PocketBase **und** Frontend zusammen.
+> **Autostart beim Hochfahren:** `./autostart-lan.sh` (richtet systemd-Dienste ein; Voraussetzung: 2a erledigt).
 
 ### 2c. Die zwei Logins nicht verwechseln
 
@@ -150,23 +150,23 @@ Eine neue Version sind neue Dateien für `app/`. **Deine Daten (`pb_data`) und K
 unangetastet.**
 
 > **Lokales Paket (ein Board):** dort heißt das Update-Skript **`./update-lokal.sh`** (Windows:
-> `update-lokal.bat`) — gleicher Ablauf, ohne PocketBase. Die folgenden Befehle (`update.sh` /
-> `update-dartshub.bat`) gelten fürs **Vereins-Paket**.
+> `update-lokal.bat`) — gleicher Ablauf, ohne PocketBase. Die folgenden Befehle (`update-server.sh` /
+> `update-server.bat`) gelten fürs **Vereins-Paket**.
 
 **Einfach (neue Version per USB-Stick/Ordner):**
 ```bash
-./update.sh /media/usb      # /media/usb = Pfad deines Sticks (oder entpackte ZIP)
+./update-server.sh /media/usb      # /media/usb = Pfad deines Sticks (oder entpackte ZIP)
 ```
 Übernimmt die neuen Dateien, installiert Abhängigkeiten, **baut neu** und **startet die Dienste neu**.
 
-> Wurde der Server per **`./einrichten-lan.sh`** eingerichtet, erkennt `update.sh` die Dienste und
+> Wurde der Server per **`./einrichten-lan.sh`** eingerichtet, erkennt `update-server.sh` die Dienste und
 > erledigt Build **und** Neustart automatisch — du musst nichts weiter tun.
-> Läuft die App noch **von Hand** (ohne Autostart-Dienst)? Dann nach dem Update `./start-dartshub.sh`
+> Läuft die App noch **von Hand** (ohne Autostart-Dienst)? Dann nach dem Update `./start-lan.sh`
 > erneut starten (und ggf. PocketBase).
 
 **Danach:** an den **Brettern die Seite neu laden** (zur Sicherheit zweimal, wegen PWA-Cache).
 
-*(Mit `git`: `git pull` → `./update.sh` bzw. `cd app && npm install && npm run build` → neu starten.)*
+*(Mit `git`: `git pull` → `./update-server.sh` bzw. `cd app && npm install && npm run build` → neu starten.)*
 
 ---
 
@@ -176,8 +176,8 @@ unangetastet.**
 |---|---|
 | **Lokal starten** (ein Board) | `./start-lokal.sh` · Autostart: `./autostart-lokal.sh` |
 | **Vereinsmodus einrichten (geführt)** | `./einrichten-lan.sh` |
-| **Verein von Hand starten/Autostart** | `./start-dartshub.sh` · `./autostart-einrichten.sh` |
-| **Update (USB/Ordner)** | `./update.sh /media/usb` |
+| **Verein von Hand starten/Autostart** | `./start-lan.sh` · `./autostart-lan.sh` |
+| **Update (USB/Ordner)** | `./update-server.sh /media/usb` |
 | Lokal von Hand | `cd app && npm run dev` |
 | PocketBase-Superuser setzen | `./pocketbase superuser upsert <mail> "<pw>" --dir ./pb_data` |
 | PocketBase starten | `./pocketbase serve --http=0.0.0.0:8090 --dir ./pb_data --migrationsDir ./pb_migrations --hooksDir ./pb_hooks` |
@@ -222,7 +222,7 @@ unangetastet.**
 - Die Start-/Autostart-/Update-Skripte (siehe Tabelle).
 
 **Beim Update austauschen:** das neue `app/src`, `app/public` und die Konfig-Dateien
-(`package.json` usw.). **`pb_data` und `app/.env.local` bleiben unangetastet** — `./update.sh`
+(`package.json` usw.). **`pb_data` und `app/.env.local` bleiben unangetastet** — `./update-server.sh`
 macht genau das.
 
 ## Anhang B — Welches Skript wofür?
@@ -233,9 +233,9 @@ macht genau das.
 | `./autostart-lokal.sh` | **Lokaler Autostart** (nur Frontend, fürs Kiosk-Board) |
 | `./update-lokal.sh` | **Lokal-Update** (nur Frontend, kein PocketBase) |
 | `./einrichten-lan.sh` | **Geführte Vereinsmodus-Einrichtung** (Download, Build, Dienste, Admin) — empfohlen |
-| `./start-dartshub.sh` | **Verein von Hand starten** (PocketBase **und** Frontend) |
-| `./autostart-einrichten.sh` | **Vereins-Autostart** beim Hochfahren einrichten (systemd) |
-| `./update.sh` | **Update** einspielen (Daten bleiben, Dienste starten neu) |
+| `./start-lan.sh` | **Verein von Hand starten** (PocketBase **und** Frontend) |
+| `./autostart-lan.sh` | **Vereins-Autostart** beim Hochfahren einrichten (systemd) |
+| `./update-server.sh` | **Update** einspielen (Daten bleiben, Dienste starten neu) |
 | *Vereinsmodus, einmalig/selten (`node …`):* | |
 | `pocketbase/provision.mjs` | Schema anlegen/aktualisieren + Admin (Alternative zum Auto-Schema) |
 | `pocketbase/add-board-account.mjs` | Board-Konto fürs Brett anlegen |

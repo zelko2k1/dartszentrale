@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ═══════ [ PRODUKTIV / OPS ] — DartsHub-Autostart wieder entfernen ═══════
-# Deaktiviert und entfernt die systemd-USER-Dienste, die autostart-einrichten.sh angelegt hat
+# Deaktiviert und entfernt die systemd-USER-Dienste, die autostart-lan.sh angelegt hat
 # (dartshub-pocketbase.service, dartshub-web.service).
 # Unberührt bleiben: deine Daten (pocketbase/pb_data) und die App selbst.
 set -euo pipefail

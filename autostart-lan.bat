@@ -5,7 +5,7 @@ REM ====== [ PRODUKTIV / OPS ] - Windows-Einrichtung (Board/Kiosk) ======
 
 echo Richtet DartsHub so ein, dass es beim Anmelden automatisch startet.
 echo.
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$wsh=New-Object -ComObject WScript.Shell; $lnk=[System.IO.Path]::Combine($env:APPDATA,'Microsoft\Windows\Start Menu\Programs\Startup','DartsHub.lnk'); $s=$wsh.CreateShortcut($lnk); $s.TargetPath='%~dp0start-dartshub.bat'; $s.WorkingDirectory='%~dp0'; $s.WindowStyle=7; $s.Save()"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$wsh=New-Object -ComObject WScript.Shell; $lnk=[System.IO.Path]::Combine($env:APPDATA,'Microsoft\Windows\Start Menu\Programs\Startup','DartsHub.lnk'); $s=$wsh.CreateShortcut($lnk); $s.TargetPath='%~dp0start-lan.bat'; $s.WorkingDirectory='%~dp0'; $s.WindowStyle=7; $s.Save()"
 if errorlevel 1 goto :error
 
 echo Autostart eingerichtet. DartsHub startet kuenftig automatisch beim Anmelden.

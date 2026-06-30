@@ -289,5 +289,5 @@ fi
 echo "   • Optional härten: /_/ in Caddy auf deine IP sperren + CSP einkommentieren"
 echo "       → docs/cloud-schlank-anleitung.md, Abschnitt Sicherheit."
 echo
-echo "ℹ Update später: neue Dateien einspielen → ./update.sh erkennt die Cloud-Dienste,"
+echo "ℹ Update später: neue Dateien einspielen → ./update-server.sh erkennt die Cloud-Dienste,"
 echo "   baut neu und startet sie neu (oder manuell: npm run build + systemctl restart dartshub-web)."

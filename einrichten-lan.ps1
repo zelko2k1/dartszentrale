@@ -95,7 +95,7 @@ Write-Host "- PocketBase-Superuser anlegen/aktualisieren ..."
 & $PbExe superuser upsert $suEmail $suPass --dir (Join-Path $PbDir "pb_data") | Out-Null
 
 # --- 4) Server-Startskript erzeugen (bind-bewusst) -------------------------
-$startBat = Join-Path $Root "start-dartshub-server.bat"
+$startBat = Join-Path $Root "start-lan-server.bat"
 @"
 @echo off
 chcp 65001 >nul
@@ -103,7 +103,7 @@ title DartsHub Server
 start "DartsHub PocketBase" /D "%~dp0pocketbase" cmd /k "pocketbase.exe serve --http=$bind`:$PbPort --dir=pb_data --migrationsDir=pb_migrations --hooksDir=pb_hooks"
 start "DartsHub Frontend" /D "%~dp0app" cmd /k "set HOST=$bind&& set PORT=$WebPort&& node serve-dist.mjs"
 "@ | Out-File -Encoding ascii $startBat
-Write-Host "- start-dartshub-server.bat erzeugt."
+Write-Host "- start-lan-server.bat erzeugt."
 
 # --- 5) Server starten + auf PocketBase warten -----------------------------
 Write-Host "- Server starten ..."

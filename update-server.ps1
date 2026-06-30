@@ -5,7 +5,7 @@
 # Uebernimmt eine neue App-Version von einem Stick/Ordner in den Projektordner,
 # installiert Abhaengigkeiten und (optional) baut das Produktions-Bundle.
 #
-#   .\update.ps1 [-Source <Pfad>] [-Build]
+#   .\update-server.ps1 [-Source <Pfad>] [-Build]
 #     -Source = Ordner mit frischem  app\  und  pocketbase\  (Default: E:\)
 #     -Build  = zusaetzlich  app\dist  bauen (nur noetig, wenn ihr dist\ ausliefert)
 #
@@ -24,7 +24,7 @@ $Root = $PSScriptRoot
 
 # Server-Installation? (von einrichten-lan.ps1 erzeugtes Startskript) -> dann ist
 # ein Build PFLICHT (ausgeliefert wird das gebaute dist\) und die Dienste werden neu gestartet.
-$ServerBat = Join-Path $Root "start-dartshub-server.bat"
+$ServerBat = Join-Path $Root "start-lan-server.bat"
 $IsServer  = Test-Path $ServerBat
 if ($IsServer) { $Build = $true }
 
@@ -87,7 +87,7 @@ if ($IsServer) {
   Write-Host "OK - Update aktiv, Dienste neu gestartet."
 } else {
   Write-Host "OK - Update uebernommen."
-  Write-Host "   -> App NEU STARTEN:  start-dartshub.bat  (oder: npm --prefix app run dev -- --port 5173 --strictPort)"
+  Write-Host "   -> App NEU STARTEN:  start-lan.bat  (oder: npm --prefix app run dev -- --port 5173 --strictPort)"
   if ($PbTouched) { Write-Host "   -> Schema evtl. geaendert: PocketBase NEU STARTEN (Migrations laufen beim Start)." }
 }
 Write-Host "   -> An den Boards die Seite neu laden (ggf. zweimal, wegen PWA-Cache)."
