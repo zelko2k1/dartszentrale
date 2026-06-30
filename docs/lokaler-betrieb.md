@@ -59,13 +59,13 @@ Copy-Item -Recurse E:\pocketbase .\pocketbase
 ```bash
 # Linux (bei ARM: linux_arm64)
 cd ~/dartshub/pocketbase
-wget https://github.com/pocketbase/pocketbase/releases/download/v0.27.2/pocketbase_0.27.2_linux_amd64.zip
-unzip -o pocketbase_0.27.2_linux_amd64.zip pocketbase && chmod +x pocketbase
+wget https://github.com/pocketbase/pocketbase/releases/download/v0.39.5/pocketbase_0.39.5_linux_amd64.zip
+unzip -o pocketbase_0.39.5_linux_amd64.zip pocketbase && chmod +x pocketbase
 ```
 ```powershell
 # Windows
 cd C:\dartshub\pocketbase
-Invoke-WebRequest https://github.com/pocketbase/pocketbase/releases/download/v0.27.2/pocketbase_0.27.2_windows_amd64.zip -OutFile pb.zip
+Invoke-WebRequest https://github.com/pocketbase/pocketbase/releases/download/v0.39.5/pocketbase_0.39.5_windows_amd64.zip -OutFile pb.zip
 Expand-Archive pb.zip -DestinationPath . -Force
 ```
 
@@ -94,13 +94,13 @@ printf 'VITE_PB_URL=http://127.0.0.1:8090\n' > ~/dartshub/app/.env.local
 # Linux
 cd ~/dartshub/pocketbase
 ./pocketbase superuser upsert admin@dartshub.local "dartshub-admin-2026" --dir ./pb_data
-./pocketbase serve --http=127.0.0.1:8090 --dir ./pb_data
+./pocketbase serve --automigrate=0 --http=127.0.0.1:8090 --dir ./pb_data
 ```
 ```powershell
 # Windows
 cd C:\dartshub\pocketbase
 .\pocketbase.exe superuser upsert admin@dartshub.local "dartshub-admin-2026" --dir .\pb_data
-.\pocketbase.exe serve --http=127.0.0.1:8090 --dir .\pb_data
+.\pocketbase.exe serve --automigrate=0 --http=127.0.0.1:8090 --dir .\pb_data
 ```
 > `pb_data/` und `pb_migrations/` legt PocketBase dabei selbst an.
 
@@ -220,7 +220,7 @@ git branch -d feature/xyz   # erledigten Zweig löschen
 |---|---|---|---|
 | **Node.js 20+ (LTS)** (mit `npm`) | App bauen/starten + `.mjs`-Skripte | Paketmanager / nodejs.org / nvm | Installer von nodejs.org |
 | **Browser** (Edge/Chrome empf.) | App nutzen (PWA-Installation) | vorhanden | vorhanden |
-| **PocketBase 0.27.x** (eine Binärdatei) | Backend – **nur Vereinsmodus** | `pocketbase` + `chmod +x` | `pocketbase.exe` |
+| **PocketBase 0.39.x** (eine Binärdatei) | Backend – **nur Vereinsmodus** | `pocketbase` + `chmod +x` | `pocketbase.exe` |
 | **Git** | Code holen/aktualisieren | `apt install git` | git-scm.com (bringt **Git Bash** mit) |
 | **Terminal** | Befehle eingeben | bash | PowerShell **oder** Git Bash |
 
@@ -236,10 +236,10 @@ git branch -d feature/xyz   # erledigten Zweig löschen
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install -y nodejs git unzip
 
-# PocketBase 0.27.2 in den pocketbase-Ordner (bei ARM: linux_arm64)
+# PocketBase 0.39.5 in den pocketbase-Ordner (bei ARM: linux_arm64)
 cd pocketbase
-wget https://github.com/pocketbase/pocketbase/releases/download/v0.27.2/pocketbase_0.27.2_linux_amd64.zip
-unzip -o pocketbase_0.27.2_linux_amd64.zip pocketbase && chmod +x pocketbase
+wget https://github.com/pocketbase/pocketbase/releases/download/v0.39.5/pocketbase_0.39.5_linux_amd64.zip
+unzip -o pocketbase_0.39.5_linux_amd64.zip pocketbase && chmod +x pocketbase
 ./pocketbase --version
 ```
 
@@ -250,9 +250,9 @@ winget install OpenJS.NodeJS.LTS
 winget install Git.Git
 ```
 Alternativ Node-LTS von nodejs.org und Git von git-scm.com installieren (Git bringt **Git Bash**
-mit → alle Befehle hier gelten 1:1). PocketBase: `pocketbase_0.27.2_windows_amd64.zip` aus den
+mit → alle Befehle hier gelten 1:1). PocketBase: `pocketbase_0.39.5_windows_amd64.zip` aus den
 GitHub-Releases entpacken, `pocketbase.exe` in den `pocketbase\`-Ordner legen.
-Start: `.\pocketbase.exe serve --http=127.0.0.1:8090 --dir .\pb_data`.
+Start: `.\pocketbase.exe serve --automigrate=0 --http=127.0.0.1:8090 --dir .\pb_data`.
 
 Prüfen: `node -v` (≥ 20), `npm -v`, `git --version`.
 
@@ -295,12 +295,12 @@ Im **eigenen Terminal** (läuft im Vordergrund — offen lassen), aus dem `pocke
 ```bash
 # Linux / Git Bash
 cd /mnt/Data/claudebase/dartshub/pocketbase
-./pocketbase serve --http=127.0.0.1:8090 --dir ./pb_data
+./pocketbase serve --automigrate=0 --http=127.0.0.1:8090 --dir ./pb_data
 ```
 ```powershell
 # Windows / PowerShell
 cd C:\Pfad\zu\dartshub\pocketbase
-.\pocketbase.exe serve --http=127.0.0.1:8090 --dir .\pb_data
+.\pocketbase.exe serve --automigrate=0 --http=127.0.0.1:8090 --dir .\pb_data
 ```
 Läuft auf http://127.0.0.1:8090 · Verwaltungs-Konsole: **http://127.0.0.1:8090/_/**
 

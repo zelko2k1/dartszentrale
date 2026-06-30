@@ -76,8 +76,8 @@ Wer lieber jeden Schritt selbst kontrolliert, folgt **2a + 2b von Hand**:
 
 ### 2a. PocketBase von Hand einrichten (nur einmal)
 
-**Schritt 1 — herunterladen:** [Release-Seite](https://github.com/pocketbase/pocketbase/releases/tag/v0.27.2)
-öffnen → **`pocketbase_0.27.2_windows_amd64.zip`** laden → Rechtsklick → **„Alle extrahieren"** → die
+**Schritt 1 — herunterladen:** [Release-Seite](https://github.com/pocketbase/pocketbase/releases/tag/v0.39.5)
+öffnen → **`pocketbase_0.39.5_windows_amd64.zip`** laden → Rechtsklick → **„Alle extrahieren"** → die
 Datei **`pocketbase.exe`** in den Ordner **`pocketbase`** kopieren.
 
 **Schritt 2 — Server-Admin (Superuser) anlegen** (Verwalter der Datenbank, *nicht* dein App-Login;
@@ -88,7 +88,7 @@ pocketbase.exe superuser upsert admin@deinverein.de "<starkes-pw>" --dir .\pb_da
 
 **Schritt 3 — PocketBase starten** (Schema/Funktionen entstehen automatisch):
 ```bat
-pocketbase.exe serve --http=0.0.0.0:8090 --dir .\pb_data --migrationsDir .\pb_migrations --hooksDir .\pb_hooks
+pocketbase.exe serve --automigrate=0 --http=0.0.0.0:8090 --dir .\pb_data --migrationsDir .\pb_migrations --hooksDir .\pb_hooks
 ```
 > **Erfolg:** „Server started" erscheint. **Fenster offen lassen!** Fragt die **Windows-Firewall** →
 > **„Zugriff zulassen"**. (`0.0.0.0` = von anderen Geräten erreichbar; nur dieser PC: `127.0.0.1`.)
@@ -163,7 +163,7 @@ aufrufen, z. B. `update-server.bat F:\`. *(Alternativ in PowerShell: `.\update-s
 | **Verein von Hand starten/Autostart** | **`start-lan.bat`** · **`autostart-lan.bat`** |
 | **Update (USB)** | Doppelklick **`update-server.bat`** |
 | Lokal von Hand | `cd app` → `npm run dev` |
-| PocketBase starten | `pocketbase.exe serve --http=0.0.0.0:8090 --dir .\pb_data --migrationsDir .\pb_migrations --hooksDir .\pb_hooks` |
+| PocketBase starten | `pocketbase.exe serve --automigrate=0 --http=0.0.0.0:8090 --dir .\pb_data --migrationsDir .\pb_migrations --hooksDir .\pb_hooks` |
 
 **Optional / für später (fortgeschritten):**
 

@@ -51,7 +51,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=${ROOT}/pocketbase
-ExecStart=${ROOT}/pocketbase/pocketbase serve --http=127.0.0.1:${PB_PORT} --dir=${ROOT}/pocketbase/pb_data --migrationsDir=${ROOT}/pocketbase/pb_migrations --hooksDir=${ROOT}/pocketbase/pb_hooks
+ExecStart=${ROOT}/pocketbase/pocketbase serve --automigrate=0 --http=127.0.0.1:${PB_PORT} --dir=${ROOT}/pocketbase/pb_data --migrationsDir=${ROOT}/pocketbase/pb_migrations --hooksDir=${ROOT}/pocketbase/pb_hooks
 Restart=on-failure
 RestartSec=3
 

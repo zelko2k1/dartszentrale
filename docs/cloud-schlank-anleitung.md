@@ -144,8 +144,8 @@ sudo apt update && sudo apt install -y caddy
 
 # PocketBase (bei ARM: linux_arm64)
 cd ~/dartshub/pocketbase
-wget https://github.com/pocketbase/pocketbase/releases/download/v0.27.2/pocketbase_0.27.2_linux_amd64.zip
-unzip -o pocketbase_0.27.2_linux_amd64.zip pocketbase && chmod +x pocketbase
+wget https://github.com/pocketbase/pocketbase/releases/download/v0.39.5/pocketbase_0.39.5_linux_amd64.zip
+unzip -o pocketbase_0.39.5_linux_amd64.zip pocketbase && chmod +x pocketbase
 ```
 
 ### 2. Frontend bauen
@@ -167,7 +167,7 @@ Wants=network-online.target
 Type=simple
 User=<user>
 WorkingDirectory=/home/<user>/dartshub/pocketbase
-ExecStart=/home/<user>/dartshub/pocketbase/pocketbase serve --http=127.0.0.1:8090 --origins=https://app.deinedomain.de --dir=/home/<user>/dartshub/pocketbase/pb_data --migrationsDir=/home/<user>/dartshub/pocketbase/pb_migrations --hooksDir=/home/<user>/dartshub/pocketbase/pb_hooks
+ExecStart=/home/<user>/dartshub/pocketbase/pocketbase serve --automigrate=0 --http=127.0.0.1:8090 --origins=https://app.deinedomain.de --dir=/home/<user>/dartshub/pocketbase/pb_data --migrationsDir=/home/<user>/dartshub/pocketbase/pb_migrations --hooksDir=/home/<user>/dartshub/pocketbase/pb_hooks
 Restart=on-failure
 RestartSec=3
 NoNewPrivileges=true

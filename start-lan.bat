@@ -38,7 +38,7 @@ if not exist "dist\index.html" (
 REM --- PocketBase (Backend) ---
 if exist "%~dp0pocketbase\pocketbase.exe" (
   echo [DartsHub] Starte PocketBase auf http://127.0.0.1:8090 ...
-  start "DartsHub PocketBase" /D "%~dp0pocketbase" cmd /k "pocketbase.exe serve --http=127.0.0.1:8090 --dir=pb_data --migrationsDir=pb_migrations --hooksDir=pb_hooks"
+  start "DartsHub PocketBase" /D "%~dp0pocketbase" cmd /k "pocketbase.exe serve --automigrate=0 --http=127.0.0.1:8090 --dir=pb_data --migrationsDir=pb_migrations --hooksDir=pb_hooks"
 ) else (
   echo [DartsHub] Hinweis: pocketbase.exe nicht gefunden - fuer den Vereinsmodus wird es gebraucht.
   echo            ^(Das Frontend startet trotzdem; im Lokalmodus ist kein Server noetig.^)

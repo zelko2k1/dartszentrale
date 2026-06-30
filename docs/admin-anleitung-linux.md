@@ -87,8 +87,8 @@ Wer lieber jeden Schritt selbst kontrolliert, folgt **2a + 2b von Hand**:
 **Schritt 1 — herunterladen** (im Ordner `pocketbase`; **Raspberry Pi:** `amd64` durch `arm64` ersetzen):
 ```bash
 cd pocketbase
-wget https://github.com/pocketbase/pocketbase/releases/download/v0.27.2/pocketbase_0.27.2_linux_amd64.zip
-unzip -o pocketbase_0.27.2_linux_amd64.zip pocketbase && chmod +x pocketbase
+wget https://github.com/pocketbase/pocketbase/releases/download/v0.39.5/pocketbase_0.39.5_linux_amd64.zip
+unzip -o pocketbase_0.39.5_linux_amd64.zip pocketbase && chmod +x pocketbase
 ```
 
 **Schritt 2 — Server-Admin (Superuser) anlegen** (Verwalter der Datenbank, *nicht* dein App-Login;
@@ -99,7 +99,7 @@ starkes Passwort merken):
 
 **Schritt 3 — PocketBase starten** (Schema/Funktionen entstehen automatisch):
 ```bash
-./pocketbase serve --http=0.0.0.0:8090 --dir ./pb_data --migrationsDir ./pb_migrations --hooksDir ./pb_hooks
+./pocketbase serve --automigrate=0 --http=0.0.0.0:8090 --dir ./pb_data --migrationsDir ./pb_migrations --hooksDir ./pb_hooks
 ```
 > **Erfolg:** „Server started" erscheint. **Fenster offen lassen!**
 > (`0.0.0.0` = von anderen Geräten im Netz erreichbar; nur dieses Gerät: `127.0.0.1`.)
@@ -180,7 +180,7 @@ unangetastet.**
 | **Update (USB/Ordner)** | `./update-server.sh /media/usb` |
 | Lokal von Hand | `cd app && npm run dev` |
 | PocketBase-Superuser setzen | `./pocketbase superuser upsert <mail> "<pw>" --dir ./pb_data` |
-| PocketBase starten | `./pocketbase serve --http=0.0.0.0:8090 --dir ./pb_data --migrationsDir ./pb_migrations --hooksDir ./pb_hooks` |
+| PocketBase starten | `./pocketbase serve --automigrate=0 --http=0.0.0.0:8090 --dir ./pb_data --migrationsDir ./pb_migrations --hooksDir ./pb_hooks` |
 | Dienste/Logs (nach Autostart) | `systemctl --user status dartshub-web dartshub-pocketbase` · `journalctl --user -u dartshub-pocketbase -f` |
 
 **Optional / für später (fortgeschritten):**

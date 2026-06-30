@@ -19,7 +19,7 @@ $AppDir  = Join-Path $Root "app"
 $PbExe   = Join-Path $PbDir "pocketbase.exe"
 $PbPort  = 8090
 $WebPort = 4173
-$PbVer   = if ($env:PB_VERSION) { $env:PB_VERSION } else { "0.27.2" }
+$PbVer   = if ($env:PB_VERSION) { $env:PB_VERSION } else { "0.39.5" }
 
 function Read-Secret($prompt) {
   while ($true) {
@@ -100,7 +100,7 @@ $startBat = Join-Path $Root "start-lan-server.bat"
 @echo off
 chcp 65001 >nul
 title DartsHub Server
-start "DartsHub PocketBase" /D "%~dp0pocketbase" cmd /k "pocketbase.exe serve --http=$bind`:$PbPort --dir=pb_data --migrationsDir=pb_migrations --hooksDir=pb_hooks"
+start "DartsHub PocketBase" /D "%~dp0pocketbase" cmd /k "pocketbase.exe serve --automigrate=0 --http=$bind`:$PbPort --dir=pb_data --migrationsDir=pb_migrations --hooksDir=pb_hooks"
 start "DartsHub Frontend" /D "%~dp0app" cmd /k "set HOST=$bind&& set PORT=$WebPort&& node serve-dist.mjs"
 "@ | Out-File -Encoding ascii $startBat
 Write-Host "- start-lan-server.bat erzeugt."

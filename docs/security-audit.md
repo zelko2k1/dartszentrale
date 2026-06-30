@@ -57,7 +57,7 @@ ergänzt. **Sobald PB ausschließlich hinter dem HTTPS-Proxy läuft:** Mapping e
 **#4 — Match-Ergebnisse fälschbar ✅ (behoben)**
 `matches.createRule` zwingt jetzt `@request.body.createdBy = @request.auth.id` (Ersteller-Stempel),
 `updateRule` erlaubt Admin ODER den Ersteller. Neues Feld `createdBy`; die App stempelt es beim
-Speichern. Gesetzt in Migration `1782600000_harden_authz` UND `provision.mjs`. Gegen PocketBase getestet:
+Speichern. Im Schema (Baseline-Migration) und in `provision.mjs` gesetzt. Gegen PocketBase 0.39.5 getestet (frische DB):
 Forge mit fremder `createdBy` abgelehnt, eigener Eintrag erlaubt.
 
 ### 🟡 Mittel
@@ -73,7 +73,7 @@ getestet: Spieler/Kapitän kann keine Saison anlegen / kein Team löschen). **Re
 `teams` *ändern* ist auf `@request.auth.role = "admin" || (cap && captainId = @request.auth.playerId)`
 gescoped — ein Kapitän kann nur **seine eigene** Mannschaft (Roster) editieren. Der JSON-zu-JSON-Vergleich
 `captainId = @request.auth.playerId` greift (gegen lokale PocketBase verifiziert: eigenes Update klappt,
-fremdes wird mit 404 geblockt). Migration `1782600100_scope_team_update_to_captain`. Vize-Kapitäne haben
+fremdes wird mit 404 geblockt). Im Schema (Baseline) + `provision.mjs` gesetzt. Vize-Kapitäne haben
 i. d. R. Rolle `player` und sind bewusst nicht eingeschlossen.
 
 **#7 — Hardcodierte Default-Superuser-Creds ✅ (gehärtet)**
@@ -130,6 +130,6 @@ kein stiller Rückfall auf ein Default mehr. Fehlt `NEW_PW`, bricht das Skript m
 - [ ] Starke, einzigartige Passwörter für alle Konten (Passwortmanager).
 
 ## Noch offen (separate Arbeitspakete)
-- **#4 + #6 vollständig erledigt** (Migrationen `1782600000_harden_authz` + `1782600100_scope_team_update_to_captain`
+- **#4 + #6 vollständig erledigt** (im Schema/Baseline + `provision.mjs` gesetzt
   + provision, gegen lokale PB getestet). Inkl. Roster-Editing-Scoping (`captainId == auth.playerId`).
 - Optional: 2FA für Admins (siehe `docs/plan-2fa.md`).

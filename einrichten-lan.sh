@@ -15,7 +15,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PB_PORT="${PB_PORT:-8090}"
 WEB_PORT="${WEB_PORT:-4173}"
-PB_VERSION="${PB_VERSION:-0.27.2}"
+PB_VERSION="${PB_VERSION:-0.39.5}"
 UNIT_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 PB_BIN="$ROOT/pocketbase/pocketbase"
 
@@ -107,7 +107,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=${ROOT}/pocketbase
-ExecStart=${PB_BIN} serve --http=${BIND}:${PB_PORT} --dir=${ROOT}/pocketbase/pb_data --migrationsDir=${ROOT}/pocketbase/pb_migrations --hooksDir=${ROOT}/pocketbase/pb_hooks
+ExecStart=${PB_BIN} serve --automigrate=0 --http=${BIND}:${PB_PORT} --dir=${ROOT}/pocketbase/pb_data --migrationsDir=${ROOT}/pocketbase/pb_migrations --hooksDir=${ROOT}/pocketbase/pb_hooks
 Restart=on-failure
 RestartSec=3
 

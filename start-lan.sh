@@ -41,6 +41,7 @@ PB_PID=""
 if [ "$HAVE_PB" = "1" ]; then
   echo "▶ PocketBase  → ${PB_URL}"
   ( cd "$ROOT/pocketbase" && ./pocketbase serve \
+      --automigrate=0 \
       --http="127.0.0.1:${PB_PORT}" \
       --dir="$ROOT/pocketbase/pb_data" \
       --migrationsDir="$ROOT/pocketbase/pb_migrations" \

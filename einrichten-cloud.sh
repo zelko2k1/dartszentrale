@@ -24,7 +24,7 @@ set -euo pipefail
 # ── Parameter ───────────────────────────────────────────────────────────────
 APP_DOMAIN="${APP_DOMAIN:-}"
 DB_DOMAIN="${DB_DOMAIN:-}"
-PB_VERSION="${PB_VERSION:-0.27.2}"
+PB_VERSION="${PB_VERSION:-0.39.5}"
 PB_PORT="${PB_PORT:-8090}"
 WEB_PORT="${WEB_PORT:-4173}"
 ACME_EMAIL="${ACME_EMAIL:-}"
@@ -166,7 +166,7 @@ Group=${RUN_GROUP}
 WorkingDirectory=${ROOT}/pocketbase
 # NUR lokal lauschen — Caddy terminiert TLS und reicht durch. Port 8090 ist NICHT öffentlich.
 # --origins schränkt CORS auf die App-Domain ein (Default wäre '*' = jede Website).
-ExecStart=${ROOT}/pocketbase/pocketbase serve --http=127.0.0.1:${PB_PORT} --origins=https://${APP_DOMAIN} --dir=${ROOT}/pocketbase/pb_data --migrationsDir=${ROOT}/pocketbase/pb_migrations --hooksDir=${ROOT}/pocketbase/pb_hooks
+ExecStart=${ROOT}/pocketbase/pocketbase serve --automigrate=0 --http=127.0.0.1:${PB_PORT} --origins=https://${APP_DOMAIN} --dir=${ROOT}/pocketbase/pb_data --migrationsDir=${ROOT}/pocketbase/pb_migrations --hooksDir=${ROOT}/pocketbase/pb_hooks
 Restart=on-failure
 RestartSec=3
 NoNewPrivileges=true
