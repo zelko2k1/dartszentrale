@@ -4,7 +4,8 @@
 // 2 Mannschaften (je 8 Spieler + Kapitän), 2 Ligen mit je 10 Teams und vollständigem
 // Hin-/Rückrunden-Spielplan (ohne Ergebnisse, Termine über die Saison verteilt).
 //
-// Idempotent: leert die Inhalts-Collections vorher und legt frisch an (App-Admin bleibt).
+// Idempotent: leert die Inhalts-Collections vorher und legt frisch an.
+// Legt KEINEN Admin an — vorhandene Admin-Konten bleiben unberührt (Admin legst du selbst an).
 // Aufruf:  node demo-seed-dsv-fuerth.mjs
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
 import { assertSafePassword } from './_security-guard.mjs';
@@ -12,7 +13,6 @@ import { assertSafePassword } from './_security-guard.mjs';
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
 const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartshub.local';
 const SU_PASS = process.env.PB_SU_PASS || 'dartshub-admin-2026';
-const KEEP_ADMIN_EMAIL = process.env.APP_ADMIN_EMAIL || 'chef@dartshub.local';
 const MEMBER_PW = process.env.MEMBER_PW || 'dartshub123';
 
 // Sicherheits-Guard: keine bekannten Default-Passwörter gegen ein nicht-lokales Ziel.
@@ -79,23 +79,10 @@ async function main() {
     const n = await wipe(c);
     console.log(`  geleert: ${c} (${n})`);
   }
-  const delUsers = await wipe('users', `email != "${KEEP_ADMIN_EMAIL}"`);
-  console.log(`  geleert: users (${delUsers}, App-Admin behalten)\n`);
-
-  // App-Admin sicherstellen (idempotent): auf frischer DB existiert er noch nicht,
-  // der wipe oben behält ihn nur. Hier anlegen bzw. Rolle/Passwort geradeziehen.
-  const found = await pb.collection('users').getList(1, 1, { filter: `email="${KEEP_ADMIN_EMAIL}"` });
-  if (found.items.length) {
-    await pb.collection('users').update(found.items[0].id, { password: MEMBER_PW, passwordConfirm: MEMBER_PW, role: 'admin', active: true, verified: true });
-    console.log(`✓ App-Admin aktualisiert: ${KEEP_ADMIN_EMAIL} / ${MEMBER_PW}`);
-  } else {
-    await pb.collection('users').create({
-      email: KEEP_ADMIN_EMAIL, password: MEMBER_PW, passwordConfirm: MEMBER_PW,
-      emailVisibility: true, verified: true, active: true,
-      name: 'Vereins-Admin', first: 'Vereins', last: 'Admin', role: 'admin', last_login: '—',
-    });
-    console.log(`✓ App-Admin angelegt: ${KEEP_ADMIN_EMAIL} / ${MEMBER_PW}`);
-  }
+  // Nur Nicht-Admin-Konten leeren — ALLE Admin-Konten bleiben unberührt
+  // (dein selbst angelegter App-Admin wird nicht angefasst und nicht überschrieben).
+  const delUsers = await wipe('users', `role != "admin"`);
+  console.log(`  geleert: users (${delUsers}, Admin-Konten behalten)\n`);
 
   // 1) Saison 2026/27 (Anfang Sept – Ende Juli)
   const season = await pb.collection('seasons').create({ id: uid(), name: SEASON, status: 'active', startDate: SEASON_START, endDate: SEASON_END });
@@ -191,8 +178,8 @@ async function main() {
   console.log(`✓ Vereinsname gesetzt: ${CLUB}`);
 
   console.log('\nFertig. Datenbank für „DSV Fürth 86" steht bereit.');
-  console.log(`\nLogins (alle Passwort „${MEMBER_PW}"):`);
-  console.log(`  Admin            : ${KEEP_ADMIN_EMAIL} / dartshub123`);
+  console.log(`\nMitglieder-Logins (alle Passwort „${MEMBER_PW}"):`);
+  console.log(`  (Admin: dein selbst angelegtes Konto — vom Seed unberührt)`);
   console.log(`  Kapitän 1. Mann. : ${slug(NAMES[0][0])}.${slug(NAMES[0][1])}@${DOMAIN}`);
   console.log(`  Kapitän 2. Mann. : ${slug(NAMES[8][0])}.${slug(NAMES[8][1])}@${DOMAIN}`);
   console.log(`  Spieler (Beispiel): ${slug(NAMES[1][0])}.${slug(NAMES[1][1])}@${DOMAIN}`);

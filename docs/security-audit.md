@@ -37,7 +37,7 @@ committed** — verifiziert). Trotzdem: **Passwort jetzt rotieren** und den Lite
 entfernen (per `read -s`-Prompt oder Env außerhalb des Repos). Es wurde im Review sichtbar.
 
 **#2 — Seed/Provision nie gegen die Produktiv-DB ✅ (gehärtet) + Betriebsregel ⏳**
-`demo-seed.mjs`/`demo-seed-dsv-fuerth.mjs` legen Demo-Konten mit dem Default `dartshub123` an.
+`demo-seed-dsv-fuerth.mjs` legt Demo-Konten mit dem Default `dartshub123` an.
 `provision.mjs` hat **kein hartcodiertes Admin-Konto mehr** — der erste Admin wird interaktiv
 abgefragt (oder per `APP_ADMIN_EMAIL`/`APP_ADMIN_PASS`). Ein reiner Coolify-Deploy tut das nicht (nur Migrations+Hooks).
 **Gehärtet:** neuer `_security-guard.mjs` — die Skripte **brechen ab**, wenn ein bekanntes
@@ -111,7 +111,7 @@ kein stiller Rückfall auf ein Default mehr. Fehlt `NEW_PW`, bricht das Skript m
 
 ## In diesem Commit umgesetzt (Quick-Wins)
 
-- `pocketbase/_security-guard.mjs` (neu) + eingebunden in `provision.mjs`, `demo-seed.mjs`,
+- `pocketbase/_security-guard.mjs` (neu) + eingebunden in `provision.mjs`,
   `demo-seed-dsv-fuerth.mjs`, `add-board-account.mjs` → **Abbruch bei Default-Passwörtern gegen
   nicht-lokale Ziele** (#2, #7, #8). `MEMBER_PW` nun env-überschreibbar.
 - `app/nginx.conf` → Security-Header + `server_tokens off` + CSP-Vorlage (#9, #13).
