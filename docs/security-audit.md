@@ -57,7 +57,7 @@ ergänzt. **Sobald PB ausschließlich hinter dem HTTPS-Proxy läuft:** Mapping e
 **#4 — Match-Ergebnisse fälschbar ✅ (behoben)**
 `matches.createRule` zwingt jetzt `@request.body.createdBy = @request.auth.id` (Ersteller-Stempel),
 `updateRule` erlaubt Admin ODER den Ersteller. Neues Feld `createdBy`; die App stempelt es beim
-Speichern. Gesetzt in Migration `1782600000_harden_authz` UND `provision.mjs`. Gegen PB 0.39.4 getestet:
+Speichern. Gesetzt in Migration `1782600000_harden_authz` UND `provision.mjs`. Gegen PocketBase getestet:
 Forge mit fremder `createdBy` abgelehnt, eigener Eintrag erlaubt.
 
 ### 🟡 Mittel

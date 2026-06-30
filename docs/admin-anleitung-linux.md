@@ -87,8 +87,8 @@ Wer lieber jeden Schritt selbst kontrolliert, folgt **2a + 2b von Hand**:
 **Schritt 1 — herunterladen** (im Ordner `pocketbase`; **Raspberry Pi:** `amd64` durch `arm64` ersetzen):
 ```bash
 cd pocketbase
-wget https://github.com/pocketbase/pocketbase/releases/download/v0.39.4/pocketbase_0.39.4_linux_amd64.zip
-unzip -o pocketbase_0.39.4_linux_amd64.zip pocketbase && chmod +x pocketbase
+wget https://github.com/pocketbase/pocketbase/releases/download/v0.27.2/pocketbase_0.27.2_linux_amd64.zip
+unzip -o pocketbase_0.27.2_linux_amd64.zip pocketbase && chmod +x pocketbase
 ```
 
 **Schritt 2 — Server-Admin (Superuser) anlegen** (Verwalter der Datenbank, *nicht* dein App-Login;

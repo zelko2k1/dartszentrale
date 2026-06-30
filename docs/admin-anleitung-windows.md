@@ -76,8 +76,8 @@ Wer lieber jeden Schritt selbst kontrolliert, folgt **2a + 2b von Hand**:
 
 ### 2a. PocketBase von Hand einrichten (nur einmal)
 
-**Schritt 1 — herunterladen:** [Release-Seite](https://github.com/pocketbase/pocketbase/releases/tag/v0.39.4)
-öffnen → **`pocketbase_0.39.4_windows_amd64.zip`** laden → Rechtsklick → **„Alle extrahieren"** → die
+**Schritt 1 — herunterladen:** [Release-Seite](https://github.com/pocketbase/pocketbase/releases/tag/v0.27.2)
+öffnen → **`pocketbase_0.27.2_windows_amd64.zip`** laden → Rechtsklick → **„Alle extrahieren"** → die
 Datei **`pocketbase.exe`** in den Ordner **`pocketbase`** kopieren.
 
 **Schritt 2 — Server-Admin (Superuser) anlegen** (Verwalter der Datenbank, *nicht* dein App-Login;

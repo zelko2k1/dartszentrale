@@ -19,7 +19,7 @@ $AppDir  = Join-Path $Root "app"
 $PbExe   = Join-Path $PbDir "pocketbase.exe"
 $PbPort  = 8090
 $WebPort = 4173
-$PbVer   = if ($env:PB_VERSION) { $env:PB_VERSION } else { "0.39.4" }
+$PbVer   = if ($env:PB_VERSION) { $env:PB_VERSION } else { "0.27.2" }
 
 function Read-Secret($prompt) {
   while ($true) {

@@ -144,8 +144,8 @@ sudo apt update && sudo apt install -y caddy
 
 # PocketBase (bei ARM: linux_arm64)
 cd ~/dartshub/pocketbase
-wget https://github.com/pocketbase/pocketbase/releases/download/v0.39.4/pocketbase_0.39.4_linux_amd64.zip
-unzip -o pocketbase_0.39.4_linux_amd64.zip pocketbase && chmod +x pocketbase
+wget https://github.com/pocketbase/pocketbase/releases/download/v0.27.2/pocketbase_0.27.2_linux_amd64.zip
+unzip -o pocketbase_0.27.2_linux_amd64.zip pocketbase && chmod +x pocketbase
 ```
 
 ### 2. Frontend bauen

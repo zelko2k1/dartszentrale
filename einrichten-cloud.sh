@@ -24,7 +24,7 @@ set -euo pipefail
 # ── Parameter ───────────────────────────────────────────────────────────────
 APP_DOMAIN="${APP_DOMAIN:-}"
 DB_DOMAIN="${DB_DOMAIN:-}"
-PB_VERSION="${PB_VERSION:-0.39.4}"
+PB_VERSION="${PB_VERSION:-0.27.2}"
 PB_PORT="${PB_PORT:-8090}"
 WEB_PORT="${WEB_PORT:-4173}"
 ACME_EMAIL="${ACME_EMAIL:-}"
