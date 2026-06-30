@@ -49,7 +49,7 @@ A="$TARGET/01-lokal-ein-board"; mkdir -p "$A"
 copy_app "$A" 0
 copy_common "$A"
 copy_lokal "$A"
-copy_docs "$A" admin-anleitung.md admin-anleitung-windows.md admin-anleitung-linux.md handbuch.md
+copy_docs "$A" anleitung-lokal.md handbuch.md
 cat > "$A/LIESMICH.txt" <<'TXT'
 DartsHub — Lokaler Betrieb, ein Board (kein Server, keine Anmeldung)
 -------------------------------------------------------------------
@@ -57,7 +57,7 @@ Starten:  Windows -> Doppelklick start-lokal.bat   |   Linux/Pi -> ./start-lokal
 Beim ersten Start "Lokal" wählen.
 Autostart (Kiosk):  Windows -> autostart-lokal.bat   |   Linux/Pi -> ./autostart-lokal.sh
 Update:   Windows -> update-lokal.bat   |   Linux/Pi -> ./update-lokal.sh <stick>
-Anleitung: docs/admin-anleitung-windows.md bzw. docs/admin-anleitung-linux.md (Abschnitt 1)
+Anleitung: docs/anleitung-lokal.md  (Bedienung: docs/handbuch.md, Abschnitte 10+11)
 Hinweis: Nur Node.js noetig (nodejs.org). PocketBase wird NICHT gebraucht (kein Server).
 TXT
 

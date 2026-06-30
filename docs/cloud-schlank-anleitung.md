@@ -233,6 +233,35 @@ Dann in `https://db.deinedomain.de/_/` → **Application URL** = `https://db.dei
 | **Backups** | in PocketBase (`/_/` → Settings → Backups) aktivieren; Daten liegen in `pocketbase/pb_data/` |
 | **PocketBase-Version pinnen** | feste Version laden statt `:latest`, kontrolliert tauschen |
 
+### Konten & Notfall (Board-Rechner, Passwörter)
+
+Die Ops-Skripte liegen in `pocketbase/` und laufen **auf dem Server** (PocketBase hört dort
+lokal auf `127.0.0.1:8090`). `PB_SU_EMAIL`/`PB_SU_PASS` = das beim Setup gewählte Superuser-Konto.
+
+- **Board-/Kiosk-Konto** anlegen (rechtearm — darf nur spielen; **nie** den Admin-Login an die
+  Bretter geben):
+  ```bash
+  cd pocketbase
+  BOARD_EMAIL=board1@deinedomain.de BOARD_PW=<starkes-pw> \
+  PB_URL=http://127.0.0.1:8090 PB_SU_EMAIL=<su-mail> PB_SU_PASS=<su-pw> \
+  node add-board-account.mjs
+  ```
+- **App-Passwort zurücksetzen** (jemand hat sich ausgesperrt):
+  ```bash
+  USER_EMAIL=<mail> NEW_PW=<min-8-zeichen> \
+  PB_URL=http://127.0.0.1:8090 PB_SU_EMAIL=<su-mail> PB_SU_PASS=<su-pw> \
+  node reset-password.mjs
+  ```
+- **Superuser-Passwort vergessen?** Dienst kurz stoppen, neu setzen, wieder starten:
+  ```bash
+  sudo systemctl stop dartshub-pocketbase
+  ./pocketbase superuser upsert <su-mail> "<neues-pw>" --dir ./pb_data
+  sudo systemctl start dartshub-pocketbase
+  ```
+
+> Saison sichern / auslagern / zurückspielen: `season-export.mjs` · `season-offload.mjs` ·
+> `season-import.mjs` (oder in der App unter Einstellungen → **Saison**).
+
 ### Domain ändern
 
 Die Domain steckt technisch an mehreren Stellen (Frontend-Build `VITE_PB_URL`, PocketBase

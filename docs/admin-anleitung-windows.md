@@ -6,7 +6,7 @@ Schritt für Schritt für **Windows**, ohne Vorkenntnisse. (Linux/Raspberry Pi? 
 > **Welcher Weg ist meiner?**
 > - **Nur ein Brett/Gerät, schnell zählen, keine Anmeldung** → **Abschnitt 1**. Am einfachsten.
 > - **Mehrere Geräte, echte Logins, Ligen/Mannschaften** → **Abschnitt 2**.
-> - **Server im Internet/Cloud** (von überall erreichbar) → [`cloud-schlank-anleitung.md`](cloud-schlank-anleitung.md) (Linux-Server).
+> - **Server im Internet/Cloud** (von überall erreichbar) → eigenes **Cloud-Paket** (`03-cloud-vereinsmodus`, Linux-Server).
 >
 > Tägliche Bedienung: [`handbuch.md`](handbuch.md).
 

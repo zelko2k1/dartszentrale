@@ -4,11 +4,11 @@ Dieses Handbuch erklärt, **wie ihr DartsHub im Alltag nutzt** — von der Anmel
 über Spieler, Mannschaften, Ligen und den Darts Counter bis zu Board-Rechnern und
 Datensicherung. Es ist bewusst nicht-technisch gehalten.
 
-> **Du willst die App erst zum Laufen bringen?**
-> → **[`admin-anleitung.md`](admin-anleitung.md)** — Inbetriebnahme (lokal & Vereinsmodus) +
->   Updates, mit den wichtigsten Befehlen.
-> → Online/Cloud: [`cloud-schlank-anleitung.md`](cloud-schlank-anleitung.md) — ein Skript
->   (`einrichten-cloud.sh`) richtet den Server komplett ein.
+> **Du willst die App erst zum Laufen bringen?** Die **Inbetriebnahme-Anleitung** liegt im
+> `docs/`-Ordner deines Pakets — je nach Betriebsart:
+> - **lokal, ein Board** → `anleitung-lokal.md`
+> - **Vereinsmodus im LAN** → `admin-anleitung-windows.md` bzw. `admin-anleitung-linux.md`
+> - **Cloud** → `cloud-schlank-anleitung.md` (ein Skript richtet den Server ein)
 >
 > Dieses Handbuch beginnt da, wo die App bereits läuft.
 

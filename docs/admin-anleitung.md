@@ -14,4 +14,4 @@ Beide erklären dasselbe Schritt für Schritt:
 - **Updates** einspielen, plus die wichtigsten Befehle und Hilfe bei Problemen.
 
 > Tägliche Bedienung der App (Spieler, Mannschaften, Ligen, Counter, Rollen):
-> [`handbuch.md`](handbuch.md) · Online/Cloud betreiben: [`cloud-anleitung.md`](cloud-anleitung.md).
+> [`handbuch.md`](handbuch.md) · Online/Cloud betreiben: eigenes **Cloud-Paket** (`03-cloud-vereinsmodus`).
