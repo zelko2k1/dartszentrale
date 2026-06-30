@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Baut unter copy2share/ drei Verteil-Bundles mit NUR den jeweils nötigen Dateien:
+# Baut unter copy2share/ drei Verteil-Bundles (Ordner + ZIP) mit NUR den nötigen Dateien:
 #   01-lokal-ein-board       → Lokaler Betrieb, ein Board (nur Frontend)
-#   02-lan-vereinsmodus      → Vereinsmodus im eigenen Netz (Frontend + PocketBase-Ops)
-#   03-cloud-vereinsmodus    → Vereinsmodus in der Cloud (Docker/Coolify-Bundle)
-# Aufruf:  bash build.sh [ZIEL]   (Standard-Ziel: <repo>/copy2share)
+#   02-lan-vereinsmodus      → Vereinsmodus im eigenen Netz (geführt: einrichten-lan.*)
+#   03-cloud-vereinsmodus    → Vereinsmodus in der Cloud (Docker/Coolify ODER schlank)
+# Jeder Verein bekommt die passende ZIP. Aufruf:  bash build.sh [ZIEL]   (Standard: <repo>/copy2share)
 # Bewusst NICHT kopiert: node_modules, dist, .env.local, pb_data, das PocketBase-Binary,
 # die demo-*.mjs (Testdaten) und seed-remote.sh (Secrets).
 set -euo pipefail
@@ -37,6 +37,9 @@ copy_deploy_schlank(){ local d="$1/deploy/cloud-schlank"; mkdir -p "$d"
   for f in setup.sh Caddyfile.example; do cpf "$REPO/deploy/cloud-schlank/$f" "$d/"; done
 }
 
+# Geführte LAN-Einrichtung (ein Befehl bis lauffähig inkl. Admin), Linux + Windows
+copy_lan_setup(){ for f in einrichten-lan.sh einrichten-lan.ps1 einrichten-lan.bat; do cpf "$REPO/$f" "$1/"; done; }
+
 echo "▶ Ziel: $TARGET"
 rm -rf "$TARGET"; mkdir -p "$TARGET"
 
@@ -60,16 +63,24 @@ B="$TARGET/02-lan-vereinsmodus"; mkdir -p "$B"
 copy_app "$B" 0
 copy_pb "$B" 0
 copy_scripts "$B"
+copy_lan_setup "$B"
 copy_docs "$B" admin-anleitung.md admin-anleitung-windows.md admin-anleitung-linux.md handbuch.md security-audit.md
 cat > "$B/LIESMICH.txt" <<'TXT'
 DartsHub — Vereinsmodus im eigenen Netz (LAN)
 ---------------------------------------------
 Es laufen ZWEI Programme: PocketBase (Backend) + Frontend.
-Einrichtung + Start: docs/admin-anleitung-windows.md bzw. -linux.md, Abschnitt 2.
-Start beider Dienste:  start-dartshub.bat / ./start-dartshub.sh
-Autostart beim Boot:   autostart-einrichten.bat / ./autostart-einrichten.sh
-Du musst zusätzlich besorgen: Node.js (nodejs.org) UND die PocketBase-Binary (v0.39.x,
-pocketbase.org/docs) in den Ordner pocketbase/ legen. pb_data (deine DB) entsteht beim Start.
+
+EINFACHSTER WEG — geführte Einrichtung (fragt alles ab, bis alles läuft inkl. erstem Admin):
+  Windows  -> Doppelklick  einrichten-lan.bat
+  Linux/Pi -> ./einrichten-lan.sh
+Das lädt PocketBase automatisch, baut die App, richtet Autostart ein und legt den Admin an.
+Voraussetzung: nur Node.js (nodejs.org). Die PocketBase-Binary holt das Skript selbst.
+
+UPDATE später (neue ZIP entpacken/überspielen, dann):
+  Windows  -> update-dartshub.bat        Linux/Pi -> ./update.sh <quelle>
+Die Dienste werden automatisch neu gestartet. pb_data (deine DB) bleibt erhalten.
+
+Anleitung mit Details: docs/admin-anleitung-windows.md bzw. -linux.md, Abschnitt 2.
 TXT
 
 # ── 03 — Vereinsmodus in der Cloud (Docker/Coolify ODER schlank) ────────────
@@ -77,6 +88,7 @@ C="$TARGET/03-cloud-vereinsmodus"; mkdir -p "$C"
 copy_app "$C" 1
 copy_pb "$C" 1
 copy_deploy_schlank "$C"
+cpf "$REPO/update.sh" "$C/"
 copy_docs "$C" COOLIFY-SETUP.md cloud-anleitung.md cloud-schlank-anleitung.md security-audit.md handbuch.md
 cat > "$C/LIESMICH.txt" <<'TXT'
 DartsHub — Vereinsmodus in der Cloud (zwei Wege)
@@ -85,16 +97,44 @@ WEG 1 — Docker / Coolify (Komfort-UI): Deployment über Coolify (zieht aus Git
   Docker. Enthält Dockerfiles + docker-compose.yaml. Start-/Update-Skripte hier NICHT nötig.
   Anleitung: docs/cloud-anleitung.md + docs/COOLIFY-SETUP.md (Klick-für-Klick).
 
-WEG 2 — Schlank, ohne Coolify & Docker (günstiger, etwas mehr Kommandozeile):
-  native systemd-Dienste + Caddy (Auto-HTTPS). Ein Befehl:
-    sudo APP_DOMAIN=app.deinedomain.de DB_DOMAIN=db.deinedomain.de deploy/cloud-schlank/setup.sh
-  Anleitung: docs/cloud-schlank-anleitung.md (Caddyfile.example liegt in deploy/cloud-schlank/).
+WEG 2 — Schlank, ohne Coolify & Docker (günstiger, geführt per Skript):
+  native systemd-Dienste + Caddy (Auto-HTTPS). EIN Befehl, fragt alles Nötige ab
+  (Domains, Superuser, erster Admin) und läuft bis alles steht:
+    sudo deploy/cloud-schlank/setup.sh
+  Update später: neue Dateien einspielen, dann  ./update.sh  (erkennt die Dienste,
+  baut neu, startet neu). Anleitung: docs/cloud-schlank-anleitung.md.
+  (Voraussetzung: DNS-A-Records app.* / db.* zeigen auf die Server-IP.)
 
 WICHTIG: Sicherheits-Checkliste in docs/security-audit.md vor dem Online-Gang abarbeiten.
 TXT
 
+# ── Shell-Skripte auf LF normalisieren + ausführbar machen ──────────────────
+# Wird build.sh unter Windows (Git Bash) ausgeführt, hätten kopierte .sh sonst CRLF
+# und würden auf einem Linux-Server scheitern (#!/usr/bin/env bash\r).
+find "$TARGET" -name '*.sh' -type f -exec sed -i 's/\r$//' {} + 2>/dev/null || true
+find "$TARGET" -name '*.sh' -type f -exec chmod +x {} + 2>/dev/null || true
+
+# ── ZIP je Variante (zip, sonst PowerShell Compress-Archive) ────────────────
+make_zip(){ local base="$1"
+  ( cd "$TARGET" && rm -f "$base.zip"
+    if command -v zip >/dev/null 2>&1; then
+      zip -rq "$base.zip" "$base"
+    elif command -v powershell >/dev/null 2>&1; then
+      powershell -NoProfile -Command "Compress-Archive -Path '$base' -DestinationPath '$base.zip' -Force" >/dev/null
+    else
+      echo "  ⚠ Weder zip noch PowerShell gefunden — '$base' bleibt nur als Ordner."
+    fi
+  )
+}
 echo
-echo "✅ Fertig. Drei Bundles unter: $TARGET"
-du -sh "$TARGET"/* 2>/dev/null || true
+echo "── ZIPs erstellen ──"
+for b in 01-lokal-ein-board 02-lan-vereinsmodus 03-cloud-vereinsmodus; do make_zip "$b"; done
+
 echo
-echo "Jetzt z. B. den passenden Unterordner auf USB-Stick / Netzwerkshare / in die Cloud kopieren."
+echo "✅ Fertig. Bundles + ZIPs unter: $TARGET"
+du -sh "$TARGET"/*.zip 2>/dev/null || true
+echo
+echo "Jeder Verein bekommt die passende ZIP:"
+echo "  01-lokal-ein-board   = ein Board lokal (kein Server)"
+echo "  02-lan-vereinsmodus  = Verein im eigenen Netz  → einrichten-lan.(bat|sh)"
+echo "  03-cloud-vereinsmodus= Verein in der Cloud      → deploy/cloud-schlank/setup.sh"

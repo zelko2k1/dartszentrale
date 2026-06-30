@@ -22,6 +22,12 @@ param(
 $ErrorActionPreference = "Stop"
 $Root = $PSScriptRoot
 
+# Server-Installation? (von einrichten-lan.ps1 erzeugtes Startskript) -> dann ist
+# ein Build PFLICHT (ausgeliefert wird das gebaute dist\) und die Dienste werden neu gestartet.
+$ServerBat = Join-Path $Root "start-dartshub-server.bat"
+$IsServer  = Test-Path $ServerBat
+if ($IsServer) { $Build = $true }
+
 Write-Host "> Quelle:     $Source"
 Write-Host "> Projektort: $Root"
 if (-not (Test-Path "$Source\app")) { Write-Error "'$Source\app' nicht gefunden - Stick verbunden? Stimmt -Source?"; exit 1 }
@@ -69,9 +75,19 @@ if ($Build) {
   Push-Location "$Root\app"; npm run build; Pop-Location
 }
 
-# --- Abschluss / naechste Schritte -----------------------------------------
+# --- Abschluss: Dienste neu starten (Server) oder Hinweis ------------------
 Write-Host ""
-Write-Host "OK - Update uebernommen."
-Write-Host "   -> App-Terminal(s) NEU STARTEN:  npm --prefix app run dev -- --port 5173 --strictPort"
-if ($PbTouched) { Write-Host "   -> Schema evtl. geaendert: PocketBase NEU STARTEN (Migrations laufen beim Start) - bei Bedarf:  node provision.mjs" }
+if ($IsServer) {
+  Write-Host "-- Server-Installation erkannt: Dienste neu starten --"
+  # Gezielt nur die DartsHub-Fenster schliessen (per Fenstertitel) und neu starten.
+  taskkill /FI "WINDOWTITLE eq DartsHub PocketBase" /T /F 2>$null | Out-Null
+  taskkill /FI "WINDOWTITLE eq DartsHub Frontend"   /T /F 2>$null | Out-Null
+  Start-Sleep 1
+  Start-Process -FilePath $ServerBat -WorkingDirectory $Root
+  Write-Host "OK - Update aktiv, Dienste neu gestartet."
+} else {
+  Write-Host "OK - Update uebernommen."
+  Write-Host "   -> App NEU STARTEN:  start-dartshub.bat  (oder: npm --prefix app run dev -- --port 5173 --strictPort)"
+  if ($PbTouched) { Write-Host "   -> Schema evtl. geaendert: PocketBase NEU STARTEN (Migrations laufen beim Start)." }
+}
 Write-Host "   -> An den Boards die Seite neu laden (ggf. zweimal, wegen PWA-Cache)."

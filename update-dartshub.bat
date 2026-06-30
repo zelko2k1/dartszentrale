@@ -65,6 +65,17 @@ echo [DartsHub] -- npm install + npm run build --
 call npm install || goto :error
 call npm run build || goto :error
 
+REM --- 4) Server-Installation? -> Dienste gezielt neu starten ---
+if exist "%ROOT%start-dartshub-server.bat" (
+  echo [DartsHub] Server-Installation erkannt - Dienste neu starten ...
+  taskkill /FI "WINDOWTITLE eq DartsHub PocketBase" /T /F >nul 2>nul
+  taskkill /FI "WINDOWTITLE eq DartsHub Frontend"   /T /F >nul 2>nul
+  start "" "%ROOT%start-dartshub-server.bat"
+  echo [DartsHub] Update aktiv, Dienste neu gestartet. An den Boards die Seite neu laden.
+  pause
+  exit /b 0
+)
+
 echo.
 echo [DartsHub] Fertig. Beim naechsten Start ist die neue Version aktiv.
 echo            pb_data, app\.env.local und pocketbase.exe blieben unangetastet.

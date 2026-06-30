@@ -9,15 +9,14 @@
 #
 # Kein Docker, kein Coolify, kein nginx. Läuft auf einem 1–2-GB-Nano (Ubuntu/Debian).
 #
-# AUFRUF (als root / mit sudo, weil Pakete + /etc/systemd + /etc/caddy geschrieben werden):
-#   sudo APP_DOMAIN=app.deinedomain.de DB_DOMAIN=db.deinedomain.de \
-#        deploy/cloud-schlank/setup.sh
+# AUFRUF (als root / mit sudo — installiert Pakete + Dienste). Das Skript FRAGT alles
+# Nötige interaktiv ab; Eingaben lassen sich auch vorab als Env-Variablen setzen:
+#   sudo deploy/cloud-schlank/setup.sh                      # vollständig geführt (empfohlen)
+#   sudo APP_DOMAIN=app.x.de DB_DOMAIN=db.x.de deploy/cloud-schlank/setup.sh   # teilweise vorbelegt
 #
-# Optional vorab als Env-Variablen:
-#   RUN_USER=<user>     Besitzer der Dienste (Default: Repo-Eigentümer / SUDO_USER)
-#   PB_VERSION=0.39.4   PocketBase-Version (Default unten)
-#   PB_PORT=8090  WEB_PORT=4173   interne Ports (selten nötig)
-#   ACME_EMAIL=you@x.de  E-Mail für Let's-Encrypt-Benachrichtigungen (optional)
+# Optionale Env-Variablen:
+#   RUN_USER, PB_VERSION, PB_PORT, WEB_PORT, ACME_EMAIL
+#   PB_SU_EMAIL/PB_SU_PASS (Superuser), APP_ADMIN_EMAIL/APP_ADMIN_PASS (erster App-Admin)
 #
 # Idempotent: erneutes Ausführen aktualisiert Build, Units und Caddyfile.
 set -euo pipefail
@@ -29,12 +28,29 @@ PB_VERSION="${PB_VERSION:-0.39.4}"
 PB_PORT="${PB_PORT:-8090}"
 WEB_PORT="${WEB_PORT:-4173}"
 ACME_EMAIL="${ACME_EMAIL:-}"
+SU_EMAIL="${PB_SU_EMAIL:-}"; SU_PASS="${PB_SU_PASS:-}"
+ADMIN_EMAIL="${APP_ADMIN_EMAIL:-}"; ADMIN_PASS="${APP_ADMIN_PASS:-}"
 
 [ "$(id -u)" -eq 0 ] || { echo "✗ Bitte mit sudo/als root ausführen (installiert Pakete + Dienste)."; exit 1; }
-[ -n "$APP_DOMAIN" ] && [ -n "$DB_DOMAIN" ] || {
-  echo "✗ APP_DOMAIN und DB_DOMAIN müssen gesetzt sein."
-  echo "  Beispiel: sudo APP_DOMAIN=app.deinedomain.de DB_DOMAIN=db.deinedomain.de $0"
-  exit 1
+
+IS_TTY=0; [ -t 0 ] && IS_TTY=1
+
+# ── Eingabe-Helfer ──────────────────────────────────────────────────────────
+ask() { # <prompt> <varname> [default]
+  local p="$1" __v="$2" def="${3:-}" ans=""
+  [ "$IS_TTY" = "1" ] && read -rp "$p" ans || true
+  printf -v "$__v" '%s' "${ans:-$def}"
+}
+ask_secret() { # <prompt> <varname>  (versteckt, mit Wiederholung)
+  local p="$1" __v="$2" a b
+  while :; do
+    read -rsp "$p" a; echo
+    read -rsp "  wiederholen:          " b; echo
+    [ -n "$a" ] || { echo "  ✗ darf nicht leer sein."; continue; }
+    [ "$a" = "$b" ] || { echo "  ✗ stimmt nicht überein."; continue; }
+    break
+  done
+  printf -v "$__v" '%s' "$a"
 }
 
 # Repo-Wurzel = zwei Ebenen über diesem Skript (deploy/cloud-schlank/ → ROOT).
@@ -42,18 +58,49 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 RUN_USER="${RUN_USER:-${SUDO_USER:-$(stat -c %U "$ROOT")}}"
 id "$RUN_USER" >/dev/null 2>&1 || { echo "✗ RUN_USER '$RUN_USER' existiert nicht."; exit 1; }
 RUN_GROUP="$(id -gn "$RUN_USER")"
-PB_URL_PUBLIC="https://${DB_DOMAIN}"
 
+# ── 0) Alle Eingaben VORAB sammeln (danach läuft alles unbeaufsichtigt) ─────
+if [ -z "$APP_DOMAIN" ] || [ -z "$DB_DOMAIN" ]; then
+  [ "$IS_TTY" = "1" ] || { echo "✗ APP_DOMAIN/DB_DOMAIN nicht gesetzt und keine interaktive Eingabe möglich."; exit 1; }
+  echo "── Domains (die A-Records müssen bereits auf diese Server-IP zeigen) ──"
+  [ -n "$APP_DOMAIN" ] || ask "  App-Domain (z. B. app.deinedomain.de): " APP_DOMAIN
+  [ -n "$DB_DOMAIN" ]  || ask "  DB-Domain  (z. B. db.deinedomain.de):  " DB_DOMAIN
+  [ -n "$ACME_EMAIL" ] || ask "  E-Mail für Let's Encrypt (optional, Enter überspringt): " ACME_EMAIL
+fi
+[ -n "$APP_DOMAIN" ] && [ -n "$DB_DOMAIN" ] || { echo "✗ App- und DB-Domain sind Pflicht."; exit 1; }
+PB_URL_PUBLIC="https://${DB_DOMAIN}"
+PB_URL_LOCAL="http://127.0.0.1:${PB_PORT}"
+
+# Konten: anlegen, wenn Creds per Env kommen ODER interaktiv bestätigt wird.
+DO_ACCOUNTS=0
+if [ -n "$SU_EMAIL$SU_PASS$ADMIN_EMAIL$ADMIN_PASS" ]; then
+  DO_ACCOUNTS=1
+elif [ "$IS_TTY" = "1" ]; then
+  ask "── Superuser + ersten App-Admin jetzt anlegen? [J/n]: " _acc "J"
+  case "$_acc" in [nN]*) DO_ACCOUNTS=0 ;; *) DO_ACCOUNTS=1 ;; esac
+fi
+if [ "$DO_ACCOUNTS" = "1" ]; then
+  echo "── PocketBase-Superuser (verwaltet die Datenbank unter /_/) ──"
+  [ -n "$SU_EMAIL" ]   || ask        "  Superuser-E-Mail:     " SU_EMAIL "admin@${DB_DOMAIN}"
+  [ -n "$SU_PASS" ]    || ask_secret "  Superuser-Passwort:   " SU_PASS
+  echo "── Erster App-Admin (dein Login IN der App) ──"
+  [ -n "$ADMIN_EMAIL" ]|| ask        "  App-Admin-E-Mail:     " ADMIN_EMAIL
+  [ -n "$ADMIN_PASS" ] || ask_secret "  App-Admin-Passwort:   " ADMIN_PASS
+fi
+
+echo
 echo "▶ DartsHub schlankes Cloud-Setup (ohne Coolify/Docker)"
 echo "  Repo        : $ROOT"
 echo "  Dienst-User : $RUN_USER:$RUN_GROUP"
 echo "  App-Domain  : $APP_DOMAIN  →  127.0.0.1:${WEB_PORT}"
 echo "  DB-Domain   : $DB_DOMAIN  →  127.0.0.1:${PB_PORT}"
+echo "  Konten      : $([ "$DO_ACCOUNTS" = 1 ] && echo "werden angelegt" || echo "später manuell")"
 echo
 
 # ── 1) Pakete: Node.js, Caddy, unzip ────────────────────────────────────────
 echo "• Pakete prüfen/installieren …"
 export DEBIAN_FRONTEND=noninteractive
+command -v curl >/dev/null || apt-get install -y curl >/dev/null
 command -v unzip >/dev/null || apt-get install -y unzip >/dev/null
 
 if ! command -v node >/dev/null; then
@@ -192,7 +239,13 @@ ${DB_DOMAIN} {
 EOF
 } > /etc/caddy/Caddyfile
 
-# ── 6) Aktivieren + starten ─────────────────────────────────────────────────
+# ── 6) Superuser anlegen (offline, BEVOR der Dienst die DB öffnet) ──────────
+if [ "$DO_ACCOUNTS" = "1" ]; then
+  echo "• PocketBase-Superuser anlegen/aktualisieren …"
+  sudo -u "$RUN_USER" "$PB_BIN" superuser upsert "$SU_EMAIL" "$SU_PASS" --dir "$ROOT/pocketbase/pb_data" >/dev/null
+fi
+
+# ── 7) Dienste aktivieren + starten ─────────────────────────────────────────
 echo "• Dienste aktivieren + starten …"
 systemctl daemon-reload
 systemctl enable --now dartshub-pocketbase.service dartshub-web.service
@@ -200,25 +253,41 @@ caddy validate --config /etc/caddy/Caddyfile >/dev/null
 systemctl reload caddy 2>/dev/null || systemctl restart caddy
 systemctl enable caddy >/dev/null 2>&1 || true
 
+# ── 8) Schema + erster App-Admin (provision.mjs gegen die laufende PB) ──────
+if [ "$DO_ACCOUNTS" = "1" ]; then
+  echo "• Warte auf PocketBase …"
+  ok=""
+  for _ in $(seq 1 30); do
+    curl -fsS "${PB_URL_LOCAL}/api/health" >/dev/null 2>&1 && { ok=1; break; }
+    sleep 1
+  done
+  [ "$ok" = "1" ] || { echo "✗ PocketBase nicht erreichbar — Logs: journalctl -u dartshub-pocketbase -e"; exit 1; }
+  echo "• Schema + erster App-Admin (provision.mjs) …"
+  sudo -u "$RUN_USER" env \
+    PB_URL="$PB_URL_LOCAL" PB_SU_EMAIL="$SU_EMAIL" PB_SU_PASS="$SU_PASS" \
+    APP_ADMIN_EMAIL="$ADMIN_EMAIL" APP_ADMIN_PASS="$ADMIN_PASS" \
+    bash -lc "cd '$ROOT/pocketbase' && node provision.mjs"
+fi
+
 echo
 echo "✅ Dienste laufen:"
-echo "   PocketBase : http://127.0.0.1:${PB_PORT}   (öffentlich via https://${DB_DOMAIN})"
+echo "   PocketBase : ${PB_URL_LOCAL}   (öffentlich via https://${DB_DOMAIN})"
 echo "   Frontend   : http://127.0.0.1:${WEB_PORT}   (öffentlich via https://${APP_DOMAIN})"
 echo "   Status     : systemctl status dartshub-web dartshub-pocketbase caddy"
 echo "   Logs       : journalctl -u dartshub-pocketbase -f"
 echo
-echo "➡ NÄCHSTE SCHRITTE (einmalig):"
-echo "   1) DNS: app.* und db.* müssen auf diese Server-IP zeigen (A-Records)."
-echo "   2) Firewall: Ports 80 + 443 offen (für Caddy/HTTPS). 8090/4173 NICHT öffnen."
-echo "   3) PocketBase-Superuser + Schema anlegen:"
-echo "        cd '$ROOT/pocketbase'"
-echo "        ./pocketbase superuser upsert <admin-mail> '<starkes-pw>' --dir ./pb_data"
-echo "        sudo -u $RUN_USER node provision.mjs    # legt Schema + ersten App-Admin an"
-echo "   4) In PocketBase ( https://${DB_DOMAIN}/_/ ) → Settings:"
-echo "        Application URL = https://${DB_DOMAIN}"
-echo "        (CORS ist bereits via --origins=https://${APP_DOMAIN} in der Unit gesetzt.)"
-echo "   5) Optional härten: /_/ in Caddy auf deine IP sperren + CSP einkommentieren"
-echo "        → docs/cloud-schlank-anleitung.md, Abschnitt Sicherheit."
+echo "➡ NÄCHSTE SCHRITTE:"
+echo "   • DNS prüfen (A-Records app.* / db.* → diese Server-IP) und Firewall: 80+443 offen,"
+echo "     8090/4173 NICHT öffnen."
+echo "   • In PocketBase ( https://${DB_DOMAIN}/_/ ) → Settings → Application URL = https://${DB_DOMAIN}."
+if [ "$DO_ACCOUNTS" != "1" ]; then
+  echo "   • Konten anlegen (noch offen):"
+  echo "       cd '$ROOT/pocketbase'"
+  echo "       ./pocketbase superuser upsert <admin-mail> '<starkes-pw>' --dir ./pb_data"
+  echo "       sudo -u $RUN_USER node provision.mjs"
+fi
+echo "   • Optional härten: /_/ in Caddy auf deine IP sperren + CSP einkommentieren"
+echo "       → docs/cloud-schlank-anleitung.md, Abschnitt Sicherheit."
 echo
-echo "ℹ Frontend nach Code-Update neu bauen + Web-Dienst neu starten:"
-echo "   sudo -u $RUN_USER bash -lc \"cd '$ROOT/app' && npm run build\" && sudo systemctl restart dartshub-web"
+echo "ℹ Update später: neue Dateien einspielen → ./update.sh erkennt die Cloud-Dienste,"
+echo "   baut neu und startet sie neu (oder manuell: npm run build + systemctl restart dartshub-web)."

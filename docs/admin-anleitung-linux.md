@@ -6,6 +6,7 @@ Schritt für Schritt für **Linux und Raspberry Pi**, ohne Vorkenntnisse. (Windo
 > **Welcher Weg ist meiner?**
 > - **Nur ein Brett/Gerät, schnell zählen, keine Anmeldung** → **Abschnitt 1**. Am einfachsten.
 > - **Mehrere Geräte, echte Logins, Ligen/Mannschaften** → **Abschnitt 2**.
+> - **Server im Internet/Cloud** (von überall erreichbar) → [`cloud-schlank-anleitung.md`](cloud-schlank-anleitung.md).
 >
 > Tägliche Bedienung: [`handbuch.md`](handbuch.md).
 
@@ -62,13 +63,24 @@ Dann im Browser **`http://localhost:5173`** öffnen. **Terminal-Fenster offen la
 
 ## 2. Vereinsmodus (mehrere Geräte, Server im eigenen Netz)
 
-Hier laufen **zwei** Programme gleichzeitig (zwei offene Fenster): **PocketBase** (Datenbank) und das
-**Frontend** (die App).
+Hier laufen **zwei** Programme gleichzeitig: **PocketBase** (Datenbank) und das **Frontend** (die App).
 
-> **Schnellster Weg, sobald 2a einmal erledigt ist:** `./start-dartshub.sh` startet beide zusammen;
-> `./autostart-einrichten.sh` macht daraus einen Autostart-Dienst. Die einmalige Einrichtung **2a** zuerst.
+### 2 — Empfohlen: geführte Einrichtung (ein Befehl)
 
-### 2a. PocketBase einrichten (nur einmal)
+```bash
+./einrichten-lan.sh
+```
+Das Skript **fragt das Nötige ab** (LAN-Zugriff/Server-IP, Superuser-Login, erster App-Admin) und macht
+dann **alles** in einem Rutsch: PocketBase **automatisch herunterladen**, App bauen, beide als
+Autostart-Dienst einrichten, Schema + ersten Admin anlegen. Danach läuft alles — die App ist im Netz
+unter **`http://<server-ip>:4173`** erreichbar.
+
+> Voraussetzung: nur **Node.js** (0b). Die PocketBase-Binärdatei lädt das Skript selbst herunter.
+> Update später: **`./update.sh <quelle>`** — baut neu **und startet die Dienste automatisch neu**.
+
+Wer lieber jeden Schritt selbst kontrolliert, folgt **2a + 2b von Hand**:
+
+### 2a. PocketBase von Hand einrichten (nur einmal)
 
 **Schritt 1 — herunterladen** (im Ordner `pocketbase`; **Raspberry Pi:** `amd64` durch `arm64` ersetzen):
 ```bash
@@ -135,20 +147,20 @@ Browser → **`http://localhost:4173`** → beim **ersten Start „Vereinsmodus"
 Eine neue Version sind neue Dateien für `app/`. **Deine Daten (`pb_data`) und Konfiguration bleiben
 unangetastet.**
 
-**Einfach (neue Version auf USB-Stick):**
+**Einfach (neue Version per USB-Stick/Ordner):**
 ```bash
-./update.sh /media/usb --build      # /media/usb = Pfad deines Sticks
+./update.sh /media/usb      # /media/usb = Pfad deines Sticks (oder entpackte ZIP)
 ```
-Übernimmt die neuen Dateien, installiert Abhängigkeiten **und baut `app/dist` neu**.
-> **`--build` ist im Vereinsmodus wichtig:** ausgeliefert wird das gebaute `dist/`. Ohne `--build`
-> würden die Bretter nach dem Update weiter die **alte** Version zeigen.
+Übernimmt die neuen Dateien, installiert Abhängigkeiten, **baut neu** und **startet die Dienste neu**.
 
-**Nach dem Update:**
-1. **App neu starten** (`./start-dartshub.sh` erneut, bzw. `systemctl --user restart dartshub-web`).
-2. Lief PocketBase mit: **neu starten** (Schema-Änderungen greifen automatisch).
-3. An den **Brettern die Seite neu laden** (zur Sicherheit zweimal).
+> Wurde der Server per **`./einrichten-lan.sh`** eingerichtet, erkennt `update.sh` die Dienste und
+> erledigt Build **und** Neustart automatisch — du musst nichts weiter tun.
+> Läuft die App noch **von Hand** (ohne Autostart-Dienst)? Dann nach dem Update `./start-dartshub.sh`
+> erneut starten (und ggf. PocketBase).
 
-*(Mit `git`: `git pull` → `cd app && npm install && npm run build` → neu starten.)*
+**Danach:** an den **Brettern die Seite neu laden** (zur Sicherheit zweimal, wegen PWA-Cache).
+
+*(Mit `git`: `git pull` → `./update.sh` bzw. `cd app && npm install && npm run build` → neu starten.)*
 
 ---
 
@@ -156,9 +168,10 @@ unangetastet.**
 
 | Zweck | Befehl |
 |---|---|
-| **Starten** (lokal/Verein) | `./start-dartshub.sh` |
+| **Vereinsmodus einrichten (geführt)** | `./einrichten-lan.sh` |
+| **Starten** (lokal/Verein, von Hand) | `./start-dartshub.sh` |
 | **Autostart einrichten** | `./autostart-einrichten.sh` |
-| **Update (USB)** | `./update.sh /media/usb --build` |
+| **Update (USB/Ordner)** | `./update.sh /media/usb` |
 | Lokal von Hand | `cd app && npm run dev` |
 | PocketBase-Superuser setzen | `./pocketbase superuser upsert <mail> "<pw>" --dir ./pb_data` |
 | PocketBase starten | `./pocketbase serve --http=0.0.0.0:8090 --dir ./pb_data --migrationsDir ./pb_migrations --hooksDir ./pb_hooks` |
@@ -210,9 +223,10 @@ macht genau das.
 
 | Datei | Zweck |
 |---|---|
-| `./start-dartshub.sh` | **Startet** (lokal: Frontend · Verein: PocketBase **und** Frontend) |
+| `./einrichten-lan.sh` | **Geführte Vereinsmodus-Einrichtung** (Download, Build, Dienste, Admin) — empfohlen |
+| `./start-dartshub.sh` | **Startet** von Hand (lokal: Frontend · Verein: PocketBase **und** Frontend) |
 | `./autostart-einrichten.sh` | **Autostart** beim Hochfahren einrichten (systemd) |
-| `./update.sh` | **Update** einspielen (Daten bleiben) |
+| `./update.sh` | **Update** einspielen (Daten bleiben, Dienste starten neu) |
 | *Vereinsmodus, einmalig/selten (`node …`):* | |
 | `pocketbase/provision.mjs` | Schema anlegen/aktualisieren + Admin (Alternative zum Auto-Schema) |
 | `pocketbase/add-board-account.mjs` | Board-Konto fürs Brett anlegen |

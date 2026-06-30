@@ -6,6 +6,7 @@ Schritt für Schritt für **Windows**, ohne Vorkenntnisse. (Linux/Raspberry Pi? 
 > **Welcher Weg ist meiner?**
 > - **Nur ein Brett/Gerät, schnell zählen, keine Anmeldung** → **Abschnitt 1**. Am einfachsten.
 > - **Mehrere Geräte, echte Logins, Ligen/Mannschaften** → **Abschnitt 2**.
+> - **Server im Internet/Cloud** (von überall erreichbar) → [`cloud-schlank-anleitung.md`](cloud-schlank-anleitung.md) (Linux-Server).
 >
 > Tägliche Bedienung: [`handbuch.md`](handbuch.md).
 
@@ -57,13 +58,22 @@ Dann im Browser **`http://localhost:5173`** öffnen. **Terminal-Fenster offen la
 
 ## 2. Vereinsmodus (mehrere Geräte, Server im eigenen Netz)
 
-Hier laufen **zwei** Programme gleichzeitig (zwei offene Fenster): **PocketBase** (Datenbank) und das
-**Frontend** (die App).
+Hier laufen **zwei** Programme gleichzeitig: **PocketBase** (Datenbank) und das **Frontend** (die App).
 
-> **Schnellster Weg, sobald 2a einmal erledigt ist:** Doppelklick auf **`start-dartshub.bat`** startet
-> beide zusammen. Die einmalige Einrichtung in **2a** musst du aber zuerst machen.
+### 2 — Empfohlen: geführte Einrichtung (Doppelklick)
 
-### 2a. PocketBase einrichten (nur einmal)
+Doppelklick auf **`einrichten-lan.bat`**. Das Skript **fragt das Nötige ab** (Netz-Zugriff/Server-IP,
+Superuser-Login, erster App-Admin) und macht dann **alles** automatisch: **`pocketbase.exe`
+herunterladen**, App bauen, Superuser + Schema + ersten Admin anlegen, beide Programme starten und
+**Autostart beim Anmelden** einrichten. Danach ist die App im Netz unter **`http://<server-ip>:4173`**
+erreichbar.
+
+> Voraussetzung: nur **Node.js** (0b). PocketBase lädt das Skript selbst.
+> Update später: Doppelklick **`update-dartshub.bat`** — baut neu **und startet die Dienste neu**.
+
+Wer lieber jeden Schritt selbst kontrolliert, folgt **2a + 2b von Hand**:
+
+### 2a. PocketBase von Hand einrichten (nur einmal)
 
 **Schritt 1 — herunterladen:** [Release-Seite](https://github.com/pocketbase/pocketbase/releases/tag/v0.39.4)
 öffnen → **`pocketbase_0.39.4_windows_amd64.zip`** laden → Rechtsklick → **„Alle extrahieren"** → die
@@ -128,14 +138,14 @@ Eine neue Version sind neue Dateien für `app`. **Deine Daten (`pb_data`) und Ko
 unangetastet.**
 
 **Einfach (neue Version auf USB-Stick):** Doppelklick auf **`update-dartshub.bat`** — übernimmt die
-neuen Dateien vom Stick und baut die App neu. Per Doppelklick wird **Laufwerk `E:\`** angenommen;
-hat dein Stick einen anderen Buchstaben, im Terminal mit Laufwerk aufrufen, z. B. `update-dartshub.bat F:\`.
-*(Alternativ in PowerShell: `.\update.ps1 -Source E:\`.)*
+neuen Dateien vom Stick, baut die App neu **und startet die Dienste neu**. Per Doppelklick wird
+**Laufwerk `E:\`** angenommen; hat dein Stick einen anderen Buchstaben, im Terminal mit Laufwerk
+aufrufen, z. B. `update-dartshub.bat F:\`. *(Alternativ in PowerShell: `.\update.ps1 -Source E:\`.)*
 
-**Nach dem Update:**
-1. **App neu starten** (`start-dartshub.bat` erneut).
-2. Lief PocketBase mit: **neu starten** (Schema-Änderungen greifen automatisch).
-3. An den **Brettern die Seite neu laden** (zur Sicherheit zweimal).
+> Wurde der Server per **`einrichten-lan.bat`** eingerichtet, schließt das Update die DartsHub-Fenster
+> und startet sie automatisch neu. Lief alles **von Hand**, danach `start-dartshub.bat` erneut starten.
+
+**Danach:** an den **Brettern die Seite neu laden** (zur Sicherheit zweimal, wegen PWA-Cache).
 
 ---
 
@@ -143,7 +153,8 @@ hat dein Stick einen anderen Buchstaben, im Terminal mit Laufwerk aufrufen, z. B
 
 | Zweck | Wie |
 |---|---|
-| **Starten** (lokal/Verein) | Doppelklick **`start-dartshub.bat`** |
+| **Vereinsmodus einrichten (geführt)** | Doppelklick **`einrichten-lan.bat`** |
+| **Starten** (lokal/Verein, von Hand) | Doppelklick **`start-dartshub.bat`** |
 | **Autostart einrichten** | Doppelklick **`autostart-einrichten.bat`** |
 | **Update (USB)** | Doppelklick **`update-dartshub.bat`** |
 | Lokal von Hand | `cd app` → `npm run dev` |
@@ -197,9 +208,10 @@ macht genau das.
 
 | Datei | Zweck |
 |---|---|
-| `start-dartshub.bat` | **Startet** (lokal: Frontend · Verein: PocketBase **und** Frontend) |
+| `einrichten-lan.bat` | **Geführte Vereinsmodus-Einrichtung** (Download, Build, Admin, Autostart) — empfohlen |
+| `start-dartshub.bat` | **Startet** von Hand (lokal: Frontend · Verein: PocketBase **und** Frontend) |
 | `autostart-einrichten.bat` | **Autostart** beim Hochfahren einrichten |
-| `update-dartshub.bat` | **Update** einspielen (Daten bleiben) |
+| `update-dartshub.bat` | **Update** einspielen (Daten bleiben, Dienste starten neu) |
 | `update.ps1` | Update über PowerShell (Alternative zu `.bat`) |
 | *Vereinsmodus, einmalig/selten:* | |
 | `pocketbase\provision.mjs` | Schema anlegen/aktualisieren + Admin (Alternative zum Auto-Schema) |

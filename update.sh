@@ -31,6 +31,17 @@ for a in "$@"; do
 done
 SRC="${SRC:-/media/usb}"
 
+# Dienst-Modus erkennen: liefert das System die App ueber einen Dienst aus, ist
+# ein Build PFLICHT (ausgeliefert wird das gebaute dist/) und der Dienst muss neu
+# starten. system = schlanke Cloud-Variante · user = LAN-Autostart · none = Dev/Hand.
+SVC_MODE="none"
+if [ -f /etc/systemd/system/dartshub-web.service ]; then
+  SVC_MODE="system"
+elif [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/dartshub-web.service" ]; then
+  SVC_MODE="user"
+fi
+[ "$SVC_MODE" != "none" ] && DO_BUILD=1
+
 echo "▶ Quelle:      $SRC"
 echo "▶ Projektort:  $ROOT"
 [ -d "$SRC/app" ] || { echo "✗ '$SRC/app' nicht gefunden – Stick gemountet? Stimmt die QUELLE?"; exit 1; }
@@ -79,9 +90,25 @@ if [ "$DO_BUILD" = "1" ]; then
   ( cd "$ROOT/app" && npm run build )
 fi
 
-# --- Abschluss / nächste Schritte ------------------------------------------
+# --- Abschluss: Dienste neu starten (oder Hinweis) -------------------------
 echo
-echo "✅ Update übernommen."
-echo "   → App-Terminal(s) NEU STARTEN:  npm --prefix app run dev -- --port 5173 --strictPort"
-[ "$PB_TOUCHED" = "1" ] && echo "   → Schema evtl. geändert: PocketBase NEU STARTEN (Migrations laufen beim Start) – bei Bedarf:  node provision.mjs"
+case "$SVC_MODE" in
+  system)
+    echo "── Cloud-Dienste neu starten (systemd, braucht sudo) ──"
+    sudo systemctl restart dartshub-web
+    [ "$PB_TOUCHED" = "1" ] && sudo systemctl restart dartshub-pocketbase
+    echo "✅ Update aktiv — Dienste neu gestartet."
+    ;;
+  user)
+    echo "── Dienste neu starten (systemd --user) ──"
+    systemctl --user restart dartshub-web
+    [ "$PB_TOUCHED" = "1" ] && systemctl --user restart dartshub-pocketbase
+    echo "✅ Update aktiv — Dienste neu gestartet."
+    ;;
+  none)
+    echo "✅ Update übernommen."
+    echo "   → App NEU STARTEN:  ./start-dartshub.sh   (oder: npm --prefix app run dev -- --port 5173 --strictPort)"
+    [ "$PB_TOUCHED" = "1" ] && echo "   → Schema evtl. geändert: PocketBase NEU STARTEN (Migrations laufen beim Start) – bei Bedarf:  node provision.mjs"
+    ;;
+esac
 echo "   → An den Boards die Seite neu laden (ggf. zweimal, wegen PWA-Cache)."
