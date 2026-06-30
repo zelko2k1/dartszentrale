@@ -45,11 +45,13 @@ Wert — **die Klammern `< >` weglassen.**
 
 **Einfach** (im Terminal im Projektordner):
 ```bash
-./start-dartshub.sh
+./start-lokal.sh
 ```
-Der Browser öffnet die App → beim **ersten Start „Lokal"** wählen. Fertig.
+Der Browser öffnet die App → beim **ersten Start „Lokal"** wählen. Fertig. (Kein Server, kein
+PocketBase — die Daten liegen im Browser.)
 
 > Bricht es mit einem Fehler ab? Dann fehlt meist **Node.js** (0b).
+> **Kiosk-Board, das beim Hochfahren von selbst startet:** `./autostart-lokal.sh`.
 
 **Von Hand:**
 ```bash
@@ -147,6 +149,10 @@ Browser → **`http://localhost:4173`** → beim **ersten Start „Vereinsmodus"
 Eine neue Version sind neue Dateien für `app/`. **Deine Daten (`pb_data`) und Konfiguration bleiben
 unangetastet.**
 
+> **Lokales Paket (ein Board):** dort heißt das Update-Skript **`./update-lokal.sh`** (Windows:
+> `update-lokal.bat`) — gleicher Ablauf, ohne PocketBase. Die folgenden Befehle (`update.sh` /
+> `update-dartshub.bat`) gelten fürs **Vereins-Paket**.
+
 **Einfach (neue Version per USB-Stick/Ordner):**
 ```bash
 ./update.sh /media/usb      # /media/usb = Pfad deines Sticks (oder entpackte ZIP)
@@ -168,9 +174,9 @@ unangetastet.**
 
 | Zweck | Befehl |
 |---|---|
+| **Lokal starten** (ein Board) | `./start-lokal.sh` · Autostart: `./autostart-lokal.sh` |
 | **Vereinsmodus einrichten (geführt)** | `./einrichten-lan.sh` |
-| **Starten** (lokal/Verein, von Hand) | `./start-dartshub.sh` |
-| **Autostart einrichten** | `./autostart-einrichten.sh` |
+| **Verein von Hand starten/Autostart** | `./start-dartshub.sh` · `./autostart-einrichten.sh` |
 | **Update (USB/Ordner)** | `./update.sh /media/usb` |
 | Lokal von Hand | `cd app && npm run dev` |
 | PocketBase-Superuser setzen | `./pocketbase superuser upsert <mail> "<pw>" --dir ./pb_data` |
@@ -223,9 +229,12 @@ macht genau das.
 
 | Datei | Zweck |
 |---|---|
+| `./start-lokal.sh` | **Lokal starten** (ein Board, nur Frontend — kein Server) |
+| `./autostart-lokal.sh` | **Lokaler Autostart** (nur Frontend, fürs Kiosk-Board) |
+| `./update-lokal.sh` | **Lokal-Update** (nur Frontend, kein PocketBase) |
 | `./einrichten-lan.sh` | **Geführte Vereinsmodus-Einrichtung** (Download, Build, Dienste, Admin) — empfohlen |
-| `./start-dartshub.sh` | **Startet** von Hand (lokal: Frontend · Verein: PocketBase **und** Frontend) |
-| `./autostart-einrichten.sh` | **Autostart** beim Hochfahren einrichten (systemd) |
+| `./start-dartshub.sh` | **Verein von Hand starten** (PocketBase **und** Frontend) |
+| `./autostart-einrichten.sh` | **Vereins-Autostart** beim Hochfahren einrichten (systemd) |
 | `./update.sh` | **Update** einspielen (Daten bleiben, Dienste starten neu) |
 | *Vereinsmodus, einmalig/selten (`node …`):* | |
 | `pocketbase/provision.mjs` | Schema anlegen/aktualisieren + Admin (Alternative zum Auto-Schema) |

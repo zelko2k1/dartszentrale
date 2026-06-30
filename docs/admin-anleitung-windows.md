@@ -41,10 +41,11 @@ Wert — **die Klammern `< >` weglassen.**
 
 ## 1. Lokaler Modus (ein Gerät, kein Server)
 
-**Einfach:** Doppelklick auf **`start-dartshub.bat`** im Projektordner → der Browser öffnet die App →
-beim **ersten Start** „**Lokal**" wählen. Fertig.
+**Einfach:** Doppelklick auf **`start-lokal.bat`** im Projektordner → der Browser öffnet die App →
+beim **ersten Start** „**Lokal**" wählen. Fertig. (Kein Server, kein PocketBase — die Daten liegen im Browser.)
 
 > Schließt sich das schwarze Fenster **sofort wieder**? Dann fehlt meist **Node.js** (0b).
+> **Kiosk-Board, das beim Anmelden von selbst startet:** Doppelklick **`autostart-lokal.bat`**.
 
 **Von Hand (Terminal):**
 ```bat
@@ -137,6 +138,10 @@ Browser → **`http://localhost:4173`** → beim **ersten Start „Vereinsmodus"
 Eine neue Version sind neue Dateien für `app`. **Deine Daten (`pb_data`) und Konfiguration bleiben
 unangetastet.**
 
+> **Lokales Paket (ein Board):** dort heißt das Update-Skript **`update-lokal.bat`** (Linux:
+> `./update-lokal.sh`) — gleicher Ablauf, ohne PocketBase. Der folgende Befehl `update-dartshub.bat`
+> gilt fürs **Vereins-Paket**.
+
 **Einfach (neue Version auf USB-Stick):** Doppelklick auf **`update-dartshub.bat`** — übernimmt die
 neuen Dateien vom Stick, baut die App neu **und startet die Dienste neu**. Per Doppelklick wird
 **Laufwerk `E:\`** angenommen; hat dein Stick einen anderen Buchstaben, im Terminal mit Laufwerk
@@ -153,9 +158,9 @@ aufrufen, z. B. `update-dartshub.bat F:\`. *(Alternativ in PowerShell: `.\update
 
 | Zweck | Wie |
 |---|---|
+| **Lokal starten** (ein Board) | Doppelklick **`start-lokal.bat`** · Autostart: **`autostart-lokal.bat`** |
 | **Vereinsmodus einrichten (geführt)** | Doppelklick **`einrichten-lan.bat`** |
-| **Starten** (lokal/Verein, von Hand) | Doppelklick **`start-dartshub.bat`** |
-| **Autostart einrichten** | Doppelklick **`autostart-einrichten.bat`** |
+| **Verein von Hand starten/Autostart** | **`start-dartshub.bat`** · **`autostart-einrichten.bat`** |
 | **Update (USB)** | Doppelklick **`update-dartshub.bat`** |
 | Lokal von Hand | `cd app` → `npm run dev` |
 | PocketBase starten | `pocketbase.exe serve --http=0.0.0.0:8090 --dir .\pb_data --migrationsDir .\pb_migrations --hooksDir .\pb_hooks` |
@@ -208,9 +213,12 @@ macht genau das.
 
 | Datei | Zweck |
 |---|---|
+| `start-lokal.bat` | **Lokal starten** (ein Board, nur Frontend — kein Server) |
+| `autostart-lokal.bat` | **Lokaler Autostart** (nur Frontend, fürs Kiosk-Board) |
+| `update-lokal.bat` | **Lokal-Update** (nur Frontend, kein PocketBase) |
 | `einrichten-lan.bat` | **Geführte Vereinsmodus-Einrichtung** (Download, Build, Admin, Autostart) — empfohlen |
-| `start-dartshub.bat` | **Startet** von Hand (lokal: Frontend · Verein: PocketBase **und** Frontend) |
-| `autostart-einrichten.bat` | **Autostart** beim Hochfahren einrichten |
+| `start-dartshub.bat` | **Verein von Hand starten** (PocketBase **und** Frontend) |
+| `autostart-einrichten.bat` | **Vereins-Autostart** beim Hochfahren einrichten |
 | `update-dartshub.bat` | **Update** einspielen (Daten bleiben, Dienste starten neu) |
 | `update.ps1` | Update über PowerShell (Alternative zu `.bat`) |
 | *Vereinsmodus, einmalig/selten:* | |

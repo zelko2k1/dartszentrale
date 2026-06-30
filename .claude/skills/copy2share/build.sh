@@ -29,7 +29,12 @@ copy_pb(){ local d="$1/pocketbase"; mkdir -p "$d"
   if [ "${2:-0}" = "1" ]; then for f in Dockerfile docker-compose.yaml; do cpf "$REPO/pocketbase/$f" "$d/"; done; fi
 }
 
-copy_scripts(){ for f in start-dartshub.sh start-dartshub.bat autostart-einrichten.sh autostart-entfernen.sh autostart-einrichten.bat update.sh update.ps1 update-dartshub.bat; do cpf "$REPO/$f" "$1/"; done; }
+# Gemeinsam (01 + 02): lokaler Start — KEIN PocketBase
+copy_common(){ for f in start-lokal.sh start-lokal.bat; do cpf "$REPO/$f" "$1/"; done; }
+# Nur 01 (lokal, ein Board): Autostart + Update fürs Kiosk-Board, NUR Frontend, kein PocketBase
+copy_lokal(){ for f in autostart-lokal.sh autostart-lokal.bat update-lokal.sh update-lokal.bat; do cpf "$REPO/$f" "$1/"; done; }
+# Nur 02 (Vereinsmodus): manueller Start + Autostart + geführte Einrichtung + Update (mit PocketBase)
+copy_verein(){ for f in start-dartshub.sh start-dartshub.bat autostart-einrichten.sh autostart-entfernen.sh autostart-einrichten.bat einrichten-lan.sh einrichten-lan.ps1 einrichten-lan.bat update.sh update.ps1 update-dartshub.bat; do cpf "$REPO/$f" "$1/"; done; }
 copy_docs(){ local d="$1/docs"; mkdir -p "$d"; shift; for f in "$@"; do cpf "$REPO/docs/$f" "$d/"; done; }
 
 # Schlanke Cloud-Variante (ohne Coolify/Docker): Installer + Caddy-Referenzkonfig
@@ -37,8 +42,6 @@ copy_deploy_schlank(){ local d="$1/deploy/cloud-schlank"; mkdir -p "$d"
   for f in setup.sh Caddyfile.example; do cpf "$REPO/deploy/cloud-schlank/$f" "$d/"; done
 }
 
-# Geführte LAN-Einrichtung (ein Befehl bis lauffähig inkl. Admin), Linux + Windows
-copy_lan_setup(){ for f in einrichten-lan.sh einrichten-lan.ps1 einrichten-lan.bat; do cpf "$REPO/$f" "$1/"; done; }
 
 echo "▶ Ziel: $TARGET"
 rm -rf "$TARGET"; mkdir -p "$TARGET"
@@ -46,24 +49,26 @@ rm -rf "$TARGET"; mkdir -p "$TARGET"
 # ── 01 — Lokaler Betrieb, ein Board ─────────────────────────────────────────
 A="$TARGET/01-lokal-ein-board"; mkdir -p "$A"
 copy_app "$A" 0
-copy_scripts "$A"
+copy_common "$A"
+copy_lokal "$A"
 copy_docs "$A" admin-anleitung.md admin-anleitung-windows.md admin-anleitung-linux.md handbuch.md
 cat > "$A/LIESMICH.txt" <<'TXT'
 DartsHub — Lokaler Betrieb, ein Board (kein Server, keine Anmeldung)
 -------------------------------------------------------------------
-Starten:  Windows -> Doppelklick start-dartshub.bat   |   Linux/Pi -> ./start-dartshub.sh
+Starten:  Windows -> Doppelklick start-lokal.bat   |   Linux/Pi -> ./start-lokal.sh
 Beim ersten Start "Lokal" wählen.
-Update:   Windows -> update-dartshub.bat   |   Linux/Pi -> ./update.sh <stick>
-Anleitung: docs/admin-anleitung-windows.md bzw. docs/admin-anleitung-linux.md
-Hinweis: Node.js muss installiert sein (nodejs.org). PocketBase wird NICHT gebraucht.
+Autostart (Kiosk):  Windows -> autostart-lokal.bat   |   Linux/Pi -> ./autostart-lokal.sh
+Update:   Windows -> update-lokal.bat   |   Linux/Pi -> ./update-lokal.sh <stick>
+Anleitung: docs/admin-anleitung-windows.md bzw. docs/admin-anleitung-linux.md (Abschnitt 1)
+Hinweis: Nur Node.js noetig (nodejs.org). PocketBase wird NICHT gebraucht (kein Server).
 TXT
 
 # ── 02 — Vereinsmodus im eigenen Netz (LAN) ─────────────────────────────────
 B="$TARGET/02-lan-vereinsmodus"; mkdir -p "$B"
 copy_app "$B" 0
 copy_pb "$B" 0
-copy_scripts "$B"
-copy_lan_setup "$B"
+copy_common "$B"
+copy_verein "$B"
 copy_docs "$B" admin-anleitung.md admin-anleitung-windows.md admin-anleitung-linux.md handbuch.md security-audit.md
 cat > "$B/LIESMICH.txt" <<'TXT'
 DartsHub — Vereinsmodus im eigenen Netz (LAN)
