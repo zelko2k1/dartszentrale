@@ -7,8 +7,8 @@ Datensicherung. Es ist bewusst nicht-technisch gehalten.
 > **Du willst die App erst zum Laufen bringen?**
 > → **[`admin-anleitung.md`](admin-anleitung.md)** — Inbetriebnahme (lokal & Vereinsmodus) +
 >   Updates, mit den wichtigsten Befehlen.
-> → Online/Cloud: [`cloud-anleitung.md`](cloud-anleitung.md) (Einkaufsliste, Kosten, Schritte)
->   und [`COOLIFY-SETUP.md`](COOLIFY-SETUP.md).
+> → Online/Cloud: [`cloud-schlank-anleitung.md`](cloud-schlank-anleitung.md) — ein Skript
+>   (`einrichten-cloud.sh`) richtet den Server komplett ein.
 >
 > Dieses Handbuch beginnt da, wo die App bereits läuft.
 
@@ -276,9 +276,9 @@ automatische Sicherungen aktivieren (ideal extern, z. B. Hetzner Storage Box / S
 > Bewahre das **Superuser-Passwort sicher** auf (Passwort-Manager) — es ist dein
 > einziger Rückweg, wenn du dich aus der App aussperrst.
 
-**Updates.** Neue App-Version: Code-Stand in Coolify neu deployen (oder Auto-Deploy).
-PocketBase-Version kontrolliert aktualisieren (in `docker-compose.yaml` fest pinnen statt
-`:latest`).
+**Updates.** Neue App-Version einspielen und das passende Update-Skript ausführen
+(`update-server.sh` für den Server, `update-lokal.*` lokal) — es baut neu und startet die
+Dienste neu. PocketBase-Version kontrolliert aktualisieren (feste Version statt `:latest`).
 
 ---
 

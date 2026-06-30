@@ -2,7 +2,7 @@
 # Baut unter copy2share/ drei Verteil-Bundles (Ordner + ZIP) mit NUR den nötigen Dateien:
 #   01-lokal-ein-board       → Lokaler Betrieb, ein Board (nur Frontend)
 #   02-lan-vereinsmodus      → Vereinsmodus im eigenen Netz (geführt: einrichten-lan.*)
-#   03-cloud-vereinsmodus    → Vereinsmodus in der Cloud (Docker/Coolify ODER schlank)
+#   03-cloud-vereinsmodus    → Vereinsmodus in der Cloud (schlank: ohne Coolify/Docker)
 # Jeder Verein bekommt die passende ZIP. Aufruf:  bash build.sh [ZIEL]   (Standard: <repo>/copy2share)
 # Bewusst NICHT kopiert: node_modules, dist, .env.local, pb_data, das PocketBase-Binary,
 # die demo-*.mjs (Testdaten) und seed-remote.sh (Secrets).
@@ -37,10 +37,8 @@ copy_lokal(){ for f in autostart-lokal.sh autostart-lokal.bat update-lokal.sh up
 copy_verein(){ for f in start-lan.sh start-lan.bat autostart-lan.sh autostart-lan-entfernen.sh autostart-lan.bat einrichten-lan.sh einrichten-lan.ps1 einrichten-lan.bat update-server.sh update-server.ps1 update-server.bat; do cpf "$REPO/$f" "$1/"; done; }
 copy_docs(){ local d="$1/docs"; mkdir -p "$d"; shift; for f in "$@"; do cpf "$REPO/docs/$f" "$d/"; done; }
 
-# Schlanke Cloud-Variante (ohne Coolify/Docker): Installer + Caddy-Referenzkonfig
-copy_deploy_schlank(){ local d="$1/deploy/cloud-schlank"; mkdir -p "$d"
-  for f in setup.sh Caddyfile.example; do cpf "$REPO/deploy/cloud-schlank/$f" "$d/"; done
-}
+# Schlanke Cloud-Variante (ohne Coolify/Docker): Installer + Caddy-Referenzkonfig — direkt ins Bundle-Root
+copy_cloud(){ for f in einrichten-cloud.sh Caddyfile.example; do cpf "$REPO/$f" "$1/"; done; }
 
 
 echo "▶ Ziel: $TARGET"
@@ -88,29 +86,26 @@ Die Dienste werden automatisch neu gestartet. pb_data (deine DB) bleibt erhalten
 Anleitung mit Details: docs/admin-anleitung-windows.md bzw. -linux.md, Abschnitt 2.
 TXT
 
-# ── 03 — Vereinsmodus in der Cloud (Docker/Coolify ODER schlank) ────────────
+# ── 03 — Vereinsmodus in der Cloud (schlank: ohne Coolify, ohne Docker) ─────
 C="$TARGET/03-cloud-vereinsmodus"; mkdir -p "$C"
-copy_app "$C" 1
-copy_pb "$C" 1
-copy_deploy_schlank "$C"
+copy_app "$C" 0
+copy_pb "$C" 0
+copy_cloud "$C"
 cpf "$REPO/update-server.sh" "$C/"
-copy_docs "$C" COOLIFY-SETUP.md cloud-anleitung.md cloud-schlank-anleitung.md security-audit.md handbuch.md
+copy_docs "$C" cloud-schlank-anleitung.md handbuch.md
 cat > "$C/LIESMICH.txt" <<'TXT'
-DartsHub — Vereinsmodus in der Cloud (zwei Wege)
-------------------------------------------------
-WEG 1 — Docker / Coolify (Komfort-UI): Deployment über Coolify (zieht aus Git) oder direkt per
-  Docker. Enthält Dockerfiles + docker-compose.yaml. Start-/Update-Skripte hier NICHT nötig.
-  Anleitung: docs/cloud-anleitung.md + docs/COOLIFY-SETUP.md (Klick-für-Klick).
+DartsHub — Vereinsmodus in der Cloud (schlank: ohne Coolify, ohne Docker)
+------------------------------------------------------------------------
+EIN Befehl richtet alles ein — fragt Domains, Superuser und ersten App-Admin ab und
+laeuft bis alles steht (PocketBase laden, App bauen, systemd-Dienste, Caddy/HTTPS):
 
-WEG 2 — Schlank, ohne Coolify & Docker (günstiger, geführt per Skript):
-  native systemd-Dienste + Caddy (Auto-HTTPS). EIN Befehl, fragt alles Nötige ab
-  (Domains, Superuser, erster Admin) und läuft bis alles steht:
-    sudo deploy/cloud-schlank/setup.sh
-  Update später: neue Dateien einspielen, dann  ./update-server.sh  (erkennt die Dienste,
-  baut neu, startet neu). Anleitung: docs/cloud-schlank-anleitung.md.
-  (Voraussetzung: DNS-A-Records app.* / db.* zeigen auf die Server-IP.)
+  sudo ./einrichten-cloud.sh
 
-WICHTIG: Sicherheits-Checkliste in docs/security-audit.md vor dem Online-Gang abarbeiten.
+Voraussetzung: ein Linux-Server (Ubuntu/Debian) und die DNS-A-Records app.* / db.*
+zeigen auf die Server-IP. Details + Sicherheit: docs/cloud-schlank-anleitung.md.
+
+UPDATE spaeter: neue Dateien einspielen, dann  ./update-server.sh
+(erkennt die Dienste, baut neu, startet neu). pb_data (deine DB) bleibt erhalten.
 TXT
 
 # ── Shell-Skripte auf LF normalisieren + ausführbar machen ──────────────────
@@ -142,4 +137,4 @@ echo
 echo "Jeder Verein bekommt die passende ZIP:"
 echo "  01-lokal-ein-board   = ein Board lokal (kein Server)"
 echo "  02-lan-vereinsmodus  = Verein im eigenen Netz  → einrichten-lan.(bat|sh)"
-echo "  03-cloud-vereinsmodus= Verein in der Cloud      → deploy/cloud-schlank/setup.sh"
+echo "  03-cloud-vereinsmodus= Verein in der Cloud      → ./einrichten-cloud.sh"

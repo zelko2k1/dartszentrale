@@ -89,7 +89,7 @@ bricht jetzt ab, wenn dieser Default gegen ein nicht-lokales Ziel benutzt würde
 `Permissions-Policy`, `server_tokens off`. **CSP als Vorlage auskommentiert** — muss pro Deployment auf
 die PB-Domain angepasst und getestet werden (`connect-src` MUSS die PB-URL enthalten). HSTS am Proxy.
 **Schlanke Cloud-Variante (ohne Docker/nginx):** dieselben Header setzt das `security_headers`-Snippet
-im Caddyfile (`deploy/cloud-schlank/`, von `setup.sh` erzeugt) — inkl. **HSTS aktiv** und CSP-Vorlage
+im Caddyfile (von `einrichten-cloud.sh` erzeugt) — inkl. **HSTS aktiv** und CSP-Vorlage
 mit bereits vorausgefülltem `connect-src https://db.<domain>` (auskommentiert bis getestet).
 
 **#10 — JWT im localStorage ⏳ (durch CSP mitigiert)**

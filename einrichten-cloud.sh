@@ -11,8 +11,8 @@
 #
 # AUFRUF (als root / mit sudo — installiert Pakete + Dienste). Das Skript FRAGT alles
 # Nötige interaktiv ab; Eingaben lassen sich auch vorab als Env-Variablen setzen:
-#   sudo deploy/cloud-schlank/setup.sh                      # vollständig geführt (empfohlen)
-#   sudo APP_DOMAIN=app.x.de DB_DOMAIN=db.x.de deploy/cloud-schlank/setup.sh   # teilweise vorbelegt
+#   sudo ./einrichten-cloud.sh                              # vollständig geführt (empfohlen)
+#   sudo APP_DOMAIN=app.x.de DB_DOMAIN=db.x.de ./einrichten-cloud.sh   # teilweise vorbelegt
 #
 # Optionale Env-Variablen:
 #   RUN_USER, PB_VERSION, PB_PORT, WEB_PORT, ACME_EMAIL
@@ -53,8 +53,11 @@ ask_secret() { # <prompt> <varname>  (versteckt, mit Wiederholung)
   printf -v "$__v" '%s' "$a"
 }
 
-# Repo-Wurzel = zwei Ebenen über diesem Skript (deploy/cloud-schlank/ → ROOT).
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# Projekt-/Bundle-Wurzel = der Ordner, der app/ UND pocketbase/ enthält (ab Skript-Ort aufwärts).
+# So läuft das Skript egal ob im Repo-Root oder direkt im Verteil-Bundle.
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+while [ "$ROOT" != "/" ] && ! { [ -d "$ROOT/app" ] && [ -d "$ROOT/pocketbase" ]; }; do ROOT="$(dirname "$ROOT")"; done
+[ -d "$ROOT/app" ] && [ -d "$ROOT/pocketbase" ] || { echo "✗ app/ + pocketbase/ nicht gefunden — Skript im Projekt-/Bundle-Ordner ablegen."; exit 1; }
 RUN_USER="${RUN_USER:-${SUDO_USER:-$(stat -c %U "$ROOT")}}"
 id "$RUN_USER" >/dev/null 2>&1 || { echo "✗ RUN_USER '$RUN_USER' existiert nicht."; exit 1; }
 RUN_GROUP="$(id -gn "$RUN_USER")"
@@ -203,7 +206,7 @@ echo "• Caddyfile schreiben …"
 {
   [ -n "$ACME_EMAIL" ] && printf '{\n\temail %s\n}\n\n' "$ACME_EMAIL"
   cat <<EOF
-# DartsHub — von deploy/cloud-schlank/setup.sh erzeugt. Caddy holt/erneuert die
+# DartsHub — von einrichten-cloud.sh erzeugt. Caddy holt/erneuert die
 # Let's-Encrypt-Zertifikate automatisch (Ports 80+443 müssen offen sein).
 
 # Basis-Security-Header (Pendant zu app/nginx.conf, Befund #9/#13). HSTS aktiv,
