@@ -15,6 +15,10 @@ services:
     # gebackenen Pfade (NICHT /pb_migrations|/pb_hooks, das sind evtl. Volumes).
     command:
       - serve
+      # automigrate AUS: PocketBase darf bei Schema-Edits KEINE neuen Migrationen erzeugen
+      # (das war die Ursache der verhedderten, nicht frisch anwendbaren Alt-Historie). Das
+      # Schema kommt vollständig aus der einen Baseline-Migration im Image.
+      - --automigrate=0
       - --http=0.0.0.0:8090
       - --dir=/pb_data
       - --hooksDir=/pb/hooks

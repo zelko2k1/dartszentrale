@@ -1,10 +1,11 @@
 /// <reference path="../pb_data/types.d.ts" />
-// ═══════ KONSOLIDIERTE BASELINE — komplettes DartsHub-Schema in EINER Migration ═══════
+// ═══════ KONSOLIDIERTE BASELINE — VOLLSTÄNDIGES DartsHub-Schema in EINER Migration ═══════
 // Ersetzt die früheren, sich überlappenden Auto-Migrationen (mehrere Vollschnappschüsse +
-// handgeschriebene Inkremente), die auf einer LEEREN Datenbank NICHT anwendbar waren
-// (Frischinstallationen scheiterten beim Start). Erzeugt mit 'pocketbase migrate collections'.
-// Spätere Schema-Änderungen kommen als NEUE Migrationsdateien NACH dieser Baseline dazu.
-// provision.mjs ergänzt danach Saison-Collections + ersten App-Admin (idempotent).
+// Inkremente), die auf einer LEEREN DB nicht anwendbar waren. Enthält ALLE Collections inkl.
+// seasons/season_snapshots und die gehärteten API-Rules — so liefert auch der reine Migrations-
+// Weg (Docker/Coolify, OHNE provision.mjs) das komplette Schema. Erzeugt via 'migrate collections'.
+// WICHTIG: serve muss mit --automigrate=0 laufen (sonst werden bei Schema-Edits neue,
+// widersprüchliche Migrationen erzeugt). Spätere Änderungen als NEUE Dateien NACH dieser Baseline.
 migrate((app) => {
   const snapshot = [
     {
@@ -887,6 +888,27 @@ migrate((app) => {
           "required": false,
           "system": false,
           "type": "number"
+        },
+        {
+          "help": "",
+          "hidden": false,
+          "id": "file347571224",
+          "maxSelect": 1,
+          "maxSize": 5242880,
+          "mimeTypes": [
+            "image/png",
+            "image/jpeg",
+            "image/webp"
+          ],
+          "name": "photo",
+          "presentable": false,
+          "protected": false,
+          "required": false,
+          "system": false,
+          "thumbs": [
+            "160x160"
+          ],
+          "type": "file"
         }
       ],
       "fileToken": {
@@ -1019,6 +1041,27 @@ migrate((app) => {
           "required": false,
           "system": false,
           "type": "bool"
+        },
+        {
+          "help": "",
+          "hidden": false,
+          "id": "file347571224",
+          "maxSelect": 1,
+          "maxSize": 5242880,
+          "mimeTypes": [
+            "image/png",
+            "image/jpeg",
+            "image/webp"
+          ],
+          "name": "photo",
+          "presentable": false,
+          "protected": false,
+          "required": false,
+          "system": false,
+          "thumbs": [
+            "160x160"
+          ],
+          "type": "file"
         }
       ],
       "id": "pbc_3072146508",
@@ -1032,7 +1075,7 @@ migrate((app) => {
     },
     {
       "createRule": "@request.auth.role = \"admin\" || @request.auth.role = \"captain\"",
-      "deleteRule": "@request.auth.role = \"admin\" || @request.auth.role = \"captain\"",
+      "deleteRule": "@request.auth.role = \"admin\"",
       "fields": [
         {
           "autogeneratePattern": "[a-z0-9]{15}",
@@ -1111,6 +1154,36 @@ migrate((app) => {
           "required": false,
           "system": false,
           "type": "json"
+        },
+        {
+          "autogeneratePattern": "",
+          "help": "",
+          "hidden": false,
+          "id": "text1002749145",
+          "max": 0,
+          "min": 0,
+          "name": "kind",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "help": "",
+          "hidden": false,
+          "id": "text2848013514",
+          "max": 0,
+          "min": 0,
+          "name": "seasonId",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
         }
       ],
       "id": "pbc_1568971955",
@@ -1119,12 +1192,12 @@ migrate((app) => {
       "name": "teams",
       "system": false,
       "type": "base",
-      "updateRule": "@request.auth.role = \"admin\" || @request.auth.role = \"captain\"",
+      "updateRule": "@request.auth.role = \"admin\" || (@request.auth.role = \"captain\" && captainId = @request.auth.playerId)",
       "viewRule": "@request.auth.id != \"\""
     },
     {
-      "createRule": "@request.auth.role = \"admin\" || @request.auth.role = \"captain\"",
-      "deleteRule": "@request.auth.role = \"admin\" || @request.auth.role = \"captain\"",
+      "createRule": "@request.auth.role = \"admin\"",
+      "deleteRule": "@request.auth.role = \"admin\"",
       "fields": [
         {
           "autogeneratePattern": "[a-z0-9]{15}",
@@ -1229,6 +1302,36 @@ migrate((app) => {
           "required": false,
           "system": false,
           "type": "number"
+        },
+        {
+          "autogeneratePattern": "",
+          "help": "",
+          "hidden": false,
+          "id": "text2848013514",
+          "max": 0,
+          "min": 0,
+          "name": "seasonId",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "help": "",
+          "hidden": false,
+          "id": "text1002749145",
+          "max": 0,
+          "min": 0,
+          "name": "kind",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
         }
       ],
       "id": "pbc_2567937140",
@@ -1348,6 +1451,21 @@ migrate((app) => {
           "required": false,
           "system": false,
           "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "help": "",
+          "hidden": false,
+          "id": "text2848013514",
+          "max": 0,
+          "min": 0,
+          "name": "seasonId",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
         }
       ],
       "id": "pbc_1687431684",
@@ -1360,7 +1478,7 @@ migrate((app) => {
       "viewRule": "@request.auth.id != \"\""
     },
     {
-      "createRule": "@request.auth.role != \"viewer\"",
+      "createRule": "@request.auth.id != \"\" && @request.body.createdBy = @request.auth.id",
       "deleteRule": "@request.auth.role = \"admin\"",
       "fields": [
         {
@@ -1582,6 +1700,36 @@ migrate((app) => {
           "required": false,
           "system": false,
           "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "help": "",
+          "hidden": false,
+          "id": "text2848013514",
+          "max": 0,
+          "min": 0,
+          "name": "seasonId",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "help": "",
+          "hidden": false,
+          "id": "text3545646658",
+          "max": 0,
+          "min": 0,
+          "name": "createdBy",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
         }
       ],
       "id": "pbc_2541054544",
@@ -1590,7 +1738,7 @@ migrate((app) => {
       "name": "matches",
       "system": false,
       "type": "base",
-      "updateRule": "@request.auth.role = \"admin\"",
+      "updateRule": "@request.auth.role = \"admin\" || createdBy = @request.auth.id",
       "viewRule": "@request.auth.id != \"\""
     },
     {
@@ -1729,6 +1877,208 @@ migrate((app) => {
       "type": "base",
       "updateRule": "@request.auth.id = user",
       "viewRule": "@request.auth.id = user"
+    },
+    {
+      "createRule": "@request.auth.role = \"admin\"",
+      "deleteRule": "@request.auth.role = \"admin\"",
+      "fields": [
+        {
+          "autogeneratePattern": "[a-z0-9]{15}",
+          "help": "",
+          "hidden": false,
+          "id": "text3208210256",
+          "max": 15,
+          "min": 15,
+          "name": "id",
+          "pattern": "^[a-z0-9]+$",
+          "presentable": false,
+          "primaryKey": true,
+          "required": true,
+          "system": true,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "help": "",
+          "hidden": false,
+          "id": "text1579384326",
+          "max": 0,
+          "min": 0,
+          "name": "name",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "help": "",
+          "hidden": false,
+          "id": "text2063623452",
+          "max": 0,
+          "min": 0,
+          "name": "status",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "help": "",
+          "hidden": false,
+          "id": "text1269603864",
+          "max": 0,
+          "min": 0,
+          "name": "startDate",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "help": "",
+          "hidden": false,
+          "id": "text826688707",
+          "max": 0,
+          "min": 0,
+          "name": "endDate",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "help": "",
+          "hidden": false,
+          "id": "bool1635019964",
+          "name": "offloaded",
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "bool"
+        }
+      ],
+      "id": "pbc_631721974",
+      "indexes": [],
+      "listRule": "@request.auth.id != \"\"",
+      "name": "seasons",
+      "system": false,
+      "type": "base",
+      "updateRule": "@request.auth.role = \"admin\" || @request.auth.role = \"captain\"",
+      "viewRule": "@request.auth.id != \"\""
+    },
+    {
+      "createRule": "@request.auth.role = \"admin\"",
+      "deleteRule": "@request.auth.role = \"admin\"",
+      "fields": [
+        {
+          "autogeneratePattern": "[a-z0-9]{15}",
+          "help": "",
+          "hidden": false,
+          "id": "text3208210256",
+          "max": 15,
+          "min": 15,
+          "name": "id",
+          "pattern": "^[a-z0-9]+$",
+          "presentable": false,
+          "primaryKey": true,
+          "required": true,
+          "system": true,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "help": "",
+          "hidden": false,
+          "id": "text2848013514",
+          "max": 0,
+          "min": 0,
+          "name": "seasonId",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "autogeneratePattern": "",
+          "help": "",
+          "hidden": false,
+          "id": "text691307026",
+          "max": 0,
+          "min": 0,
+          "name": "seasonName",
+          "pattern": "",
+          "presentable": false,
+          "primaryKey": false,
+          "required": false,
+          "system": false,
+          "type": "text"
+        },
+        {
+          "help": "",
+          "hidden": false,
+          "id": "json2473004903",
+          "maxSize": 2000000,
+          "name": "standings",
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "json"
+        },
+        {
+          "help": "",
+          "hidden": false,
+          "id": "json1773758598",
+          "maxSize": 2000000,
+          "name": "playerStats",
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "json"
+        },
+        {
+          "help": "",
+          "hidden": false,
+          "id": "json2677712344",
+          "maxSize": 2000000,
+          "name": "teamRosters",
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "json"
+        },
+        {
+          "help": "",
+          "hidden": false,
+          "id": "json3622966325",
+          "maxSize": 2000000,
+          "name": "meta",
+          "presentable": false,
+          "required": false,
+          "system": false,
+          "type": "json"
+        }
+      ],
+      "id": "pbc_3637294679",
+      "indexes": [],
+      "listRule": "@request.auth.id != \"\"",
+      "name": "season_snapshots",
+      "system": false,
+      "type": "base",
+      "updateRule": "@request.auth.role = \"admin\"",
+      "viewRule": "@request.auth.id != \"\""
     }
   ];
 
