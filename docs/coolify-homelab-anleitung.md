@@ -153,6 +153,14 @@ statt Homelab). Nur wenige Unterschiede zum IP-Betrieb oben:
   am Proxy abschirmen → [`security-audit.md`](security-audit.md) #5.
 - **Frontend-Resource:** **Domain** = `app.<domain>`, Build-Variable **`VITE_PB_URL = https://db.<domain>`** (statt der IP).
 - Alles läuft über **https** (kein „Mixed Content") und ist als PWA installierbar.
+- **Rechtliches (Pflicht):** Öffentlich brauchst du ein **Impressum** (§ 5 DDG) und eine
+  **Datenschutzerklärung** (Art. 13 DSGVO). Beides trägst du **in der App** ein (als Admin:
+  Einstellungen → **Rechtliches**); es erscheint dann auf der Anmeldeseite und ist ohne Anmeldung
+  erreichbar. Damit die Texte auch für nicht angemeldete Besucher sichtbar sind, macht die Migration
+  `pb_migrations/1782300001_club_config_public_legal.js` die `club_config`-Collection öffentlich
+  lesbar — sie greift **automatisch beim nächsten Redeploy** (das Image wird neu gebaut, PocketBase
+  wendet neue Migrationen beim Start an). **Kein `provision.mjs` auf dem Server** — das ist der Weg
+  der schlanken systemd-Variante, nicht der Docker/Coolify-Weg.
 
 > Willst du Coolify/Docker ganz vermeiden, gibt es die schlanke Variante (systemd + Caddy):
 > [`admin-anleitung-cloud.md`](admin-anleitung-cloud.md).
