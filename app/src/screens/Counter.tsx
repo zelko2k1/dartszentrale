@@ -635,6 +635,18 @@ function WinOverlay() {
   const accent = s.settings.accent; const accFg = accentFg(accent);
   const legs = s.gamePlayers.map((p) => s.settings.unit === 'sets' ? (prog.setsWon[p.id] || 0) : (prog.legsSet[p.id] || 0)).join(':');
   const avg = w ? average(slice, w.id).toFixed(1) : '0.0';
+  // Nach Spielende per Tastatur bedienbar (Desktop/Board): 1 = Dashboard, 2 = Neues Spiel, 3/Enter = Revanche.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === '1') { e.preventDefault(); s.endGameTo('dashboard'); }
+      else if (e.key === '2') { e.preventDefault(); s.endGameTo('setup'); }
+      else if (e.key === '3' || e.key === 'Enter') { e.preventDefault(); s.rematch(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const kbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.7, background: 'rgba(0,0,0,.22)', borderRadius: 5, padding: '1px 6px', marginLeft: 7 };
   return (
     <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,10,12,.86)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 30 }}>
       <div style={{ textAlign: 'center', maxWidth: 440, padding: '0 24px' }}>
@@ -646,9 +658,9 @@ function WinOverlay() {
         <div style={{ fontSize: 34, fontWeight: 800, marginBottom: 6, color: '#fff' }}>{w?.name}</div>
         <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, color: 'rgba(255,255,255,.6)', marginBottom: 28 }}>{legs} · Ø {avg}</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
-          <button onClick={() => s.endGameTo('dashboard')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Zum Dashboard</button>
-          <button onClick={() => s.endGameTo('setup')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Neues Spiel</button>
-          <button onClick={() => s.rematch()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 28px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Revanche</button>
+          <button onClick={() => s.endGameTo('dashboard')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Zum Dashboard<span style={kbd}>1</span></button>
+          <button onClick={() => s.endGameTo('setup')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Neues Spiel<span style={kbd}>2</span></button>
+          <button onClick={() => s.rematch()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 28px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Revanche<span style={{ ...kbd, background: 'rgba(0,0,0,.28)' }}>3</span></button>
         </div>
       </div>
     </div>

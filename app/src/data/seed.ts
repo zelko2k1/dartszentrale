@@ -127,14 +127,7 @@ export function seedLeagues(): League[] {
 }
 
 export function seedEvents(): EventItem[] {
-  const s = SEED_SEASON_ID;
-  return [
-    { id: uid(), scope: 'verein', title: 'SV Adler — DC Falken', date: iso(2), time: '19:30', type: 'ligaspiel', loc: 'Sportheim Adler · Heim', seasonId: s },
-    { id: uid(), scope: 'verein', title: 'Mannschaftstraining', date: iso(4), time: '19:00', type: 'training', loc: 'Vereinsheim', seasonId: s },
-    { id: uid(), scope: 'verein', title: 'DC Phoenix — SV Adler', date: iso(9), time: '19:30', type: 'ligaspiel', loc: 'Auswärts · Moers', seasonId: s },
-    { id: uid(), scope: 'verein', title: 'Pokal-Achtelfinale vs Phoenix', date: iso(16), time: '19:00', type: 'pokal', loc: 'Sportheim Adler', seasonId: s },
-    { id: uid(), scope: 'verein', title: 'Vereinsabend', date: iso(23), time: '18:00', type: 'verein', loc: 'Vereinsheim', seasonId: s },
-    { id: uid(), scope: 'local', title: 'Training: Doppel & Finishes', date: iso(1), time: '18:00', type: 'training', loc: 'Heim-Board', seasonId: s },
-    { id: uid(), scope: 'local', title: 'Spielabend mit Tom & Lisa', date: iso(5), time: '20:00', type: 'competition', loc: 'Bei mir', seasonId: s },
-  ];
+  // Kein Demo-Kalender beim Erststart: eine frische Installation soll einen leeren Kalender zeigen
+  // (weder lokale noch Vereins-Beispieltermine). Termine legt der Verein selbst an bzw. importiert sie.
+  return [];
 }

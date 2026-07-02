@@ -55,13 +55,13 @@ export function ModePicker() {
         <Card
           title="Lokal"
           sub="Alles auf diesem Gerät — ohne Server, ohne Anmeldung. Ideal für ein einzelnes Board."
-          points={['Sofort startklar', 'Daten bleiben im Browser', 'Kein PocketBase nötig']}
+          points={['Sofort startklar', 'Daten bleiben im Browser', 'Keine Datenbank nötig']}
           primary
           onClick={() => choose('local')}
         />
         <Card
           title="Vereinsmodus"
-          sub="Mit PocketBase-Server: echte Konten, mehrere Boards, geteilte Daten."
+          sub="Mit eigenem Datenbank-Server: echte Konten, mehrere Boards, geteilte Daten."
           points={['Anmeldung mit Vereinskonto', 'Mehrere Geräte synchron', 'Server (LAN oder Cloud) nötig']}
           onClick={() => choose('verein')}
         />

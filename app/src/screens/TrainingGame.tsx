@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { CRICKET_TARGETS } from '../data/constants';
 import { Avatar } from '../components/Avatar';
@@ -243,6 +243,23 @@ function GameBoard({ game, accent, activeId }: { game: TrainGame; accent: string
   }
 }
 
+// Zahlentasten am Board bedienbar machen: `handler(key)` gibt true zurück, wenn die Taste verarbeitet
+// wurde (dann preventDefault). Ignoriert Modifier & Eingabefelder. Nur ein Panel ist gleichzeitig aktiv.
+function useTrainKeys(handler: (key: string) => boolean) {
+  const ref = useRef(handler);
+  ref.current = handler;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (ref.current(e.key)) e.preventDefault();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+}
+
 // ── pro-Modus Eingabe ──
 function InputDeck({ game, accent }: { game: TrainGame; accent: string }) {
   switch (game.modeId) {
@@ -263,9 +280,10 @@ const primaryBtn = (accent: string): React.CSSProperties => ({ background: accen
 
 function HitsPanel() {
   const apply = useStore((s) => s.trainApply);
+  useTrainKeys((k) => { if (k >= '0' && k <= '3') { apply({ kind: 'hits', hits: +k }); return true; } return false; });
   return (
     <div>
-      <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>Wie viele der 3 Darts haben getroffen?</div>
+      <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>Wie viele der 3 Darts haben getroffen? <span style={{ opacity: 0.7 }}>(Tasten 0–3)</span></div>
       <div style={{ display: 'flex', gap: 10 }}>
         {[0, 1, 2, 3].map((h) => (
           <button key={h} onClick={() => apply({ kind: 'hits', hits: h })} style={bigBtn()}>{h}</button>
@@ -277,9 +295,10 @@ function HitsPanel() {
 
 function AdvancePanel() {
   const apply = useStore((s) => s.trainApply);
+  useTrainKeys((k) => { if (k >= '0' && k <= '3') { apply({ kind: 'advance', advance: +k }); return true; } return false; });
   return (
     <div>
-      <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>Wie viele Ziele in dieser Aufnahme geschafft?</div>
+      <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>Wie viele Ziele in dieser Aufnahme geschafft? <span style={{ opacity: 0.7 }}>(Tasten 0–3)</span></div>
       <div style={{ display: 'flex', gap: 10 }}>
         {[0, 1, 2, 3].map((h) => (
           <button key={h} onClick={() => apply({ kind: 'advance', advance: h })} style={bigBtn()}>+{h}</button>
@@ -291,21 +310,27 @@ function AdvancePanel() {
 
 function CheckoutPanel({ accent }: { accent: string }) {
   const apply = useStore((s) => s.trainApply);
+  useTrainKeys((k) => {
+    if (k >= '1' && k <= '3') { apply({ kind: 'made', made: true, darts: +k }); return true; }
+    if (k === '0') { apply({ kind: 'made', made: false, darts: 3 }); return true; }
+    return false;
+  });
   return (
     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
       {[1, 2, 3].map((d) => (
         <button key={d} onClick={() => apply({ kind: 'made', made: true, darts: d })} style={{ ...bigBtn(), background: `color-mix(in srgb, ${accent} 16%, var(--btn))`, border: `1px solid ${accent}`, color: 'var(--text)', fontSize: 15 }}>✓ {d} Dart{d > 1 ? 's' : ''}</button>
       ))}
-      <button onClick={() => apply({ kind: 'made', made: false, darts: 3 })} style={{ ...bigBtn(), background: 'rgba(224,89,75,.12)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', fontSize: 15 }}>✗ Verfehlt</button>
+      <button onClick={() => apply({ kind: 'made', made: false, darts: 3 })} style={{ ...bigBtn(), background: 'rgba(224,89,75,.12)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', fontSize: 15 }}>✗ Verfehlt <span style={{ opacity: 0.6, fontSize: 12 }}>(0)</span></button>
     </div>
   );
 }
 
 function RunsPanel() {
   const apply = useStore((s) => s.trainApply);
+  useTrainKeys((k) => { if (k >= '0' && k <= '9') { apply({ kind: 'runs', runs: +k }); return true; } return false; });
   return (
     <div>
-      <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>Runs dieses Inning (Single=1 · Double=2 · Triple=3 je Treffer)</div>
+      <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>Runs dieses Inning (Single=1 · Double=2 · Triple=3 je Treffer) <span style={{ opacity: 0.7 }}>· Tasten 0–9</span></div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
         {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((r) => (
           <button key={r} onClick={() => apply({ kind: 'runs', runs: r })} style={{ ...bigBtn(), padding: '14px 0', fontSize: 20 }}>{r}</button>

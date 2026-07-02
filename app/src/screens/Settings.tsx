@@ -3,7 +3,7 @@ import { useStore } from '../store/useStore';
 import { perm } from '../store/selectors';
 import { FONTS, DEVICE_LOCAL_SETTING_KEYS } from '../data/constants';
 import type { Settings as SettingsType } from '../data/types';
-import { IconUsers, IconChevronRight, IconTarget } from '../lib/icons';
+import { IconUsers, IconChevronRight } from '../lib/icons';
 import { comboFromEvent, isValidCombo, formatCombo } from '../lib/shortcut';
 import { suggestBoardScale } from '../lib/displayScale';
 
@@ -618,13 +618,6 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
       </div>
 
       {active?.node}
-
-      {p.play && !kiosk && (
-        <button className="dh-primary" onClick={() => s.go('counter')} style={{ display: 'inline-flex', alignItems: 'center', gap: 9, marginTop: 4, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '13px 22px', borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 24%, transparent)' }}>
-          <IconTarget size={18} sw={2.2} />
-          Zum Darts Counter
-        </button>
-      )}
     </div>
   );
 }

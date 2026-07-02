@@ -42,6 +42,8 @@ export function CounterSetup() {
   // Tastatur-Kürzel: Alt+P öffnet/schließt den Spieltyp-Dialog, Alt+F springt in die Spielersuche.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Alt+Enter startet das Spiel – global (egal wo der Fokus liegt), damit es zuverlässig funktioniert.
+      if (e.altKey && e.key === 'Enter') { e.preventDefault(); s.startGame(); return; }
       const c = comboFromEvent(e);
       if (c === TYPE_KEY) { e.preventDefault(); if (dlgRef.current?.open) dlgRef.current.close(); else dlgRef.current?.showModal(); }
       else if (c === FIND_KEY) { e.preventDefault(); (searchRefs.p1.current || searchRefs.p2.current)?.focus(); }
@@ -57,7 +59,8 @@ export function CounterSetup() {
   };
   // Tastatursteuerung im Suchfeld: ↑/↓ bewegt den Cursor, Enter übernimmt & springt weiter, Strg+Enter startet.
   const onSearchKey = (idx: 'p1' | 'p2') => (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); s.startGame(); return; }
+    // Alt+Enter (Spiel starten) behandelt der globale Listener – hier nicht doppelt auslösen.
+    if (e.altKey && e.key === 'Enter') return;
     const list = filteredFor(idx);
     if (!list.length) return;
     const cur = Math.min(hi[idx], list.length - 1);
@@ -139,7 +142,7 @@ export function CounterSetup() {
   const summary = `${su.startScore} · ${outLabel}${su.doubleIn ? ' · Double In' : ''} · Best of ${sets ? su.bestOfSets + ' Sätze' : su.bestOf + ' Legs'}`;
 
   return (
-    <div onKeyDown={(e) => { if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); s.startGame(); } }} style={{ padding: isPhone ? '18px 14px' : '28px 32px', maxWidth: 1000, margin: '0 auto' }}>
+    <div style={{ padding: isPhone ? '18px 14px' : '28px 32px', maxWidth: 1000, margin: '0 auto' }}>
       <div style={{ marginBottom: 6, fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>Darts Counter</div>
       <h1 style={{ margin: '0 0 24px', fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>Neues Spiel</h1>
 
@@ -219,10 +222,10 @@ export function CounterSetup() {
           <div style={{ fontSize: 13, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>{summary}</div>
           <div style={{ fontSize: 12, color: su.freePlay ? 'var(--text-4)' : 'var(--success)', fontWeight: 600, marginTop: 4 }}>{su.freePlay ? 'Freies Spiel – wird nicht gespeichert' : 'Wird für die gewählten Spieler gewertet'}</div>
         </div>
-        <button ref={startRef} className="dh-primary" onClick={() => s.startGame()} title="Spiel starten (Strg+Enter)" style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '14px 28px', borderRadius: 13, fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)' }}>
+        <button ref={startRef} className="dh-primary" onClick={() => s.startGame()} title="Spiel starten (Alt+Enter)" style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '14px 28px', borderRadius: 13, fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
           Spiel starten
-          <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 700, opacity: 0.8, background: 'rgba(0,0,0,.18)', borderRadius: 6, padding: '2px 7px', marginLeft: 2 }}>Strg+↵</span>
+          <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 700, opacity: 0.8, background: 'rgba(0,0,0,.18)', borderRadius: 6, padding: '2px 7px', marginLeft: 2 }}>Alt+↵</span>
         </button>
       </div>
     </div>
