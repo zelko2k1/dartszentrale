@@ -61,7 +61,7 @@ A="$TARGET/01-lokal-ein-board"; mkdir -p "$A"
 copy_app "$A" 0
 copy_common "$A"
 copy_lokal "$A"
-copy_docs "$A" anleitung-lokal.md handbuch.md
+copy_docs "$A" anleitung-lokal-windows.md anleitung-lokal-linux.md handbuch.md
 cat > "$A/LIESMICH.txt" <<'TXT'
 DartsHub — Lokaler Betrieb, ein Board (kein Server, keine Anmeldung)
 -------------------------------------------------------------------
@@ -71,7 +71,7 @@ Autostart (Kiosk):  Windows -> autostart-lokal.bat   |   Linux/Pi -> ./autostart
 Update (einfach): dartshub-update-*.tar.gz in den Ordner 'updates' legen, dann in der App
           Einstellungen -> "App & Updates" -> Installieren (kein Neustart noetig).
 Update (Skript):  Windows -> update-lokal.bat   |   Linux/Pi -> ./update-lokal.sh <stick>
-Anleitung: docs/anleitung-lokal.md  (Bedienung: docs/handbuch.md, Abschnitte 10+11)
+Anleitung: docs/anleitung-lokal-windows.md bzw. -linux.md  (Bedienung: docs/handbuch.md, Abschnitte 10+11)
 Hinweis: Nur Node.js noetig (nodejs.org). PocketBase wird NICHT gebraucht (kein Server).
 TXT
 
@@ -81,7 +81,7 @@ copy_app "$B" 0
 copy_pb "$B" 0
 copy_common "$B"
 copy_verein "$B"
-copy_docs "$B" admin-anleitung.md admin-anleitung-windows.md admin-anleitung-linux.md handbuch.md security-audit.md
+copy_docs "$B" admin-anleitung-lan-windows.md admin-anleitung-lan-linux.md handbuch.md security-audit.md
 cat > "$B/LIESMICH.txt" <<'TXT'
 DartsHub — Vereinsmodus im eigenen Netz (LAN)
 ---------------------------------------------
@@ -101,7 +101,7 @@ UPDATE später — per Skript (auch PocketBase):
   Windows  -> update-server.bat        Linux/Pi -> ./update-server.sh <quelle>
 Die Dienste werden automatisch neu gestartet. pb_data (deine DB) bleibt erhalten.
 
-Anleitung mit Details: docs/admin-anleitung-windows.md bzw. -linux.md, Abschnitt 2.
+Anleitung mit Details: docs/admin-anleitung-lan-windows.md bzw. -lan-linux.md, Abschnitt 2.
 TXT
 
 # ── 03 — Vereinsmodus in der Cloud (schlank: ohne Coolify, ohne Docker) ─────
@@ -110,7 +110,7 @@ copy_app "$C" 0
 copy_pb "$C" 0
 copy_cloud "$C"
 cpf "$REPO/update-server.sh" "$C/"
-copy_docs "$C" cloud-schlank-anleitung.md handbuch.md
+copy_docs "$C" admin-anleitung-cloud.md handbuch.md
 cat > "$C/LIESMICH.txt" <<'TXT'
 DartsHub — Vereinsmodus in der Cloud (schlank: ohne Coolify, ohne Docker)
 ------------------------------------------------------------------------
@@ -120,7 +120,7 @@ laeuft bis alles steht (PocketBase laden, App bauen, systemd-Dienste, Caddy/HTTP
   sudo ./einrichten-cloud.sh
 
 Voraussetzung: ein Linux-Server (Ubuntu/Debian) und die DNS-A-Records app.* / db.*
-zeigen auf die Server-IP. Details + Sicherheit: docs/cloud-schlank-anleitung.md.
+zeigen auf die Server-IP. Details + Sicherheit: docs/admin-anleitung-cloud.md.
 
 UPDATE spaeter — einfachster Weg (In-App):
   dartshub-update-*.tar.gz in den Ordner 'updates' der Installation legen, dann in der App

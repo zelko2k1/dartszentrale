@@ -48,5 +48,5 @@ Entwicklung/Demos. Der Guard verhindert sie gegen Nicht-localhost-Ziele.
 
 ---
 
-Mehr zum lokalen Betrieb: `../docs/lokaler-betrieb.md` · Deploy: `../docs/COOLIFY-SETUP.md` ·
+Mehr zum lokalen Betrieb: `../docs/lokaler-betrieb.md` · Deploy: `../docs/coolify-homelab-anleitung.md` ·
 Sicherheit: `../docs/security-audit.md`.

@@ -1,7 +1,7 @@
 # DartsHub auf Linux / Raspberry Pi – Inbetriebnahme & Updates
 
 Schritt für Schritt für **Linux und Raspberry Pi**, ohne Vorkenntnisse. (Windows? →
-[admin-anleitung-windows.md](admin-anleitung-windows.md).)
+[admin-anleitung-lan-windows.md](admin-anleitung-lan-windows.md).)
 
 > **Welcher Weg ist meiner?**
 > - **Nur ein Brett/Gerät, schnell zählen, keine Anmeldung** → **Abschnitt 1**. Am einfachsten.

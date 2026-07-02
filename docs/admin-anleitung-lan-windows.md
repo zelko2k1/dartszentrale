@@ -1,7 +1,7 @@
 # DartsHub auf Windows – Inbetriebnahme & Updates
 
 Schritt für Schritt für **Windows**, ohne Vorkenntnisse. (Linux/Raspberry Pi? →
-[admin-anleitung-linux.md](admin-anleitung-linux.md).)
+[admin-anleitung-lan-linux.md](admin-anleitung-lan-linux.md).)
 
 > **Welcher Weg ist meiner?**
 > - **Nur ein Brett/Gerät, schnell zählen, keine Anmeldung** → **Abschnitt 1**. Am einfachsten.

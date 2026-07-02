@@ -1,8 +1,12 @@
-# DartsHub im Homelab mit Coolify — nur per IP (LAN)
+# DartsHub mit Coolify — Homelab (per IP) & öffentlicher Server (Domain)
 
-Praxis-Anleitung für den Betrieb im eigenen Netz: **PocketBase + Frontend in Coolify**,
-Zugriff über **interne IP** (kein DNS, keine Domain, kein HTTPS). Festgehalten nach dem
-ersten Aufsetzen — inkl. der Stolpersteine, die dabei aufgetaucht sind.
+Praxis-Anleitung für **PocketBase + Frontend in Coolify**. Schwerpunkt ist der Betrieb im eigenen
+Netz über die **interne IP** (kein DNS, keine Domain, kein HTTPS) — festgehalten nach dem ersten
+Aufsetzen inkl. der Stolpersteine. Der Betrieb mit **Domain + HTTPS** auf einem öffentlichen Server
+läuft fast identisch; die wenigen Unterschiede stehen in [Abschnitt 5](#5-mit-domain--https-öffentlicher-server).
+
+> Coolify/Docker ganz vermeiden? Die schlanke Cloud-Variante (systemd + Caddy) steht in
+> [`admin-anleitung-cloud.md`](admin-anleitung-cloud.md).
 
 > Begriffe vorweg, damit nichts durcheinandergeht:
 > - **Superuser** = PocketBase-**Verwaltung** (`/_/`-Login). Verwaltet die DB.
@@ -136,11 +140,49 @@ App-`users` und sämtliche Daten.
 
 ---
 
-## 5. Merksätze
+## 5. Mit Domain + HTTPS (öffentlicher Server)
+
+Derselbe Coolify-Weg funktioniert auch mit **Domain und automatischem HTTPS** (z. B. ein Hetzner-Server
+statt Homelab). Nur wenige Unterschiede zum IP-Betrieb oben:
+
+- **DNS:** zwei A-Records auf die Server-IP — `app.<domain>` (Frontend) und `db.<domain>` (PocketBase).
+- **PocketBase-Resource:** **Domain** = `db.<domain>`, Port `8090`; Coolify stellt **HTTPS automatisch** aus.
+  Dann **Settings → Application URL** = `https://db.<domain>` und **CORS/Allowed origins** = `https://app.<domain>`.
+- **Frontend-Resource:** **Domain** = `app.<domain>`, Build-Variable **`VITE_PB_URL = https://db.<domain>`** (statt der IP).
+- Alles läuft über **https** (kein „Mixed Content") und ist als PWA installierbar.
+
+> Willst du Coolify/Docker ganz vermeiden, gibt es die schlanke Variante (systemd + Caddy):
+> [`admin-anleitung-cloud.md`](admin-anleitung-cloud.md).
+
+---
+
+## 6. Konten & Sicherheit
+
+Die echte Zugriffskontrolle sind die **PocketBase-API-Rules** (serverseitig) — der Board-/Kiosk-Modus ist nur Oberfläche.
+
+- **Board-Rechner-Konto** (rechtearm) anlegen, statt echte Admin-Logins an die Bretter zu geben:
+  ```bash
+  PB_URL=http://<IP>:8090 PB_SU_EMAIL=… PB_SU_PASS=… BOARD_EMAIL=board@dein.local BOARD_PW=<starkes-pw> \
+    node pocketbase/add-board-account.mjs
+  ```
+  Rolle `board`: darf nur **Matches anlegen + lesen**, nichts verwalten. Ein Ergebnis korrigieren darf nur **Admin oder Ersteller** (Owner-Bindung).
+- **App-Passwort vergessen?** Der Superuser ist der Rettungsanker:
+  ```bash
+  USER_EMAIL=… NEW_PW=<min-8> PB_URL=http://<IP>:8090 PB_SU_EMAIL=… PB_SU_PASS=… \
+    node pocketbase/reset-password.mjs
+  ```
+- **Bei öffentlichem Betrieb** (Domain/Internet): HTTPS ist Pflicht, den PocketBase-Port **8090 nicht**
+  offen ins Internet stellen, die Admin-Konsole **`/_/`** abschirmen (IP/VPN). Vollständige
+  Pre-Go-live-Liste: [`security-audit.md`](security-audit.md).
+- Self-Registration bleibt aus (`users` create = `admin`); unauthentifiziert ist nichts lesbar.
+
+---
+
+## 7. Merksätze
 
 - **Superuser** = PB-Verwaltung · **App-Admin** = App-Login (`users`, `role=admin`). Zwei verschiedene Dinge.
 - **`VITE_PB_URL`** ist **Build-Zeit** → ändern heißt **redeploy**, und in Coolify als **Build-Variable** markieren.
 - **Erster-Superuser-Dialog** erscheint nur, wenn `pb_data` **leer** ist. Sonst nur Login.
 - **Alles http im LAN** ist ok, solange App und PB beide http sind (kein Mixed Content).
 - Unterschied zu „ohne Coolify" (systemd + Caddy): nur die **Verpackung**. PocketBase selbst tickt gleich.
-  Siehe [`cloud-schlank-anleitung.md`](cloud-schlank-anleitung.md).
+  Siehe [`admin-anleitung-cloud.md`](admin-anleitung-cloud.md).

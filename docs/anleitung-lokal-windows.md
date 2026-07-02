@@ -1,23 +1,20 @@
-# DartsHub lokal — ein Board, kein Server
+# DartsHub lokal (Windows) — ein Board, kein Server
 
-Der einfachste Weg: die App läuft nur im Browser auf **einem** Gerät — **ohne Server, ohne
+Der einfachste Weg: die App läuft nur im Browser auf **einem** Windows-PC — **ohne Server, ohne
 Anmeldung**. Die Daten liegen lokal im Browser dieses Geräts.
 
 > Mehrere Geräte mit echten Logins, Ligen und Mannschaften? Das ist der **Vereinsmodus** —
 > dafür gibt es ein eigenes Verteil-Paket (LAN bzw. Cloud).
+>
+> Linux / Raspberry Pi? Siehe [`anleitung-lokal-linux.md`](anleitung-lokal-linux.md).
 
 ---
 
 ## 1. Einmal: Node.js installieren (Pflicht)
 
-- **Windows:** [nodejs.org](https://nodejs.org) öffnen → **LTS**-Version laden → Installer →
-  Weiter / Weiter / Fertig.
-- **Linux / Raspberry Pi:**
-  ```bash
-  curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-  sudo apt install -y nodejs
-  ```
-- **Prüfen:** ein Terminal öffnen, `node -v` eingeben → es muss `v20…` oder `v22…` erscheinen.
+[nodejs.org](https://nodejs.org) öffnen → **LTS**-Version laden → Installer → Weiter / Weiter / Fertig.
+
+**Prüfen:** Eingabeaufforderung öffnen, `node -v` eingeben → es muss `v20…` oder `v22…` erscheinen.
 
 > Mehr braucht der lokale Modus **nicht** — kein PocketBase, keine Datenbank.
 
@@ -25,27 +22,20 @@ Anmeldung**. Die Daten liegen lokal im Browser dieses Geräts.
 
 ## 2. Starten
 
-- **Windows:** Doppelklick auf **`start-lokal.bat`** im Projektordner.
-- **Linux / Pi:** im Projektordner **`./start-lokal.sh`**.
+Doppelklick auf **`start-lokal.bat`** im Projektordner.
 
 Der Browser öffnet die App → beim **ersten Start „Lokal"** wählen. Fertig.
-Das schwarze Fenster bzw. Terminal **offen lassen**, solange du die App nutzt
-(Windows: Fenster schließen zum Beenden · Linux: **Strg+C**).
+Das schwarze Fenster **offen lassen**, solange du die App nutzt (zum Beenden das Fenster schließen).
 
-> Schließt sich das Fenster **sofort wieder** / bricht der Befehl ab? Dann fehlt meist
-> **Node.js** (Schritt 1).
+> Schließt sich das Fenster **sofort wieder**? Dann fehlt meist **Node.js** (Schritt 1).
 
 ---
 
 ## 3. Autostart (Kiosk-Board)
 
-Damit das Brett nach dem Hochfahren von selbst die App zeigt:
+Damit das Brett nach dem Hochfahren von selbst die App zeigt: Doppelklick auf **`autostart-lokal.bat`**.
 
-- **Windows:** Doppelklick auf **`autostart-lokal.bat`**.
-- **Linux / Pi:** **`./autostart-lokal.sh`**.
-
-Entfernen: **Windows** → `Win+R` → `shell:startup` → `DartsHub.lnk` löschen.
-**Linux** → das Skript zeigt am Ende den passenden Entfernen-Befehl an.
+Entfernen: `Win+R` → `shell:startup` → `DartsHub.lnk` löschen.
 
 ---
 
@@ -63,11 +53,8 @@ lokalen Board ist dafür kein Passwort/Token nötig (läuft nur auf diesem Gerä
 
 ### Alternativ — per Skript (USB-Stick/Ordner)
 
-Im Projektordner:
-
-- **Windows:** Doppelklick auf **`update-lokal.bat`** (nimmt Laufwerk `E:\`; anderer Buchstabe:
-  im Terminal `update-lokal.bat F:\`).
-- **Linux / Pi:** **`./update-lokal.sh <quelle>`** (z. B. `./update-lokal.sh /media/usb`).
+Im Projektordner Doppelklick auf **`update-lokal.bat`** (nimmt Laufwerk `E:\`; anderer Buchstabe:
+im Terminal `update-lokal.bat F:\`).
 
 Das übernimmt die neuen Dateien und baut die App neu. Im lokalen Modus liegen die Daten im
 Browser — es geht nichts verloren. Danach am Brett die Seite **neu laden**.
@@ -90,6 +77,6 @@ Vereinsmodus und gelten hier nicht.)
 
 ## 6. Wenn etwas nicht klappt
 
-- **Fenster geht sofort zu / Befehl bricht ab** → **Node.js** fehlt (Schritt 1).
+- **Fenster geht sofort zu** → **Node.js** fehlt (Schritt 1).
 - **„Port belegt" / `EADDRINUSE`** → die App läuft schon in einem anderen Fenster; eines schließen.
 - **Alles zurücksetzen** → im Browser den **localStorage** der Seite leeren (dort liegen die Daten).

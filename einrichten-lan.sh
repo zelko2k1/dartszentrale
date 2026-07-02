@@ -38,7 +38,7 @@ ask_secret() { local p="$1" __v="$2" a b
 }
 
 # ── Voraussetzungen ─────────────────────────────────────────────────────────
-command -v node >/dev/null      || { echo "✗ Node.js fehlt — bitte installieren (siehe docs/admin-anleitung-linux.md, 0b)."; exit 1; }
+command -v node >/dev/null      || { echo "✗ Node.js fehlt — bitte installieren (siehe docs/admin-anleitung-lan-linux.md, 0b)."; exit 1; }
 command -v systemctl >/dev/null  || { echo "✗ systemd (systemctl) nicht gefunden."; exit 1; }
 systemctl --user show-environment >/dev/null 2>&1 || { echo "✗ Keine systemd-User-Session aktiv. Bei SSH-only: 'loginctl enable-linger $USER' + neu anmelden."; exit 1; }
 NODE_BIN="$(command -v node)"; NODE_DIR="$(dirname "$NODE_BIN")"

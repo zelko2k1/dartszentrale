@@ -104,7 +104,7 @@ kein stiller Rückfall auf ein Default mehr. Fehlt `NEW_PW`, bricht das Skript m
 **#13 — nginx Versions-Disclosure ✅ (behoben)** → `server_tokens off;` gesetzt.
 
 ### ℹ️ Nebenbefund (kein Security) — ✅ erledigt
-`COOLIFY-SETUP.md` (jetzt unter `docs/`) ist angeglichen: Migrations/Hooks werden ins Image **gebacken**
+`coolify-homelab-anleitung.md` (jetzt unter `docs/`) ist angeglichen: Migrations/Hooks werden ins Image **gebacken**
 (Dockerfile `COPY`), nicht gemountet; Frontend baut über `app/Dockerfile` (nicht Nixpacks).
 
 ---

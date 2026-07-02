@@ -1,7 +1,7 @@
 # DartsHub — Workflows
 
 Praxis-Ablauf für die zwei Betriebsmodi sowie Trainings- und Ligaspieltage.
-Ergänzt [DATA_MODEL.md](DATA_MODEL.md) (Datenmodell) und [docs/COOLIFY-SETUP.md](docs/COOLIFY-SETUP.md) (Server/Härtung).
+Ergänzt [DATA_MODEL.md](DATA_MODEL.md) (Datenmodell) und [docs/coolify-homelab-anleitung.md](docs/coolify-homelab-anleitung.md) (Server/Härtung).
 
 ## Betriebsmodi
 

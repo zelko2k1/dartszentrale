@@ -35,7 +35,7 @@ function Read-Secret($prompt) {
 
 # --- Voraussetzungen -------------------------------------------------------
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
-  Write-Error "Node.js fehlt - bitte installieren (nodejs.org, LTS). Siehe docs\admin-anleitung-windows.md (0b)."
+  Write-Error "Node.js fehlt - bitte installieren (nodejs.org, LTS). Siehe docs\admin-anleitung-lan-windows.md (0b)."
   exit 1
 }
 

@@ -140,7 +140,7 @@ nach dem Turnier-Scaffold in beide portieren. Empfehlung: **zuerst in `dartshub`
 | **A — Spike** | TOTP-Verifikation im pb_hook beweisen (HMAC-SHA1 verfügbar? sonst einbetten). De-risk. |
 | **B — Backend** | `user_mfa`-Collection (abgeschottet) + Hooks (`setup/enable/disable/backup`, `/api/login` mit Challenge), Backup-Codes (gehasht), Lockout, `reset-2fa.mjs`. |
 | **C — Frontend** | Settings-Assistent (QR + Bestätigung + Backup-Codes), Login-Challenge-Feld, Deaktivieren/Neu-Erzeugen. |
-| **D — Härtung+Doku** | HTTPS/Exposition-Guidance, Admin-Nudge, Policy-Schalter, Docs (`cloud-anleitung.md`/`lokaler-betrieb.md`). |
+| **D — Härtung+Doku** | HTTPS/Exposition-Guidance, Admin-Nudge, Policy-Schalter, Docs (`admin-anleitung-cloud.md`/`lokaler-betrieb.md`). |
 | **E — Turnier-App** | über Fork erben bzw. portieren + verifizieren. |
 
 ---

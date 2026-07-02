@@ -6,9 +6,9 @@ Datensicherung. Es ist bewusst nicht-technisch gehalten.
 
 > **Du willst die App erst zum Laufen bringen?** Die **Inbetriebnahme-Anleitung** liegt im
 > `docs/`-Ordner deines Pakets — je nach Betriebsart:
-> - **lokal, ein Board** → `anleitung-lokal.md`
-> - **Vereinsmodus im LAN** → `admin-anleitung-windows.md` bzw. `admin-anleitung-linux.md`
-> - **Cloud** → `cloud-schlank-anleitung.md` (ein Skript richtet den Server ein)
+> - **lokal, ein Board** → `anleitung-lokal-windows.md` bzw. `anleitung-lokal-linux.md`
+> - **Vereinsmodus im LAN** → `admin-anleitung-lan-windows.md` bzw. `admin-anleitung-lan-linux.md`
+> - **Cloud** → `admin-anleitung-cloud.md` (ein Skript richtet den Server ein)
 >
 > Dieses Handbuch beginnt da, wo die App bereits läuft.
 

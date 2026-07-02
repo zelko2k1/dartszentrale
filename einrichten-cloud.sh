@@ -298,7 +298,7 @@ if [ "$DO_ACCOUNTS" != "1" ]; then
   echo "       sudo -u $RUN_USER node provision.mjs"
 fi
 echo "   • Optional härten: /_/ in Caddy auf deine IP sperren + CSP einkommentieren"
-echo "       → docs/cloud-schlank-anleitung.md, Abschnitt Sicherheit."
+echo "       → docs/admin-anleitung-cloud.md, Abschnitt Sicherheit."
 echo
 echo "ℹ Update später (2 Wege):"
 echo "   • In-App: 'dartshub-update-*.tar.gz' nach '$ROOT/updates/' legen → Einstellungen → 'App & Updates' → Installieren."

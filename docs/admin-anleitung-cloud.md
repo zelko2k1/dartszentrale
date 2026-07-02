@@ -47,6 +47,11 @@ TLS-Proxy vorbei, ganz ohne extra Firewall-Regel, weil sie gar nicht erst nach a
 DNS vorab: zwei **A-Records** auf die Server-IP zeigen lassen —
 `app.deinedomain.de` und `db.deinedomain.de` (Details unten).
 
+> **Wie groß muss der Server sein?** Die App-Laufzeit (PocketBase + `serve-dist.mjs`) braucht nur
+> ~50–100 MB — der einzige Engpass ist die **Build-Spitze** (`npm install` + Vite-Build, kurz 1–2 GB).
+> Deshalb reicht ein **1–2-GB-Server + 2 GB Swap** locker; **ARM** (Hetzner CAX-Linie) ist voll
+> kompatibel und günstiger. **Disk:** 20 GB genügen. Optional externe Backups (Storage Box/S3, ~3–4 €/Monat).
+
 ---
 
 ## DNS — die A-Records anlegen (wo genau?)
