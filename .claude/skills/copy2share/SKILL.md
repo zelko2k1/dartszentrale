@@ -1,6 +1,6 @@
 ---
 name: copy2share
-description: Erzeugt unter copy2share/ drei Verteil-Bundles (lokal ein Board · Vereinsmodus LAN · Vereinsmodus Cloud) mit NUR den jeweils nötigen DartsHub-Dateien/Skripten — zum Kopieren auf USB-Stick, Netzwerkshare oder in die Cloud. Aufrufen, wenn der Nutzer ein Verteilpaket / „copy2share" / Dateien für einen bestimmten Betrieb zusammenstellen will.
+description: Erzeugt unter copy2share/ drei Verteil-Bundles (lokal ein Board · Vereinsmodus LAN · Vereinsmodus Cloud) mit NUR den jeweils nötigen DartsZentrale-Dateien/Skripten — zum Kopieren auf USB-Stick, Netzwerkshare oder in die Cloud. Aufrufen, wenn der Nutzer ein Verteilpaket / „copy2share" / Dateien für einen bestimmten Betrieb zusammenstellen will.
 ---
 
 # copy2share — Verteil-Bundles bauen
@@ -24,7 +24,7 @@ und `seed-remote.sh` (Secrets).
    ```bash
    bash .claude/skills/copy2share/build.sh
    # oder gezielt z. B. direkt auf einen Stick:
-   bash .claude/skills/copy2share/build.sh /media/usb/dartshub
+   bash .claude/skills/copy2share/build.sh /media/usb/dartszentrale
    ```
 2. Dem Nutzer kurz berichten: welche drei Bundles entstanden sind, ihre Größen (aus der
    Skript-Ausgabe), und dass er nun den passenden Unterordner auf Stick/Share/Cloud kopieren kann.

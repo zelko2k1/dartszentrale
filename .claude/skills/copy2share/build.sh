@@ -47,7 +47,7 @@ copy_cloud(){ for f in einrichten-cloud.sh Caddyfile.example; do cpf "$REPO/$f" 
 make_update_pkg(){
   echo "▶ Baue Frontend (dist/) für das Update-Paket …"
   ( cd "$REPO/app" && npm run build >/dev/null 2>&1 ) || { echo "  ⚠ 'npm run build' fehlgeschlagen (sind node_modules in app/ installiert?) — Update-Paket übersprungen."; return 0; }
-  local out="$TARGET/dartshub-update-${VERSION}.tar.gz"
+  local out="$TARGET/dartszentrale-update-${VERSION}.tar.gz"
   ( cd "$REPO/app/dist" && tar -czf "$out" * )   # Members auf Wurzelebene (kein ./-Prefix) → passt zum serve-dist-Endpunkt
   echo "  → $(basename "$out")"
 }
@@ -63,12 +63,12 @@ copy_common "$A"
 copy_lokal "$A"
 copy_docs "$A" anleitung-lokal-windows.md anleitung-lokal-linux.md handbuch.md
 cat > "$A/LIESMICH.txt" <<'TXT'
-DartsHub — Lokaler Betrieb, ein Board (kein Server, keine Anmeldung)
+DartsZentrale — Lokaler Betrieb, ein Board (kein Server, keine Anmeldung)
 -------------------------------------------------------------------
 Starten:  Windows -> Doppelklick start-lokal.bat   |   Linux/Pi -> ./start-lokal.sh
 Beim ersten Start "Lokal" wählen.
 Autostart (Kiosk):  Windows -> autostart-lokal.bat   |   Linux/Pi -> ./autostart-lokal.sh
-Update (einfach): dartshub-update-*.tar.gz in den Ordner 'updates' legen, dann in der App
+Update (einfach): dartszentrale-update-*.tar.gz in den Ordner 'updates' legen, dann in der App
           Einstellungen -> "App & Updates" -> Installieren (kein Neustart noetig).
 Update (Skript):  Windows -> update-lokal.bat   |   Linux/Pi -> ./update-lokal.sh <stick>
 Anleitung: docs/anleitung-lokal-windows.md bzw. -linux.md  (Bedienung: docs/handbuch.md, Abschnitte 10+11)
@@ -83,7 +83,7 @@ copy_common "$B"
 copy_verein "$B"
 copy_docs "$B" admin-anleitung-lan-windows.md admin-anleitung-lan-linux.md handbuch.md security-audit.md
 cat > "$B/LIESMICH.txt" <<'TXT'
-DartsHub — Vereinsmodus im eigenen Netz (LAN)
+DartsZentrale — Vereinsmodus im eigenen Netz (LAN)
 ---------------------------------------------
 Es laufen ZWEI Programme: PocketBase (Backend) + Frontend.
 
@@ -94,7 +94,7 @@ Das lädt PocketBase automatisch, baut die App, richtet Autostart ein und legt d
 Voraussetzung: nur Node.js (nodejs.org). Die PocketBase-Binary holt das Skript selbst.
 
 UPDATE später — einfachster Weg (In-App):
-  dartshub-update-*.tar.gz in den Ordner 'updates' der Installation legen, dann in der App
+  dartszentrale-update-*.tar.gz in den Ordner 'updates' der Installation legen, dann in der App
   Einstellungen -> "App & Updates" -> Installieren. Am Board selbst ohne Token; von einem
   anderen Board mit dem Token, das einrichten-lan am Ende anzeigt (steht in .update-token).
 UPDATE später — per Skript (auch PocketBase):
@@ -112,7 +112,7 @@ copy_cloud "$C"
 cpf "$REPO/update-server.sh" "$C/"
 copy_docs "$C" admin-anleitung-cloud.md handbuch.md
 cat > "$C/LIESMICH.txt" <<'TXT'
-DartsHub — Vereinsmodus in der Cloud (schlank: ohne Coolify, ohne Docker)
+DartsZentrale — Vereinsmodus in der Cloud (schlank: ohne Coolify, ohne Docker)
 ------------------------------------------------------------------------
 EIN Befehl richtet alles ein — fragt Domains, Superuser und ersten App-Admin ab und
 laeuft bis alles steht (PocketBase laden, App bauen, systemd-Dienste, Caddy/HTTPS):
@@ -123,7 +123,7 @@ Voraussetzung: ein Linux-Server (Ubuntu/Debian) und die DNS-A-Records app.* / db
 zeigen auf die Server-IP. Details + Sicherheit: docs/admin-anleitung-cloud.md.
 
 UPDATE spaeter — einfachster Weg (In-App):
-  dartshub-update-*.tar.gz in den Ordner 'updates' der Installation legen, dann in der App
+  dartszentrale-update-*.tar.gz in den Ordner 'updates' der Installation legen, dann in der App
   Einstellungen -> "App & Updates" -> Installieren. Von einem Board mit dem Token, das
   einrichten-cloud am Ende anzeigt (steht in .update-token).
 UPDATE spaeter — per Skript (auch PocketBase):  ./update-server.sh
@@ -158,10 +158,10 @@ make_update_pkg
 
 echo
 echo "✅ Fertig. Bundles + ZIPs unter: $TARGET"
-du -sh "$TARGET"/*.zip "$TARGET"/dartshub-update-*.tar.gz 2>/dev/null || true
+du -sh "$TARGET"/*.zip "$TARGET"/dartszentrale-update-*.tar.gz 2>/dev/null || true
 echo
 echo "Update-Paket (später an bestehende Installationen schicken):"
-echo "  dartshub-update-${VERSION}.tar.gz  → in den updates/-Ordner der Installation legen,"
+echo "  dartszentrale-update-${VERSION}.tar.gz  → in den updates/-Ordner der Installation legen,"
 echo "  dann in der App: Einstellungen → 'App & Updates' → Installieren."
 echo
 echo "Jeder Verein bekommt die passende ZIP:"
