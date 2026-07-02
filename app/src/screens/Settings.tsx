@@ -5,6 +5,7 @@ import { FONTS, DEVICE_LOCAL_SETTING_KEYS } from '../data/constants';
 import type { Settings as SettingsType } from '../data/types';
 import { IconUsers, IconChevronRight, IconTarget } from '../lib/icons';
 import { comboFromEvent, isValidCombo, formatCombo } from '../lib/shortcut';
+import { suggestBoardScale } from '../lib/displayScale';
 
 const ACCENTS = ['#FFFFFF', '#000000', '#2BD377', '#19A463', '#3B9EFF', '#F2B829', '#E0594B', '#9b6dff', '#2bd3c0', '#FF8A3D'];
 const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'];
@@ -374,6 +375,21 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
       </Row>
       <Row label="Schriftart" sub="Wirkt im gesamten Counter">
         {ed('font', seg('font', (Object.keys(FONTS) as (keyof typeof FONTS)[]).map((f) => ({ label: f, val: f as SettingsType['font'], fam: FONTS[f] }))))}
+      </Row>
+      <Row label="Board-Gesamtgröße" sub="Vergrößert am Board-Monitor die gesamte Anzeige für große Leseabstände (Counter & Training). Der Restscore bleibt gleich groß · nur Desktop/Board · pro Gerät">
+        {ed('boardScale', (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button
+              className="dh-btn"
+              onClick={() => set('boardScale', suggestBoardScale())}
+              title="Startwert aus Bildschirm-Eigenschaften vorschlagen"
+              style={{ height: 40, padding: '0 14px', borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+            >
+              Auto
+            </button>
+            {stepper('boardScale', 100, 250)}
+          </div>
+        ))}
       </Row>
       <Row label="Score-Bereich" sub="Anteil des Restscores am Spielbrett · pro Gerät">{ed('scoreArea', stepper('scoreArea', 35, 80))}</Row>
       <Row label="Score-Schriftgröße" sub="Größe der Restpunktzahl · pro Gerät">{ed('scoreScale', stepper('scoreScale', 70, 140))}</Row>

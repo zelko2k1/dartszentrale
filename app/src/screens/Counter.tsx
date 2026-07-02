@@ -8,6 +8,7 @@ import {
 } from '../store/counter';
 import { IconBack, IconUndo, IconRefresh, IconX } from '../lib/icons';
 import { useDevice } from '../lib/useIsPhone';
+import { BoardScale } from '../components/BoardScale';
 
 export function Counter() {
   const s = useStore();
@@ -119,7 +120,8 @@ export function Counter() {
   }, [s.allThrows.length]);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', background: cfg.mode === 'light' ? 'var(--bg)' : '#0c0e11', fontFamily: 'inherit' }}>
+    <BoardScale>
+    <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: cfg.mode === 'light' ? 'var(--bg)' : '#0c0e11', fontFamily: 'inherit' }}>
       {isPhone ? (
         <PhoneCounter landscape={isPhoneLandscape} />
       ) : (
@@ -319,6 +321,7 @@ export function Counter() {
       {/* win */}
       {over && <WinOverlay />}
     </div>
+    </BoardScale>
   );
 }
 

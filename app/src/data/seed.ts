@@ -27,6 +27,7 @@ export const DEFAULT_SETTINGS: Settings = {
   headerSize: 100,
   deckSize: 100,
   legSize: 100,
+  boardScale: 100,
   legColor: null,
   scoreColor: null,
   accentDark: '#2BD377',

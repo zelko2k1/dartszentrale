@@ -214,6 +214,7 @@ export interface Settings {
   headerSize: number;
   deckSize: number;
   legSize: number;
+  boardScale: number;   // Board-Gesamtskalierung (%) – nur Desktop/Board, Default 100
   // live (effective) colours for the current mode …
   legColor: string | null;
   scoreColor: string | null;

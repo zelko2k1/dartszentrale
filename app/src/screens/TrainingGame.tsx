@@ -9,6 +9,7 @@ import {
   type TrainGame, type TrainPlayer, type StandRow,
 } from '../store/training';
 import { IconBack, IconUndo, IconX } from '../lib/icons';
+import { BoardScale } from '../components/BoardScale';
 
 export function TrainingGame() {
   const s = useStore();
@@ -29,7 +30,8 @@ export function TrainingGame() {
     : `Runde ${g.round}`;
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', background: s.settings.mode === 'light' ? 'var(--bg)' : '#0c0e11', fontFamily: 'inherit' }}>
+    <BoardScale>
+    <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: s.settings.mode === 'light' ? 'var(--bg)' : '#0c0e11', fontFamily: 'inherit' }}>
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)', flexShrink: 0 }}>
         <button onClick={() => s.trainExit()} style={headBtn}><IconBack size={15} sw={2} />Beenden</button>
@@ -77,6 +79,7 @@ export function TrainingGame() {
 
       {g.over && <TrainWinOverlay game={g} accent={accent} />}
     </div>
+    </BoardScale>
   );
 }
 
