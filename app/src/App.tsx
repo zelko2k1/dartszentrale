@@ -54,6 +54,7 @@ export default function App() {
   const [exitOpen, setExitOpen] = useState(false);
   const [exitForm, setExitForm] = useState({ email: '', pw: '', err: '', busy: false });
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [updateDismissed, setUpdateDismissed] = useState(false);
 
   useEffect(() => { init(); }, [init]);
   useEffect(() => {
@@ -208,6 +209,14 @@ export default function App() {
         } as React.CSSProperties),
       }}
     >
+      {/* PWA-Update-Hinweis: dezent, während eines laufenden Spiels ausgeblendet (unterbricht nie eine Partie) */}
+      {s.updateReady && !updateDismissed && !isCounter && !isTrainGame && (
+        <div style={{ position: 'fixed', bottom: 18, left: '50%', transform: 'translateX(-50%)', zIndex: 90, display: 'flex', alignItems: 'center', gap: 12, background: 'var(--surface)', border: '1px solid var(--accent)', boxShadow: '0 8px 30px rgba(0,0,0,.4)', borderRadius: 12, padding: '10px 12px 10px 16px' }}>
+          <span style={{ color: 'var(--text)', fontWeight: 600, fontSize: 14 }}>Neue Version verfügbar</span>
+          <button onClick={() => s.applyUpdate()} style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 9, padding: '8px 14px', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Aktualisieren</button>
+          <button onClick={() => setUpdateDismissed(true)} aria-label="Später" title="Später" style={{ background: 'transparent', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 4px' }}>×</button>
+        </div>
+      )}
       {s.needsModeChoice ? (
         <ModePicker />
       ) : needsLogin ? (

@@ -430,6 +430,26 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     </Section>
   );
 
+  const appNode = (
+    <Section title="App & Updates">
+      <Row label="Version" sub="Installierte App-Version auf diesem Gerät.">
+        <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, color: 'var(--text-2)' }}>{__APP_VERSION__}</span>
+      </Row>
+      <Row label="Updates" sub="Prüft, ob eine neuere Version bereitliegt. Ein gefundenes Update wird erst nach Klick auf „Aktualisieren“ angewendet – niemals mitten im Spiel.">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          {s.updateReady ? (
+            <button className="dh-btn" onClick={() => s.applyUpdate()} style={{ background: accent, color: 'var(--accent-fg)', border: 'none', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Aktualisieren</button>
+          ) : (
+            <>
+              {s.updateStatus === 'current' && <span style={{ fontSize: 13, color: 'var(--text-4)' }}>Aktuell</span>}
+              <button className="dh-btn" onClick={() => s.checkForUpdate()} disabled={s.updateStatus === 'checking'} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: s.updateStatus === 'checking' ? 'default' : 'pointer', opacity: s.updateStatus === 'checking' ? 0.6 : 1, fontFamily: 'inherit' }}>{s.updateStatus === 'checking' ? 'Suche…' : 'Nach Updates suchen'}</button>
+            </>
+          )}
+        </div>
+      </Row>
+    </Section>
+  );
+
   const listenNode = (
     // Namens-Sortierung: persönliche Anzeige-Vorliebe → gerätelokal, jeder darf sie ändern (außerhalb read-only).
     <Section title="Listen">
@@ -566,9 +586,11 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     { key: 'hilfen', label: 'Hilfen & Anzeige', show: true, node: dim(hilfenNode) },
     { key: 'listen', label: 'Listen', show: true, node: listenNode },
     { key: 'daten', label: 'Daten', show: true, node: dim(datenNode) },
+    { key: 'app', label: 'App & Updates', show: true, node: appNode },
   ];
   // Im Kiosk nur die gerätenahen Counter-Rubriken (kein Admin/Daten) – als eigener Board-Tab.
-  const KIOSK_KEYS = ['eingabe', 'darstellung', 'hilfen', 'listen'];
+  // 'app' ist dabei, damit der Board-Betreuer Version prüfen & Updates anstoßen kann.
+  const KIOSK_KEYS = ['eingabe', 'darstellung', 'hilfen', 'listen', 'app'];
   const shown = categories.filter((c) => c.show && (!kiosk || KIOSK_KEYS.includes(c.key)));
   const active = shown.find((c) => c.key === activeKey) || shown[0];
 

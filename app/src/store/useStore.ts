@@ -23,6 +23,7 @@ import {
 import { createProvider, type DataProvider } from '../data/dataProvider';
 import type { ProviderRecord } from '../data/provider';
 import { mergeSchedule, deriveOwnTeams, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
+import { applyPwaUpdate, checkForUpdate as checkPwaUpdate } from '../lib/pwaUpdate';
 
 const LS = {
   settings: 'dartshub_settings',
@@ -195,6 +196,10 @@ export interface AppState {
   gameMode: 'single' | 'teams';
   setup: SetupState;
   hint: HintState | null;
+
+  // PWA-Update (manueller Fluss): neue Version liegt bereit / Status des manuellen Checks
+  updateReady: boolean;
+  updateStatus: 'idle' | 'checking' | 'current';
 
   // training
   rulesMode: string | null;
@@ -402,6 +407,8 @@ export interface AppState {
   cancelNew: () => void;
   showHint: (hint: HintState) => void;
   closeHint: () => void;
+  applyUpdate: () => void;
+  checkForUpdate: () => void;
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -459,6 +466,8 @@ export const useStore = create<AppState>((set, get) => ({
   gameMode: 'single',
   setup: { mode: 'single', startScore: 501, bestOf: 5, bestOfSets: 3, unit: 'legs', doubleOut: true, outMode: 'double', doubleIn: false, p1: 0, p2: 1, teamA: 0, teamB: 1, p1Guest: '', p2Guest: '', freePlay: false, link: null },
   hint: null,
+  updateReady: false,
+  updateStatus: 'idle',
 
   rulesMode: null,
   trainSetup: null,
@@ -1842,6 +1851,15 @@ export const useStore = create<AppState>((set, get) => ({
   cancelNew() { set({ newConfirm: false }); },
   showHint(hint) { set({ hint }); },
   closeHint() { set({ hint: null }); },
+  applyUpdate() { void applyPwaUpdate(); },
+  checkForUpdate() {
+    if (get().updateStatus === 'checking') return;
+    set({ updateStatus: 'checking' });
+    void checkPwaUpdate().then((ready) => {
+      // ready → Banner/Button erscheint (updateReady); sonst kurzes „Aktuell"-Feedback
+      set({ updateReady: ready || get().updateReady, updateStatus: ready ? 'idle' : 'current' });
+    });
+  },
 }));
 
 // ── Persistenz-Routing: lokal → localStorage (volle Liste), verein → PocketBase (pro Datensatz) ──
