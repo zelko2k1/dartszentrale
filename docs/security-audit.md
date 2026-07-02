@@ -62,10 +62,21 @@ Forge mit fremder `createdBy` abgelehnt, eigener Eintrag erlaubt.
 
 ### 🟡 Mittel
 
-**#5 — PB-Admin-Konsole `/_/` internet-erreichbar + CORS manuell ⏳ (Deploy)**
-Login-Panel ist Brute-Force-Ziel; CORS-Allowlist ist ein manueller UI-Schritt. **Fix:** `/_/` per
-IP/VPN/Proxy-Auth einschränken, PB-Rate-Limit + Superuser-MFA aktivieren, CORS-Allowlist verpflichtend
-setzen (geht nicht via Compose → Deploy-Gate).
+**#5 — PB-Admin-Konsole `/_/` internet-erreichbar ⏳ (Deploy)**
+Das Login-Panel `/_/` ist ein Brute-Force-Ziel. **Fix (am Reverse-Proxy + in PB):**
+- **`/_/` abschirmen** — in der Cloud am **Caddy** per IP-Allowlist bzw. `basic_auth` auf `path /_/*`
+  (fertiger, auskommentierter Block im generierten `/etc/caddy/Caddyfile` **und** `Caddyfile.example`);
+  im LAN via Firewall/VPN. Die API (`/api/...`) bleibt offen — nur die UI wird abgeschirmt.
+- **PB-Rate-Limit** und **Superuser-MFA** in den PocketBase-Einstellungen (`/_/` → Settings) aktivieren
+  — schützt den Auth-Endpunkt gegen Brute-Force, unabhängig von der UI-Abschirmung.
+
+> **CORS in der Cloud ist bereits gesetzt — nicht mehr im UI, sondern per CLI-Flag:** die
+> PocketBase-Unit läuft mit **`--origins=https://app.<domain>`** (setzt `einrichten-cloud.sh`
+> automatisch). PocketBase 0.39 hat **keine CORS-Einstellung im Dashboard** mehr, aber das
+> `--origins`-Flag (Default `*`) — ein manueller UI-Schritt entfällt also, ist aber trotzdem gesetzt.
+> Sicherheitlich ist CORS bei **Token-Auth** (JWT im localStorage, keine Cookies) ohnehin nur
+> Defense-in-Depth: eine Fremd-Origin kommt nicht an das Token. (LAN/Coolify: Default `*` genügt,
+> per `--origins` im Compose-`command` einschränkbar.)
 
 **#6 — Kapitän-Rolle ist global ✅ behoben**
 `seasons`/`leagues` anlegen+löschen → nur Admin; `teams` löschen → nur Admin (Migration + provision,
@@ -122,7 +133,7 @@ kein stiller Rückfall auf ein Default mehr. Fehlt `NEW_PW`, bricht das Skript m
 - [ ] **#1** PB-Superuser-Passwort rotiert, Literal aus `seed-remote.sh` entfernt.
 - [ ] **#2** Produktiv-Admin manuell mit **starkem** Passwort angelegt; keine Seeds gegen Prod gelaufen.
 - [ ] **#3** PB nicht als Klartext-HTTP im Internet: Port-Mapping entfernt/loopback + Firewall, oder bewusst nur LAN.
-- [ ] **#5** PB-Admin-Konsole `/_/` abgeschirmt (IP/VPN), Superuser-MFA + Rate-Limit an, **CORS-Allowlist gesetzt**.
+- [ ] **#5** PB-Admin-Konsole `/_/` abgeschirmt (Caddy IP-Allowlist/`basic_auth` bzw. Firewall/VPN); PB-**Rate-Limit + Superuser-MFA** an. (CORS setzt die Cloud bereits per `--origins`-Flag — kein UI-Schritt.)
 - [ ] **#9** CSP in `nginx.conf` auf die echte PB-Domain angepasst, einkommentiert und getestet.
 - [x] **#4** Match-Create an Ersteller gebunden (`createdBy`-Stempel) — erledigt.
 - [x] **#6** `seasons`/`leagues`/`teams` anlegen/löschen admin-only **+** `teams`-Ändern auf eigenen Kapitän gescoped — vollständig erledigt.

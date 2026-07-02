@@ -30,7 +30,7 @@
 - [ ] ⚙️ #1 PB-Superuser-Passwort rotiert, Literal aus `seed-remote.sh` entfernt
 - [ ] ⚙️ #2 Produktiv-Admin manuell mit starkem Passwort; keine Seeds gegen Prod
 - [ ] ⚙️ #3 PB nicht als Klartext-HTTP im Internet (loopback + Firewall, oder bewusst nur LAN)
-- [ ] ⚙️ #5 PB-Admin-Konsole `/_/` abgeschirmt (IP/VPN), Superuser-MFA + Rate-Limit, CORS-Allowlist
+- [ ] ⚙️ #5 PB-Admin-Konsole `/_/` abgeschirmt (Caddy IP-Allowlist/basic_auth bzw. Firewall/VPN), Superuser-MFA + Rate-Limit (CORS setzt die Cloud bereits per `--origins`)
 - [ ] ⚙️ #9 CSP in `nginx.conf` auf echte PB-Domain angepasst, einkommentiert, getestet
 - [ ] ⚙️ HTTPS erzwungen (Proxy/Cloudflare), HSTS aktiv
 - [ ] ⚙️ Starke, einzigartige Passwörter für alle Konten

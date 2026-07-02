@@ -43,8 +43,9 @@ läuft fast identisch; die wenigen Unterschiede stehen in [Abschnitt 5](#5-mit-d
 2. **Settings → Application:**
    - `Application name` = `dartshub` (kosmetisch)
    - `Application URL` = `http://<IP>:8090`
-3. **CORS gibt es im Dashboard nicht** (PocketBase 0.39). Default ist `*` (alles erlaubt) → im LAN ok,
-   nichts zu tun. Einschränken ginge nur per `--origins`-Flag im Compose-`command`.
+3. **CORS gibt es nicht mehr im Dashboard** (PocketBase seit 0.23) — Default `*`, im LAN nichts zu tun.
+   Einschränken ginge per **`--origins`-Flag** im Compose-`command` (z. B. `--origins=http://<IP>:8081`).
+   Bei Token-Auth (JWT im localStorage, keine Cookies) ist CORS ohnehin kein echter Schutzwall.
 4. **Ersten App-Admin anlegen:** Collection **`users`** → New record:
    - `role = admin`, Mail + starkes Passwort
    - **`active` anhaken (= true)** ← unbedingt!
@@ -147,7 +148,9 @@ statt Homelab). Nur wenige Unterschiede zum IP-Betrieb oben:
 
 - **DNS:** zwei A-Records auf die Server-IP — `app.<domain>` (Frontend) und `db.<domain>` (PocketBase).
 - **PocketBase-Resource:** **Domain** = `db.<domain>`, Port `8090`; Coolify stellt **HTTPS automatisch** aus.
-  Dann **Settings → Application URL** = `https://db.<domain>` und **CORS/Allowed origins** = `https://app.<domain>`.
+  Dann **Settings → Application URL** = `https://db.<domain>`. CORS bei Bedarf per
+  **`--origins=https://app.<domain>`** im Compose-`command` (nicht mehr im UI). Öffentlich: **`/_/`**
+  am Proxy abschirmen → [`security-audit.md`](security-audit.md) #5.
 - **Frontend-Resource:** **Domain** = `app.<domain>`, Build-Variable **`VITE_PB_URL = https://db.<domain>`** (statt der IP).
 - Alles läuft über **https** (kein „Mixed Content") und ist als PWA installierbar.
 

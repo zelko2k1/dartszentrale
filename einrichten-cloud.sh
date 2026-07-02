@@ -237,7 +237,25 @@ ${DB_DOMAIN} {
 	encode zstd gzip
 	import security_headers
 	header X-Frame-Options "SAMEORIGIN"
+
+	# Standard: alles durchreichen.
 	reverse_proxy 127.0.0.1:${PB_PORT}
+
+	# ── (empfohlen, Sicherheits-Audit #5) Admin-Konsole /_/ abschirmen ────────
+	# Aktivieren: die reverse_proxy-Zeile oben auskommentieren und den Block unten
+	# einkommentieren. IP per 'curl ifconfig.me' ermitteln (/32 = genau diese IP);
+	# bei dynamischer IP statt der IP-Allowlist 'basic_auth' nehmen (Hash: caddy hash-password).
+	# (CORS ist bereits gesetzt: die PocketBase-Unit läuft mit --origins=https://<app-domain>,
+	#  siehe oben — im PB-Dashboard gibt es dafür seit 0.23 keine Einstellung mehr.)
+	#   @admin path /_/*
+	#   handle @admin {
+	#     @blocked not remote_ip 203.0.113.45/32
+	#     respond @blocked "Forbidden" 403
+	#     reverse_proxy 127.0.0.1:${PB_PORT}
+	#   }
+	#   handle {
+	#     reverse_proxy 127.0.0.1:${PB_PORT}
+	#   }
 }
 EOF
 } > /etc/caddy/Caddyfile
