@@ -228,7 +228,8 @@ Dann in `https://db.deinedomain.de/_/` → **Application URL** = `https://db.dei
 |---|---|
 | **Status** | `systemctl status dartshub-web dartshub-pocketbase caddy` |
 | **Logs live** | `journalctl -u dartshub-pocketbase -f` |
-| **App-Update** | neue Dateien einspielen (ZIP/`git pull`) → `./update-server.sh` (baut + startet die Dienste neu) |
+| **App-Update (In-App, nur Frontend)** | `dartshub-update-*.tar.gz` in **`updates/`** legen → in der App: Einstellungen → „App & Updates" → Installieren (mit dem Update-Token, den `einrichten-cloud.sh` am Ende zeigte / `.update-token`). Kein Dienst-Neustart nötig. |
+| **App-Update (Skript, auch PocketBase)** | neue Dateien einspielen (ZIP/`git pull`) → `./update-server.sh` (baut + startet die Dienste neu) |
 | **Schema-Update** | `update-server.sh` zieht es mit; Migrations laufen beim PB-Start ohnehin (bei Bedarf `cd pocketbase && node provision.mjs`) |
 | **Backups** | in PocketBase (`/_/` → Settings → Backups) aktivieren; Daten liegen in `pocketbase/pb_data/` |
 | **PocketBase-Version pinnen** | feste Version laden statt `:latest`, kontrolliert tauschen |

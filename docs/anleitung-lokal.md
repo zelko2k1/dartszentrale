@@ -51,15 +51,26 @@ Entfernen: **Windows** → `Win+R` → `shell:startup` → `DartsHub.lnk` lösch
 
 ## 4. Updates einspielen
 
-Neue Version per USB-Stick/Ordner bekommen, dann im Projektordner:
+### Einfachster Weg — direkt in der App (empfohlen)
+
+1. Die Datei **`dartshub-update-<version>.tar.gz`** in den Ordner **`updates`** neben der App legen
+   (den genauen Pfad zeigt die App unter *Einstellungen → App & Updates*; der Ordner wird beim
+   Start automatisch angelegt).
+2. In der App: **Einstellungen → „App & Updates" → „Nach Updates suchen"** → **„Installieren"**.
+
+Die App tauscht die neue Version ein und lädt sich neu — **kein Neustart, kein Terminal**. Am
+lokalen Board ist dafür kein Passwort/Token nötig (läuft nur auf diesem Gerät).
+
+### Alternativ — per Skript (USB-Stick/Ordner)
+
+Im Projektordner:
 
 - **Windows:** Doppelklick auf **`update-lokal.bat`** (nimmt Laufwerk `E:\`; anderer Buchstabe:
   im Terminal `update-lokal.bat F:\`).
 - **Linux / Pi:** **`./update-lokal.sh <quelle>`** (z. B. `./update-lokal.sh /media/usb`).
 
 Das übernimmt die neuen Dateien und baut die App neu. Im lokalen Modus liegen die Daten im
-Browser — es geht nichts verloren. Danach am Brett die Seite **neu laden** (ggf. zweimal, der
-PWA-Cache hält die alte Version evtl. einen Ladevorgang lang).
+Browser — es geht nichts verloren. Danach am Brett die Seite **neu laden**.
 
 ---
 

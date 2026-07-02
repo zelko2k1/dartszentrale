@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import pkg from './package.json' with { type: 'json' }
 
 // https://vite.dev/config/
@@ -11,6 +13,15 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    // Schreibt dist/version.json → der schlanke Server (serve-dist.mjs) liest daraus die laufende
+    // Version für den Update-Vergleich (Datei-basiertes Update lokal/LAN/Cloud, siehe /admin/update).
+    {
+      name: 'emit-version-json',
+      apply: 'build',
+      writeBundle(options) {
+        if (options.dir) writeFileSync(join(options.dir, 'version.json'), JSON.stringify({ version: pkg.version, built: new Date().toISOString() }));
+      },
+    },
     VitePWA({
       // 'prompt': ein neuer Service-Worker wartet, bis der Nutzer bewusst „Aktualisieren" klickt –
       // niemals ein automatischer Reload mitten im Spiel (siehe UpdateBanner + Einstellungen → App).

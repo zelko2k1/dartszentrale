@@ -154,6 +154,14 @@ echo "• Schema + erster App-Admin (provision.mjs) …"
   PB_URL="$PB_URL_LOCAL" PB_SU_EMAIL="$SU_EMAIL" PB_SU_PASS="$SU_PASS" \
   APP_ADMIN_EMAIL="$ADMIN_EMAIL" APP_ADMIN_PASS="$ADMIN_PASS" node provision.mjs )
 
+# ── Update-Freigabe: Token für In-App-Updates, die von einem anderen Board (LAN-IP) ausgelöst werden ──
+mkdir -p "$ROOT/updates"
+if [ ! -f "$ROOT/.update-token" ]; then
+  node -e "require('fs').writeFileSync(process.argv[1], require('crypto').randomBytes(16).toString('hex'))" "$ROOT/.update-token"
+  chmod 600 "$ROOT/.update-token" 2>/dev/null || true
+fi
+UPD_TOKEN="$(cat "$ROOT/.update-token" 2>/dev/null)"
+
 echo
 echo "✅ DartsHub-Vereinsmodus läuft:"
 echo "   App im Browser :  http://${SRV_HOST}:${WEB_PORT}    (an den Brettern diese Adresse öffnen)"
@@ -162,5 +170,8 @@ echo "   Status         :  systemctl --user status dartshub-web dartshub-pocketb
 echo "   Logs           :  journalctl --user -u dartshub-pocketbase -f"
 echo
 echo "ℹ Beim ersten App-Aufruf 'Vereinsmodus' wählen und mit dem App-Admin anmelden."
-echo "ℹ Update später:  ./update-server.sh <stick>   (erkennt die Dienste, baut neu, startet neu)."
+echo "ℹ Update später (2 Wege):"
+echo "   • In-App: 'dartshub-update-*.tar.gz' nach '$ROOT/updates/' legen → Einstellungen → 'App & Updates' → Installieren."
+echo "     Am Board selbst ohne Token; von einem anderen Gerät mit diesem Token:  ${UPD_TOKEN}"
+echo "   • Skript:  ./update-server.sh <stick>   (erkennt die Dienste, baut neu, startet neu)."
 [ "$BIND" = "0.0.0.0" ] && echo "ℹ LAN: ggf. Firewall für Ports ${PB_PORT} und ${WEB_PORT} öffnen (z. B. 'sudo ufw allow ${PB_PORT},${WEB_PORT}/tcp')."

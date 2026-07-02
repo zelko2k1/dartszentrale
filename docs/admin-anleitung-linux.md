@@ -149,6 +149,22 @@ Browser → **`http://localhost:4173`** → beim **ersten Start „Vereinsmodus"
 Eine neue Version sind neue Dateien für `app/`. **Deine Daten (`pb_data`) und Konfiguration bleiben
 unangetastet.**
 
+### 3a. Einfachster Weg — direkt in der App (nur Frontend)
+
+Für reine App-Updates (kein PocketBase-Wechsel) — ohne Terminal, ohne Dienst-Neustart:
+
+1. Die Datei **`dartshub-update-<version>.tar.gz`** in den Ordner **`updates/`** der Installation legen
+   (genauer Pfad steht in der App unter *Einstellungen → App & Updates*).
+2. In der App: **Einstellungen → „App & Updates" → „Nach Updates suchen"** → **„Installieren"**.
+
+- **Direkt am Board** (localhost): ohne Token.
+- **Von einem anderen Board** (über die Server-IP): einmalig den **Update-Token** eintragen, den
+  `./einrichten-lan.sh` am Ende angezeigt hat (steht auch in `.update-token` im Projektordner).
+
+> Für Updates, die auch **PocketBase** betreffen, weiter mit dem Skript (3b).
+
+### 3b. Per Skript (USB/Ordner, auch PocketBase)
+
 > **Lokales Paket (ein Board):** dort heißt das Update-Skript **`./update-lokal.sh`** (Windows:
 > `update-lokal.bat`) — gleicher Ablauf, ohne PocketBase. Die folgenden Befehle (`update-server.sh` /
 > `update-server.bat`) gelten fürs **Vereins-Paket**.
@@ -177,7 +193,8 @@ unangetastet.**
 | **Lokal starten** (ein Board) | `./start-lokal.sh` · Autostart: `./autostart-lokal.sh` |
 | **Vereinsmodus einrichten (geführt)** | `./einrichten-lan.sh` |
 | **Verein von Hand starten/Autostart** | `./start-lan.sh` · `./autostart-lan.sh` |
-| **Update (USB/Ordner)** | `./update-server.sh /media/usb` |
+| **Update (In-App, nur Frontend)** | `dartshub-update-*.tar.gz` in **`updates/`** legen → Einstellungen → „App & Updates" → Installieren |
+| **Update (USB/Ordner, auch PocketBase)** | `./update-server.sh /media/usb` |
 | Lokal von Hand | `cd app && npm run dev` |
 | PocketBase-Superuser setzen | `./pocketbase superuser upsert <mail> "<pw>" --dir ./pb_data` |
 | PocketBase starten | `./pocketbase serve --automigrate=0 --http=0.0.0.0:8090 --dir ./pb_data --migrationsDir ./pb_migrations --hooksDir ./pb_hooks` |

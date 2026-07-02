@@ -78,6 +78,78 @@ function Row({ label, sub, children, top }: { label: string; sub?: string; child
   );
 }
 
+// „App & Updates": prüft/installiert Datei-basierte Updates über den serve-dist-Endpunkt
+// (/admin/update/*). Läuft lokal/LAN/Cloud über http. Wird die App anders ausgeliefert (z. B.
+// Coolify/nginx → Endpunkt fehlt), zeigt der Panel einen Hinweis statt eines Installers.
+const UPDATE_TOKEN_KEY = 'dartshub_update_token';
+function UpdatePanel() {
+  const accent = useStore((st) => st.settings.accent);
+  const [token, setToken] = useState(() => { try { return localStorage.getItem(UPDATE_TOKEN_KEY) || ''; } catch { return ''; } });
+  const [phase, setPhase] = useState<'checking' | 'ok' | 'available' | 'needToken' | 'unavailable' | 'installing'>('checking');
+  const [info, setInfo] = useState<{ current: string | null; available: string | null; dir: string | null }>({ current: null, available: null, dir: null });
+  const [error, setError] = useState('');
+
+  const authHeaders = (): Record<string, string> => (token ? { 'X-Update-Token': token } : {});
+  const check = async () => {
+    setPhase('checking'); setError('');
+    try {
+      const r = await fetch('/admin/update/status', { headers: authHeaders(), cache: 'no-store' });
+      if (r.status === 403) { setPhase('needToken'); return; }
+      const j = await r.json();
+      setInfo({ current: j.current, available: j.available, dir: j.updatesDir });
+      setPhase(j.hasUpdate ? 'available' : 'ok');
+    } catch { setPhase('unavailable'); }
+  };
+  const install = async () => {
+    setPhase('installing'); setError('');
+    try {
+      const r = await fetch('/admin/update/install', { method: 'POST', headers: authHeaders() });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.ok) { window.location.reload(); return; }
+      setError(j.error || `Fehler (${r.status})`); setPhase('available');
+    } catch (e) { setError(String((e as Error).message || e)); setPhase('available'); }
+  };
+  const saveToken = () => { try { localStorage.setItem(UPDATE_TOKEN_KEY, token.trim()); } catch { /* ignore */ } void check(); };
+  useEffect(() => { void check(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const btn = (primary?: boolean): CSSProperties => ({ background: primary ? accent : 'var(--btn)', color: primary ? 'var(--accent-fg)' : 'var(--text)', border: primary ? 'none' : '1px solid var(--border-2)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: primary ? 800 : 700, cursor: 'pointer', fontFamily: 'inherit' });
+  const field: CSSProperties = { width: 220, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 14, outline: 'none' };
+
+  return (
+    <Section title="App & Updates">
+      <Row label="Installierte Version" sub="Version dieser App auf dem Board.">
+        <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, color: 'var(--text-2)' }}>{__APP_VERSION__}</span>
+      </Row>
+      {phase === 'unavailable' ? (
+        <Row label="Updates" sub="Auf diesem Board keine automatische Installation möglich.">
+          <span style={{ fontSize: 13, color: 'var(--text-4)', maxWidth: 320, textAlign: 'right' }}>Kein Update-Server erkannt — Updates laufen hier über einen Server-Redeploy bzw. das Update-Skript.</span>
+        </Row>
+      ) : phase === 'needToken' ? (
+        <Row label="Update-Freigabe" sub="Dieses Gerät darf Updates nur mit Freigabe-Token auslösen (direkt am Board ist kein Token nötig).">
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <input type="password" value={token} onChange={(e) => setToken(e.target.value)} placeholder="Update-Token" style={field} />
+            <button className="dh-btn" onClick={saveToken} style={btn()}>Speichern &amp; prüfen</button>
+          </div>
+        </Row>
+      ) : (
+        <>
+          <Row label="Updates" sub={info.dir ? `Update-Paket (.tar.gz) hier ablegen: ${info.dir}` : 'Prüft, ob ein Update bereitliegt.'}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              {phase === 'available' && <span style={{ fontSize: 13, color: accent, fontWeight: 700 }}>Version {info.available} verfügbar</span>}
+              {phase === 'ok' && <span style={{ fontSize: 13, color: 'var(--text-4)' }}>Aktuell</span>}
+              {phase === 'available'
+                ? <button className="dh-btn" onClick={install} style={btn(true)}>Installieren</button>
+                : <button className="dh-btn" onClick={check} disabled={phase === 'checking' || phase === 'installing'} style={{ ...btn(), opacity: (phase === 'checking' || phase === 'installing') ? 0.6 : 1 }}>{phase === 'checking' ? 'Suche…' : phase === 'installing' ? 'Installiere…' : 'Nach Updates suchen'}</button>}
+            </div>
+          </Row>
+          {phase === 'installing' && <div style={{ fontSize: 12, color: 'var(--text-4)', padding: '2px 2px 6px' }}>Installiere Update … die Seite lädt gleich neu.</div>}
+          {error && <div style={{ fontSize: 12, color: '#E0594B', padding: '2px 2px 6px' }}>{error}</div>}
+        </>
+      )}
+    </Section>
+  );
+}
+
 // Self-Service: der angemeldete Nutzer setzt sein eigenes Passwort (über den privilegierten setPassword-Endpunkt).
 function PasswordChange() {
   const change = useStore((st) => st.changeOwnPassword);
@@ -430,25 +502,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     </Section>
   );
 
-  const appNode = (
-    <Section title="App & Updates">
-      <Row label="Version" sub="Installierte App-Version auf diesem Gerät.">
-        <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, color: 'var(--text-2)' }}>{__APP_VERSION__}</span>
-      </Row>
-      <Row label="Updates" sub="Prüft, ob eine neuere Version bereitliegt. Ein gefundenes Update wird erst nach Klick auf „Aktualisieren“ angewendet – niemals mitten im Spiel.">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          {s.updateReady ? (
-            <button className="dh-btn" onClick={() => s.applyUpdate()} style={{ background: accent, color: 'var(--accent-fg)', border: 'none', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Aktualisieren</button>
-          ) : (
-            <>
-              {s.updateStatus === 'current' && <span style={{ fontSize: 13, color: 'var(--text-4)' }}>Aktuell</span>}
-              <button className="dh-btn" onClick={() => s.checkForUpdate()} disabled={s.updateStatus === 'checking'} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: s.updateStatus === 'checking' ? 'default' : 'pointer', opacity: s.updateStatus === 'checking' ? 0.6 : 1, fontFamily: 'inherit' }}>{s.updateStatus === 'checking' ? 'Suche…' : 'Nach Updates suchen'}</button>
-            </>
-          )}
-        </div>
-      </Row>
-    </Section>
-  );
+  const appNode = <UpdatePanel />;
 
   const listenNode = (
     // Namens-Sortierung: persönliche Anzeige-Vorliebe → gerätelokal, jeder darf sie ändern (außerhalb read-only).

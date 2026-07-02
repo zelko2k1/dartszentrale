@@ -28,3 +28,9 @@ docs/*.pdf
 
 # vom copy2share-Skill erzeugte Verteil-Bundles (nur im Projekt-Root, NICHT der Skill selbst)
 /copy2share/
+
+# Datei-basiertes Update (serve-dist.mjs zur Laufzeit): Ablageordner, Token & Temp – nie committen
+/updates/
+.update-token
+.update-tmp/
+app/dist.old/

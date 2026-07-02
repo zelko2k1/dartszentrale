@@ -138,6 +138,22 @@ Browser → **`http://localhost:4173`** → beim **ersten Start „Vereinsmodus"
 Eine neue Version sind neue Dateien für `app`. **Deine Daten (`pb_data`) und Konfiguration bleiben
 unangetastet.**
 
+### 3a. Einfachster Weg — direkt in der App (nur Frontend)
+
+Für reine App-Updates (kein PocketBase-Wechsel) — ohne Terminal, ohne Neustart der Dienste:
+
+1. Die Datei **`dartshub-update-<version>.tar.gz`** in den Ordner **`updates`** der Installation legen
+   (genauer Pfad steht in der App unter *Einstellungen → App & Updates*).
+2. In der App: **Einstellungen → „App & Updates" → „Nach Updates suchen"** → **„Installieren"**.
+
+- **Direkt am Board-PC** (localhost): ohne Token.
+- **Von einem anderen Board** (über die Server-IP): einmalig den **Update-Token** eintragen, den
+  `einrichten-lan.bat` am Ende angezeigt hat (steht auch in der Datei `.update-token` im Projektordner).
+
+> Für Updates, die auch **PocketBase** betreffen, weiter mit dem Skript (3b).
+
+### 3b. Per Skript (USB-Stick, auch PocketBase)
+
 > **Lokales Paket (ein Board):** dort heißt das Update-Skript **`update-lokal.bat`** (Linux:
 > `./update-lokal.sh`) — gleicher Ablauf, ohne PocketBase. Der folgende Befehl `update-server.bat`
 > gilt fürs **Vereins-Paket**.
@@ -161,7 +177,8 @@ aufrufen, z. B. `update-server.bat F:\`. *(Alternativ in PowerShell: `.\update-s
 | **Lokal starten** (ein Board) | Doppelklick **`start-lokal.bat`** · Autostart: **`autostart-lokal.bat`** |
 | **Vereinsmodus einrichten (geführt)** | Doppelklick **`einrichten-lan.bat`** |
 | **Verein von Hand starten/Autostart** | **`start-lan.bat`** · **`autostart-lan.bat`** |
-| **Update (USB)** | Doppelklick **`update-server.bat`** |
+| **Update (In-App, nur Frontend)** | `dartshub-update-*.tar.gz` in **`updates\`** legen → Einstellungen → „App & Updates" → Installieren |
+| **Update (USB, auch PocketBase)** | Doppelklick **`update-server.bat`** |
 | Lokal von Hand | `cd app` → `npm run dev` |
 | PocketBase starten | `pocketbase.exe serve --automigrate=0 --http=0.0.0.0:8090 --dir .\pb_data --migrationsDir .\pb_migrations --hooksDir .\pb_hooks` |
 

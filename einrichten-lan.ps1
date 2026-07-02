@@ -130,12 +130,24 @@ $s.TargetPath = $startBat; $s.WorkingDirectory = $Root; $s.WindowStyle = 7
 $s.Save()
 Write-Host "- Autostart eingerichtet (Verknuepfung im Autostart-Ordner)."
 
+# --- 8) Update-Freigabe: Token fuer In-App-Updates von einem anderen Board (LAN-IP) ---
+$updDir = Join-Path $Root "updates"
+if (-not (Test-Path $updDir)) { New-Item -ItemType Directory $updDir | Out-Null }
+$tokFile = Join-Path $Root ".update-token"
+if (-not (Test-Path $tokFile)) {
+  $tok = -join ((1..32) | ForEach-Object { '{0:x}' -f (Get-Random -Maximum 16) })
+  Set-Content -Path $tokFile -Value $tok -Encoding ascii -NoNewline
+}
+$updTok = (Get-Content $tokFile -Raw).Trim()
+
 Write-Host ""
 Write-Host "OK - DartsHub-Vereinsmodus laeuft:"
 Write-Host "   App im Browser :  http://${srvHost}:$WebPort   (an den Brettern diese Adresse oeffnen)"
 Write-Host "   PocketBase-UI  :  http://${srvHost}:$PbPort/_/"
 Write-Host ""
 Write-Host "Hinweis: Beim ersten App-Aufruf 'Vereinsmodus' waehlen und mit dem App-Admin anmelden."
+Write-Host "Hinweis Update: 'dartshub-update-*.tar.gz' nach '$Root\updates\' legen -> Einstellungen -> 'App & Updates' -> Installieren."
+Write-Host "   Am Board selbst ohne Token; von einem anderen Geraet mit Token:  $updTok"
 if ($bind -eq "0.0.0.0") { Write-Host "Hinweis LAN: Windows-Firewall fragt ggf. -> 'Zugriff zulassen'." }
 Start-Sleep 4
 Start-Process "http://127.0.0.1:$WebPort"

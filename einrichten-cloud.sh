@@ -272,6 +272,14 @@ if [ "$DO_ACCOUNTS" = "1" ]; then
     bash -lc "cd '$ROOT/pocketbase' && node provision.mjs"
 fi
 
+# ── Update-Freigabe: Token für In-App-Updates, die von einem Board (https) ausgelöst werden ──
+if [ ! -f "$ROOT/.update-token" ]; then
+  "$NODE_BIN" -e "require('fs').writeFileSync(process.argv[1], require('crypto').randomBytes(16).toString('hex'))" "$ROOT/.update-token"
+  chown "$RUN_USER" "$ROOT/.update-token" 2>/dev/null || true
+  chmod 600 "$ROOT/.update-token" 2>/dev/null || true
+fi
+UPD_TOKEN="$(cat "$ROOT/.update-token" 2>/dev/null)"
+
 echo
 echo "✅ Dienste laufen:"
 echo "   PocketBase : ${PB_URL_LOCAL}   (öffentlich via https://${DB_DOMAIN})"
@@ -292,5 +300,7 @@ fi
 echo "   • Optional härten: /_/ in Caddy auf deine IP sperren + CSP einkommentieren"
 echo "       → docs/cloud-schlank-anleitung.md, Abschnitt Sicherheit."
 echo
-echo "ℹ Update später: neue Dateien einspielen → ./update-server.sh erkennt die Cloud-Dienste,"
-echo "   baut neu und startet sie neu (oder manuell: npm run build + systemctl restart dartshub-web)."
+echo "ℹ Update später (2 Wege):"
+echo "   • In-App: 'dartshub-update-*.tar.gz' nach '$ROOT/updates/' legen → Einstellungen → 'App & Updates' → Installieren."
+echo "     Von einem Board mit diesem Token:  ${UPD_TOKEN}"
+echo "   • Skript:  ./update-server.sh   (erkennt die Cloud-Dienste, baut neu, startet neu)."
