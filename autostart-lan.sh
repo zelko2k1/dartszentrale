@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # ═══════ [ PRODUKTIV / OPS ] — Linux-Autostart (Vereinsmodus als Daemon) ═══════
-# Richtet DartsHub im Vereinsmodus als systemd-USER-Dienste ein:
-#   • dartshub-pocketbase.service  → Backend  http://127.0.0.1:8090
-#   • dartshub-web.service         → Frontend http://127.0.0.1:4173 (statischer dist-Server)
+# Richtet DartsZentrale im Vereinsmodus als systemd-USER-Dienste ein:
+#   • darts-pocketbase.service  → Backend  http://127.0.0.1:8090
+#   • darts-web.service         → Frontend http://127.0.0.1:4173 (statischer dist-Server)
 # Beide starten automatisch beim Boot (via linger), starten bei Absturz neu,
 # und loggen nach journald. Idempotent — erneutes Ausführen aktualisiert die Dienste.
 #
@@ -10,10 +10,10 @@
 # docs/lokaler-betrieb.md → Superuser anlegen + `node provision.mjs`.
 #
 # Verwaltung danach:
-#   systemctl --user status  dartshub-web dartshub-pocketbase
-#   journalctl --user -u dartshub-pocketbase -f      # Logs live
-#   systemctl --user restart dartshub-web            # nach einem Rebuild (update-server.sh --build)
-#   ./autostart-lan-entfernen.sh   (oder: systemctl --user disable --now dartshub-web dartshub-pocketbase)
+#   systemctl --user status  darts-web darts-pocketbase
+#   journalctl --user -u darts-pocketbase -f      # Logs live
+#   systemctl --user restart darts-web            # nach einem Rebuild (update-server.sh --build)
+#   ./autostart-lan-entfernen.sh   (oder: systemctl --user disable --now darts-web darts-pocketbase)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -42,9 +42,9 @@ echo "• Baue Frontend …"; ( cd "$ROOT/app" && npm run build )
 # --- Unit-Dateien schreiben ---
 mkdir -p "$UNIT_DIR"
 
-cat > "$UNIT_DIR/dartshub-pocketbase.service" <<EOF
+cat > "$UNIT_DIR/darts-pocketbase.service" <<EOF
 [Unit]
-Description=DartsHub PocketBase (Vereinsmodus)
+Description=DartsZentrale PocketBase (Vereinsmodus)
 After=network-online.target
 Wants=network-online.target
 
@@ -59,11 +59,11 @@ RestartSec=3
 WantedBy=default.target
 EOF
 
-cat > "$UNIT_DIR/dartshub-web.service" <<EOF
+cat > "$UNIT_DIR/darts-web.service" <<EOF
 [Unit]
-Description=DartsHub Frontend (statischer dist-Server)
-After=dartshub-pocketbase.service
-Wants=dartshub-pocketbase.service
+Description=DartsZentrale Frontend (statischer dist-Server)
+After=darts-pocketbase.service
+Wants=darts-pocketbase.service
 
 [Service]
 Type=simple
@@ -87,16 +87,16 @@ echo "• Unit-Dateien geschrieben → $UNIT_DIR"
 
 # --- Aktivieren + beim Boot starten (ohne Login) ---
 systemctl --user daemon-reload
-systemctl --user enable --now dartshub-pocketbase.service dartshub-web.service
+systemctl --user enable --now darts-pocketbase.service darts-web.service
 loginctl enable-linger "$USER" 2>/dev/null && echo "• Autostart beim Boot aktiviert (linger)" \
   || echo "⚠ 'loginctl enable-linger $USER' nicht möglich — Dienste starten dann erst nach dem Login."
 
 echo
-echo "✅ DartsHub-Vereinsmodus läuft als Dienst:"
+echo "✅ DartsZentrale-Vereinsmodus läuft als Dienst:"
 echo "   Backend  : ${PB_URL}"
 echo "   Frontend : http://127.0.0.1:${WEB_PORT}"
-echo "   Status   : systemctl --user status dartshub-web dartshub-pocketbase"
-echo "   Logs     : journalctl --user -u dartshub-pocketbase -f"
+echo "   Status   : systemctl --user status darts-web darts-pocketbase"
+echo "   Logs     : journalctl --user -u darts-pocketbase -f"
 echo "   Entfernen: ./autostart-lan-entfernen.sh"
 echo
 echo "ℹ Falls noch nicht geschehen: PocketBase einmalig einrichten (Superuser + Schema):"

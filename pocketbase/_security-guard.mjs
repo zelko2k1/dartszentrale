@@ -6,13 +6,13 @@
 // Entwicklung (localhost / 127.0.0.1 / ::1) bleibt unverändert bequem – dort sind
 // die Defaults weiterhin erlaubt.
 //
-// Hintergrund: Ein Konto wie chef@dartshub.local / dartshub123 (Rolle admin) wäre
+// Hintergrund: Ein Konto wie chef@dartszentrale.local / dartszentrale123 (Rolle admin) wäre
 // gegen eine im Internet erreichbare PocketBase ein offenes Scheunentor.
 
 export const WEAK_DEFAULTS = new Set([
-  'dartshub123',
-  'dartshub-admin-2026',
-  'board-dartshub-2026',
+  'dartszentrale123',
+  'dartszentrale-admin-2026',
+  'board-dartszentrale-2026',
 ]);
 
 /** true, wenn das Ziel offensichtlich lokal ist (dann sind Defaults ok). */

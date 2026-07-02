@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ═══════ [ PRODUKTIV / OPS ] — Geführte Vereinsmodus-Einrichtung im LAN (Linux/Pi) ═══════
-# Richtet DartsHub auf DIESEM Rechner komplett ein — ein Befehl, mit Abfragen,
+# Richtet DartsZentrale auf DIESEM Rechner komplett ein — ein Befehl, mit Abfragen,
 # bis alles läuft inkl. erstem App-Admin:
 #   • lädt das PocketBase-Binary (falls nicht vorhanden)
 #   • baut das Frontend (mit der richtigen Server-Adresse)
@@ -58,7 +58,7 @@ PB_URL_LOCAL="http://127.0.0.1:${PB_PORT}"     # für Skript-Zugriff/Health
 VITE_PB_URL="http://${SRV_HOST}:${PB_PORT}"    # was die Bretter ansprechen
 
 echo "── PocketBase-Superuser (verwaltet die Datenbank unter /_/) ──"
-[ -n "$SU_EMAIL" ]    || ask        "  Superuser-E-Mail:     " SU_EMAIL "admin@dartshub.local"
+[ -n "$SU_EMAIL" ]    || ask        "  Superuser-E-Mail:     " SU_EMAIL "admin@dartszentrale.local"
 [ -n "$SU_PASS" ]     || ask_secret "  Superuser-Passwort:   " SU_PASS
 echo "── Erster App-Admin (dein Login IN der App) ──"
 [ -n "$ADMIN_EMAIL" ] || ask        "  App-Admin-E-Mail:     " ADMIN_EMAIL
@@ -98,9 +98,9 @@ echo "• PocketBase-Superuser anlegen/aktualisieren …"
 # ── 4) systemd-User-Units schreiben ─────────────────────────────────────────
 echo "• systemd-User-Dienste einrichten …"
 mkdir -p "$UNIT_DIR"
-cat > "$UNIT_DIR/dartshub-pocketbase.service" <<EOF
+cat > "$UNIT_DIR/darts-pocketbase.service" <<EOF
 [Unit]
-Description=DartsHub PocketBase (Vereinsmodus)
+Description=DartsZentrale PocketBase (Vereinsmodus)
 After=network-online.target
 Wants=network-online.target
 
@@ -115,11 +115,11 @@ RestartSec=3
 WantedBy=default.target
 EOF
 
-cat > "$UNIT_DIR/dartshub-web.service" <<EOF
+cat > "$UNIT_DIR/darts-web.service" <<EOF
 [Unit]
-Description=DartsHub Frontend (statischer dist-Server)
-After=dartshub-pocketbase.service
-Wants=dartshub-pocketbase.service
+Description=DartsZentrale Frontend (statischer dist-Server)
+After=darts-pocketbase.service
+Wants=darts-pocketbase.service
 
 [Service]
 Type=simple
@@ -136,7 +136,7 @@ WantedBy=default.target
 EOF
 
 systemctl --user daemon-reload
-systemctl --user enable --now dartshub-pocketbase.service dartshub-web.service
+systemctl --user enable --now darts-pocketbase.service darts-web.service
 loginctl enable-linger "$USER" >/dev/null 2>&1 && echo "• Autostart beim Boot aktiv (linger)" \
   || echo "⚠ 'loginctl enable-linger $USER' nicht möglich — Dienste starten erst nach Login."
 
@@ -147,7 +147,7 @@ for _ in $(seq 1 30); do
   curl -fsS "${PB_URL_LOCAL}/api/health" >/dev/null 2>&1 && { ok=1; break; }
   sleep 1
 done
-[ "$ok" = "1" ] || { echo "✗ PocketBase nicht erreichbar — Logs: journalctl --user -u dartshub-pocketbase -e"; exit 1; }
+[ "$ok" = "1" ] || { echo "✗ PocketBase nicht erreichbar — Logs: journalctl --user -u darts-pocketbase -e"; exit 1; }
 
 echo "• Schema + erster App-Admin (provision.mjs) …"
 ( cd "$ROOT/pocketbase" && \
@@ -163,15 +163,15 @@ fi
 UPD_TOKEN="$(cat "$ROOT/.update-token" 2>/dev/null)"
 
 echo
-echo "✅ DartsHub-Vereinsmodus läuft:"
+echo "✅ DartsZentrale-Vereinsmodus läuft:"
 echo "   App im Browser :  http://${SRV_HOST}:${WEB_PORT}    (an den Brettern diese Adresse öffnen)"
 echo "   PocketBase-UI  :  http://${SRV_HOST}:${PB_PORT}/_/"
-echo "   Status         :  systemctl --user status dartshub-web dartshub-pocketbase"
-echo "   Logs           :  journalctl --user -u dartshub-pocketbase -f"
+echo "   Status         :  systemctl --user status darts-web darts-pocketbase"
+echo "   Logs           :  journalctl --user -u darts-pocketbase -f"
 echo
 echo "ℹ Beim ersten App-Aufruf 'Vereinsmodus' wählen und mit dem App-Admin anmelden."
 echo "ℹ Update später (2 Wege):"
-echo "   • In-App: 'dartshub-update-*.tar.gz' nach '$ROOT/updates/' legen → Einstellungen → 'App & Updates' → Installieren."
+echo "   • In-App: 'dartszentrale-update-*.tar.gz' nach '$ROOT/updates/' legen → Einstellungen → 'App & Updates' → Installieren."
 echo "     Am Board selbst ohne Token; von einem anderen Gerät mit diesem Token:  ${UPD_TOKEN}"
 echo "   • Skript:  ./update-server.sh <stick>   (erkennt die Dienste, baut neu, startet neu)."
 [ "$BIND" = "0.0.0.0" ] && echo "ℹ LAN: ggf. Firewall für Ports ${PB_PORT} und ${WEB_PORT} öffnen (z. B. 'sudo ufw allow ${PB_PORT},${WEB_PORT}/tcp')."

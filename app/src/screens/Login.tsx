@@ -20,7 +20,7 @@ export function Login() {
             ? <img src={s.settings.clubLogo} alt="Vereinslogo" style={{ width: 52, height: 52, borderRadius: 12, objectFit: 'contain' }} />
             : <Logo size={52} />}
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>DartsHub</div>
+            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>DartsZentrale</div>
             <div style={{ fontSize: 13, color: 'var(--text-4)', fontWeight: 600, marginTop: 2 }}>{s.settings.clubName ? `${s.settings.clubName} · ` : ''}Vereinsverwaltung</div>
           </div>
         </div>

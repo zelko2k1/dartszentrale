@@ -7,8 +7,8 @@ import { writeFileSync } from 'fs';
 import { assertSafePassword } from './_security-guard.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
-const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartshub.local';
-const SU_PASS = process.env.PB_SU_PASS || 'dartshub-admin-2026';
+const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartszentrale.local';
+const SU_PASS = process.env.PB_SU_PASS || 'dartszentrale-admin-2026';
 const SEASON_ID = process.env.SEASON_ID || '';
 const SEASON_NAME = process.env.SEASON_NAME || '';
 
@@ -32,12 +32,12 @@ async function main() {
   const [leagues, teams, events, matches, snaps] = await Promise.all([by('leagues'), by('teams'), by('events'), by('matches'), by('season_snapshots')]);
   const strip = (r) => { const o = { ...r }; for (const k of ['collectionId', 'collectionName', 'created', 'updated', 'expand']) delete o[k]; return o; };
   const bundle = {
-    format: 'dartshub-season-bundle', version: 1, exportedAt: new Date().toISOString(),
+    format: 'dartszentrale-season-bundle', version: 1, exportedAt: new Date().toISOString(),
     season: strip(season), snapshot: snaps[0] ? strip(snaps[0]) : null,
     leagues: leagues.map(strip), teams: teams.map(strip), events: events.map(strip), matches: matches.map(strip),
   };
   const safe = season.name.replace(/[^\dA-Za-z]+/g, '-');
-  const file = `dartshub-saison-${safe}-${new Date().toISOString().slice(0, 10)}.json`;
+  const file = `dartszentrale-saison-${safe}-${new Date().toISOString().slice(0, 10)}.json`;
   writeFileSync(file, JSON.stringify(bundle, null, 2));
   console.log(`OK Bundle geschrieben: ${file}`);
   console.log(`   leagues=${leagues.length} teams=${teams.length} events=${events.length} matches=${matches.length} snapshot=${snaps[0] ? 'ja' : 'nein'}`);

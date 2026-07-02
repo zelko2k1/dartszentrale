@@ -1,7 +1,7 @@
-# DartsHub — React + TypeScript SPA
+# DartsZentrale — React + TypeScript SPA
 
-Pixelnahe Implementierung des DartsHub-Designs (Vereinsmodus) auf Basis von
-`../DartsHub.dc.html` und den Referenz-Screenshots in `../screenshots/`.
+Pixelnahe Implementierung des DartsZentrale-Designs (Vereinsmodus) auf Basis von
+`../DartsZentrale.dc.html` und den Referenz-Screenshots in `../screenshots/`.
 
 ## Stack
 - **Vite 8 + React 19 + TypeScript**
@@ -13,7 +13,7 @@ Pixelnahe Implementierung des DartsHub-Designs (Vereinsmodus) auf Basis von
 ## Betriebsmodi
 Die App kennt zwei Modi (umschaltbar in den Einstellungen, mit automatischer Erkennung):
 - **Local** — alles im Browser, kein Login. Persistenz in `localStorage`
-  (gleiche `dartshub_*`-Schlüssel wie der Prototyp).
+  (gleiche `darts_*`-Schlüssel wie der Prototyp).
 - **Verein** — mit Login und Rollen (admin / captain / player / viewer),
   Daten über ein **PocketBase**-Backend. Der passende Data-Provider liegt in
   `src/data/pocketbaseProvider.ts`; das Deploy-Setup (Coolify auf Hetzner)

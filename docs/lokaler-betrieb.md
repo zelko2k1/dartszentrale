@@ -1,9 +1,9 @@
-# DartsHub lokal starten — Befehls-Spickzettel
+# DartsZentrale lokal starten — Befehls-Spickzettel
 
 Zwei Wege: **A) Lokaler Modus** (nur Browser, kein Server – am einfachsten) und
 **B) Vereinsmodus** (mit PocketBase + Test-Daten + echten Logins).
 
-Alle Pfade relativ zum Projekt `/mnt/Data/claudebase/dartshub`.
+Alle Pfade relativ zum Projekt `/mnt/Data/claudebase/dartszentrale`.
 
 ---
 
@@ -39,18 +39,18 @@ Alle Pfade relativ zum Projekt `/mnt/Data/claudebase/dartshub`.
 die Skripte greifen per `../app/node_modules` auf die PocketBase-Bibliothek zu.
 
 **Auf dem Zielrechner — Reihenfolge mit Befehlen.**
-(Beispielpfade: Linux `~/dartshub`, Windows `C:\dartshub`; USB Linux `/media/usb`, Windows `E:\`.)
+(Beispielpfade: Linux `~/dartszentrale`, Windows `C:\dartszentrale`; USB Linux `/media/usb`, Windows `E:\`.)
 
 **1) Projektordner anlegen + Dateien vom Stick kopieren** (`app/` und `pocketbase/` nebeneinander)
 ```bash
 # Linux / Git Bash
-mkdir -p ~/dartshub && cd ~/dartshub
+mkdir -p ~/dartszentrale && cd ~/dartszentrale
 cp -r /media/usb/app ./app
 cp -r /media/usb/pocketbase ./pocketbase
 ```
 ```powershell
 # Windows / PowerShell
-mkdir C:\dartshub; cd C:\dartshub
+mkdir C:\dartszentrale; cd C:\dartszentrale
 Copy-Item -Recurse E:\app .\app
 Copy-Item -Recurse E:\pocketbase .\pocketbase
 ```
@@ -58,13 +58,13 @@ Copy-Item -Recurse E:\pocketbase .\pocketbase
 **2) PocketBase-Binary fürs OS holen** → in `pocketbase/` legen
 ```bash
 # Linux (bei ARM: linux_arm64)
-cd ~/dartshub/pocketbase
+cd ~/dartszentrale/pocketbase
 wget https://github.com/pocketbase/pocketbase/releases/download/v0.39.5/pocketbase_0.39.5_linux_amd64.zip
 unzip -o pocketbase_0.39.5_linux_amd64.zip pocketbase && chmod +x pocketbase
 ```
 ```powershell
 # Windows
-cd C:\dartshub\pocketbase
+cd C:\dartszentrale\pocketbase
 Invoke-WebRequest https://github.com/pocketbase/pocketbase/releases/download/v0.39.5/pocketbase_0.39.5_windows_amd64.zip -OutFile pb.zip
 Expand-Archive pb.zip -DestinationPath . -Force
 ```
@@ -72,34 +72,34 @@ Expand-Archive pb.zip -DestinationPath . -Force
 **3) Abhängigkeiten installieren** (braucht Internet)
 ```bash
 # Linux
-cd ~/dartshub/app && npm install
+cd ~/dartszentrale/app && npm install
 ```
 ```powershell
 # Windows
-cd C:\dartshub\app; npm install
+cd C:\dartszentrale\app; npm install
 ```
 
 **4) *(optional)* Server-Default setzen** — sonst Adresse später in der App eintragen
 ```bash
 # Linux
-printf 'VITE_PB_URL=http://127.0.0.1:8090\n' > ~/dartshub/app/.env.local
+printf 'VITE_PB_URL=http://127.0.0.1:8090\n' > ~/dartszentrale/app/.env.local
 ```
 ```powershell
 # Windows
-'VITE_PB_URL=http://127.0.0.1:8090' | Out-File -Encoding ascii C:\dartshub\app\.env.local
+'VITE_PB_URL=http://127.0.0.1:8090' | Out-File -Encoding ascii C:\dartszentrale\app\.env.local
 ```
 
 **5) PocketBase: Superuser anlegen + starten** (eigenes Terminal, offen lassen)
 ```bash
 # Linux
-cd ~/dartshub/pocketbase
-./pocketbase superuser upsert admin@dartshub.local "dartshub-admin-2026" --dir ./pb_data
+cd ~/dartszentrale/pocketbase
+./pocketbase superuser upsert admin@dartszentrale.local "dartszentrale-admin-2026" --dir ./pb_data
 ./pocketbase serve --automigrate=0 --http=127.0.0.1:8090 --dir ./pb_data
 ```
 ```powershell
 # Windows
-cd C:\dartshub\pocketbase
-.\pocketbase.exe superuser upsert admin@dartshub.local "dartshub-admin-2026" --dir .\pb_data
+cd C:\dartszentrale\pocketbase
+.\pocketbase.exe superuser upsert admin@dartszentrale.local "dartszentrale-admin-2026" --dir .\pb_data
 .\pocketbase.exe serve --automigrate=0 --http=127.0.0.1:8090 --dir .\pb_data
 ```
 > `pb_data/` und `pb_migrations/` legt PocketBase dabei selbst an.
@@ -128,14 +128,14 @@ bleiben unangetastet.**
 
 **Linux / Raspberry Pi / Git Bash** (im Projektordner ausführen, Stick als Quelle):
 ```bash
-cd ~/dartshub
+cd ~/dartszentrale
 ./update-server.sh /media/usb            # Quelle = Stick (ohne Argument: /media/usb)
 ./update-server.sh /media/usb --build    # zusätzlich app/dist bauen (nur wenn ihr dist/ ausliefert)
 ```
 
 **Windows / PowerShell:**
 ```powershell
-cd C:\dartshub
+cd C:\dartszentrale
 .\update-server.ps1 -Source E:\          # Quelle = Stick
 .\update-server.ps1 -Source E:\ -Build   # zusätzlich app\dist bauen
 ```
@@ -168,9 +168,9 @@ Auf Linux müssen im **Vereinsmodus** zwei Dinge laufen — **PocketBase** (Back
   ```
   Verwaltung danach:
   ```bash
-  systemctl --user status dartshub-web dartshub-pocketbase
-  journalctl --user -u dartshub-pocketbase -f     # Logs live
-  systemctl --user restart dartshub-web           # nach einem Rebuild (z. B. update-server.sh --build)
+  systemctl --user status darts-web darts-pocketbase
+  journalctl --user -u darts-pocketbase -f     # Logs live
+  systemctl --user restart darts-web           # nach einem Rebuild (z. B. update-server.sh --build)
   ./autostart-lan-entfernen.sh                         # Autostart wieder entfernen (Daten bleiben)
   ```
 
@@ -190,7 +190,7 @@ Repo ist **privat** → auf neuem Rechner zuerst anmelden, sonst geht kein clone
 gh auth login && gh auth setup-git          # GitHub-Anmeldung (oder Token beim push)
 git config --global user.name  "Heiko Frenzel"
 git config --global user.email "hfrenzel2k1@gmail.com"
-git clone https://github.com/zelko2k1/dartshub.git
+git clone https://github.com/zelko2k1/dartszentrale.git
 
 # täglich
 git status                  # was ist geändert?
@@ -259,7 +259,7 @@ Prüfen: `node -v` (≥ 20), `npm -v`, `git --version`.
 ## 0c. Einmalig: Abhängigkeiten installieren
 
 ```bash
-cd /mnt/Data/claudebase/dartshub/app
+cd /mnt/Data/claudebase/dartszentrale/app
 npm install
 ```
 
@@ -271,7 +271,7 @@ Schnellster Weg für die eigene Nutzung auf einem Gerät. Daten liegen im Browse
 (localStorage), Beispieldaten werden beim ersten Start automatisch angelegt.
 
 ```bash
-cd /mnt/Data/claudebase/dartshub/app
+cd /mnt/Data/claudebase/dartszentrale/app
 # sicherstellen, dass NICHT auf einen Server gezeigt wird:
 #   app/.env.local löschen ODER VITE_PB_URL leer lassen
 npm run dev
@@ -294,22 +294,22 @@ Im **eigenen Terminal** (läuft im Vordergrund — offen lassen), aus dem `pocke
 
 ```bash
 # Linux / Git Bash
-cd /mnt/Data/claudebase/dartshub/pocketbase
+cd /mnt/Data/claudebase/dartszentrale/pocketbase
 ./pocketbase serve --automigrate=0 --http=127.0.0.1:8090 --dir ./pb_data
 ```
 ```powershell
 # Windows / PowerShell
-cd C:\Pfad\zu\dartshub\pocketbase
+cd C:\Pfad\zu\dartszentrale\pocketbase
 .\pocketbase.exe serve --automigrate=0 --http=127.0.0.1:8090 --dir .\pb_data
 ```
 Läuft auf http://127.0.0.1:8090 · Verwaltungs-Konsole: **http://127.0.0.1:8090/_/**
 
 **Erster Start — Superuser (DB-Admin) anlegen** (nur einmal nötig). Entweder per CLI *vor* dem `serve`:
 ```bash
-./pocketbase superuser upsert admin@dartshub.local "dartshub-admin-2026" --dir ./pb_data
+./pocketbase superuser upsert admin@dartszentrale.local "dartszentrale-admin-2026" --dir ./pb_data
 ```
 …oder im Browser unter `/_/` das angezeigte Formular ausfüllen.
-> Die Skripte melden sich mit `admin@dartshub.local` / `dartshub-admin-2026` an — nimm dieselben
+> Die Skripte melden sich mit `admin@dartszentrale.local` / `dartszentrale-admin-2026` an — nimm dieselben
 > Zugangsdaten, sonst `PB_SU_EMAIL`/`PB_SU_PASS` voranstellen.
 
 **Stoppen:** Strg+C im PocketBase-Terminal. Daten bleiben im Ordner `pb_data/`.
@@ -317,7 +317,7 @@ Läuft auf http://127.0.0.1:8090 · Verwaltungs-Konsole: **http://127.0.0.1:8090
 ### 2. Schema + App-Admin anlegen (idempotent)
 In einem zweiten Terminal:
 ```bash
-cd /mnt/Data/claudebase/dartshub/pocketbase
+cd /mnt/Data/claudebase/dartszentrale/pocketbase
 node provision.mjs
 ```
 Legt alle Collections (inkl. `seasons`/`season_snapshots`) an und fragt — falls noch
@@ -327,7 +327,7 @@ Legt alle Collections (inkl. `seasons`/`season_snapshots`) an und fragt — fall
 (ein vorhandener Admin bleibt unberührt).
 
 > **Dev-Konvention:** Wer die Demo-Skripte/Test-Logins unten 1:1 nutzen will, tippt beim
-> Prompt `chef@dartshub.local` / `dartshub123` — dann passen `demo-seed*.mjs` und die
+> Prompt `chef@dartszentrale.local` / `dartszentrale123` — dann passen `demo-seed*.mjs` und die
 > Test-Login-Tabelle zusammen. (Das ist nur eine lokale Empfehlung, kein fest verdrahtetes Konto.)
 
 ### 3. Test-Daten einspielen
@@ -356,20 +356,20 @@ node add-board-account.mjs         # rechtearmes Board-Konto für Kiosk-Tests
 
 ### 5. App starten
 ```bash
-cd /mnt/Data/claudebase/dartshub/app
+cd /mnt/Data/claudebase/dartszentrale/app
 npm run dev
 ```
 **http://localhost:5173** öffnen und anmelden.
 
-### Test-Logins (Demo-Konten aus `demo-seed*.mjs`, alle Passwort `dartshub123`)
+### Test-Logins (Demo-Konten aus `demo-seed*.mjs`, alle Passwort `dartszentrale123`)
 | Rolle | E-Mail |
 |------|--------|
-| Admin | der beim `provision.mjs`-Prompt gewählte Admin (Dev-Konvention: `chef@dartshub.local`) |
+| Admin | der beim `provision.mjs`-Prompt gewählte Admin (Dev-Konvention: `chef@dartszentrale.local`) |
 | Kapitän | `sandra.koester@sv-adler.de` |
 | Spieler | `daniel.weber@sv-adler.de` |
 | Betrachter (nur lesen) | `schriftfuehrung@sv-adler.de` |
 | Inaktiv (Login gesperrt) | `t.reiter@web.de` |
-| PocketBase-Konsole | `admin@dartshub.local` / `dartshub-admin-2026` |
+| PocketBase-Konsole | `admin@dartszentrale.local` / `dartszentrale-admin-2026` |
 
 ---
 
@@ -407,11 +407,11 @@ Cloud `PB_URL`, `PB_SU_EMAIL`, `PB_SU_PASS` als Umgebungsvariablen voranstellen.
 4. Aus dem **`pocketbase/`-Verzeichnis** aufrufen (die relativen Pfade gehen davon aus).
 
 ```bash
-cd /mnt/Data/claudebase/dartshub/pocketbase
+cd /mnt/Data/claudebase/dartszentrale/pocketbase
 
 node provision.mjs                                   # einfacher Aufruf
-USER_EMAIL=chef@dartshub.local NEW_PW="abc12345" node reset-password.mjs   # mit Variablen
-node season-import.mjs dartshub-saison-2024-25.json  # mit Datei-Argument
+USER_EMAIL=chef@dartszentrale.local NEW_PW="abc12345" node reset-password.mjs   # mit Variablen
+node season-import.mjs dartszentrale-saison-2024-25.json  # mit Datei-Argument
 
 # gegen eine Cloud-Instanz statt lokal:
 PB_URL=https://db.deinverein.de PB_SU_EMAIL=admin@… PB_SU_PASS=… MEMBER_PW=… node demo-seed-dsv-fuerth.mjs
@@ -446,7 +446,7 @@ Mehrere einfach hintereinander (durch Leerzeichen getrennt) voranstellen.
 
 ## Production-Build prüfen
 ```bash
-cd /mnt/Data/claudebase/dartshub/app
+cd /mnt/Data/claudebase/dartszentrale/app
 npm run build      # tsc + vite build → dist/
 npm run preview    # statisches dist/ lokal testen
 ```

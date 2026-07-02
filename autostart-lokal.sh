@@ -18,9 +18,9 @@ NODE_BIN="$(command -v node)"; NODE_DIR="$(dirname "$NODE_BIN")"
 echo "• Baue Frontend …"; ( cd "$ROOT/app" && npm run build )
 
 mkdir -p "$UNIT_DIR"
-cat > "$UNIT_DIR/dartshub-web.service" <<EOF
+cat > "$UNIT_DIR/darts-web.service" <<EOF
 [Unit]
-Description=DartsHub Frontend (lokaler Modus)
+Description=DartsZentrale Frontend (lokaler Modus)
 After=network-online.target
 
 [Service]
@@ -38,11 +38,11 @@ WantedBy=default.target
 EOF
 
 systemctl --user daemon-reload
-systemctl --user enable --now dartshub-web.service
+systemctl --user enable --now darts-web.service
 loginctl enable-linger "$USER" >/dev/null 2>&1 && echo "• Autostart beim Boot aktiv (linger)" \
   || echo "⚠ 'loginctl enable-linger $USER' nicht möglich — Dienst startet erst nach Login."
 
 echo
 echo "✅ Frontend läuft als Dienst → http://127.0.0.1:${WEB_PORT}"
-echo "   Status   : systemctl --user status dartshub-web"
-echo "   Entfernen: systemctl --user disable --now dartshub-web && rm -f \"$UNIT_DIR/dartshub-web.service\" && systemctl --user daemon-reload"
+echo "   Status   : systemctl --user status darts-web"
+echo "   Entfernen: systemctl --user disable --now darts-web && rm -f \"$UNIT_DIR/darts-web.service\" && systemctl --user daemon-reload"

@@ -358,7 +358,7 @@
             <circle cx="20" cy="20" r="4" fill="#F2B829"/><circle cx="20" cy="20" r="1.6" fill="#E04B43"/>
           </svg>
           <div style="text-align:center;">
-            <div style="font-size:22px; font-weight:800; letter-spacing:-.01em;">DartsHub</div>
+            <div style="font-size:22px; font-weight:800; letter-spacing:-.01em;">DartsZentrale</div>
             <div style="font-size:13px; color:var(--text-4); font-weight:600; margin-top:2px;">{{ loginVM.clubName }} · Vereinsverwaltung</div>
           </div>
         </div>
@@ -419,7 +419,7 @@
         </svg>
         </sc-if>
         <div>
-          <div style="font-weight:800; font-size:17px; letter-spacing:-.01em;">DartsHub</div>
+          <div style="font-weight:800; font-size:17px; letter-spacing:-.01em;">DartsZentrale</div>
           <sc-if value="{{ showClubName }}" hint-placeholder-val="{{ true }}">
           <div style="font-size:11px; color:var(--text-4); font-weight:600;">{{ clubName }}</div>
           </sc-if>
@@ -2991,7 +2991,7 @@ class Component extends DCLogic {
   componentDidMount() {
     const detected = this.detectEnv();
     try {
-      const raw = localStorage.getItem("dartshub_settings");
+      const raw = localStorage.getItem("darts_settings");
       const saved = raw ? JSON.parse(raw) : null;
       this.setState(st => {
         const settings = { ...st.settings, ...(saved || {}) };
@@ -3002,31 +3002,31 @@ class Component extends DCLogic {
     } catch (e) {}
     // ── local data layer ──
     let lp = [];
-    try { lp = JSON.parse(localStorage.getItem("dartshub_players") || "[]"); } catch (e) {}
+    try { lp = JSON.parse(localStorage.getItem("darts_players") || "[]"); } catch (e) {}
     if (!Array.isArray(lp) || lp.length === 0) {
       lp = [
         { id: "p_seed1", name: "Spieler 1", short: "S1", avi: 6, locked: true },
         { id: "p_seed2", name: "Spieler 2", short: "S2", avi: 7, locked: true },
       ];
-      try { localStorage.setItem("dartshub_players", JSON.stringify(lp)); } catch (e) {}
+      try { localStorage.setItem("darts_players", JSON.stringify(lp)); } catch (e) {}
     }
     lp = lp.map(p => (p.id === "p_seed1" || p.id === "p_seed2") ? { ...p, locked: true } : p);
     let ms = [];
-    try { ms = JSON.parse(localStorage.getItem("dartshub_matches") || "[]"); } catch (e) {}
+    try { ms = JSON.parse(localStorage.getItem("darts_matches") || "[]"); } catch (e) {}
     let tr = [];
-    try { tr = JSON.parse(localStorage.getItem("dartshub_training") || "[]"); } catch (e) {}
+    try { tr = JSON.parse(localStorage.getItem("darts_training") || "[]"); } catch (e) {}
     let live = null;
-    try { live = JSON.parse(localStorage.getItem("dartshub_live") || "null"); } catch (e) {}
+    try { live = JSON.parse(localStorage.getItem("darts_live") || "null"); } catch (e) {}
     // ── appointments / calendar ──
     let ev = [];
-    try { ev = JSON.parse(localStorage.getItem("dartshub_events") || "[]"); } catch (e) {}
+    try { ev = JSON.parse(localStorage.getItem("darts_events") || "[]"); } catch (e) {}
     if (!Array.isArray(ev) || ev.length === 0) {
       ev = this.seedEvents();
-      try { localStorage.setItem("dartshub_events", JSON.stringify(ev)); } catch (e) {}
+      try { localStorage.setItem("darts_events", JSON.stringify(ev)); } catch (e) {}
     }
     // ── teams (verein) — rosters reference players from the single Spieler list ──
     let tm = [];
-    try { tm = JSON.parse(localStorage.getItem("dartshub_teams") || "[]"); } catch (e) {}
+    try { tm = JSON.parse(localStorage.getItem("darts_teams") || "[]"); } catch (e) {}
     if (!Array.isArray(tm) || tm.length === 0) {
       tm = [{
         id: this.uid(),
@@ -3035,11 +3035,11 @@ class Component extends DCLogic {
         memberIds: lp.map(p => p.id),
         captainId: lp[0] ? lp[0].id : null,
       }];
-      try { localStorage.setItem("dartshub_teams", JSON.stringify(tm)); } catch (e) {}
+      try { localStorage.setItem("darts_teams", JSON.stringify(tm)); } catch (e) {}
     }
     // ── accounts / login (verein, server-gehostet) — getrennt von der Spielerliste ──
     let ac = [];
-    try { ac = JSON.parse(localStorage.getItem("dartshub_users") || "[]"); } catch (e) {}
+    try { ac = JSON.parse(localStorage.getItem("darts_users") || "[]"); } catch (e) {}
     // Backfill: ältere Konten mit neuen Feldern ergänzen (Position, Vor-/Nachname, last_login)
     if (Array.isArray(ac) && ac.length && ac.some(a => a.position === undefined || a.first === undefined)) {
       const posByEmail = { "vorstand@sv-adler.de": "1. Vorsitzender", "kapitaen@sv-adler.de": "Mannschaftsführer", "schriftfuehrung@sv-adler.de": "Schriftführerin", "t.reiter@gmx.de": "Kassenwart" };
@@ -3054,7 +3054,7 @@ class Component extends DCLogic {
         if (out.last_login === undefined) out.last_login = a.last || "—";
         return out;
       });
-      try { localStorage.setItem("dartshub_users", JSON.stringify(ac)); } catch (e) {}
+      try { localStorage.setItem("darts_users", JSON.stringify(ac)); } catch (e) {}
     }
     if (!Array.isArray(ac) || ac.length === 0) {
       ac = [
@@ -3065,16 +3065,16 @@ class Component extends DCLogic {
         { id: this.uid(), first: "Petra",  last: "Lang",   name: "Petra Lang",    email: "schriftfuehrung@sv-adler.de", role: "viewer", playerId: null,            active: true,  avi: 5, last_login: "vor 1 Woche", position: "Schriftführerin" },
         { id: this.uid(), first: "Tobias", last: "Reiter", name: "Tobias Reiter", email: "t.reiter@gmx.de",       role: "player",  playerId: null,                  active: false, avi: 3, last_login: "vor 2 Monaten", position: "Kassenwart" },
       ];
-      try { localStorage.setItem("dartshub_users", JSON.stringify(ac)); } catch (e) {}
+      try { localStorage.setItem("darts_users", JSON.stringify(ac)); } catch (e) {}
     }
     let se = null;
-    try { se = JSON.parse(localStorage.getItem("dartshub_session") || "null"); } catch (e) {}
+    try { se = JSON.parse(localStorage.getItem("darts_session") || "null"); } catch (e) {}
     // ── leagues (verein) — eigene Teams + Begegnungen je Liga, Tabelle wird berechnet ──
     let lg = [];
-    try { lg = JSON.parse(localStorage.getItem("dartshub_leagues") || "[]"); } catch (e) {}
+    try { lg = JSON.parse(localStorage.getItem("darts_leagues") || "[]"); } catch (e) {}
     if (!Array.isArray(lg) || lg.length === 0) {
       lg = this.seedLeagues();
-      try { localStorage.setItem("dartshub_leagues", JSON.stringify(lg)); } catch (e) {}
+      try { localStorage.setItem("darts_leagues", JSON.stringify(lg)); } catch (e) {}
     }
     this.setState(st => {
       const patch = { localPlayers: lp, matches: Array.isArray(ms) ? ms : [], trainResults: Array.isArray(tr) ? tr : [], events: Array.isArray(ev) ? ev : [], teams: tm, accounts: ac, session: se || null, leagues: lg };
@@ -3161,14 +3161,14 @@ class Component extends DCLogic {
       const fkeys = [...(st.settings.fkeys || [180, 140, 100, 95, 85, 60, 45, 40])];
       fkeys[i] = n;
       const settings = { ...st.settings, fkeys };
-      try { localStorage.setItem("dartshub_settings", JSON.stringify(settings)); } catch (e) {}
+      try { localStorage.setItem("darts_settings", JSON.stringify(settings)); } catch (e) {}
       return { settings };
     });
   }
   setSetting(key, val) {
     this.setState(st => {
       const settings = { ...st.settings, [key]: val };
-      try { localStorage.setItem("dartshub_settings", JSON.stringify(settings)); } catch (e) {}
+      try { localStorage.setItem("darts_settings", JSON.stringify(settings)); } catch (e) {}
       const patch = { settings };
       if (["startScore", "bestOf"].includes(key)) { patch.allThrows = []; patch.input = ""; }
       // leaving Verein mode: redirect away from club-only screens
@@ -3181,7 +3181,7 @@ class Component extends DCLogic {
   setAppModeManual(val) {
     this.setState(st => {
       const settings = { ...st.settings, appMode: val, appModeManual: true };
-      try { localStorage.setItem("dartshub_settings", JSON.stringify(settings)); } catch (e) {}
+      try { localStorage.setItem("darts_settings", JSON.stringify(settings)); } catch (e) {}
       const patch = { settings };
       if (val === "local" && ["leagues", "teams", "matchday"].includes(st.screen)) patch.screen = "dashboard";
       return patch;
@@ -3190,7 +3190,7 @@ class Component extends DCLogic {
   resetAppModeAuto() {
     this.setState(st => {
       const settings = { ...st.settings, appModeManual: false, appMode: st.settings.appModeDetected || this.detectEnv() };
-      try { localStorage.setItem("dartshub_settings", JSON.stringify(settings)); } catch (e) {}
+      try { localStorage.setItem("darts_settings", JSON.stringify(settings)); } catch (e) {}
       const patch = { settings };
       if (settings.appMode === "local" && ["leagues", "teams", "matchday"].includes(st.screen)) patch.screen = "dashboard";
       return patch;
@@ -3209,8 +3209,8 @@ class Component extends DCLogic {
     if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
-  persistPlayers(list) { try { localStorage.setItem("dartshub_players", JSON.stringify(list)); } catch (e) {} }
-  persistMatches(list) { try { localStorage.setItem("dartshub_matches", JSON.stringify(list)); } catch (e) {} }
+  persistPlayers(list) { try { localStorage.setItem("darts_players", JSON.stringify(list)); } catch (e) {} }
+  persistMatches(list) { try { localStorage.setItem("darts_matches", JSON.stringify(list)); } catch (e) {} }
   openAddPlayer() { if (!this.perm().managePlayers) return; this.setState({ playerModal: { mode: "add", id: null, name: "", short: "", avi: Math.floor(Math.random() * AVATARS.length) } }); }
   openEditPlayer(id) {
     if (!this.perm().managePlayers) return;
@@ -3268,7 +3268,7 @@ class Component extends DCLogic {
   }
 
   // ── teams (verein) ──
-  persistTeams(list) { try { localStorage.setItem("dartshub_teams", JSON.stringify(list)); } catch (e) {} }
+  persistTeams(list) { try { localStorage.setItem("darts_teams", JSON.stringify(list)); } catch (e) {} }
   selectTeam(i) { this.setState({ selectedTeam: i }); }
   openAddTeam() {
     if (!this.perm().manageTeams) return;
@@ -3364,8 +3364,8 @@ class Component extends DCLogic {
   }
 
   // ── accounts / login (verein) ──
-  persistUsers(list) { try { localStorage.setItem("dartshub_users", JSON.stringify(list)); } catch (e) {} }
-  persistSession(id) { try { localStorage.setItem("dartshub_session", JSON.stringify(id)); } catch (e) {} }
+  persistUsers(list) { try { localStorage.setItem("darts_users", JSON.stringify(list)); } catch (e) {} }
+  persistSession(id) { try { localStorage.setItem("darts_session", JSON.stringify(id)); } catch (e) {} }
   currentUser() { return (this.state.accounts || []).find(a => a.id === this.state.session) || null; }
   login(id) {
     const a = (this.state.accounts || []).find(x => x.id === id);
@@ -3483,7 +3483,7 @@ class Component extends DCLogic {
     return Object.keys(table).map(k => table[k]).sort((x, y) =>
       (y.pts - x.pts) || ((y.lf - y.la) - (x.lf - x.la)) || (y.lf - x.lf) || x.name.localeCompare(y.name));
   }
-  persistLeagues(list) { try { localStorage.setItem("dartshub_leagues", JSON.stringify(list)); } catch (e) {} }
+  persistLeagues(list) { try { localStorage.setItem("darts_leagues", JSON.stringify(list)); } catch (e) {} }
   // ── permissions ──
   // Lokaler Modus: ein Gerät, alles erlaubt. Vereinsmodus: rollenbasiert.
   perm() {
@@ -3601,7 +3601,7 @@ class Component extends DCLogic {
       { id: this.uid(), scope: "local", title: "Spielabend mit Tom & Lisa", date: iso(5), time: "20:00", type: "competition", loc: "Bei mir" },
     ];
   }
-  persistEvents(list) { try { localStorage.setItem("dartshub_events", JSON.stringify(list)); } catch (e) {} }
+  persistEvents(list) { try { localStorage.setItem("darts_events", JSON.stringify(list)); } catch (e) {} }
   curScope() { return this.state.settings.appMode === "local" ? "local" : "verein"; }
   openAddEvent(iso) {
     if (!this.perm().manageEvents) return;
@@ -3739,7 +3739,7 @@ class Component extends DCLogic {
       val: editing ? st.sizeEdit[key] : String(cur),
       onFocus: (e) => { if (e && e.target && e.target.select) e.target.select(); this.setState(s => ({ sizeEdit: { ...(s.sizeEdit || {}), [key]: String((s.settings[key] != null) ? s.settings[key] : def) } })); },
       onInput: (e) => { const clean = String(e.target.value).replace(/[^0-9]/g, "").slice(0, 3); this.setState(s => ({ sizeEdit: { ...(s.sizeEdit || {}), [key]: clean } })); },
-      onCommit: () => { this.setState(s => { const se = { ...(s.sizeEdit || {}) }; const raw = se[key]; delete se[key]; let n = parseInt(raw, 10); if (isNaN(n)) return { sizeEdit: se }; n = step5(n); const settings = { ...s.settings, [key]: n }; try { localStorage.setItem("dartshub_settings", JSON.stringify(settings)); } catch (e) {} return { settings, sizeEdit: se }; }); },
+      onCommit: () => { this.setState(s => { const se = { ...(s.sizeEdit || {}) }; const raw = se[key]; delete se[key]; let n = parseInt(raw, 10); if (isNaN(n)) return { sizeEdit: se }; n = step5(n); const settings = { ...s.settings, [key]: n }; try { localStorage.setItem("darts_settings", JSON.stringify(settings)); } catch (e) {} return { settings, sizeEdit: se }; }); },
       onKey: (e) => { if (e.key === "Enter" && e.target && e.target.blur) e.target.blur(); },
       down: () => this.setSetting(key, step5(cur - 5)),
       up: () => this.setSetting(key, step5(cur + 5)),
@@ -3800,9 +3800,9 @@ class Component extends DCLogic {
 
   persistLive() {
     const st = this.state;
-    if (st.allThrows.length === 0 || this.matchOver()) { try { localStorage.removeItem("dartshub_live"); } catch (e) {} return; }
+    if (st.allThrows.length === 0 || this.matchOver()) { try { localStorage.removeItem("darts_live"); } catch (e) {} return; }
     const snap = { players: st.players, allThrows: st.allThrows, startOffset: st.startOffset, matchSaved: st.matchSaved };
-    try { localStorage.setItem("dartshub_live", JSON.stringify(snap)); } catch (e) {}
+    try { localStorage.setItem("darts_live", JSON.stringify(snap)); } catch (e) {}
   }
   // per-player aggregate for the current finished game
   gameStatsFor(pid) {
@@ -3845,7 +3845,7 @@ class Component extends DCLogic {
     this.setState(st2 => {
       const list = [rec, ...st2.matches].slice(0, 500);
       this.persistMatches(list);
-      try { localStorage.removeItem("dartshub_live"); } catch (e) {}
+      try { localStorage.removeItem("darts_live"); } catch (e) {}
       return { matches: list, matchSaved: true };
     });
   }
@@ -3878,7 +3878,7 @@ class Component extends DCLogic {
   }
 
   // ── training engine ──
-  persistTraining(list) { try { localStorage.setItem("dartshub_training", JSON.stringify(list)); } catch (e) {} }
+  persistTraining(list) { try { localStorage.setItem("darts_training", JSON.stringify(list)); } catch (e) {} }
   trainPool() { return this.state.localPlayers; }
   toggleTrainView(v) { this.setState({ trainView: v }); }
   openRules(modeId) { this.setState({ rulesMode: modeId }); }
@@ -4327,8 +4327,8 @@ class Component extends DCLogic {
     ];
     this.setState(st => {
       const settings = { ...st.settings, startScore: su.startScore, bestOf: su.bestOf, bestOfSets: su.bestOfSets, unit: su.unit, doubleOut: su.doubleOut, doubleIn: su.doubleIn };
-      try { localStorage.setItem("dartshub_settings", JSON.stringify(settings)); } catch (e) {}
-      try { localStorage.removeItem("dartshub_live"); } catch (e) {}
+      try { localStorage.setItem("darts_settings", JSON.stringify(settings)); } catch (e) {}
+      try { localStorage.removeItem("darts_live"); } catch (e) {}
       return { players, gameMode: su.mode || "single", allThrows: [], input: "", screen: "counter", settings, startOffset: 0, pendingStart: true, bullMode: false, spinPick: null, matchSaved: false };
     });
   }
@@ -4355,7 +4355,7 @@ class Component extends DCLogic {
     };
     tick();
   }
-  rematch() { this.setState({ allThrows: [], input: "", matchSaved: false, pendingStart: true, bullMode: false, spinPick: null }, () => { try { localStorage.removeItem("dartshub_live"); } catch (e) {} }); }
+  rematch() { this.setState({ allThrows: [], input: "", matchSaved: false, pendingStart: true, bullMode: false, spinPick: null }, () => { try { localStorage.removeItem("darts_live"); } catch (e) {} }); }
   quickStart(preset) {
     this.setState(st => ({ setup: { ...st.setup, mode: "single", p1: 0, p2: 1, ...(preset || {}) } }), () => this.startGame());
   }
@@ -4456,7 +4456,7 @@ class Component extends DCLogic {
     this.setState({ hint: { title: "Finish nicht möglich", rem, darts, body } });
   }
   closeHint() { this.setState({ hint: null }); }
-  confirmAbort() { try { localStorage.removeItem("dartshub_live"); } catch (e) {} this.setState({ abortConfirm: false, allThrows: [], input: "", matchSaved: false, screen: "dashboard" }); }
+  confirmAbort() { try { localStorage.removeItem("darts_live"); } catch (e) {} this.setState({ abortConfirm: false, allThrows: [], input: "", matchSaved: false, screen: "dashboard" }); }
   cancelAbort() { this.setState({ abortConfirm: false }); }
   legWins() {
     const w = {};

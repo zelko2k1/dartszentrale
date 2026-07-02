@@ -23,7 +23,7 @@
 **Offen — Code:**
 - [x] 🧑‍💻 **#6-Rest:** Kapitän-Roster-Editing auf die *eigene* Mannschaft gescoped (`captainId == auth.playerId`)
       — Migration `1782600100_scope_team_update_to_captain` + provision; gegen lokale PB verifiziert.
-- [x] 🧑‍💻 #11 `reset-password.mjs`: `NEW_PW` ist Pflicht (kein stiller Default `dartshub123` mehr) — Fehlerpfade getestet.
+- [x] 🧑‍💻 #11 `reset-password.mjs`: `NEW_PW` ist Pflicht (kein stiller Default `dartszentrale123` mehr) — Fehlerpfade getestet.
 - [ ] 🧑‍💻 #12 (abwägen) Kader-Lesbarkeit für eingeloggte Nutzer — bei Minderjährigen einschränken
 
 **Offen — Betreiber / Pre-Go-live-Checkliste** (⚙️ nicht von Claude erledigbar, nur vorbereitbar):
@@ -68,7 +68,7 @@ Aus [`DATA_MODEL.md §5`](DATA_MODEL.md). Manche Punkte sind evtl. schon erledig
 - [ ] Mobile-Layout für die Verwaltung (Counter ist bereits tablettauglich)
 - [ ] Backup-Retention + Größen-Monitoring von `pb_data` (größerer Hebel als Saison-Auslagern)
 - [ ] Optional: Grafana/Postgres-Export aus dem Saison-Bundle für freie Auswertung
-- [ ] Eigenständige Turnier-App `dartshub-turniere` (gemeinsames Auth-Fundament — 2FA dort mitnutzen)
+- [ ] Eigenständige Turnier-App `dartszentrale-turniere` (gemeinsames Auth-Fundament — 2FA dort mitnutzen)
 
 ---
 

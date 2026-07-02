@@ -1,7 +1,7 @@
-# DartsHub — Datenmodell & Entwickler-Übergabe
+# DartsZentrale — Datenmodell & Entwickler-Übergabe
 
 Stand: Juni 2026. Dieses Dokument beschreibt die Datenstrukturen, Beziehungen und
-offenen Punkte des Prototyps `DartsHub.dc.html`, damit die Umsetzung in eine echte
+offenen Punkte des Prototyps `DartsZentrale.dc.html`, damit die Umsetzung in eine echte
 (server-gehostete) Anwendung sauber aufsetzen kann.
 
 > **Wichtig:** Der Prototyp speichert alles in `localStorage` (rein clientseitig).
@@ -40,14 +40,14 @@ Kernprinzip: **Die Spielerliste (`Player`) ist die einzige Quelle für sportlich
 Personen.** Mannschaftskader, Aufstellungen und Statistiken leiten sich daraus ab.
 Login-**Accounts** sind davon getrennt und referenzieren optional einen Spieler.
 
-### Player — `localStorage["dartshub_players"]`
+### Player — `localStorage["darts_players"]`
 Die zentrale Spielerliste. Einzige Quelle für Kader & Statistik.
 ```
 { id: string, name: string, short: string (max 3),
   avi: number (Avatar-Farbindex), locked?: boolean (Seed-Spieler) }
 ```
 
-### Team (Mannschaft) — `localStorage["dartshub_teams"]`
+### Team (Mannschaft) — `localStorage["darts_teams"]`
 Vereinsmannschaft. Kader = Referenzen auf `Player.id`.
 ```
 { id: string, name: string, league?: string (Freitext),
@@ -58,7 +58,7 @@ Vereinsmannschaft. Kader = Referenzen auf `Player.id`.
 - **Offen:** `league` ist hier nur Freitext und **nicht** mit der `League`-Entität
   verknüpft (siehe §5).
 
-### Account (Benutzer) — `localStorage["dartshub_users"]`
+### Account (Benutzer) — `localStorage["darts_users"]`
 Login-Konto für den Vereinsmodus. **Getrennt** vom Spieler.
 ```
 { id: string, first: string, last: string, name: string (abgeleitet "first last"),
@@ -73,7 +73,7 @@ Login-Konto für den Vereinsmodus. **Getrennt** vom Spieler.
 - **Auth-Felder (Passwort-Hash, Tokens, Reset) gehören NICHT hierher** — im echten
   Backend in eine separate, geschützte Tabelle.
 
-### League (Liga) — `localStorage["dartshub_leagues"]`
+### League (Liga) — `localStorage["darts_leagues"]`
 Eine Liga mit eigenen Teilnehmer-Teams und Begegnungen. Die **Tabelle wird berechnet**.
 ```
 { id: string, name: string, season: string,
@@ -95,26 +95,26 @@ Eine Liga mit eigenen Teilnehmer-Teams und Begegnungen. Die **Tabelle wird berec
   Sp +1, Sieg → +2 Pkt, Unentschieden → +1 Pkt je Team, Legdifferenz aus `hs`/`as`.
   Sortierung: Punkte → Legdifferenz → erzielte Legs → Name.
 
-### Event (Termin) — `localStorage["dartshub_events"]`
+### Event (Termin) — `localStorage["darts_events"]`
 Kalender-/Dashboard-Termine.
 ```
 { id: string, scope: "local"|"verein", title: string,
   date: string (YYYY-MM-DD), time: string, type: string (s. EVENT_TYPES), loc: string }
 ```
 
-### Match (gespielte Partie) — `localStorage["dartshub_matches"]`
+### Match (gespielte Partie) — `localStorage["darts_matches"]`
 Vom Darts Counter gespeicherte, abgeschlossene Spiele. Basis für die
 Spieler-Aggregation (`aggregateFor(name)` → Ø 3-Dart, Siege, 180er …).
 Aktuell werden Spieler in Matches **per Name** zugeordnet.
 
-### TrainingResult — `localStorage["dartshub_training"]`
+### TrainingResult — `localStorage["darts_training"]`
 Gespeicherte Trainingseinheiten (Cricket, ATC, Doubles, Bob's 27 …).
 
-### Session — `localStorage["dartshub_session"]`
+### Session — `localStorage["darts_session"]`
 Aktuell angemeldetes Konto: `Account.id` oder `null`. → Im Backend durch echte
 Session/JWT ersetzen.
 
-### Settings — `localStorage["dartshub_settings"]`
+### Settings — `localStorage["darts_settings"]`
 App-Modus, Vereinsname, Logo, Counter-/Anzeige-Einstellungen, Akzentfarbe etc.
 
 ---
@@ -175,16 +175,16 @@ die Rechte serverseitig erzwungen werden** — die Client-Prüfung ist nur UX.
 
 | Key | Inhalt |
 |-----|--------|
-| `dartshub_players`  | Player[] |
-| `dartshub_teams`    | Team[] |
-| `dartshub_users`    | Account[] |
-| `dartshub_session`  | Account.id \| null |
-| `dartshub_leagues`  | League[] (inkl. Fixtures) |
-| `dartshub_events`   | Event[] |
-| `dartshub_matches`  | Match[] (Counter-Ergebnisse) |
-| `dartshub_training` | TrainingResult[] |
-| `dartshub_settings` | Settings |
-| `dartshub_live`     | laufendes Counter-Spiel (Wiederaufnahme) |
+| `darts_players`  | Player[] |
+| `darts_teams`    | Team[] |
+| `darts_users`    | Account[] |
+| `darts_session`  | Account.id \| null |
+| `darts_leagues`  | League[] (inkl. Fixtures) |
+| `darts_events`   | Event[] |
+| `darts_matches`  | Match[] (Counter-Ergebnisse) |
+| `darts_training` | TrainingResult[] |
+| `darts_settings` | Settings |
+| `darts_live`     | laufendes Counter-Spiel (Wiederaufnahme) |
 
 ---
 

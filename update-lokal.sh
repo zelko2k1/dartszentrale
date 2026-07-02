@@ -25,8 +25,8 @@ echo "── npm install + build ──"
 ( cd "$ROOT/app" && npm install && npm run build )
 
 # Läuft das Frontend als lokaler Autostart-Dienst? Dann neu starten.
-if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/dartshub-web.service" ]; then
-  systemctl --user restart dartshub-web && echo "✅ Update aktiv — Dienst neu gestartet."
+if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/darts-web.service" ]; then
+  systemctl --user restart darts-web && echo "✅ Update aktiv — Dienst neu gestartet."
 else
   echo "✅ Update übernommen. App neu starten:  ./start-lokal.sh"
 fi

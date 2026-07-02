@@ -1,6 +1,6 @@
-# DartsHub — Handbuch für Vereins-Admins
+# DartsZentrale — Handbuch für Vereins-Admins
 
-Dieses Handbuch erklärt, **wie ihr DartsHub im Alltag nutzt** — von der Anmeldung
+Dieses Handbuch erklärt, **wie ihr DartsZentrale im Alltag nutzt** — von der Anmeldung
 über Spieler, Mannschaften, Ligen und den Darts Counter bis zu Board-Rechnern und
 Datensicherung. Es ist bewusst nicht-technisch gehalten.
 
@@ -16,7 +16,7 @@ Datensicherung. Es ist bewusst nicht-technisch gehalten.
 
 ## 1. Zwei Betriebsmodi
 
-DartsHub kann auf zwei Arten laufen:
+DartsZentrale kann auf zwei Arten laufen:
 
 | Modus | Wofür | Login? | Server nötig? |
 |-------|-------|--------|---------------|
@@ -55,7 +55,7 @@ Es gibt **zwei getrennte Konten-Welten**:
 
 1. `https://app.deinverein.de` öffnen.
 2. E-Mail + Passwort eines aktiven App-Kontos eingeben → **Anmelden**.
-3. Tipp: in Edge/Chrome **„Als App installieren"** (PWA) — DartsHub liegt dann wie ein
+3. Tipp: in Edge/Chrome **„Als App installieren"** (PWA) — DartsZentrale liegt dann wie ein
    Programm auf dem Desktop/Startbildschirm.
 
 Die Sitzung bleibt bestehen, bis du dich abmeldest (Konto-Karte unten in der Seitenleiste).

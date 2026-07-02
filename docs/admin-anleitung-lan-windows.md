@@ -1,4 +1,4 @@
-# DartsHub auf Windows – Inbetriebnahme & Updates
+# DartsZentrale auf Windows – Inbetriebnahme & Updates
 
 Schritt für Schritt für **Windows**, ohne Vorkenntnisse. (Linux/Raspberry Pi? →
 [admin-anleitung-lan-linux.md](admin-anleitung-lan-linux.md).)
@@ -142,7 +142,7 @@ unangetastet.**
 
 Für reine App-Updates (kein PocketBase-Wechsel) — ohne Terminal, ohne Neustart der Dienste:
 
-1. Die Datei **`dartshub-update-<version>.tar.gz`** in den Ordner **`updates`** der Installation legen
+1. Die Datei **`dartszentrale-update-<version>.tar.gz`** in den Ordner **`updates`** der Installation legen
    (genauer Pfad steht in der App unter *Einstellungen → App & Updates*).
 2. In der App: **Einstellungen → „App & Updates" → „Nach Updates suchen"** → **„Installieren"**.
 
@@ -163,7 +163,7 @@ neuen Dateien vom Stick, baut die App neu **und startet die Dienste neu**. Per D
 **Laufwerk `E:\`** angenommen; hat dein Stick einen anderen Buchstaben, im Terminal mit Laufwerk
 aufrufen, z. B. `update-server.bat F:\`. *(Alternativ in PowerShell: `.\update-server.ps1 -Source E:\`.)*
 
-> Wurde der Server per **`einrichten-lan.bat`** eingerichtet, schließt das Update die DartsHub-Fenster
+> Wurde der Server per **`einrichten-lan.bat`** eingerichtet, schließt das Update die DartsZentrale-Fenster
 > und startet sie automatisch neu. Lief alles **von Hand**, danach `start-lan.bat` erneut starten.
 
 **Danach:** an den **Brettern die Seite neu laden** (zur Sicherheit zweimal, wegen PWA-Cache).
@@ -177,7 +177,7 @@ aufrufen, z. B. `update-server.bat F:\`. *(Alternativ in PowerShell: `.\update-s
 | **Lokal starten** (ein Board) | Doppelklick **`start-lokal.bat`** · Autostart: **`autostart-lokal.bat`** |
 | **Vereinsmodus einrichten (geführt)** | Doppelklick **`einrichten-lan.bat`** |
 | **Verein von Hand starten/Autostart** | **`start-lan.bat`** · **`autostart-lan.bat`** |
-| **Update (In-App, nur Frontend)** | `dartshub-update-*.tar.gz` in **`updates\`** legen → Einstellungen → „App & Updates" → Installieren |
+| **Update (In-App, nur Frontend)** | `dartszentrale-update-*.tar.gz` in **`updates\`** legen → Einstellungen → „App & Updates" → Installieren |
 | **Update (USB, auch PocketBase)** | Doppelklick **`update-server.bat`** |
 | Lokal von Hand | `cd app` → `npm run dev` |
 | PocketBase starten | `pocketbase.exe serve --automigrate=0 --http=0.0.0.0:8090 --dir .\pb_data --migrationsDir .\pb_migrations --hooksDir .\pb_hooks` |

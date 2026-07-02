@@ -1,5 +1,5 @@
 /// <reference path="../pb_data/types.d.ts" />
-// ═══════ KONSOLIDIERTE BASELINE — VOLLSTÄNDIGES DartsHub-Schema in EINER Migration ═══════
+// ═══════ KONSOLIDIERTE BASELINE — VOLLSTÄNDIGES DartsZentrale-Schema in EINER Migration ═══════
 // Ersetzt die früheren, sich überlappenden Auto-Migrationen (mehrere Vollschnappschüsse +
 // Inkremente), die auf einer LEEREN DB nicht anwendbar waren. Enthält ALLE Collections inkl.
 // seasons/season_snapshots und die gehärteten API-Rules — so liefert auch der reine Migrations-

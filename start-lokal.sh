@@ -15,7 +15,7 @@ command -v node >/dev/null || { echo "✗ Node.js fehlt — bitte installieren (
 [ -d "$ROOT/app/node_modules" ] || { echo "• npm install …"; ( cd "$ROOT/app" && npm install ); }
 [ -f "$ROOT/app/dist/index.html" ] || { echo "• Baue App (einmalig) …"; ( cd "$ROOT/app" && npm run build ); }
 
-echo "▶ DartsHub (lokal) → http://${WEB_HOST}:${WEB_PORT}"
+echo "▶ DartsZentrale (lokal) → http://${WEB_HOST}:${WEB_PORT}"
 echo "  Beim ersten Start in der App 'Lokal' wählen. Fenster offen lassen; beenden mit Strg+C."
 ( command -v xdg-open >/dev/null && sleep 3 && xdg-open "http://127.0.0.1:${WEB_PORT}" >/dev/null 2>&1 || true ) &
 cd "$ROOT/app" && exec env HOST="${WEB_HOST}" PORT="${WEB_PORT}" node serve-dist.mjs

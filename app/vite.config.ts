@@ -28,8 +28,8 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.svg', 'icons.svg', 'app-icon.svg'],
       manifest: {
-        name: 'DartsHub',
-        short_name: 'DartsHub',
+        name: 'DartsZentrale',
+        short_name: 'DartsZentrale',
         description: 'Darts Counter, Trainingsspiele & Verwaltung',
         lang: 'de',
         theme_color: '#0d0f12',

@@ -1,4 +1,4 @@
-# DartsHub auf Linux / Raspberry Pi – Inbetriebnahme & Updates
+# DartsZentrale auf Linux / Raspberry Pi – Inbetriebnahme & Updates
 
 Schritt für Schritt für **Linux und Raspberry Pi**, ohne Vorkenntnisse. (Windows? →
 [admin-anleitung-lan-windows.md](admin-anleitung-lan-windows.md).)
@@ -153,7 +153,7 @@ unangetastet.**
 
 Für reine App-Updates (kein PocketBase-Wechsel) — ohne Terminal, ohne Dienst-Neustart:
 
-1. Die Datei **`dartshub-update-<version>.tar.gz`** in den Ordner **`updates/`** der Installation legen
+1. Die Datei **`dartszentrale-update-<version>.tar.gz`** in den Ordner **`updates/`** der Installation legen
    (genauer Pfad steht in der App unter *Einstellungen → App & Updates*).
 2. In der App: **Einstellungen → „App & Updates" → „Nach Updates suchen"** → **„Installieren"**.
 
@@ -193,12 +193,12 @@ Für reine App-Updates (kein PocketBase-Wechsel) — ohne Terminal, ohne Dienst-
 | **Lokal starten** (ein Board) | `./start-lokal.sh` · Autostart: `./autostart-lokal.sh` |
 | **Vereinsmodus einrichten (geführt)** | `./einrichten-lan.sh` |
 | **Verein von Hand starten/Autostart** | `./start-lan.sh` · `./autostart-lan.sh` |
-| **Update (In-App, nur Frontend)** | `dartshub-update-*.tar.gz` in **`updates/`** legen → Einstellungen → „App & Updates" → Installieren |
+| **Update (In-App, nur Frontend)** | `dartszentrale-update-*.tar.gz` in **`updates/`** legen → Einstellungen → „App & Updates" → Installieren |
 | **Update (USB/Ordner, auch PocketBase)** | `./update-server.sh /media/usb` |
 | Lokal von Hand | `cd app && npm run dev` |
 | PocketBase-Superuser setzen | `./pocketbase superuser upsert <mail> "<pw>" --dir ./pb_data` |
 | PocketBase starten | `./pocketbase serve --automigrate=0 --http=0.0.0.0:8090 --dir ./pb_data --migrationsDir ./pb_migrations --hooksDir ./pb_hooks` |
-| Dienste/Logs (nach Autostart) | `systemctl --user status dartshub-web dartshub-pocketbase` · `journalctl --user -u dartshub-pocketbase -f` |
+| Dienste/Logs (nach Autostart) | `systemctl --user status darts-web darts-pocketbase` · `journalctl --user -u darts-pocketbase -f` |
 
 **Optional / für später (fortgeschritten):**
 

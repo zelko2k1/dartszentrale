@@ -1,15 +1,15 @@
 @echo off
 chcp 65001 >nul
-title DartsHub Autostart (lokal) einrichten
+title DartsZentrale Autostart (lokal) einrichten
 REM ====== [ PRODUKTIV / OPS ] - Windows-Autostart fuer den lokalen Modus (nur Frontend) ======
-echo Richtet DartsHub (lokaler Modus) so ein, dass es beim Anmelden automatisch startet.
+echo Richtet DartsZentrale (lokaler Modus) so ein, dass es beim Anmelden automatisch startet.
 echo.
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$wsh=New-Object -ComObject WScript.Shell; $lnk=[System.IO.Path]::Combine($env:APPDATA,'Microsoft\Windows\Start Menu\Programs\Startup','DartsHub.lnk'); $s=$wsh.CreateShortcut($lnk); $s.TargetPath='%~dp0start-lokal.bat'; $s.WorkingDirectory='%~dp0'; $s.WindowStyle=7; $s.Save()"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$wsh=New-Object -ComObject WScript.Shell; $lnk=[System.IO.Path]::Combine($env:APPDATA,'Microsoft\Windows\Start Menu\Programs\Startup','DartsZentrale.lnk'); $s=$wsh.CreateShortcut($lnk); $s.TargetPath='%~dp0start-lokal.bat'; $s.WorkingDirectory='%~dp0'; $s.WindowStyle=7; $s.Save()"
 if errorlevel 1 goto :error
 
-echo Autostart eingerichtet. DartsHub startet kuenftig automatisch beim Anmelden.
+echo Autostart eingerichtet. DartsZentrale startet kuenftig automatisch beim Anmelden.
 echo.
-echo Zum Entfernen: Win+R druecken, "shell:startup" eingeben und dort "DartsHub.lnk" loeschen.
+echo Zum Entfernen: Win+R druecken, "shell:startup" eingeben und dort "DartsZentrale.lnk" loeschen.
 pause
 exit /b 0
 

@@ -1,4 +1,4 @@
-# DartsHub mit Coolify — Homelab (per IP) & öffentlicher Server (Domain)
+# DartsZentrale mit Coolify — Homelab (per IP) & öffentlicher Server (Domain)
 
 Praxis-Anleitung für **PocketBase + Frontend in Coolify**. Schwerpunkt ist der Betrieb im eigenen
 Netz über die **interne IP** (kein DNS, keine Domain, kein HTTPS) — festgehalten nach dem ersten
@@ -20,13 +20,13 @@ läuft fast identisch; die wenigen Unterschiede stehen in [Abschnitt 5](#5-mit-d
 
 - Coolify läuft im Homelab.
 - Du kennst die **interne IP** des Servers (hier `<IP>` genannt, z. B. `192.168.x.x`).
-- Repo: `https://github.com/zelko2k1/dartshub.git` (SSH: `git@github.com:zelko2k1/dartshub.git`), Branch `main`.
+- Repo: `https://github.com/zelko2k1/dartszentrale.git` (SSH: `git@github.com:zelko2k1/dartszentrale.git`), Branch `main`.
 
 ---
 
 ## 1. PocketBase deployen (Docker Compose)
 
-1. **Projects → dartshub → New Resource → Docker Compose**, Quelle = **dieses Git-Repo**.
+1. **Projects → dartszentrale → New Resource → Docker Compose**, Quelle = **dieses Git-Repo**.
 2. **Base Directory:** `/pocketbase`
    **Compose-Pfad:** `pocketbase/docker-compose.yaml`
 3. **Persistent Storage** prüfen: Volume **`pb_data`** muss persistent sein (sonst Daten weg bei Redeploy).
@@ -41,7 +41,7 @@ läuft fast identisch; die wenigen Unterschiede stehen in [Abschnitt 5](#5-mit-d
    (Mail + starkes Passwort). Erscheint stattdessen nur ein **Login** ohne Anlege-Dialog,
    liegen im Volume schon Daten (alter Superuser) → siehe „Neuanfang" unten.
 2. **Settings → Application:**
-   - `Application name` = `dartshub` (kosmetisch)
+   - `Application name` = `dartszentrale` (kosmetisch)
    - `Application URL` = `http://<IP>:8090`
 3. **CORS gibt es nicht mehr im Dashboard** (PocketBase seit 0.23) — Default `*`, im LAN nichts zu tun.
    Einschränken ginge per **`--origins`-Flag** im Compose-`command` (z. B. `--origins=http://<IP>:8081`).
@@ -58,7 +58,7 @@ läuft fast identisch; die wenigen Unterschiede stehen in [Abschnitt 5](#5-mit-d
 
 ## 2. Frontend deployen (Dockerfile)
 
-1. **Projects → dartshub → New Resource → Repository** (dasselbe Repo).
+1. **Projects → dartszentrale → New Resource → Repository** (dasselbe Repo).
 2. **Build Pack = Dockerfile** (NICHT Nixpacks — pinnt zu altes Node, Build bricht ab).
 3. **Pfade** (zwei getrennte Felder!):
    | Feld | Wert |

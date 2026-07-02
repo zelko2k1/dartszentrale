@@ -1,7 +1,7 @@
 # Plan: 2-Faktor-Authentifizierung (TOTP) — optional, für beide Apps
 
-> Status: **Planung** (2026-06-28). Noch nichts umgesetzt. Gilt für **`dartshub`** (Liga/Verein)
-> **und** die geplante **`dartshub-turniere`**-App (gemeinsames Auth-Fundament).
+> Status: **Planung** (2026-06-28). Noch nichts umgesetzt. Gilt für **`dartszentrale`** (Liga/Verein)
+> **und** die geplante **`dartszentrale-turniere`**-App (gemeinsames Auth-Fundament).
 
 ---
 
@@ -22,7 +22,7 @@
 
 - TOTP, **SHA-1, 6 Ziffern, 30 s** (der von allen Authenticatorn unterstützte Default; viele Apps
   ignorieren den Algorithmus-Parameter und nutzen immer SHA-1 → SHA-1 ist Pflicht für Kompatibilität).
-- Enrollment per `otpauth://totp/DartsHub:<email>?secret=<BASE32>&issuer=DartsHub` → als **QR-Code**.
+- Enrollment per `otpauth://totp/DartsZentrale:<email>?secret=<BASE32>&issuer=DartsZentrale` → als **QR-Code**.
 - **Zeit-Toleranz** ±1 Schritt (vor/zurück 30 s) gegen Uhren-Drift.
 - Verifikation läuft im Hook; der geheime Schlüssel **verlässt nie** wieder den Server.
 
@@ -128,8 +128,8 @@ Frontend (`store.loginEmail` / `Login.tsx`): nach Schritt 4 ein **6-stelliges Co
 
 Implementierung **einmal** im gemeinsamen Auth-Fundament (`pocketbaseProvider.ts`, `Login.tsx`,
 `Settings.tsx`, `pb_hooks/`, `user_mfa`-Migration). Die **Turnier-App erbt es über den Fork** (Phase 0/1
-der Turnier-App). Timing: entweder 2FA zuerst in `dartshub` bauen → Turnier-Fork zieht es mit; oder
-nach dem Turnier-Scaffold in beide portieren. Empfehlung: **zuerst in `dartshub`**, dann erbt der Fork.
+der Turnier-App). Timing: entweder 2FA zuerst in `dartszentrale` bauen → Turnier-Fork zieht es mit; oder
+nach dem Turnier-Scaffold in beide portieren. Empfehlung: **zuerst in `dartszentrale`**, dann erbt der Fork.
 
 ---
 
@@ -151,4 +151,4 @@ nach dem Turnier-Scaffold in beide portieren. Empfehlung: **zuerst in `dartshub`
 2. **Lockout-Werte:** Fehlversuche/Sperrdauer (Vorschlag 5 / 5 min).
 3. **Backup-Codes:** Anzahl/Format (Vorschlag 10× 8-stellig).
 4. **QR-Lib:** konkrete kleine Pure-JS-Variante wählen.
-5. **Reihenfolge zu Turnier-App:** 2FA vor oder nach dem Turnier-Scaffold (Empf.: vorher in dartshub).
+5. **Reihenfolge zu Turnier-App:** 2FA vor oder nach dem Turnier-Scaffold (Empf.: vorher in dartszentrale).

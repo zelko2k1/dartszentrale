@@ -2,8 +2,8 @@
 # ═══════ [ PRODUKTIV / OPS ] — Cloud-Deploy OHNE Coolify & OHNE Docker ═══════
 # Schlanke Variante: zwei native systemd-System-Dienste + Caddy als HTTPS-Reverse-Proxy.
 #
-#   • dartshub-pocketbase.service  → PocketBase-Binary, lauscht NUR auf 127.0.0.1:8090
-#   • dartshub-web.service         → node serve-dist.mjs, lauscht NUR auf 127.0.0.1:4173
+#   • darts-pocketbase.service  → PocketBase-Binary, lauscht NUR auf 127.0.0.1:8090
+#   • darts-web.service         → node serve-dist.mjs, lauscht NUR auf 127.0.0.1:4173
 #   • Caddy                        → 80/443 öffentlich, Auto-HTTPS (Let's Encrypt),
 #                                    routet  app.<domain> → :4173  und  db.<domain> → :8090
 #
@@ -92,7 +92,7 @@ if [ "$DO_ACCOUNTS" = "1" ]; then
 fi
 
 echo
-echo "▶ DartsHub schlankes Cloud-Setup (ohne Coolify/Docker)"
+echo "▶ DartsZentrale schlankes Cloud-Setup (ohne Coolify/Docker)"
 echo "  Repo        : $ROOT"
 echo "  Dienst-User : $RUN_USER:$RUN_GROUP"
 echo "  App-Domain  : $APP_DOMAIN  →  127.0.0.1:${WEB_PORT}"
@@ -153,9 +153,9 @@ sudo -u "$RUN_USER" bash -lc "cd '$ROOT/app' && { [ -d node_modules ] || npm ci;
 
 # ── 4) systemd-System-Units schreiben ───────────────────────────────────────
 echo "• systemd-Units schreiben …"
-cat > /etc/systemd/system/dartshub-pocketbase.service <<EOF
+cat > /etc/systemd/system/darts-pocketbase.service <<EOF
 [Unit]
-Description=DartsHub PocketBase (Vereinsmodus, hinter Caddy)
+Description=DartsZentrale PocketBase (Vereinsmodus, hinter Caddy)
 After=network-online.target
 Wants=network-online.target
 
@@ -176,11 +176,11 @@ ProtectSystem=full
 WantedBy=multi-user.target
 EOF
 
-cat > /etc/systemd/system/dartshub-web.service <<EOF
+cat > /etc/systemd/system/darts-web.service <<EOF
 [Unit]
-Description=DartsHub Frontend (statischer dist-Server, hinter Caddy)
-After=dartshub-pocketbase.service
-Wants=dartshub-pocketbase.service
+Description=DartsZentrale Frontend (statischer dist-Server, hinter Caddy)
+After=darts-pocketbase.service
+Wants=darts-pocketbase.service
 
 [Service]
 Type=simple
@@ -206,7 +206,7 @@ echo "• Caddyfile schreiben …"
 {
   [ -n "$ACME_EMAIL" ] && printf '{\n\temail %s\n}\n\n' "$ACME_EMAIL"
   cat <<EOF
-# DartsHub — von einrichten-cloud.sh erzeugt. Caddy holt/erneuert die
+# DartsZentrale — von einrichten-cloud.sh erzeugt. Caddy holt/erneuert die
 # Let's-Encrypt-Zertifikate automatisch (Ports 80+443 müssen offen sein).
 
 # Basis-Security-Header (Pendant zu app/nginx.conf, Befund #9/#13). HSTS aktiv,
@@ -269,7 +269,7 @@ fi
 # ── 7) Dienste aktivieren + starten ─────────────────────────────────────────
 echo "• Dienste aktivieren + starten …"
 systemctl daemon-reload
-systemctl enable --now dartshub-pocketbase.service dartshub-web.service
+systemctl enable --now darts-pocketbase.service darts-web.service
 caddy validate --config /etc/caddy/Caddyfile >/dev/null
 systemctl reload caddy 2>/dev/null || systemctl restart caddy
 systemctl enable caddy >/dev/null 2>&1 || true
@@ -282,7 +282,7 @@ if [ "$DO_ACCOUNTS" = "1" ]; then
     curl -fsS "${PB_URL_LOCAL}/api/health" >/dev/null 2>&1 && { ok=1; break; }
     sleep 1
   done
-  [ "$ok" = "1" ] || { echo "✗ PocketBase nicht erreichbar — Logs: journalctl -u dartshub-pocketbase -e"; exit 1; }
+  [ "$ok" = "1" ] || { echo "✗ PocketBase nicht erreichbar — Logs: journalctl -u darts-pocketbase -e"; exit 1; }
   echo "• Schema + erster App-Admin (provision.mjs) …"
   sudo -u "$RUN_USER" env \
     PB_URL="$PB_URL_LOCAL" PB_SU_EMAIL="$SU_EMAIL" PB_SU_PASS="$SU_PASS" \
@@ -302,8 +302,8 @@ echo
 echo "✅ Dienste laufen:"
 echo "   PocketBase : ${PB_URL_LOCAL}   (öffentlich via https://${DB_DOMAIN})"
 echo "   Frontend   : http://127.0.0.1:${WEB_PORT}   (öffentlich via https://${APP_DOMAIN})"
-echo "   Status     : systemctl status dartshub-web dartshub-pocketbase caddy"
-echo "   Logs       : journalctl -u dartshub-pocketbase -f"
+echo "   Status     : systemctl status darts-web darts-pocketbase caddy"
+echo "   Logs       : journalctl -u darts-pocketbase -f"
 echo
 echo "➡ NÄCHSTE SCHRITTE:"
 echo "   • DNS prüfen (A-Records app.* / db.* → diese Server-IP) und Firewall: 80+443 offen,"
@@ -319,6 +319,6 @@ echo "   • Optional härten: /_/ in Caddy auf deine IP sperren + CSP einkommen
 echo "       → docs/admin-anleitung-cloud.md, Abschnitt Sicherheit."
 echo
 echo "ℹ Update später (2 Wege):"
-echo "   • In-App: 'dartshub-update-*.tar.gz' nach '$ROOT/updates/' legen → Einstellungen → 'App & Updates' → Installieren."
+echo "   • In-App: 'dartszentrale-update-*.tar.gz' nach '$ROOT/updates/' legen → Einstellungen → 'App & Updates' → Installieren."
 echo "     Von einem Board mit diesem Token:  ${UPD_TOKEN}"
 echo "   • Skript:  ./update-server.sh   (erkennt die Cloud-Dienste, baut neu, startet neu)."

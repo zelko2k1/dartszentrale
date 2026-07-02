@@ -47,7 +47,7 @@ export function Sidebar() {
           ? <img src={s.settings.clubLogo} alt="Vereinslogo" style={{ width: 38, height: 38, borderRadius: 9, objectFit: 'contain', flexShrink: 0 }} />
           : <Logo size={38} />}
         <div>
-          <div style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-.01em' }}>DartsHub</div>
+          <div style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-.01em' }}>DartsZentrale</div>
           {isVerein && <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600 }}>{s.settings.clubName}</div>}
         </div>
       </div>

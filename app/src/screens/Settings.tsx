@@ -81,7 +81,7 @@ function Row({ label, sub, children, top }: { label: string; sub?: string; child
 // „App & Updates": prüft/installiert Datei-basierte Updates über den serve-dist-Endpunkt
 // (/admin/update/*). Läuft lokal/LAN/Cloud über http. Wird die App anders ausgeliefert (z. B.
 // Coolify/nginx → Endpunkt fehlt), zeigt der Panel einen Hinweis statt eines Installers.
-const UPDATE_TOKEN_KEY = 'dartshub_update_token';
+const UPDATE_TOKEN_KEY = 'darts_update_token';
 function UpdatePanel() {
   const accent = useStore((st) => st.settings.accent);
   const [token, setToken] = useState(() => { try { return localStorage.getItem(UPDATE_TOKEN_KEY) || ''; } catch { return ''; } });
@@ -214,7 +214,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `dartshub-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `dartszentrale-backup-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
       setDataMsg('Backup heruntergeladen.');

@@ -1,4 +1,4 @@
-# Sicherheits-Audit DartsHub — Internet-Betrieb
+# Sicherheits-Audit DartsZentrale — Internet-Betrieb
 
 > Stand: 2026-07-02 (Erst-Audit: 2026-06-28). **Lebende Liste der noch offenen Punkte** für den
 > Betrieb im Internet — bereits im Code behobene Findings sind entfernt (Details in der Git-Historie).

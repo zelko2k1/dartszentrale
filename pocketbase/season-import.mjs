@@ -8,8 +8,8 @@ import { readFileSync } from 'fs';
 import { assertSafePassword } from './_security-guard.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
-const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartshub.local';
-const SU_PASS = process.env.PB_SU_PASS || 'dartshub-admin-2026';
+const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartszentrale.local';
+const SU_PASS = process.env.PB_SU_PASS || 'dartszentrale-admin-2026';
 const FILE = process.argv[2];
 
 // Sicherheits-Guard: kein Default-Superuser-Passwort gegen ein nicht-lokales Ziel.
@@ -37,7 +37,7 @@ async function restore(coll, rows) {
 async function main() {
   await pb.collection('_superusers').authWithPassword(SU_EMAIL, SU_PASS);
   const bundle = JSON.parse(readFileSync(FILE, 'utf8'));
-  if (bundle.format !== 'dartshub-season-bundle' || !bundle.season?.id) { console.error('FEHLER: Keine gültige Saison-Bundle-Datei.'); process.exit(1); }
+  if (bundle.format !== 'dartszentrale-season-bundle' || !bundle.season?.id) { console.error('FEHLER: Keine gültige Saison-Bundle-Datei.'); process.exit(1); }
   const sid = bundle.season.id;
 
   // Saison selbst sicherstellen (offloaded=false)

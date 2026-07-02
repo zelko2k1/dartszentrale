@@ -1,4 +1,4 @@
-// Seed-Daten — 1:1 aus DartsHub.dc.html (componentDidMount / seedLeagues / seedEvents)
+// Seed-Daten — 1:1 aus DartsZentrale.dc.html (componentDidMount / seedLeagues / seedEvents)
 import type { Player, Team, Account, League, EventItem, Season, Settings } from './types';
 import { uid, iso, firstName, lastName } from '../lib/format';
 

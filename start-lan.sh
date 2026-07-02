@@ -61,5 +61,5 @@ trap 'echo; echo "⏹  stoppe …"; kill ${PB_PID:-} "$WEB_PID" 2>/dev/null; wai
 ( command -v xdg-open >/dev/null && sleep 3 && xdg-open "http://127.0.0.1:${WEB_PORT}" >/dev/null 2>&1 || true ) &
 
 echo
-echo "DartsHub läuft. Fenster offen lassen; zum Beenden Strg+C."
+echo "DartsZentrale läuft. Fenster offen lassen; zum Beenden Strg+C."
 wait

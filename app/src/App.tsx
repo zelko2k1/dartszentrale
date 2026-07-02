@@ -61,10 +61,10 @@ export default function App() {
     const t = setInterval(() => useStore.setState({ now: Date.now() }), 30000);
     return () => clearInterval(t);
   }, []);
-  // Dokumenttitel (auch in der Edge-App-Leiste) — im Verein mit Vereinsname, sonst nur "DartsHub"
+  // Dokumenttitel (auch in der Edge-App-Leiste) — im Verein mit Vereinsname, sonst nur "DartsZentrale"
   useEffect(() => {
     const club = s.settings.clubName.trim();
-    document.title = s.settings.appMode === 'verein' && club ? `DartsHub — ${club}` : 'DartsHub';
+    document.title = s.settings.appMode === 'verein' && club ? `DartsZentrale — ${club}` : 'DartsZentrale';
   }, [s.settings.appMode, s.settings.clubName]);
   // close the mobile nav drawer whenever the screen changes
   useEffect(() => { setDrawerOpen(false); }, [s.screen]);
@@ -253,7 +253,7 @@ export default function App() {
             {isVerein && s.settings.clubLogo
               ? <img src={s.settings.clubLogo} alt="Vereinslogo" style={{ width: 30, height: 30, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
               : <Logo size={30} />}
-            <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-.01em' }}>DartsHub</div>
+            <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-.01em' }}>DartsZentrale</div>
           </header>
           <main style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: rootBg(s.settings), position: 'relative' }}>
             <ScreenView />

@@ -1,4 +1,4 @@
-# DartsHub schlank in der Cloud — ohne Coolify, ohne Docker
+# DartsZentrale schlank in der Cloud — ohne Coolify, ohne Docker
 
 Die **leichteste** Art, den Vereinsmodus online zu betreiben: zwei native systemd-Dienste
 plus **Caddy** als HTTPS-Proxy. Kein Coolify (~1 GB Dauerlast gespart), kein Docker.
@@ -27,8 +27,8 @@ Läuft auf einem **1–2-GB-Nano** ab ~3–4 €/Monat.
               └─────────┘  └───────────────┘
 ```
 
-- **dartshub-pocketbase.service** — das PocketBase-Binary, lauscht nur auf `127.0.0.1:8090`.
-- **dartshub-web.service** — `node serve-dist.mjs` (abhängigkeitsfrei), lauscht nur auf `127.0.0.1:4173`.
+- **darts-pocketbase.service** — das PocketBase-Binary, lauscht nur auf `127.0.0.1:8090`.
+- **darts-web.service** — `node serve-dist.mjs` (abhängigkeitsfrei), lauscht nur auf `127.0.0.1:4173`.
 - **Caddy** — einziger öffentlicher Dienst, terminiert TLS, routet auf die zwei lokalen Ports.
 
 Beide internen Ports sind **nicht** aus dem Internet erreichbar — so wandert kein Klartext-HTTP am
@@ -80,9 +80,9 @@ eintragen — die Domain hängt das System automatisch an:
 | A | `app` | 203.0.113.10 |
 | A | `db` | 203.0.113.10 |
 
-> **`app` ist frei wählbar.** Du kannst die Subdomain beliebig benennen, z. B. `dartshub`
-> (→ `dartshub.deinedomain.de`). Einzige Regel: **derselbe Name an beiden Stellen** —
-> im A-Record (`Name = dartshub`) **und** beim Aufruf (`APP_DOMAIN=dartshub.deinedomain.de`).
+> **`app` ist frei wählbar.** Du kannst die Subdomain beliebig benennen, z. B. `dartszentrale`
+> (→ `dartszentrale.deinedomain.de`). Einzige Regel: **derselbe Name an beiden Stellen** —
+> im A-Record (`Name = dartszentrale`) **und** beim Aufruf (`APP_DOMAIN=dartszentrale.deinedomain.de`).
 > Das Skript backt `VITE_PB_URL=https://<DB_DOMAIN>` automatisch passend ins Frontend; in
 > PocketBase dann die CORS-Origin auf `https://<APP_DOMAIN>` setzen. `db` lässt sich genauso
 > umbenennen (z. B. `pb`/`backend`) — solange `DB_DOMAIN` mitgezogen wird.
@@ -148,31 +148,31 @@ curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo 
 sudo apt update && sudo apt install -y caddy
 
 # PocketBase (bei ARM: linux_arm64)
-cd ~/dartshub/pocketbase
+cd ~/dartszentrale/pocketbase
 wget https://github.com/pocketbase/pocketbase/releases/download/v0.39.5/pocketbase_0.39.5_linux_amd64.zip
 unzip -o pocketbase_0.39.5_linux_amd64.zip pocketbase && chmod +x pocketbase
 ```
 
 ### 2. Frontend bauen
 ```bash
-cd ~/dartshub/app
+cd ~/dartszentrale/app
 echo 'VITE_PB_URL=https://db.deinedomain.de' > .env.local   # WICHTIG: Build-Zeit!
 npm ci && npm run build
 ```
 
 ### 3. Zwei systemd-Dienste anlegen
-`/etc/systemd/system/dartshub-pocketbase.service` (Pfade/`<user>` anpassen):
+`/etc/systemd/system/darts-pocketbase.service` (Pfade/`<user>` anpassen):
 ```ini
 [Unit]
-Description=DartsHub PocketBase
+Description=DartsZentrale PocketBase
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
 User=<user>
-WorkingDirectory=/home/<user>/dartshub/pocketbase
-ExecStart=/home/<user>/dartshub/pocketbase/pocketbase serve --automigrate=0 --http=127.0.0.1:8090 --origins=https://app.deinedomain.de --dir=/home/<user>/dartshub/pocketbase/pb_data --migrationsDir=/home/<user>/dartshub/pocketbase/pb_migrations --hooksDir=/home/<user>/dartshub/pocketbase/pb_hooks
+WorkingDirectory=/home/<user>/dartszentrale/pocketbase
+ExecStart=/home/<user>/dartszentrale/pocketbase/pocketbase serve --automigrate=0 --http=127.0.0.1:8090 --origins=https://app.deinedomain.de --dir=/home/<user>/dartszentrale/pocketbase/pb_data --migrationsDir=/home/<user>/dartszentrale/pocketbase/pb_migrations --hooksDir=/home/<user>/dartszentrale/pocketbase/pb_hooks
 Restart=on-failure
 RestartSec=3
 NoNewPrivileges=true
@@ -181,20 +181,20 @@ NoNewPrivileges=true
 WantedBy=multi-user.target
 ```
 
-`/etc/systemd/system/dartshub-web.service`:
+`/etc/systemd/system/darts-web.service`:
 ```ini
 [Unit]
-Description=DartsHub Frontend (statischer dist-Server)
-After=dartshub-pocketbase.service
-Wants=dartshub-pocketbase.service
+Description=DartsZentrale Frontend (statischer dist-Server)
+After=darts-pocketbase.service
+Wants=darts-pocketbase.service
 
 [Service]
 Type=simple
 User=<user>
-WorkingDirectory=/home/<user>/dartshub/app
+WorkingDirectory=/home/<user>/dartszentrale/app
 Environment=HOST=127.0.0.1
 Environment=PORT=4173
-ExecStart=/usr/bin/node /home/<user>/dartshub/app/serve-dist.mjs
+ExecStart=/usr/bin/node /home/<user>/dartszentrale/app/serve-dist.mjs
 Restart=on-failure
 RestartSec=3
 NoNewPrivileges=true
@@ -205,7 +205,7 @@ WantedBy=multi-user.target
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now dartshub-pocketbase dartshub-web
+sudo systemctl enable --now darts-pocketbase darts-web
 ```
 
 ### 4. Caddy konfigurieren
@@ -218,7 +218,7 @@ sudo systemctl reload caddy
 
 ### 5. PocketBase einrichten
 ```bash
-cd ~/dartshub/pocketbase
+cd ~/dartszentrale/pocketbase
 ./pocketbase superuser upsert <admin-mail> '<starkes-pw>' --dir ./pb_data
 node provision.mjs
 ```
@@ -231,9 +231,9 @@ Dann in `https://db.deinedomain.de/_/` → **Application URL** = `https://db.dei
 
 | Aufgabe | Befehl |
 |---|---|
-| **Status** | `systemctl status dartshub-web dartshub-pocketbase caddy` |
-| **Logs live** | `journalctl -u dartshub-pocketbase -f` |
-| **App-Update (In-App, nur Frontend)** | `dartshub-update-*.tar.gz` in **`updates/`** legen → in der App: Einstellungen → „App & Updates" → Installieren (mit dem Update-Token, den `einrichten-cloud.sh` am Ende zeigte / `.update-token`). Kein Dienst-Neustart nötig. |
+| **Status** | `systemctl status darts-web darts-pocketbase caddy` |
+| **Logs live** | `journalctl -u darts-pocketbase -f` |
+| **App-Update (In-App, nur Frontend)** | `dartszentrale-update-*.tar.gz` in **`updates/`** legen → in der App: Einstellungen → „App & Updates" → Installieren (mit dem Update-Token, den `einrichten-cloud.sh` am Ende zeigte / `.update-token`). Kein Dienst-Neustart nötig. |
 | **App-Update (Skript, auch PocketBase)** | neue Dateien einspielen (ZIP/`git pull`) → `./update-server.sh` (baut + startet die Dienste neu) |
 | **Schema-Update** | `update-server.sh` zieht es mit; Migrations laufen beim PB-Start ohnehin (bei Bedarf `cd pocketbase && node provision.mjs`) |
 | **Backups** | in PocketBase (`/_/` → Settings → Backups) aktivieren; Daten liegen in `pocketbase/pb_data/` |
@@ -260,9 +260,9 @@ lokal auf `127.0.0.1:8090`). `PB_SU_EMAIL`/`PB_SU_PASS` = das beim Setup gewähl
   ```
 - **Superuser-Passwort vergessen?** Dienst kurz stoppen, neu setzen, wieder starten:
   ```bash
-  sudo systemctl stop dartshub-pocketbase
+  sudo systemctl stop darts-pocketbase
   ./pocketbase superuser upsert <su-mail> "<neues-pw>" --dir ./pb_data
-  sudo systemctl start dartshub-pocketbase
+  sudo systemctl start darts-pocketbase
   ```
 
 > Saison sichern / auslagern / zurückspielen: `season-export.mjs` · `season-offload.mjs` ·

@@ -43,10 +43,10 @@ export function ModePicker() {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <Logo size={34} />
-        <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>DartsHub</div>
+        <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>DartsZentrale</div>
       </div>
       <div style={{ textAlign: 'center', maxWidth: 540 }}>
-        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>Wie möchtest du DartsHub nutzen?</div>
+        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>Wie möchtest du DartsZentrale nutzen?</div>
         <div style={{ fontSize: 13.5, color: 'var(--text-3)', lineHeight: 1.55 }}>
           Du kannst die Wahl später in den Einstellungen unter „Nutzungsart" jederzeit ändern.
         </div>

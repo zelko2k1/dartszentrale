@@ -3,8 +3,8 @@
 // Rettungsanker, falls sich der (einzige) App-Admin ausgesperrt hat — der Superuser ist davon unabhängig.
 // Reaktiviert das Konto zugleich (active=true), damit ein deaktiviertes Admin-Konto nicht aussperrt.
 //
-// Aufruf (lokal, setzt chef@dartshub.local zurück):
-//   USER_EMAIL=chef@dartshub.local NEW_PW="neues-pw-min-8" node reset-password.mjs
+// Aufruf (lokal, setzt chef@dartszentrale.local zurück):
+//   USER_EMAIL=chef@dartszentrale.local NEW_PW="neues-pw-min-8" node reset-password.mjs
 // Cloud:
 //   PB_URL=https://db.deinverein.de PB_SU_EMAIL=… PB_SU_PASS=… USER_EMAIL=admin@deinverein.de NEW_PW=… node reset-password.mjs
 //
@@ -14,15 +14,15 @@ import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
 import { assertSafePassword } from './_security-guard.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
-const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartshub.local';
-const SU_PASS = process.env.PB_SU_PASS || 'dartshub-admin-2026';
-const USER_EMAIL = process.env.USER_EMAIL || 'chef@dartshub.local';
+const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartszentrale.local';
+const SU_PASS = process.env.PB_SU_PASS || 'dartszentrale-admin-2026';
+const USER_EMAIL = process.env.USER_EMAIL || 'chef@dartszentrale.local';
 const NEW_PW = process.env.NEW_PW; // Pflicht – kein Default mehr (Sicherheits-Audit #11).
 
 // #11: NEW_PW ist verpflichtend; kein stiller Rückfall auf ein bekanntes Default-Passwort.
 if (!NEW_PW) {
   console.error('FEHLER: NEW_PW ist nicht gesetzt. Bitte explizit ein neues Passwort vorgeben:');
-  console.error('  USER_EMAIL=chef@dartshub.local NEW_PW="dein-neues-pw-min-8" node reset-password.mjs');
+  console.error('  USER_EMAIL=chef@dartszentrale.local NEW_PW="dein-neues-pw-min-8" node reset-password.mjs');
   process.exit(1);
 }
 if (NEW_PW.length < 8) {
@@ -57,7 +57,7 @@ async function main() {
   const auth = await test.collection('users').authWithPassword(USER_EMAIL, NEW_PW);
   console.log(`OK Login getestet – Rolle: ${auth.record.role}, aktiv: ${auth.record.active}`);
   console.log(`\nApp-Login:  ${USER_EMAIL} / ${NEW_PW}`);
-  if (NEW_PW === 'dartshub123') console.log('HINWEIS: Standard-Passwort — bitte direkt in der App ändern!');
+  if (NEW_PW === 'dartszentrale123') console.log('HINWEIS: Standard-Passwort — bitte direkt in der App ändern!');
 }
 
 main().catch((e) => { console.error('FEHLER:', e?.response?.data ? JSON.stringify(e.response.data, null, 2) : e); process.exit(1); });

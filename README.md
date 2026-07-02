@@ -1,4 +1,4 @@
-# Handoff: DartsHub — Darts-Verein Verwaltung & Counter
+# Handoff: DartsZentrale — Darts-Verein Verwaltung & Counter
 
 > **📖 Dokumentation — wo finde ich was?**
 > - **App aufsetzen (eigener Server):** [`docs/admin-anleitung-cloud.md`](docs/admin-anleitung-cloud.md) + [`docs/coolify-homelab-anleitung.md`](docs/coolify-homelab-anleitung.md)
@@ -9,7 +9,7 @@
 > Dieses README selbst ist ein **Entwickler-/Design-Handoff** (Prototyp & Design-Tokens), kein Endnutzer-Dokument.
 
 ## Overview
-DartsHub ist eine Verwaltungs- und Scoring-App für Darts-Vereine. Sie deckt zwei
+DartsZentrale ist eine Verwaltungs- und Scoring-App für Darts-Vereine. Sie deckt zwei
 Betriebsmodi ab: **Lokal** (ein Gerät am Board, kein Login) und **Verein**
 (server-gehostet, mit Anmeldung, Rollen, Ligen, Mannschaften und Benutzerverwaltung).
 Funktionsumfang: Dashboard, Darts Counter (X01 etc.), Trainingsspiele, Kalender,
@@ -249,7 +249,7 @@ admin `#E0594B`, captain `#F2B829`, player `#19A463`, viewer `#3B9EFF`
 - Fonts via Google Fonts (Inter, Archivo, Rubik, Oswald, JetBrains Mono).
 
 ## Files
-- `DartsHub.dc.html` — der vollständige Prototyp (alle Screens, Logik, Seed-Daten).
+- `DartsZentrale.dc.html` — der vollständige Prototyp (alle Screens, Logik, Seed-Daten).
 - `support.js` — Laufzeit des Prototyp-Frameworks (nur zum Ausführen der HTML-Datei;
   **nicht** Teil der Zielimplementierung).
 - `DATA_MODEL.md` — **maßgebliche** Doku zu Entitäten, Beziehungen, Rollen-Matrix,
@@ -259,6 +259,6 @@ admin `#E0594B`, captain `#F2B829`, player `#19A463`, viewer `#3B9EFF`
   `06-benutzer` (jeweils Vereinsmodus, als Admin angemeldet).
 
 ### So öffnest du den Prototyp
-`DartsHub.dc.html` + `support.js` im selben Ordner lassen und die HTML-Datei im
+`DartsZentrale.dc.html` + `support.js` im selben Ordner lassen und die HTML-Datei im
 Browser öffnen. Demo-Daten werden beim ersten Start angelegt. Zum Zurücksetzen den
 localStorage der Seite leeren.

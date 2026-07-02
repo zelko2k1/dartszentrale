@@ -71,7 +71,7 @@ Admin-Aktion, idempotent:
    Änderungen verschieben würden).
 3. **Export-Bundle erzeugen** (immer, *vor* jedem Löschen): portable Datei mit
    Leagues+Fixtures, Teams, Events, Matches, Snapshot →
-   `dartshub-season-2025-26-<datum>.json` (optional `.zip`), in der App herunterladbar
+   `dartszentrale-season-2025-26-<datum>.json` (optional `.zip`), in der App herunterladbar
    und/oder auf ein Backup-Ziel geschrieben. **Das ist die Wegsicherung.**
 4. `season.status = 'archived'`.
 5. App zeigt die Saison ab jetzt **read-only** (aus Snapshot).

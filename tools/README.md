@@ -1,6 +1,6 @@
 # tools
 
-Kleine Hilfsskripte rund um DartsHub. Kein Teil der App — nur lokal/offline.
+Kleine Hilfsskripte rund um DartsZentrale. Kein Teil der App — nur lokal/offline.
 
 ## pdf2schedule.mjs — BDV-Spielplan-PDF → Import-CSV
 

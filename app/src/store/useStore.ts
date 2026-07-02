@@ -26,23 +26,23 @@ import { mergeSchedule, deriveOwnTeams, type ParsedSchedule, type ImportCounts }
 import { applyPwaUpdate, checkForUpdate as checkPwaUpdate } from '../lib/pwaUpdate';
 
 const LS = {
-  settings: 'dartshub_settings',
-  players: 'dartshub_players',
-  matches: 'dartshub_matches',
-  training: 'dartshub_training',
-  trainplays: 'dartshub_trainplays',
-  live: 'dartshub_live',
-  events: 'dartshub_events',
-  teams: 'dartshub_teams',
-  users: 'dartshub_users',
-  session: 'dartshub_session',
-  leagues: 'dartshub_leagues',
-  seasons: 'dartshub_seasons',
-  seasonSnapshots: 'dartshub_season_snapshots',
-  pburl: 'dartshub_pburl',
-  device: 'dartshub_device', // gerätelokale Konfiguration (Board-/Kiosk-Modus, Board-Bezeichnung)
-  devui: 'dartshub_devui', // gerätelokale UI-Vorlieben (Eingabe-Modus, Hell/Dunkel, Größen) – Mischbetrieb PC/Tablet
-  setupDefaults: 'dartshub_setup_defaults', // gerätelokale Spieltyp-Voreinstellung (Startpunkte/Format/Out) – bleibt bis zur nächsten Änderung
+  settings: 'darts_settings',
+  players: 'darts_players',
+  matches: 'darts_matches',
+  training: 'darts_training',
+  trainplays: 'darts_trainplays',
+  live: 'darts_live',
+  events: 'darts_events',
+  teams: 'darts_teams',
+  users: 'darts_users',
+  session: 'darts_session',
+  leagues: 'darts_leagues',
+  seasons: 'darts_seasons',
+  seasonSnapshots: 'darts_season_snapshots',
+  pburl: 'darts_pburl',
+  device: 'darts_device', // gerätelokale Konfiguration (Board-/Kiosk-Modus, Board-Bezeichnung)
+  devui: 'darts_devui', // gerätelokale UI-Vorlieben (Eingabe-Modus, Hell/Dunkel, Größen) – Mischbetrieb PC/Tablet
+  setupDefaults: 'darts_setup_defaults', // gerätelokale Spieltyp-Voreinstellung (Startpunkte/Format/Out) – bleibt bis zur nächsten Änderung
 };
 
 // Spieltyp-Felder, die als Voreinstellung gerätelokal erhalten bleiben (Spieler/Gäste/Liga NICHT).
@@ -844,7 +844,7 @@ export const useStore = create<AppState>((set, get) => ({
       const raw = localStorage.getItem(LS[k]);
       if (raw != null) { try { data[LS[k]] = JSON.parse(raw); } catch { /* überspringen */ } }
     });
-    return JSON.stringify({ app: 'dartshub', version: 1, exportedAt: new Date().toISOString(), data }, null, 2);
+    return JSON.stringify({ app: 'dartszentrale', version: 1, exportedAt: new Date().toISOString(), data }, null, 2);
   },
   importData(json) {
     try {
@@ -853,7 +853,7 @@ export const useStore = create<AppState>((set, get) => ({
       if (!data || typeof data !== 'object') return false;
       let any = false;
       Object.entries(data).forEach(([k, v]) => {
-        if (k.startsWith('dartshub_') && k !== LS.live) { localStorage.setItem(k, JSON.stringify(v)); any = true; }
+        if (k.startsWith('darts_') && k !== LS.live) { localStorage.setItem(k, JSON.stringify(v)); any = true; }
       });
       return any;
     } catch { return false; }
@@ -1979,7 +1979,7 @@ function buildSeasonSnapshot(season: Season, st: AppState): SeasonSnapshot {
 function buildSeasonBundle(season: Season, snapshot: SeasonSnapshot, st: AppState) {
   const sid = season.id; const asid = st.activeSeasonId;
   return {
-    format: 'dartshub-season-bundle', version: 1, exportedAt: new Date().toISOString(),
+    format: 'dartszentrale-season-bundle', version: 1, exportedAt: new Date().toISOString(),
     season, snapshot,
     leagues: ofSeason(st.leagues, sid, asid),
     teams: ofSeason(st.teams, sid, asid),
@@ -1990,7 +1990,7 @@ function buildSeasonBundle(season: Season, snapshot: SeasonSnapshot, st: AppStat
 
 function bundleFilename(season: Season): string {
   const safe = season.name.replace(/[^\dA-Za-z]+/g, '-');
-  return `dartshub-saison-${safe}-${new Date().toISOString().slice(0, 10)}.json`;
+  return `dartszentrale-saison-${safe}-${new Date().toISOString().slice(0, 10)}.json`;
 }
 
 // Lädt den kompletten Datenbestand vom Provider und übernimmt ihn in den Store (inkl. persönlicher Einstellungen).

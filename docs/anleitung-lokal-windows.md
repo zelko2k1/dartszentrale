@@ -1,4 +1,4 @@
-# DartsHub lokal (Windows) — ein Board, kein Server
+# DartsZentrale lokal (Windows) — ein Board, kein Server
 
 Der einfachste Weg: die App läuft nur im Browser auf **einem** Windows-PC — **ohne Server, ohne
 Anmeldung**. Die Daten liegen lokal im Browser dieses Geräts.
@@ -35,7 +35,7 @@ Das schwarze Fenster **offen lassen**, solange du die App nutzt (zum Beenden das
 
 Damit das Brett nach dem Hochfahren von selbst die App zeigt: Doppelklick auf **`autostart-lokal.bat`**.
 
-Entfernen: `Win+R` → `shell:startup` → `DartsHub.lnk` löschen.
+Entfernen: `Win+R` → `shell:startup` → `DartsZentrale.lnk` löschen.
 
 ---
 
@@ -43,7 +43,7 @@ Entfernen: `Win+R` → `shell:startup` → `DartsHub.lnk` löschen.
 
 ### Einfachster Weg — direkt in der App (empfohlen)
 
-1. Die Datei **`dartshub-update-<version>.tar.gz`** in den Ordner **`updates`** neben der App legen
+1. Die Datei **`dartszentrale-update-<version>.tar.gz`** in den Ordner **`updates`** neben der App legen
    (den genauen Pfad zeigt die App unter *Einstellungen → App & Updates*; der Ordner wird beim
    Start automatisch angelegt).
 2. In der App: **Einstellungen → „App & Updates" → „Nach Updates suchen"** → **„Installieren"**.

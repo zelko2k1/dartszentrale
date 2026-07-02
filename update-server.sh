@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# DartsHub – Update ohne git (Linux / Raspberry Pi / Git Bash)
+# DartsZentrale – Update ohne git (Linux / Raspberry Pi / Git Bash)
 # [ PRODUKTIV / OPS ] — für den Produktivbetrieb gedacht
 # ----------------------------------------------------------------------------
 # Übernimmt eine neue App-Version von einem Stick/Ordner in den Projektordner,
@@ -35,9 +35,9 @@ SRC="${SRC:-/media/usb}"
 # ein Build PFLICHT (ausgeliefert wird das gebaute dist/) und der Dienst muss neu
 # starten. system = schlanke Cloud-Variante · user = LAN-Autostart · none = Dev/Hand.
 SVC_MODE="none"
-if [ -f /etc/systemd/system/dartshub-web.service ]; then
+if [ -f /etc/systemd/system/darts-web.service ]; then
   SVC_MODE="system"
-elif [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/dartshub-web.service" ]; then
+elif [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/darts-web.service" ]; then
   SVC_MODE="user"
 fi
 [ "$SVC_MODE" != "none" ] && DO_BUILD=1
@@ -95,14 +95,14 @@ echo
 case "$SVC_MODE" in
   system)
     echo "── Cloud-Dienste neu starten (systemd, braucht sudo) ──"
-    sudo systemctl restart dartshub-web
-    [ "$PB_TOUCHED" = "1" ] && sudo systemctl restart dartshub-pocketbase
+    sudo systemctl restart darts-web
+    [ "$PB_TOUCHED" = "1" ] && sudo systemctl restart darts-pocketbase
     echo "✅ Update aktiv — Dienste neu gestartet."
     ;;
   user)
     echo "── Dienste neu starten (systemd --user) ──"
-    systemctl --user restart dartshub-web
-    [ "$PB_TOUCHED" = "1" ] && systemctl --user restart dartshub-pocketbase
+    systemctl --user restart darts-web
+    [ "$PB_TOUCHED" = "1" ] && systemctl --user restart darts-pocketbase
     echo "✅ Update aktiv — Dienste neu gestartet."
     ;;
   none)

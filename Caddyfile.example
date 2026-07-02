@@ -1,4 +1,4 @@
-# DartsHub — Caddy-Reverse-Proxy mit Auto-HTTPS (schlanke Variante, ohne Coolify/Docker).
+# DartsZentrale — Caddy-Reverse-Proxy mit Auto-HTTPS (schlanke Variante, ohne Coolify/Docker).
 #
 # Nach /etc/caddy/Caddyfile kopieren, <domain> ersetzen, dann:
 #   sudo caddy validate --config /etc/caddy/Caddyfile
@@ -26,7 +26,7 @@
 	}
 }
 
-# Frontend (statischer dist-Server, dartshub-web.service auf 127.0.0.1:4173)
+# Frontend (statischer dist-Server, darts-web.service auf 127.0.0.1:4173)
 app.deinedomain.de {
 	encode zstd gzip
 	import security_headers
@@ -42,7 +42,7 @@ app.deinedomain.de {
 	reverse_proxy 127.0.0.1:4173
 }
 
-# PocketBase (dartshub-pocketbase.service auf 127.0.0.1:8090)
+# PocketBase (darts-pocketbase.service auf 127.0.0.1:8090)
 db.deinedomain.de {
 	encode zstd gzip
 	import security_headers

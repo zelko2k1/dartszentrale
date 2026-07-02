@@ -1,5 +1,5 @@
 # ============================================================================
-# DartsHub - Update ohne git (Windows / PowerShell)
+# DartsZentrale - Update ohne git (Windows / PowerShell)
 # [ PRODUKTIV / OPS ] - fuer den Produktivbetrieb gedacht
 # ----------------------------------------------------------------------------
 # Uebernimmt eine neue App-Version von einem Stick/Ordner in den Projektordner,
@@ -79,9 +79,9 @@ if ($Build) {
 Write-Host ""
 if ($IsServer) {
   Write-Host "-- Server-Installation erkannt: Dienste neu starten --"
-  # Gezielt nur die DartsHub-Fenster schliessen (per Fenstertitel) und neu starten.
-  taskkill /FI "WINDOWTITLE eq DartsHub PocketBase" /T /F 2>$null | Out-Null
-  taskkill /FI "WINDOWTITLE eq DartsHub Frontend"   /T /F 2>$null | Out-Null
+  # Gezielt nur die DartsZentrale-Fenster schliessen (per Fenstertitel) und neu starten.
+  taskkill /FI "WINDOWTITLE eq DartsZentrale PocketBase" /T /F 2>$null | Out-Null
+  taskkill /FI "WINDOWTITLE eq DartsZentrale Frontend"   /T /F 2>$null | Out-Null
   Start-Sleep 1
   Start-Process -FilePath $ServerBat -WorkingDirectory $Root
   Write-Host "OK - Update aktiv, Dienste neu gestartet."

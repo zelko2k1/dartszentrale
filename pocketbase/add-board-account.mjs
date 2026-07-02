@@ -9,10 +9,10 @@ import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
 import { assertSafePassword } from './_security-guard.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
-const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartshub.local';
-const SU_PASS = process.env.PB_SU_PASS || 'dartshub-admin-2026';
-const BOARD_EMAIL = process.env.BOARD_EMAIL || 'board@dartshub.local';
-const BOARD_PW = process.env.BOARD_PW || 'board-dartshub-2026'; // BITTE in der Cloud ändern!
+const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartszentrale.local';
+const SU_PASS = process.env.PB_SU_PASS || 'dartszentrale-admin-2026';
+const BOARD_EMAIL = process.env.BOARD_EMAIL || 'board@dartszentrale.local';
+const BOARD_PW = process.env.BOARD_PW || 'board-dartszentrale-2026'; // BITTE in der Cloud ändern!
 
 // Sicherheits-Guard: keine bekannten Default-Passwörter gegen ein nicht-lokales Ziel.
 assertSafePassword(URL, 'Superuser-Login', SU_PASS, 'PB_SU_PASS=…');
@@ -47,7 +47,7 @@ async function main() {
   const auth = await test.collection('users').authWithPassword(BOARD_EMAIL, BOARD_PW);
   console.log(`OK Login getestet – Rolle: ${auth.record.role}, aktiv: ${auth.record.active}`);
   console.log(`\nBoard-Login:  ${BOARD_EMAIL} / ${BOARD_PW}`);
-  if (BOARD_PW === 'board-dartshub-2026') console.log('HINWEIS: In der Cloud unbedingt ein eigenes BOARD_PW setzen!');
+  if (BOARD_PW === 'board-dartszentrale-2026') console.log('HINWEIS: In der Cloud unbedingt ein eigenes BOARD_PW setzen!');
 }
 
 main().catch((e) => { console.error('FEHLER:', e?.response?.data ? JSON.stringify(e.response.data, null, 2) : e); process.exit(1); });

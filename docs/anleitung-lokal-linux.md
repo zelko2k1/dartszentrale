@@ -1,4 +1,4 @@
-# DartsHub lokal (Linux / Raspberry Pi) — ein Board, kein Server
+# DartsZentrale lokal (Linux / Raspberry Pi) — ein Board, kein Server
 
 Der einfachste Weg: die App läuft nur im Browser auf **einem** Gerät — **ohne Server, ohne
 Anmeldung**. Die Daten liegen lokal im Browser dieses Geräts.
@@ -46,7 +46,7 @@ Entfernen: Das Skript zeigt am Ende den passenden Entfernen-Befehl an.
 
 ### Einfachster Weg — direkt in der App (empfohlen)
 
-1. Die Datei **`dartshub-update-<version>.tar.gz`** in den Ordner **`updates`** neben der App legen
+1. Die Datei **`dartszentrale-update-<version>.tar.gz`** in den Ordner **`updates`** neben der App legen
    (den genauen Pfad zeigt die App unter *Einstellungen → App & Updates*; der Ordner wird beim
    Start automatisch angelegt).
 2. In der App: **Einstellungen → „App & Updates" → „Nach Updates suchen"** → **„Installieren"**.
