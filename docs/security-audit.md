@@ -1,14 +1,15 @@
 # Sicherheits-Audit DartsHub — Internet-Betrieb
 
-> Stand: 2026-06-28. Audit des kompletten Codes (App-Frontend, PocketBase-Regeln/Hooks,
-> Ops-Skripte, Deploy-Config) im Hinblick auf den Betrieb im Internet. Methode: drei parallele
-> Teil-Audits (Collection-Regeln, Frontend, Ops/Deploy) + manuelle Prüfung der `pb_hooks`.
+> Stand: 2026-07-02 (Erst-Audit: 2026-06-28). **Lebende Liste der noch offenen Punkte** für den
+> Betrieb im Internet — bereits im Code behobene Findings sind entfernt (Details in der Git-Historie).
+> Ursprüngliche Methode: drei parallele Teil-Audits (Collection-Regeln, Frontend, Ops/Deploy) +
+> manuelle Prüfung der `pb_hooks`.
 
 ## Verdikt
 
 Das **Auth-Fundament ist solide** — die Server-Regeln greifen, im App-Code wurden **keine offenen
-Lücken** gefunden. Die realen Risiken liegen fast alle im **Provisioning/Deployment** und sind vor
-dem Go-live zu schließen.
+Lücken** gefunden. Die verbleibenden Risiken liegen fast alle im **Provisioning/Deployment** und sind
+vor dem Go-live zu schließen (siehe Checkliste unten).
 
 ## ✅ Verifiziert sicher
 
@@ -21,48 +22,46 @@ dem Go-live zu schließen.
   im Bundle (`VITE_PB_URL` ist nur die Backend-URL), `clubLogo` (data-URL in `img src`) ungefährlich,
   Local-Mode-Allrechte sicher (kein Server beteiligt).
 - Die client-seitigen Rollen-Checks (`perm()`) sind **kosmetisch** — die echte Grenze sind die
-  PB-Regeln, und die sind (bis auf die Findings unten) korrekt.
+  PB-Regeln, und die sind korrekt.
+
+## ✅ Bereits behoben (im Code)
+
+Kurz dokumentiert für die Nachvollziehbarkeit der Nummern; Details in der Git-Historie:
+
+- **#4** Match-Ergebnisse an den Ersteller gebunden (`createdBy`-Stempel; Create-/Update-Rule) — gegen PB 0.39.5 getestet.
+- **#6** Rollen-Scoping: `seasons`/`leagues`/`teams` anlegen+löschen nur Admin; `teams` *ändern* nur der eigene Kapitän (`captainId = @request.auth.playerId`).
+- **#7 / #8** Default-Passwörter (Superuser, Board-Konto): `pocketbase/_security-guard.mjs` bricht ab, sobald ein bekannter Default gegen ein **nicht-lokales** Ziel liefe (`MEMBER_PW`/`BOARD_PW` erzwingbar).
+- **#9 / #13** Security-Header + `server_tokens off` in `app/nginx.conf`, dasselbe als `security_headers`-Snippet im Caddyfile (`einrichten-cloud.sh`). *Die CSP-Aktivierung bleibt ein Deploy-Schritt → siehe #9 in der Checkliste.*
+- **#11** `reset-password.mjs`: `NEW_PW` ist Pflicht, kein stiller Default mehr.
+- **Nebenbefund:** Coolify-Deploy backt Migrations/Hooks **ins Image** (Dockerfile `COPY`), Frontend baut über `app/Dockerfile` (nicht Nixpacks).
 
 ---
 
-## Befunde
+## ⏳ Offen — vor/beim Go-live
 
-Status: ✅ behoben (Quick-Win, dieser Commit) · ⏳ offen.
+### 🔴 Zwingend
 
-### 🔴 Vor Go-live zwingend
+**#1 — Live-Superuser-Passwort rotieren** (manuell, durch Betreiber)
+`pocketbase/seed-remote.sh` enthielt das echte PB-Superuser-Passwort im Klartext (gitignored, **nie
+committed** — verifiziert). Trotzdem: **Passwort rotieren** und den Literal aus der Datei entfernen
+(per `read -s`-Prompt oder Env außerhalb des Repos). Es wurde im Review sichtbar.
 
-**#1 — Live-Superuser-Passwort rotieren ⏳ (manuell, durch Betreiber)**
-`pocketbase/seed-remote.sh` enthält das echte PB-Superuser-Passwort im Klartext (gitignored, **nie
-committed** — verifiziert). Trotzdem: **Passwort jetzt rotieren** und den Literal aus der Datei
-entfernen (per `read -s`-Prompt oder Env außerhalb des Repos). Es wurde im Review sichtbar.
+**#2 — Produktiv-Admin manuell anlegen, keine Seeds gegen Prod** (Betriebsregel)
+Der erste App-Admin wird von `provision.mjs` interaktiv abgefragt (oder per `APP_ADMIN_EMAIL`/
+`APP_ADMIN_PASS`); ein reiner Coolify-Deploy legt **kein** Konto an (nur Migrations+Hooks). **Regel:**
+Produktiv-Admin mit **starkem** Passwort selbst anlegen; die `demo-*`-Seeds sind lokal-only (der
+Guard blockiert sie gegen nicht-lokale Ziele).
 
-**#2 — Seed/Provision nie gegen die Produktiv-DB ✅ (gehärtet) + Betriebsregel ⏳**
-`demo-seed-dsv-fuerth.mjs` legt Demo-Konten mit dem Default `dartshub123` an.
-`provision.mjs` hat **kein hartcodiertes Admin-Konto mehr** — der erste Admin wird interaktiv
-abgefragt (oder per `APP_ADMIN_EMAIL`/`APP_ADMIN_PASS`). Ein reiner Coolify-Deploy tut das nicht (nur Migrations+Hooks).
-**Gehärtet:** neuer `_security-guard.mjs` — die Skripte **brechen ab**, wenn ein bekanntes
-Default-Passwort gegen ein **nicht-lokales** Ziel verwendet würde (localhost bleibt bequem). Member-
-Passwörter sind jetzt per `MEMBER_PW=…` überschreibbar. **Betriebsregel bleibt:** Produktiv-Admin
-manuell mit starkem Passwort anlegen; Seeds sind lokal-only.
-
-**#3 — PocketBase nicht direkt auf `0.0.0.0:8090` veröffentlichen ⏳ (Deploy-Entscheidung)**
+**#3 — PocketBase nicht direkt auf `0.0.0.0:8090` veröffentlichen** (Deploy-Entscheidung)
 `docker-compose.yaml` published `8090:8090` → PB per Klartext-HTTP am TLS-Proxy vorbei erreichbar.
-**Nicht automatisch geändert**, weil das aktuelle LAN-Setup PB direkt über `http://<lan-ip>:8090`
-nutzt (Binding-Wechsel würde den Betrieb brechen). Erläuternder Sicherheits-Kommentar ist im Compose
-ergänzt. **Sobald PB ausschließlich hinter dem HTTPS-Proxy läuft:** Mapping entfernen oder auf
-`127.0.0.1:8090:8090` binden + Host-Firewall Port 8090 sperren.
-
-### 🟠 Hoch
-
-**#4 — Match-Ergebnisse fälschbar ✅ (behoben)**
-`matches.createRule` zwingt jetzt `@request.body.createdBy = @request.auth.id` (Ersteller-Stempel),
-`updateRule` erlaubt Admin ODER den Ersteller. Neues Feld `createdBy`; die App stempelt es beim
-Speichern. Im Schema (Baseline-Migration) und in `provision.mjs` gesetzt. Gegen PocketBase 0.39.5 getestet (frische DB):
-Forge mit fremder `createdBy` abgelehnt, eigener Eintrag erlaubt.
+Bewusst nicht automatisch geändert, weil das LAN-Setup PB direkt über `http://<lan-ip>:8090` nutzt.
+**Sobald PB ausschließlich hinter dem HTTPS-Proxy läuft:** Mapping entfernen oder auf
+`127.0.0.1:8090:8090` binden + Host-Firewall Port 8090 sperren. *(Schlanke Cloud-Variante bindet PB
+ohnehin nur an `127.0.0.1` — dort erledigt.)*
 
 ### 🟡 Mittel
 
-**#5 — PB-Admin-Konsole `/_/` internet-erreichbar ⏳ (Deploy)**
+**#5 — PB-Admin-Konsole `/_/` internet-erreichbar** (Deploy)
 Das Login-Panel `/_/` ist ein Brute-Force-Ziel. **Fix (am Reverse-Proxy + in PB):**
 - **`/_/` abschirmen** — in der Cloud am **Caddy** per IP-Allowlist bzw. `basic_auth` auf `path /_/*`
   (fertiger, auskommentierter Block im generierten `/etc/caddy/Caddyfile` **und** `Caddyfile.example`);
@@ -70,77 +69,37 @@ Das Login-Panel `/_/` ist ein Brute-Force-Ziel. **Fix (am Reverse-Proxy + in PB)
 - **PB-Rate-Limit** und **Superuser-MFA** in den PocketBase-Einstellungen (`/_/` → Settings) aktivieren
   — schützt den Auth-Endpunkt gegen Brute-Force, unabhängig von der UI-Abschirmung.
 
-> **CORS in der Cloud ist bereits gesetzt — nicht mehr im UI, sondern per CLI-Flag:** die
+> **CORS ist in der Cloud bereits gesetzt — nicht mehr im UI, sondern per CLI-Flag:** die
 > PocketBase-Unit läuft mit **`--origins=https://app.<domain>`** (setzt `einrichten-cloud.sh`
-> automatisch). PocketBase 0.39 hat **keine CORS-Einstellung im Dashboard** mehr, aber das
-> `--origins`-Flag (Default `*`) — ein manueller UI-Schritt entfällt also, ist aber trotzdem gesetzt.
-> Sicherheitlich ist CORS bei **Token-Auth** (JWT im localStorage, keine Cookies) ohnehin nur
-> Defense-in-Depth: eine Fremd-Origin kommt nicht an das Token. (LAN/Coolify: Default `*` genügt,
-> per `--origins` im Compose-`command` einschränkbar.)
+> automatisch). PB 0.39 hat **keine CORS-Einstellung im Dashboard** mehr, aber das `--origins`-Flag
+> (Default `*`) — kein manueller UI-Schritt. Sicherheitlich ist CORS bei **Token-Auth** (JWT im
+> localStorage, keine Cookies) ohnehin nur Defense-in-Depth: eine Fremd-Origin kommt nicht ans Token.
 
-**#6 — Kapitän-Rolle ist global ✅ behoben**
-`seasons`/`leagues` anlegen+löschen → nur Admin; `teams` löschen → nur Admin (Migration + provision,
-getestet: Spieler/Kapitän kann keine Saison anlegen / kein Team löschen). **Rest ebenfalls behoben:**
-`teams` *ändern* ist auf `@request.auth.role = "admin" || (cap && captainId = @request.auth.playerId)`
-gescoped — ein Kapitän kann nur **seine eigene** Mannschaft (Roster) editieren. Der JSON-zu-JSON-Vergleich
-`captainId = @request.auth.playerId` greift (gegen lokale PocketBase verifiziert: eigenes Update klappt,
-fremdes wird mit 404 geblockt). Im Schema (Baseline) + `provision.mjs` gesetzt. Vize-Kapitäne haben
-i. d. R. Rolle `player` und sind bewusst nicht eingeschlossen.
+**#9 — CSP aktivieren** (Deploy)
+Die Security-Header stehen (behoben), aber die **Content-Security-Policy** liegt als Vorlage
+auskommentiert vor (nginx bzw. Caddyfile). Pro Deployment auf die echte PB-Domain anpassen
+(`connect-src` MUSS die PB-URL enthalten), einkommentieren und testen.
 
-**#7 — Hardcodierte Default-Superuser-Creds ✅ (gehärtet)**
-Skripte hatten `admin@dartshub.local` / `dartshub-admin-2026` als Default. Der `_security-guard.mjs`
-bricht jetzt ab, wenn dieser Default gegen ein nicht-lokales Ziel benutzt würde. (Lokaler Default bleibt.)
+**#10 — JWT im localStorage** (durch #9 mitigiert)
+PB speichert das Token JS-lesbar → bei XSS exfiltrierbar. Primäre Mitigation: strikte **CSP** (#9)
+aktivieren. Kein XSS-Sink im Code vorhanden → Restrisiko gering.
 
-**#8 — Board-Konto-Default ✅ (gehärtet)**
-`add-board-account.mjs` Default `board-dartshub-2026` → vom Guard gegen nicht-lokale Ziele blockiert;
-`BOARD_PW=…` erzwingbar.
-
-**#9 — nginx ohne Security-Header ✅ (behoben)**
-`app/nginx.conf` ergänzt: `X-Frame-Options DENY`, `X-Content-Type-Options nosniff`, `Referrer-Policy`,
-`Permissions-Policy`, `server_tokens off`. **CSP als Vorlage auskommentiert** — muss pro Deployment auf
-die PB-Domain angepasst und getestet werden (`connect-src` MUSS die PB-URL enthalten). HSTS am Proxy.
-**Schlanke Cloud-Variante (ohne Docker/nginx):** dieselben Header setzt das `security_headers`-Snippet
-im Caddyfile (von `einrichten-cloud.sh` erzeugt) — inkl. **HSTS aktiv** und CSP-Vorlage
-mit bereits vorausgefülltem `connect-src https://db.<domain>` (auskommentiert bis getestet).
-
-**#10 — JWT im localStorage ⏳ (durch CSP mitigiert)**
-PB-Default speichert das Token JS-lesbar → bei XSS exfiltrierbar. Primäre Mitigation: strikte **CSP**
-aktivieren (#9). Kein XSS-Sink im Code vorhanden.
-
-### 🟢 Niedrig
-
-**#11 — `reset-password.mjs` Default-Neu-Passwort `dartshub123` ✅ (behoben)** → `NEW_PW` ist jetzt Pflicht;
-kein stiller Rückfall auf ein Default mehr. Fehlt `NEW_PW`, bricht das Skript mit klarer Anleitung ab (auch lokal).
-**#12 — Kompletter Kader für jeden eingeloggten Nutzer lesbar ⏳** → als Vereins-Verzeichnis vertretbar (E-Mails geschützt); bei Minderjährigen abwägen.
-**#13 — nginx Versions-Disclosure ✅ (behoben)** → `server_tokens off;` gesetzt.
-
-### ℹ️ Nebenbefund (kein Security) — ✅ erledigt
-`coolify-homelab-anleitung.md` (jetzt unter `docs/`) ist angeglichen: Migrations/Hooks werden ins Image **gebacken**
-(Dockerfile `COPY`), nicht gemountet; Frontend baut über `app/Dockerfile` (nicht Nixpacks).
+**#12 — Kompletter Kader für jeden eingeloggten Nutzer lesbar** (Abwägung)
+Als Vereins-Verzeichnis vertretbar (E-Mails sind geschützt). Bei Minderjährigen im Verein abwägen,
+ob die Kaderliste weiter eingeschränkt werden soll.
 
 ---
-
-## In diesem Commit umgesetzt (Quick-Wins)
-
-- `pocketbase/_security-guard.mjs` (neu) + eingebunden in `provision.mjs`,
-  `demo-seed-dsv-fuerth.mjs`, `add-board-account.mjs` → **Abbruch bei Default-Passwörtern gegen
-  nicht-lokale Ziele** (#2, #7, #8). `MEMBER_PW` nun env-überschreibbar.
-- `app/nginx.conf` → Security-Header + `server_tokens off` + CSP-Vorlage (#9, #13).
-- `pocketbase/docker-compose.yaml` → Sicherheits-Kommentar zum Port-Mapping (#3, nicht-brechend).
 
 ## Pre-Go-live-Checkliste
 
 - [ ] **#1** PB-Superuser-Passwort rotiert, Literal aus `seed-remote.sh` entfernt.
 - [ ] **#2** Produktiv-Admin manuell mit **starkem** Passwort angelegt; keine Seeds gegen Prod gelaufen.
 - [ ] **#3** PB nicht als Klartext-HTTP im Internet: Port-Mapping entfernt/loopback + Firewall, oder bewusst nur LAN.
-- [ ] **#5** PB-Admin-Konsole `/_/` abgeschirmt (Caddy IP-Allowlist/`basic_auth` bzw. Firewall/VPN); PB-**Rate-Limit + Superuser-MFA** an. (CORS setzt die Cloud bereits per `--origins`-Flag — kein UI-Schritt.)
-- [ ] **#9** CSP in `nginx.conf` auf die echte PB-Domain angepasst, einkommentiert und getestet.
-- [x] **#4** Match-Create an Ersteller gebunden (`createdBy`-Stempel) — erledigt.
-- [x] **#6** `seasons`/`leagues`/`teams` anlegen/löschen admin-only **+** `teams`-Ändern auf eigenen Kapitän gescoped — vollständig erledigt.
+- [ ] **#5** PB-Admin-Konsole `/_/` abgeschirmt (Caddy IP-Allowlist/`basic_auth` bzw. Firewall/VPN); PB-**Rate-Limit + Superuser-MFA** an. *(CORS: bereits per `--origins` gesetzt.)*
+- [ ] **#9** CSP auf die echte PB-Domain angepasst, einkommentiert und getestet.
 - [ ] HTTPS erzwungen (Proxy/Cloudflare), HSTS aktiv.
 - [ ] Starke, einzigartige Passwörter für alle Konten (Passwortmanager).
 
-## Noch offen (separate Arbeitspakete)
-- **#4 + #6 vollständig erledigt** (im Schema/Baseline + `provision.mjs` gesetzt
-  + provision, gegen lokale PB getestet). Inkl. Roster-Editing-Scoping (`captainId == auth.playerId`).
-- Optional: 2FA für Admins (siehe `docs/plan-2fa.md`).
+## Optional / später
+
+- **2FA für Admins** — siehe [`plan-2fa.md`](plan-2fa.md).
