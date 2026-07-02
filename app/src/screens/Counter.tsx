@@ -70,6 +70,9 @@ export function Counter() {
   // phone mode: portrait → stacked minimal layout, landscape → scores | keypad split
   const { isPhonePortrait, isPhoneLandscape } = useDevice();
   const isPhone = isPhonePortrait || isPhoneLandscape;
+  // Aufschrieb-Ansicht (n01-Stil): nur auf Desktop/Board/Tablet, nicht am Handy. Die kompakte
+  // Score-Leiste bleibt oben (Fernlesbarkeit), der volle Aufschrieb füllt darunter.
+  const sheetMode = !isPhone && cfg.counterView === 'sheet';
 
   // resizable score area (score band vs throws band)
   const startResize = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -143,7 +146,7 @@ export function Counter() {
       {/* board */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 12, minHeight: 0 }}>
         {/* SCORE band */}
-        <div style={{ flex: cfg.showHistory ? cfg.scoreArea : 100, display: 'flex', gap: 12, minHeight: 0 }}>
+        <div style={{ flex: sheetMode ? 40 : (cfg.showHistory ? cfg.scoreArea : 100), display: 'flex', gap: 12, minHeight: 0 }}>
           {s.gamePlayers.map((p, i) => {
             const isActive = i === curIdx && !over;
             const rem = sc[p.id];
@@ -182,8 +185,16 @@ export function Counter() {
           })}
         </div>
 
+        {/* Aufschrieb-Ansicht (n01-Stil): ersetzt die Wurf-Liste; die Statistik-Box bleibt darunter
+            wie gewohnt über den „Statistik-Box"-Schalter (showStats) an-/abwählbar. */}
+        {sheetMode && (
+          <div style={{ flex: 60, display: 'flex', flexDirection: 'column', minHeight: 0, marginTop: 8, gap: 8 }}>
+            <ScoreSheet />
+            {cfg.showStats && <SheetStats />}
+          </div>
+        )}
         {/* throws & stats band (history list and the average/CO/HF box are separate, each toggleable) */}
-        {(cfg.showHistory || cfg.showStats) && (
+        {!sheetMode && (cfg.showHistory || cfg.showStats) && (
           <>
             {cfg.showHistory && (
               <div onPointerDown={startResize} style={{ height: 18, margin: '8px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexShrink: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 9, cursor: 'row-resize', touchAction: 'none', userSelect: 'none' }}>
@@ -388,6 +399,114 @@ function FKeyLegend() {
           <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{it.label}</span>
         </button>
       ))}
+    </div>
+  );
+}
+
+// Voller Aufschrieb im n01-Stil (Entwurf): beide Spieler nebeneinander mit Score/Rest je Aufnahme,
+// mittiger Dart-Zähler-Spalte (bei 2 Spielern) und Ton-Markierung (100+/140+/180). Zeigt das AKTUELLE
+// Leg; die kompakte große-Zahl-Leiste darüber bleibt für die Fernlesbarkeit erhalten.
+function ScoreSheet() {
+  const s = useStore();
+  const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
+  const cfg = s.settings;
+  const accent = cfg.accent;
+  const players = s.gamePlayers;
+  const two = players.length === 2;
+  const over = matchOver(slice);
+  const curIdx = currentIdx(slice);
+  const start = cfg.startScore;
+  const perRows = players.map((p) => scoreList(slice, p.id));
+  const maxR = perRows.reduce((m, r) => Math.max(m, r.length), 0);
+  const inputDisplay = s.input;
+
+  // ans Ende scrollen, wenn eine neue Aufnahme dazukommt
+  useEffect(() => {
+    document.querySelectorAll('.dh-sheet-scroll').forEach((el) => { (el as HTMLElement).scrollTop = el.scrollHeight; });
+  }, [s.allThrows.length]);
+
+  type Col = { k: 'scored' | 'rest' | 'dart'; p?: number };
+  // 2 Spieler → Dart-Zähler mittig (echter n01-Look); mehr Spieler → Dart-Spalte links, dann je Spieler Score/Rest.
+  const columns: Col[] = two
+    ? [{ k: 'scored', p: 0 }, { k: 'rest', p: 0 }, { k: 'dart' }, { k: 'scored', p: 1 }, { k: 'rest', p: 1 }]
+    : [{ k: 'dart' }, ...players.flatMap((_, pi) => [{ k: 'scored', p: pi } as Col, { k: 'rest', p: pi } as Col])];
+  const gridCols = two ? '1fr 1fr 54px 1fr 1fr' : `54px ${players.map(() => '1fr 1fr').join(' ')}`;
+
+  // Ton-Markierung: 180 = gold gefüllt, 140–179 = Akzent-Ring, 100–139 = dezenter Ring (wie n01s Kringel).
+  const scoredInner = (v: string | number, bust: boolean) => {
+    if (bust || typeof v !== 'number') return <span style={{ color: '#E0594B', fontWeight: 800 }}>BUST</span>;
+    let wrap: React.CSSProperties | null = null;
+    if (v >= 180) wrap = { background: '#F2B829', color: '#1a1206', border: '1.5px solid #F2B829' };
+    else if (v >= 140) wrap = { border: `1.6px solid ${accent}`, color: accent };
+    else if (v >= 100) wrap = { border: '1.5px solid var(--border-strong)', color: 'var(--text)' };
+    if (wrap) return <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 34, padding: '2px 9px', borderRadius: 999, fontWeight: 800, ...wrap }}>{v}</span>;
+    return <span>{v}</span>;
+  };
+
+  const cellBase: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', fontFamily: 'var(--font-num)', fontSize: 'clamp(13px,2vh,18px)', fontWeight: 700, padding: '5px 12px', minWidth: 0, borderBottom: '1px solid var(--hairline)' };
+  const dartCellBase: React.CSSProperties = { ...cellBase, justifyContent: 'center', color: 'var(--text-5)', fontSize: 'clamp(10px,1.4vh,12px)', padding: '5px 4px', background: 'color-mix(in srgb, var(--border) 45%, transparent)' };
+
+  const dataRow = (i: number) => columns.map((col, ci) => {
+    if (col.k === 'dart') return <div key={`${i}-${ci}`} style={dartCellBase}>{(i + 1) * 3}</div>;
+    const row = perRows[col.p!][i];
+    if (col.k === 'scored') return <div key={`${i}-${ci}`} style={cellBase}>{row ? scoredInner(row.scored, row.bust) : ''}</div>;
+    return <div key={`${i}-${ci}`} style={{ ...cellBase, color: row?.checkout ? accent : 'var(--text-3)', fontWeight: row?.checkout ? 800 : 700 }}>{row ? row.rest : ''}</div>;
+  });
+
+  return (
+    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', border: '1px solid var(--border-2)', borderRadius: 16, background: 'var(--surface-2)', overflow: 'hidden' }}>
+      {/* Spaltenköpfe */}
+      <div style={{ display: 'grid', gridTemplateColumns: gridCols, borderBottom: '1px solid var(--border-2)', background: 'var(--surface-3)', flexShrink: 0 }}>
+        {columns.map((col, ci) => (
+          <div key={ci} style={{ padding: '7px 12px', textAlign: col.k === 'dart' ? 'center' : 'right', fontSize: 9, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--text-5)' }}>
+            {col.k === 'dart' ? 'Darts' : col.k === 'scored' ? 'Score' : 'Rest'}
+          </div>
+        ))}
+      </div>
+      {/* Aufschrieb */}
+      <div className="dh-sheet-scroll" style={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'grid', gridTemplateColumns: gridCols, alignContent: 'start' }}>
+        {/* Startzeile: Startscore in der Rest-Spalte */}
+        {columns.map((col, ci) => (
+          <div key={`s${ci}`} style={col.k === 'rest' ? { ...cellBase, color: 'var(--text-2)', fontWeight: 800 } : (col.k === 'dart' ? dartCellBase : cellBase)}>
+            {col.k === 'rest' ? start : (col.k === 'dart' ? 0 : '')}
+          </div>
+        ))}
+        {/* Aufnahmen */}
+        {Array.from({ length: maxR }).map((_, i) => dataRow(i))}
+        {/* Cursor-Zeile: aktuelle Eingabe des Spielers am Wurf (gelb hervorgehoben) */}
+        {!over && columns.map((col, ci) => {
+          const active = col.p === curIdx;
+          if (col.k === 'scored') return <div key={`p${ci}`} style={{ ...cellBase, borderBottom: 'none', background: active ? 'rgba(242,184,41,.16)' : 'transparent', color: active ? 'var(--text)' : 'var(--text-5)', fontWeight: 800 }}>{active ? (inputDisplay || <span style={{ color: 'var(--text-5)' }}>·</span>) : ''}</div>;
+          return <div key={`p${ci}`} style={{ ...(col.k === 'dart' ? dartCellBase : cellBase), borderBottom: 'none', background: col.k === 'dart' ? undefined : 'transparent' }} />;
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Statistik-Box für den Aufschrieb-Modus: dieselben Kennzahlen wie in der großen-Zahl-Ansicht
+// (Ø 3-Dart, First 9, Letzter, 180·140+, CO %, HF), je Spieler nebeneinander. Über den
+// „Statistik-Box"-Schalter (showStats) an-/abwählbar – identisch zur bisherigen Handhabung.
+function SheetStats() {
+  const s = useStore();
+  const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
+  const cfg = s.settings;
+  return (
+    <div style={{ flexShrink: 0, display: 'flex', gap: 12 }}>
+      {s.gamePlayers.map((p) => {
+        const lt = lastThrow(slice, p.id);
+        const fs = finishStats(slice, p.id);
+        return (
+          <div key={p.id} style={{ flex: 1, display: 'flex', gap: 1, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-2)', background: 'var(--border)' }}>
+            {[['Ø 3-Dart', average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['Letzter', lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
+              <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '8px 3px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, textAlign: 'center', minWidth: 0 }}>
+                <div style={{ fontSize: Math.round(9 * cfg.statsSize / 100), color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
+                <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(13 * cfg.statsSize / 100), fontWeight: 700, lineHeight: 1 }}>{val}</div>
+              </div>
+            ))}
+          </div>
+        );
+      })}
     </div>
   );
 }

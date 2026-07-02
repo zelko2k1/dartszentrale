@@ -215,6 +215,9 @@ export interface Settings {
   deckSize: number;
   legSize: number;
   boardScale: number;   // Board-Gesamtskalierung (%) – nur Desktop/Board, Default 100
+  // Counter-Darstellung (gerätelokal): 'big' = große Restscore-Zahl (Standard), 'sheet' = voller
+  // Aufschrieb im n01-Stil (beide Spieler, Dart-Zähler, Ton-Markierung) unter einer kompakten Score-Leiste.
+  counterView?: 'big' | 'sheet';
   // live (effective) colours for the current mode …
   legColor: string | null;
   scoreColor: string | null;

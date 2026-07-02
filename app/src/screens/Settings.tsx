@@ -467,6 +467,9 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
       <Row label="Modus" sub="Dunkles oder helles Erscheinungsbild · gilt nur für dieses Gerät">
         {ed('mode', seg('mode', [{ label: 'Dunkel', val: 'dark' }, { label: 'Hell', val: 'light' }]))}
       </Row>
+      <Row label="Counter-Ansicht" sub="„Große Zahl“ = riesiger Restscore (fernlesbar). „Aufschrieb“ = zusätzlich der volle Score-Sheet im n01-Stil (Score/Rest je Aufnahme, Dart-Zähler, Ton-Markierung) darunter · gilt nur für dieses Gerät · nicht am Handy">
+        {ed('counterView', seg('counterView', [{ label: 'Große Zahl', val: 'big' }, { label: 'Aufschrieb', val: 'sheet' }]))}
+      </Row>
       <Row label={`Akzentfarbe (${cfg.mode === 'light' ? 'Hell' : 'Dunkel'})`} sub="Buttons & Highlights. Wird je Modus (Hell/Dunkel) separat gespeichert.">{ed('accent', colorPicker('accent', false))}</Row>
       <Row label={`Score-Farbe (${cfg.mode === 'light' ? 'Hell' : 'Dunkel'})`} sub="Restpunktzahl des aktiven Spielers · „Standard“ folgt dem Akzent · je Modus separat">{ed('scoreColor', colorPicker('scoreColor', true))}</Row>
       <Row label={`Leg-Anzeige-Farbe (${cfg.mode === 'light' ? 'Hell' : 'Dunkel'})`} sub="Leg-Punkte & Satz-Badge · „Standard“ folgt dem Akzent · je Modus separat">{ed('legColor', colorPicker('legColor', true))}</Row>
