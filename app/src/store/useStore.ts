@@ -549,6 +549,7 @@ export const useStore = create<AppState>((set, get) => ({
           const next = { ...st.settings };
           if (pub.clubName !== undefined) next.clubName = pub.clubName;
           if (pub.clubLogo !== undefined) next.clubLogo = pub.clubLogo;
+          if (pub.loginLogoSize !== undefined) next.loginLogoSize = pub.loginLogoSize;
           if (pub.impressum !== undefined) next.impressum = pub.impressum;
           if (pub.datenschutz !== undefined) next.datenschutz = pub.datenschutz;
           return { settings: next };

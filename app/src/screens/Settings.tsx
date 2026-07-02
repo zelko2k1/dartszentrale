@@ -370,6 +370,19 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
           {logoErr && <span style={{ fontSize: 12, color: '#E0594B', fontWeight: 600 }}>{logoErr}</span>}
         </div>
       </Row>
+      <Row label="Logo-Größe auf der Startseite" sub="Größe des Logos auf der Anmeldeseite (in Pixel). Das kleine Logo in der App-Kopfzeile bleibt unverändert." top>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
+          <div style={{ width: 88, height: 88, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {cfg.clubLogo
+              ? <img src={cfg.clubLogo} alt="Vorschau" style={{ width: Math.min(88, cfg.loginLogoSize ?? 88), height: Math.min(88, cfg.loginLogoSize ?? 88), borderRadius: Math.round((cfg.loginLogoSize ?? 88) * 0.2), objectFit: 'contain' }} />
+              : <IconUsers size={Math.min(88, cfg.loginLogoSize ?? 88)} />}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <input type="range" min={48} max={160} step={4} value={cfg.loginLogoSize ?? 88} onChange={(e) => set('loginLogoSize', Number(e.target.value))} style={{ width: 200, accentColor: accent, cursor: 'pointer' }} />
+            <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, color: 'var(--text-2)', minWidth: 52, textAlign: 'right' }}>{cfg.loginLogoSize ?? 88} px</span>
+          </div>
+        </div>
+      </Row>
     </Section>
   );
 

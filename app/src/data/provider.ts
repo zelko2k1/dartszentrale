@@ -27,6 +27,7 @@ export interface Snapshot {
 export interface PublicConfig {
   clubName?: string;
   clubLogo?: string | null;
+  loginLogoSize?: number;
   impressum?: string;
   datenschutz?: string;
 }

@@ -24,9 +24,12 @@ export function Login() {
     }}>
       <div style={{ width: 420, maxWidth: '94vw' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, marginBottom: 26 }}>
-          {s.settings.clubLogo
-            ? <img src={s.settings.clubLogo} alt="Vereinslogo" style={{ width: 52, height: 52, borderRadius: 12, objectFit: 'contain' }} />
-            : <Logo size={52} />}
+          {(() => {
+            const logoSize = s.settings.loginLogoSize ?? 88;
+            return s.settings.clubLogo
+              ? <img src={s.settings.clubLogo} alt="Vereinslogo" style={{ width: logoSize, height: logoSize, borderRadius: Math.round(logoSize * 0.2), objectFit: 'contain' }} />
+              : <Logo size={logoSize} />;
+          })()}
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>DartsZentrale</div>
             <div style={{ fontSize: 13, color: 'var(--text-4)', fontWeight: 600, marginTop: 2 }}>{s.settings.clubName ? `${s.settings.clubName} · ` : ''}Vereinsverwaltung</div>

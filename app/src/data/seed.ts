@@ -48,6 +48,7 @@ export const DEFAULT_SETTINGS: Settings = {
   pbUrl: '',
   clubName: '',
   clubLogo: null,
+  loginLogoSize: 88,
   impressum: '',
   datenschutz: '',
   dashRange: 'month',

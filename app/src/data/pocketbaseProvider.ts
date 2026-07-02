@@ -122,9 +122,11 @@ export class PocketBaseProvider implements DataProvider {
   async loadPublicConfig(): Promise<PublicConfig | null> {
     try {
       const cfg = await this.pb.collection('club_config').getFirstListItem('', { requestKey: null });
+      const central = (cfg.settings as Partial<Settings> | null) || {};
       return {
         clubName: cfg.clubName as string | undefined,
         clubLogo: (cfg.clubLogo as string | null) || null,
+        loginLogoSize: central.loginLogoSize,
         impressum: (cfg.impressum as string | undefined) ?? '',
         datenschutz: (cfg.datenschutz as string | undefined) ?? '',
       };

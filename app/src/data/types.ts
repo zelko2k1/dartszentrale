@@ -241,6 +241,9 @@ export interface Settings {
   pbUrl?: string;
   clubName: string;
   clubLogo: string | null;
+  // Anzeigegröße des Logos auf der Anmelde-/Startseite in Pixel (zentral, vom Admin). Das kleine
+  // Logo in der App-Kopfzeile/Seitenleiste bleibt davon unberührt. Fehlt = Standard (88).
+  loginLogoSize?: number;
   // Rechtstexte für den öffentlichen (Internet-)Betrieb: Impressum (§5 DDG) und Datenschutzerklärung
   // (Art. 13 DSGVO). Zentral in club_config, vom Admin gepflegt, auf der Login-Seite ohne Anmeldung
   // erreichbar. Leer = kein Link (lokaler/LAN-Betrieb braucht i. d. R. keins).
