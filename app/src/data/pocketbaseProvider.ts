@@ -5,7 +5,7 @@
 // Einzige Sonderfälle: 'accounts' → PB-Auth-Collection 'users' (Passwort), sowie
 // user_prefs (persönliche Einstellungen) und club_config (Vereinsname/Logo).
 import PocketBase from 'pocketbase';
-import type { DataProvider, Snapshot, CollectionName, AuthUser, ProviderRecord } from './provider';
+import type { DataProvider, Snapshot, CollectionName, AuthUser, ProviderRecord, PublicConfig } from './provider';
 import type { Settings, Role } from './types';
 import { DEVICE_LOCAL_SETTING_KEYS } from './constants';
 
@@ -66,12 +66,16 @@ export class PocketBaseProvider implements DataProvider {
     // damit alle Nutzer/Board-Rechner identisch aussehen. Nur Admins dürfen schreiben (API-Rule).
     let clubName: string | undefined;
     let clubLogo: string | null = null;
+    let impressum: string | undefined;
+    let datenschutz: string | undefined;
     let settings: Partial<Settings> | null = null;
     try {
       const cfg = await this.pb.collection('club_config').getFirstListItem('', opt);
       this.clubCfgId = cfg.id;
       clubName = cfg.clubName as string | undefined;
       clubLogo = (cfg.clubLogo as string | null) || null;
+      impressum = (cfg.impressum as string | undefined) ?? '';
+      datenschutz = (cfg.datenschutz as string | undefined) ?? '';
       settings = (cfg.settings as Partial<Settings> | null) || null;
     } catch { /* noch keine club_config */ }
 
@@ -107,7 +111,24 @@ export class PocketBaseProvider implements DataProvider {
       trainingPlays,
       clubName,
       clubLogo,
+      impressum,
+      datenschutz,
     };
+  }
+
+  // Öffentlich (ohne Anmeldung) lesbare Vereins-Infos für die Login-Seite: Name, Logo und die
+  // Rechtstexte (Impressum/Datenschutz). Setzt die club_config-Leseregel auf öffentlich voraus
+  // (provision.mjs) — sonst 403 → null, und die Login-Seite fällt auf den lokalen Cache zurück.
+  async loadPublicConfig(): Promise<PublicConfig | null> {
+    try {
+      const cfg = await this.pb.collection('club_config').getFirstListItem('', { requestKey: null });
+      return {
+        clubName: cfg.clubName as string | undefined,
+        clubLogo: (cfg.clubLogo as string | null) || null,
+        impressum: (cfg.impressum as string | undefined) ?? '',
+        datenschutz: (cfg.datenschutz as string | undefined) ?? '',
+      };
+    } catch { return null; }
   }
 
   async createRecord(coll: CollectionName, record: ProviderRecord): Promise<ProviderRecord> {
@@ -152,7 +173,11 @@ export class PocketBaseProvider implements DataProvider {
     // Gerätelokale Schlüssel nicht zentral speichern (Verbindung, Modus, Geräteart, Ansichtsfilter).
     const central: Partial<Settings> = { ...settings };
     for (const k of DEVICE_LOCAL_SETTING_KEYS) delete central[k];
-    const cfg = { clubName: settings.clubName, clubLogo: settings.clubLogo, settings: central as unknown };
+    const cfg = {
+      clubName: settings.clubName, clubLogo: settings.clubLogo,
+      impressum: settings.impressum ?? '', datenschutz: settings.datenschutz ?? '',
+      settings: central as unknown,
+    };
     try {
       if (this.clubCfgId) await this.pb.collection('club_config').update(this.clubCfgId, cfg);
       else { const rec = await this.pb.collection('club_config').create(cfg); this.clubCfgId = rec.id; }

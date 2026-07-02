@@ -373,6 +373,23 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     </Section>
   );
 
+  // Rechtstexte für den Internet-Betrieb (Impressum §5 DDG, Datenschutz Art. 13 DSGVO). Zentral,
+  // nur Admin. Werden auf der Login-Seite ohne Anmeldung verlinkt (siehe screens/Login.tsx).
+  const legalArea: CSSProperties = { width: '100%', minHeight: 160, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '11px 13px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, lineHeight: 1.55, outline: 'none', resize: 'vertical' };
+  const rechtlichesNode = (
+    <Section title="Rechtliches">
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '12px 16px', margin: '4px 0 6px', fontSize: 13, color: 'var(--text-3)', lineHeight: 1.5 }}>
+        <span>Wird die App öffentlich im Internet betrieben, sind in Deutschland ein <b>Impressum</b> (§ 5 DDG) und eine <b>Datenschutzerklärung</b> (Art. 13 DSGVO) Pflicht. Verantwortlich ist der Betreiber (Verein). Beide Texte erscheinen als Links auf der Anmelde­seite und sind dort ohne Anmeldung erreichbar. Im lokalen/LAN-Betrieb kannst du sie leer lassen.</span>
+      </div>
+      <Row label="Impressum" sub="Anbieterkennzeichnung nach § 5 DDG: Name/Verein, Anschrift, Vertretungsberechtigte(r), Kontakt (E-Mail), ggf. Registereintrag." top>
+        <textarea value={cfg.impressum ?? ''} onChange={(e) => set('impressum', e.target.value)} placeholder={'z. B.\nDartverein Musterstadt e. V.\nMusterstraße 1, 12345 Musterstadt\nVertreten durch: Max Mustermann (1. Vorsitzender)\nE-Mail: vorstand@musterverein.de\nVereinsregister: Amtsgericht Musterstadt, VR 1234'} style={{ ...legalArea, width: 420, maxWidth: '100%' }} />
+      </Row>
+      <Row label="Datenschutzerklärung" sub="Informationen nach Art. 13 DSGVO: Verantwortlicher, verarbeitete Daten (Namen, Spielstatistiken …), Zweck, Speicherdauer und Betroffenenrechte." top>
+        <textarea value={cfg.datenschutz ?? ''} onChange={(e) => set('datenschutz', e.target.value)} placeholder={'Kurzfassung oder Volltext deiner Datenschutzerklärung …'} style={{ ...legalArea, width: 420, maxWidth: '100%' }} />
+      </Row>
+    </Section>
+  );
+
   const benutzerNode = (
     <Section title="Benutzer & Rechte">
       <button className="dh-row" onClick={() => s.go('users')} style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: '16px 0', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--text)' }}>
@@ -632,6 +649,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     { key: 'modus', label: 'Nutzungsart', show: p.manageClub, node: dim(modusNode) },
     { key: 'verein', label: 'Verein', show: isVerein && p.manageClub, node: vereinNode },
     { key: 'saison', label: 'Saison', show: isVerein && p.manageClub, node: saisonNode },
+    { key: 'rechtliches', label: 'Rechtliches', show: isVerein && p.manageClub, node: rechtlichesNode },
     { key: 'benutzer', label: 'Benutzer & Rechte', show: isVerein && p.manageUsers, node: benutzerNode },
     { key: 'board', label: 'Board-Rechner', show: isVerein && p.manageUsers, node: boardNode },
     { key: 'konto', label: 'Mein Konto', show: isVerein && !!s.session && !s.accounts.find((a) => a.id === s.session)?.isBoard, node: kontoNode },

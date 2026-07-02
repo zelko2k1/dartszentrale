@@ -19,6 +19,16 @@ export interface Snapshot {
   trainingPlays: Record<string, number>;
   clubName?: string;
   clubLogo?: string | null;
+  impressum?: string;
+  datenschutz?: string;
+}
+
+/** Öffentlich (ohne Anmeldung) lesbare Vereins-Infos — für die Login-Seite im Internet-Betrieb. */
+export interface PublicConfig {
+  clubName?: string;
+  clubLogo?: string | null;
+  impressum?: string;
+  datenschutz?: string;
 }
 
 export interface AuthUser { id: string; name: string; role: Role; active: boolean; }
@@ -32,6 +42,10 @@ export interface DataProvider {
 
   /** Initialer Vollabruf aller Collections. */
   loadAll(): Promise<Snapshot>;
+
+  /** Öffentliche Vereins-Infos ohne Anmeldung (Name, Logo, Impressum, Datenschutz) für die Login-Seite.
+   *  Lokal / bei fehlender Freigabe: null. */
+  loadPublicConfig(): Promise<PublicConfig | null>;
 
   // ── pro Datensatz (Mutationen) ──
   createRecord(coll: CollectionName, record: ProviderRecord): Promise<ProviderRecord>;

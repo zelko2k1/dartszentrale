@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { ROLES } from '../data/constants';
 import { Avatar } from '../components/Avatar';
@@ -7,6 +8,13 @@ export function Login() {
   const s = useStore();
   // Schnellanmeldung per Konto-Klick gibt es nur im lokalen Demo-Modus (kein echtes Passwort).
   const demos = s.pbMode ? [] : s.accounts.filter((a) => a.active);
+  // Rechtstexte (Impressum §5 DDG, Datenschutz Art. 13 DSGVO) — ohne Anmeldung erreichbar, Pflicht
+  // im öffentlichen Internet-Betrieb. Nur verlinkt, wenn der Verein den jeweiligen Text gepflegt hat.
+  const impressum = (s.settings.impressum || '').trim();
+  const datenschutz = (s.settings.datenschutz || '').trim();
+  const [legal, setLegal] = useState<null | 'impressum' | 'datenschutz'>(null);
+  const legalTitle = legal === 'impressum' ? 'Impressum' : 'Datenschutzerklärung';
+  const legalText = legal === 'impressum' ? impressum : datenschutz;
 
   return (
     <div style={{
@@ -74,7 +82,29 @@ export function Login() {
           </div>
           {!s.pbMode && <div style={{ fontSize: 11, color: 'var(--text-5)', textAlign: 'center', marginTop: 14 }}>Demo-Modus — Passwort beliebig, oder Demo-Konto wählen.</div>}
         </div>
+
+        {(impressum || datenschutz) && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, marginTop: 18, fontSize: 12 }}>
+            {impressum && <button onClick={() => setLegal('impressum')} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, padding: 4, textDecoration: 'underline' }}>Impressum</button>}
+            {impressum && datenschutz && <span style={{ color: 'var(--text-5)' }}>·</span>}
+            {datenschutz && <button onClick={() => setLegal('datenschutz')} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, padding: 4, textDecoration: 'underline' }}>Datenschutz</button>}
+          </div>
+        )}
       </div>
+
+      {legal && (
+        <div onClick={() => setLegal(null)} style={{ position: 'fixed', inset: 0, zIndex: 90, background: 'rgba(6,8,10,.72)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, overflow: 'auto' }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: 620, maxWidth: '94vw', maxHeight: '86vh', display: 'flex', flexDirection: 'column', background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, boxShadow: '0 30px 70px rgba(0,0,0,.55)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '20px 24px', borderBottom: '1px solid var(--hairline)' }}>
+              <div style={{ fontSize: 18, fontWeight: 800 }}>{legalTitle}</div>
+              <button onClick={() => setLegal(null)} aria-label="Schließen" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, color: 'var(--text-3)', cursor: 'pointer' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
+            <div style={{ padding: '20px 24px', overflowY: 'auto', whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.6, color: 'var(--text-2)' }}>{legalText}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

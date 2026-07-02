@@ -241,6 +241,11 @@ export interface Settings {
   pbUrl?: string;
   clubName: string;
   clubLogo: string | null;
+  // Rechtstexte für den öffentlichen (Internet-)Betrieb: Impressum (§5 DDG) und Datenschutzerklärung
+  // (Art. 13 DSGVO). Zentral in club_config, vom Admin gepflegt, auf der Login-Seite ohne Anmeldung
+  // erreichbar. Leer = kein Link (lokaler/LAN-Betrieb braucht i. d. R. keins).
+  impressum?: string;
+  datenschutz?: string;
   dashRange?: 'week' | 'month' | 'all';
   // Sortier-Reihenfolge der Personen-Listen (Spieler, Benutzer, Kader):
   // 'first' = Vorname Nachname, 'last' = Nachname Vorname.

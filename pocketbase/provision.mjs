@@ -37,6 +37,8 @@ const json = (name) => ({ name, type: 'json', required: false, maxSize: 2000000 
 const photo = () => ({ name: 'photo', type: 'file', required: false, maxSelect: 1, maxSize: 5242880, mimeTypes: ['image/png', 'image/jpeg', 'image/webp'], thumbs: ['160x160'] });
 
 // --- Rules ---
+// Leerer String = öffentlich (auch ohne Anmeldung). null hingegen = nur Superuser.
+const PUBLIC = '';
 const LOGGED_IN = '@request.auth.id != ""';
 const ADMIN = '@request.auth.role = "admin"';
 const ADMIN_OR_CAPTAIN = '@request.auth.role = "admin" || @request.auth.role = "captain"';
@@ -103,10 +105,17 @@ const BASE_COLLECTIONS = [
     ],
   },
   {
+    // Öffentlich LESBAR (PUBLIC), damit die Login-Seite Vereinsname/Logo sowie die Rechtstexte
+    // (Impressum §5 DDG, Datenschutz Art. 13 DSGVO) auch ohne Anmeldung zeigen kann. Enthält nur
+    // Anzeige-/Konfig-Werte, nichts Personenbezogenes. Schreiben bleibt Admin-only.
     name: 'club_config', type: 'base',
-    listRule: LOGGED_IN, viewRule: LOGGED_IN,
+    listRule: PUBLIC, viewRule: PUBLIC,
     createRule: ADMIN, updateRule: ADMIN, deleteRule: ADMIN,
-    fields: [text('clubName'), text('clubLogo', { max: 2000000 })],
+    fields: [
+      text('clubName'), text('clubLogo', { max: 2000000 }),
+      text('impressum', { max: 50000 }), text('datenschutz', { max: 50000 }),
+      json('settings'),
+    ],
   },
 ];
 

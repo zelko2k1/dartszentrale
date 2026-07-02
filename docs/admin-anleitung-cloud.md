@@ -287,6 +287,33 @@ Separat (liegt außerhalb des Servers) bleiben nur zwei Schritte:
 
 Deine Daten (`pocketbase/pb_data/`) bleiben dabei unberührt.
 
+## Rechtliches — Impressum & Datenschutz (Pflicht im Internet-Betrieb)
+
+Sobald die App öffentlich unter `https://app.<domain>` erreichbar ist, gilt in Deutschland:
+
+- **Impressum** nach **§ 5 DDG** (früher § 5 TMG) — Anbieterkennzeichnung (Name/Verein, Anschrift,
+  Vertretungsberechtigte(r), Kontakt, ggf. Registereintrag).
+- **Datenschutzerklärung** nach **Art. 13 DSGVO** — die App verarbeitet personenbezogene Daten
+  (Namen, E-Mails, Spielstatistiken).
+
+**Verantwortlich ist der Betreiber (der Verein), nicht die Software.** So trägst du beides ein:
+
+1. Als **Administrator** anmelden → **Einstellungen → Rechtliches** → Impressum und
+   Datenschutzerklärung eintragen (wird zentral gespeichert).
+2. Beide Texte erscheinen dann als Links **auf der Anmeldeseite** und sind dort **ohne Anmeldung**
+   erreichbar (so verlangt es das Gesetz).
+
+> Damit die Texte auch für Besucher sichtbar sind, die noch nie angemeldet waren, ist die
+> `club_config`-Collection **öffentlich lesbar** (nur Anzeige-/Konfig-Werte, nichts
+> Personenbezogenes; Schreiben bleibt Admin-only). Dazu **einmal** `provision.mjs` neu ausführen:
+> ```bash
+> cd pocketbase && PB_URL=http://127.0.0.1:8090 PB_SU_EMAIL=<su-mail> PB_SU_PASS=<su-pw> node provision.mjs
+> ```
+> Bestehende Installationen aus der Zeit davor müssen diesen Schritt einmal nachholen.
+
+Kein eigener Rechtstext zur Hand? Für Vereine gibt es kostenlose Impressum-/Datenschutz-Generatoren
+(z. B. von Datenschutz-Aufsichtsbehörden oder Vereinsverbänden) — Angaben immer selbst prüfen.
+
 ## Sicherheit (vor dem Online-Gang)
 
 - **Nur 80/443 öffentlich.** 8090/4173 binden bereits nur auf `127.0.0.1` — zusätzlich in der

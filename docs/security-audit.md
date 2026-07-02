@@ -16,8 +16,11 @@ vor dem Go-live zu schließen (siehe Checkliste unten).
 - **Keine Privilege-Escalation:** `users` create/update = admin-only → niemand kann sich selbst auf
   `role=admin` setzen. `pb_hooks/board_role_guard.pb.js` erzwingt zusätzlich `isBoard ⇔ role=board`.
 - **`pb_hooks/set_password.pb.js`** erzwingt serverseitig `isAdmin || isSelf` (kein fremder Reset).
-- **Keine** öffentliche Collection, **keine** Selbstregistrierung; E-Mails durch `emailVisibility=false`
-  geschützt.
+- **Nur eine** öffentlich lesbare Collection: `club_config` (Vereinsname, Logo, Impressum,
+  Datenschutz, UI-Konfig) — **bewusst** public read, damit die Login-Seite Rechtstexte auch ohne
+  Anmeldung zeigt (§ 5 DDG / Art. 13 DSGVO). Enthält **nichts Personenbezogenes**; Schreiben bleibt
+  **admin-only**. Alle übrigen Collections erfordern Login; **keine** Selbstregistrierung; E-Mails
+  durch `emailVisibility=false` geschützt.
 - **Frontend:** keine XSS-Sinks (`eval`/`innerHTML`/`dangerouslySetInnerHTML` = 0), **keine** Secrets
   im Bundle (`VITE_PB_URL` ist nur die Backend-URL), `clubLogo` (data-URL in `img src`) ungefährlich,
   Local-Mode-Allrechte sicher (kein Server beteiligt).

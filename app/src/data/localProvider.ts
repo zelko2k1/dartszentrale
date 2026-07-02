@@ -40,8 +40,13 @@ export class LocalProvider implements DataProvider {
       trainingPlays: read(STORAGE_KEYS.trainplays, {}),
       clubName: settings?.clubName,
       clubLogo: settings?.clubLogo ?? null,
+      impressum: settings?.impressum,
+      datenschutz: settings?.datenschutz,
     };
   }
+
+  // Lokal gibt es keinen öffentlichen Server — die Login-Seite erscheint hier ohnehin nicht.
+  async loadPublicConfig(): Promise<null> { return null; }
 
   async createRecord(coll: CollectionName, record: ProviderRecord): Promise<ProviderRecord> {
     const key = COLL_KEY[coll];

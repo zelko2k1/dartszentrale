@@ -48,6 +48,8 @@ export const DEFAULT_SETTINGS: Settings = {
   pbUrl: '',
   clubName: '',
   clubLogo: null,
+  impressum: '',
+  datenschutz: '',
   dashRange: 'month',
   nameOrder: 'first',
   kiosk: false,

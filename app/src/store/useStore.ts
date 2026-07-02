@@ -540,6 +540,20 @@ export const useStore = create<AppState>((set, get) => ({
       if (restored && !restored.active) { void provider.logout(); }
       const session = restored && restored.active ? restored.id : null;
       set({ settings, provider, pbMode: true, session, needsModeChoice: firstRun });
+      // Öffentliche Vereins-Infos (Name, Logo, Impressum, Datenschutz) unabhängig vom Login laden,
+      // damit die Login-Seite sie auch beim allerersten Aufruf (noch nicht angemeldet) zeigt. Für
+      // angemeldete Nutzer setzt applySnapshot dieselben Werte autoritativ nach (kein Konflikt).
+      void provider.loadPublicConfig().then((pub) => {
+        if (!pub) return;
+        set((st) => {
+          const next = { ...st.settings };
+          if (pub.clubName !== undefined) next.clubName = pub.clubName;
+          if (pub.clubLogo !== undefined) next.clubLogo = pub.clubLogo;
+          if (pub.impressum !== undefined) next.impressum = pub.impressum;
+          if (pub.datenschutz !== undefined) next.datenschutz = pub.datenschutz;
+          return { settings: next };
+        });
+      }).catch(() => { /* Freigabe fehlt → Login-Seite nutzt den lokalen Cache */ });
       void applySnapshot(get, set);
       // Realtime: bei serverseitigen Änderungen neu laden (entprellt) → mehrere Geräte bleiben synchron.
       provider.subscribe(() => scheduleReload(get, set));
@@ -2025,6 +2039,8 @@ async function applySnapshot(get: () => AppState, set: SetFn) {
     normalizeShortcuts(merged); // club_config könnte noch die alten Strg+Alt-Standards tragen → hier heben
     if (snap.clubName !== undefined) merged.clubName = snap.clubName;
     if (snap.clubLogo !== undefined) merged.clubLogo = snap.clubLogo;
+    if (snap.impressum !== undefined) merged.impressum = snap.impressum;
+    if (snap.datenschutz !== undefined) merged.datenschutz = snap.datenschutz;
     // Saisons (server-seitig per provision.mjs angelegt/backfilled). Aktive Saison bestimmen; die betrachtete
     // Saison über einen Reload hinweg beibehalten, solange sie noch existiert (sonst auf aktive zurückfallen).
     const seasons = snap.seasons || [];
