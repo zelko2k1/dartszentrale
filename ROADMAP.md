@@ -1,6 +1,6 @@
 # Roadmap → Version 1.0
 
-> Stand: **2026-06-29**. Zentrale Sammelstelle für alle offenen Punkte bis zum 1.0-Release.
+> Stand: **2026-07-03**. Zentrale Sammelstelle für alle offenen Punkte bis zum 1.0-Release.
 > Quelle der Einzelpläne: [`docs/plan-2fa.md`](docs/plan-2fa.md), [`docs/plan-saison.md`](docs/plan-saison.md),
 > [`docs/security-audit.md`](docs/security-audit.md), [`DATA_MODEL.md`](DATA_MODEL.md).
 >
@@ -54,17 +54,27 @@ Aus [`DATA_MODEL.md §5`](DATA_MODEL.md). Manche Punkte sind evtl. schon erledig
 
 - [?] 🧑‍💻 Echtes Login + Passwort-Reset — laut DATA_MODEL-Kopf bereits umgesetzt → nur verifizieren
 - [ ] 🧑‍💻 **Einladungs-Flow per E-Mail** (im Prototyp nur angedeutet)
-- [ ] 🧑‍💻 **Match ↔ Player per ID statt Name** — Matches referenzieren Spieler über Namen; auf `Player.id` umstellen
+- [x] 🧑‍💻 **Match ↔ Player per ID statt Name** — Aggregation läuft über `playerId`/`winnerId` (Fallback Name), `saveMatch` stempelt beide (Commit `f93b0a5`).
 - [ ] 🧑‍💻 **Referenzielle Integrität** beim Löschen eines Spielers (Kapitän / im Kader / mit Account verknüpft) definieren
 - [ ] 🧑‍💻 **Liga-Team ↔ Vereins-Team:** `own`-Team einer Liga auf echtes `Team` zeigen lassen (statt Freitext)
 - [ ] 🧑‍💻 **Ergebnis ↔ Counter:** Ligaspiel über den Darts Counter spielen, Ergebnis automatisch in die `Fixture`
 - [ ] 🧑‍💻 **Tabellen-/Punktregeln** bestätigen (aktuell 2/1/0; reale Ligaregeln können abweichen)
-- [ ] 🧑‍💻 **Hartkodierte Demo-Statistik** (60+/100+/140+/180, Form-Verlauf) durch echte Daten ersetzen ([`DATA_MODEL.md §7`](DATA_MODEL.md))
+- [x] 🧑‍💻 **Statistik aus echten Daten** (60+/100+/140+/180, Form-Verlauf) — war bereits real; jetzt robust (playerId), vollständig (Checkout-%/First-9) und tief (Verlauf/Rekorde/Saison-Filter/CSV) — Commits `f93b0a5`, `30fd1aa` ([`DATA_MODEL.md §7`](DATA_MODEL.md))
 
 ---
 
 ## 4. Offen / später (nach 1.0 oder optional)
 
+- [ ] 🧑‍💻 **Autodarts-Integration (optional, opt-in, nach 1.0)** — am autodarts-Board im LAN die
+      Wurf-Events (WebSocket des Board-Managers) lesen und im **Board-/Kiosk-Modus** die Aufnahme
+      automatisch eintragen (Würfe sammeln bis zum **Takeout-Event** → 3-Dart-Score übernehmen); Tastatur
+      bleibt Override. **Killer-Feature (nur wir, nicht autodarts.io): Ergebnis fließt automatisch in den
+      Ligaspielbericht/Fixture.** Ansatz: **lokaler Board-WebSocket (LAN-first) > Cloud-API**;
+      Community-Browser-Extension (Autodarts Tools) nur als Notlösung. **Spike-first** (~1 Tag: Wurf-/
+      Takeout-Events gegen ein echtes Board lesen & loggen) → dann MVP (~2–3 Tage). **Testhardware
+      vorhanden** (Betreiber spielt selbst autodarts). ⚠ Nutzen nur für autodarts-Vereine; die lokale
+      Board-API ist community-dokumentiert und ändert sich mit autodarts-Versionen → **laufender
+      Wartungsaufwand**. Als „drittes Scoreboard" lohnt es nicht — nur wegen der Liga-Ergebnis-Kopplung.
 - [ ] Mobile-Layout für die Verwaltung (Counter ist bereits tablettauglich)
 - [ ] Backup-Retention + Größen-Monitoring von `pb_data` (größerer Hebel als Saison-Auslagern)
 - [ ] Optional: Grafana/Postgres-Export aus dem Saison-Bundle für freie Auswertung
