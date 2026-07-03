@@ -43,6 +43,7 @@ const LS = {
   device: 'darts_device', // gerätelokale Konfiguration (Board-/Kiosk-Modus, Board-Bezeichnung)
   devui: 'darts_devui', // gerätelokale UI-Vorlieben (Eingabe-Modus, Hell/Dunkel, Größen) – Mischbetrieb PC/Tablet
   setupDefaults: 'darts_setup_defaults', // gerätelokale Spieltyp-Voreinstellung (Startpunkte/Format/Out) – bleibt bis zur nächsten Änderung
+  lastBackup: 'darts_last_backup', // Zeitstempel des letzten automatischen Backups (für Nachhol-Logik + Statusanzeige)
 };
 
 // Spieltyp-Felder, die als Voreinstellung gerätelokal erhalten bleiben (Spieler/Gäste/Liga NICHT).
@@ -260,6 +261,9 @@ export interface AppState {
   // Daten-Backup
   exportData: () => string;
   importData: (json: string) => boolean;
+  lastBackupAt: string | null;   // ISO-Zeit des letzten automatischen Backups (serve-dist.mjs)
+  backupMsg: string | null;      // Statuszeile fürs Auto-Backup (Erfolg/Fehler)
+  runBackup: () => Promise<void>; // Daten-Export an den lokalen Server posten → Datei in backup/
 
   // player modal
   openAddPlayer: () => void;
@@ -426,6 +430,8 @@ export const useStore = create<AppState>((set, get) => ({
 
   provider: createProvider('local'),
   pbMode: false,
+  lastBackupAt: null,
+  backupMsg: null,
   needsModeChoice: false,
   kioskUnlocked: false,
   syncError: null,
@@ -604,7 +610,7 @@ export const useStore = create<AppState>((set, get) => ({
     if (mig.mc) { matches = mig.matches; write(LS.matches, matches); }
     const seasonSnapshots = read<SeasonSnapshot[]>(LS.seasonSnapshots, []);
 
-    set({ settings, provider, pbMode: false, players, teams, accounts, leagues, events, matches, seasons, seasonSnapshots, activeSeasonId, viewSeasonId: activeSeasonId, session, trainingPlays, needsModeChoice: firstRun });
+    set({ settings, provider, pbMode: false, players, teams, accounts, leagues, events, matches, seasons, seasonSnapshots, activeSeasonId, viewSeasonId: activeSeasonId, session, trainingPlays, lastBackupAt: read<string | null>(LS.lastBackup, null), needsModeChoice: firstRun });
   },
 
   reloadFromProvider() { void applySnapshot(get, set); },
@@ -879,6 +885,25 @@ export const useStore = create<AppState>((set, get) => ({
       });
       return any;
     } catch { return false; }
+  },
+  async runBackup() {
+    // Auto-Backup nur im Lokalmodus (im Verein liegen die Daten auf dem Server). Postet den vollen
+    // localStorage-Export an serve-dist.mjs, der ihn als Datei in backup/ ablegt. Ohne serve-dist
+    // (z. B. vite dev/nginx) schlägt der Aufruf fehl → nur Statusmeldung, keine Datei.
+    if (get().pbMode) return;
+    try {
+      const res = await fetch('/admin/backup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: get().exportData() });
+      const data = await res.json().catch(() => ({} as Record<string, unknown>));
+      if (res.ok && (data as { ok?: boolean }).ok) {
+        const at = (data as { at?: string }).at || new Date().toISOString();
+        write(LS.lastBackup, at);
+        set({ lastBackupAt: at, backupMsg: `Gesichert: ${(data as { file?: string }).file || 'backup'}` });
+      } else {
+        set({ backupMsg: `Backup fehlgeschlagen (${(data as { error?: string }).error || res.status}).` });
+      }
+    } catch {
+      set({ backupMsg: 'Backup nicht möglich – läuft die App über serve-dist.mjs?' });
+    }
   },
 
   // ── player modal ──

@@ -27,6 +27,8 @@ export const DEVICE_LOCAL_SETTING_KEYS: (keyof Settings)[] = [
   // Geräteklassen-Mischbetrieb (PC ↔ Tablet): Eingabe-Modus, Hell/Dunkel, alle Größen & die
   // Counter-Ansicht (große Zahl vs. Aufschrieb) pro Gerät.
   'mode', 'scoreArea', 'scoreScale', 'statsSize', 'headerSize', 'deckSize', 'legSize', 'boardScale', 'counterView',
+  // Auto-Backup ist pro Installation (dieses Gerät liefert die App via serve-dist aus) → gerätelokal.
+  'autoBackup', 'backupTime',
 ];
 
 // Gerätelokale UI-Vorlieben mit eigener localStorage-Persistenz (LS.devui) – jedes Gerät (PC/Tablet/Board)

@@ -101,6 +101,25 @@ export default function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+  // Auto-Backup (nur Lokalmodus): bei jedem Start (mit Dedupe) + täglich zur eingestellten Uhrzeit.
+  // Verpasste Zeit wird durch das Start-Backup nachgeholt, da eine geschlossene App nicht timern kann.
+  useEffect(() => {
+    if (s.pbMode || !s.settings.autoBackup) return;
+    const time = s.settings.backupTime || '20:00';
+    const last = s.lastBackupAt ? Date.parse(s.lastBackupAt) : 0;
+    if (!last || Date.now() - last > 2 * 60 * 1000) void s.runBackup(); // Start-/Nachhol-Backup
+    let timer = 0;
+    const schedule = () => {
+      const [h, m] = time.split(':').map((x) => parseInt(x, 10));
+      const now = new Date();
+      const next = new Date(now); next.setHours(h || 0, m || 0, 0, 0);
+      if (next.getTime() <= now.getTime()) next.setDate(next.getDate() + 1);
+      timer = window.setTimeout(() => { void s.runBackup(); schedule(); }, next.getTime() - now.getTime());
+    };
+    schedule();
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.pbMode, s.settings.autoBackup, s.settings.backupTime]);
 
   const themeMode = s.settings.mode === 'light' ? 'light' : 'dark';
   const isVerein = s.settings.appMode === 'verein';

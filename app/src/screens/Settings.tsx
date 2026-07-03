@@ -214,7 +214,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `dartszentrale-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `backup-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
       setDataMsg('Backup heruntergeladen.');
@@ -521,8 +521,8 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   );
 
   const datenNode = (
-    <Section title="Daten">
-      <Row label="Sicherung & Wiederherstellung" sub="Alle Daten (Spieler, Spiele, Termine, Einstellungen) als Datei sichern oder zurückspielen. Die Daten liegen sonst nur in diesem Browser.">
+    <Section title="Backup">
+      <Row label="Sichern & Wiederherstellen" sub="Alle Daten (Spieler, Spiele, Termine, Einstellungen) als Datei sichern oder zurückspielen. Die Daten liegen sonst nur in diesem Browser.">
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
           <button className="dh-btn" onClick={doExport} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Exportieren</button>
           <label className="dh-btn" style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -532,6 +532,28 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         </div>
       </Row>
       {dataMsg && <div style={{ fontSize: 12, color: 'var(--text-4)', padding: '2px 2px 6px' }}>{dataMsg}</div>}
+      {cfg.appMode !== 'verein' && (
+        <>
+          <Row label="Automatisches Backup" sub="Sichert bei jedem Start und täglich zur Uhrzeit automatisch in den festen Ordner backup/ neben der App. Funktioniert nur, wenn die App über serve-dist.mjs läuft (lokaler/Board-Betrieb). Der Ordner ist nicht wählbar.">
+            <button onClick={() => set('autoBackup', !cfg.autoBackup)} role="switch" aria-checked={!!cfg.autoBackup}
+              style={{ flexShrink: 0, width: 46, height: 26, borderRadius: 999, background: cfg.autoBackup ? accent : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative', cursor: 'pointer', padding: 0 }}>
+              <span style={{ position: 'absolute', top: 2, left: cfg.autoBackup ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff' }} />
+            </button>
+          </Row>
+          {cfg.autoBackup && (
+            <Row label="Uhrzeit" sub="Tageszeit fürs tägliche Backup. War die App zu dem Zeitpunkt aus, wird beim nächsten Start nachgeholt.">
+              <input type="time" value={cfg.backupTime || '20:00'} onChange={(e) => set('backupTime', e.target.value)}
+                style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '9px 12px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 700, outline: 'none' }} />
+            </Row>
+          )}
+          {cfg.autoBackup && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', fontSize: 12, color: 'var(--text-4)', padding: '2px 2px 6px' }}>
+              <span>{s.lastBackupAt ? `Zuletzt gesichert: ${new Date(s.lastBackupAt).toLocaleString()}` : 'Noch kein automatisches Backup.'}{s.backupMsg ? ` · ${s.backupMsg}` : ''}</span>
+              <button className="dh-btn" onClick={() => void s.runBackup()} style={{ marginLeft: 'auto', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '7px 13px', borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Jetzt sichern</button>
+            </div>
+          )}
+        </>
+      )}
     </Section>
   );
 

@@ -223,6 +223,11 @@ export interface Settings {
   // Counter-Darstellung (gerätelokal): 'big' = große Restscore-Zahl (Standard), 'sheet' = voller
   // Aufschrieb im n01-Stil (beide Spieler, Dart-Zähler, Ton-Markierung) unter einer kompakten Score-Leiste.
   counterView?: 'big' | 'sheet';
+  // Automatisches Backup (nur Lokalmodus, nur wenn die App über serve-dist.mjs läuft): bei jedem Start
+  // + täglich zur eingestellten Uhrzeit (mit Nachholen beim nächsten Start). Ablage im festen Ordner
+  // backup/ neben der App (Ordner nicht wählbar). Gerätelokal.
+  autoBackup?: boolean;
+  backupTime?: string;   // 'HH:MM' – Uhrzeit für das tägliche Backup
   // live (effective) colours for the current mode …
   legColor: string | null;
   scoreColor: string | null;

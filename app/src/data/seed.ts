@@ -30,6 +30,8 @@ export const DEFAULT_SETTINGS: Settings = {
   boardScale: 100,
   boardMatchWindow: 1,
   counterView: 'big',
+  autoBackup: false,
+  backupTime: '20:00',
   legColor: null,
   scoreColor: null,
   accentDark: '#2BD377',

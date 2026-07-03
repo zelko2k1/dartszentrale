@@ -7,7 +7,7 @@
 //
 // Voraussetzung: vorher `npm run build` (erzeugt app/dist/).
 import { createServer } from 'node:http';
-import { readFile, stat, mkdir, rm, rename, readdir } from 'node:fs/promises';
+import { readFile, writeFile, stat, mkdir, rm, rename, readdir } from 'node:fs/promises';
 import { join, normalize, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFile } from 'node:child_process';
@@ -16,6 +16,8 @@ const APP_DIR = fileURLToPath(new URL('.', import.meta.url));   // …/app/
 const ROOT = join(APP_DIR, 'dist');                            // ausgeliefertes Frontend
 const INSTALL_ROOT = join(APP_DIR, '..');                      // Projektordner (enthält app/, Skripte …)
 const UPDATES_DIR = join(INSTALL_ROOT, 'updates');             // hier legt der Admin das Update-Paket ab
+const BACKUP_DIR = join(INSTALL_ROOT, 'backup');               // fester Backup-Ordner unterhalb der App
+const BACKUP_KEEP = 30;                                        // wie viele Backup-Dateien aufbewahrt werden
 const TOKEN_FILE = join(INSTALL_ROOT, '.update-token');        // Freigabe-Token für Nicht-localhost (Vereinsmodus)
 // tar kann .tar.gz überall (GNU-tar auf Linux, bsdtar auf macOS/Windows). Auf Windows gezielt das
 // System-tar (bsdtar) ansprechen – nicht ein evtl. im PATH liegendes MSYS/GNU-tar, das Laufwerks-
@@ -98,6 +100,49 @@ async function installPackage(file) {
 }
 function sendJson(res, code, obj) { res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(obj)); }
 
+// ── Automatisches Backup (Lokal-/Board-Betrieb) ──────────────────────────────────────────────────
+// Der Browser postet den Daten-Export (localStorage) hierher; der Server legt ihn als Datei in
+// backup/ ab (fester Ordner unterhalb der App). So überlebt die Sicherung ein „Websitedaten löschen".
+function readBody(req, maxBytes = 25 * 1024 * 1024) {
+  return new Promise((resolve, reject) => {
+    let size = 0; const chunks = [];
+    req.on('data', (c) => { size += c.length; if (size > maxBytes) { reject(new Error('Body zu groß')); req.destroy(); return; } chunks.push(c); });
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    req.on('error', reject);
+  });
+}
+function backupStamp() {
+  const d = new Date(); const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+}
+async function pruneBackups() {
+  let files;
+  try { files = (await readdir(BACKUP_DIR)).filter((f) => /^backup-.*\.json$/i.test(f)); } catch { return; }
+  if (files.length <= BACKUP_KEEP) return;
+  const withM = await Promise.all(files.map(async (f) => ({ f, m: (await stat(join(BACKUP_DIR, f))).mtimeMs })));
+  withM.sort((a, b) => b.m - a.m); // neueste zuerst → älteste (ab Index KEEP) löschen
+  for (const { f } of withM.slice(BACKUP_KEEP)) await rm(join(BACKUP_DIR, f), { force: true }).catch(() => {});
+}
+async function writeBackup(text) {
+  try { JSON.parse(text); } catch { throw new Error('kein gültiges JSON'); } // nur wohlgeformte Sicherungen schreiben
+  await mkdir(BACKUP_DIR, { recursive: true });
+  const name = `backup-${backupStamp()}.json`;
+  await writeFile(join(BACKUP_DIR, name), text, 'utf8');
+  await pruneBackups();
+  return name;
+}
+async function backupStatus() {
+  let files = [];
+  try { files = (await readdir(BACKUP_DIR)).filter((f) => /^backup-.*\.json$/i.test(f)); } catch { /* kein Ordner */ }
+  let lastAt = null, last = null;
+  if (files.length) {
+    const withM = await Promise.all(files.map(async (f) => ({ f, m: (await stat(join(BACKUP_DIR, f))).mtimeMs })));
+    withM.sort((a, b) => b.m - a.m);
+    last = withM[0].f; lastAt = new Date(withM[0].m).toISOString();
+  }
+  return { count: files.length, last, lastAt, dir: BACKUP_DIR };
+}
+
 const server = createServer(async (req, res) => {
   try {
     const urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
@@ -117,6 +162,22 @@ const server = createServer(async (req, res) => {
         if (!file) { sendJson(res, 404, { ok: false, error: 'Kein Update-Paket in updates/ gefunden' }); return; }
         try { await installPackage(file); sendJson(res, 200, { ok: true, version: await currentVersion() }); }
         catch (e) { sendJson(res, 500, { ok: false, error: String((e && e.message) || e) }); }
+        return;
+      }
+      sendJson(res, 405, { error: 'Method Not Allowed' }); return;
+    }
+
+    // ── Backup-API: Status (GET) + Sicherung ablegen (POST) ──
+    if (urlPath === '/admin/backup' || urlPath === '/admin/backup/status') {
+      if (!(await updateAllowed(req))) { sendJson(res, 403, { error: 'nicht erlaubt – nur am Board (127.0.0.1) oder mit gültigem Update-Token' }); return; }
+      if (urlPath === '/admin/backup/status' && req.method === 'GET') { sendJson(res, 200, await backupStatus()); return; }
+      if (urlPath === '/admin/backup' && req.method === 'POST') {
+        try {
+          const body = await readBody(req);
+          if (!body || body.trim().length < 2) { sendJson(res, 400, { ok: false, error: 'leerer Body' }); return; }
+          const file = await writeBackup(body);
+          sendJson(res, 200, { ok: true, file, at: new Date().toISOString(), dir: BACKUP_DIR });
+        } catch (e) { sendJson(res, 500, { ok: false, error: String((e && e.message) || e) }); }
         return;
       }
       sendJson(res, 405, { error: 'Method Not Allowed' }); return;
@@ -166,6 +227,8 @@ if (!(await fileInfo(join(ROOT, 'index.html')))) {
 
 // updates/-Ordner sicherstellen (der Admin legt hier das Update-Paket ab; Pfad zeigt auch die App an).
 await mkdir(UPDATES_DIR, { recursive: true }).catch(() => {});
+// backup/-Ordner sicherstellen (hier landen die automatischen Sicherungen aus dem Lokalmodus).
+await mkdir(BACKUP_DIR, { recursive: true }).catch(() => {});
 
 server.listen(PORT, HOST, () => {
   const shown = HOST === '0.0.0.0' ? '127.0.0.1' : HOST;
