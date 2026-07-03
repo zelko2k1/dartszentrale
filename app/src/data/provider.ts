@@ -65,6 +65,14 @@ export interface DataProvider {
   login(email: string, password: string): Promise<AuthUser>;
   logout(): Promise<void>;
   currentUser(): AuthUser | null;
+  /**
+   * Login-Versuch für den Kiosk-Ausstieg: meldet den Nutzer an, gibt ihn aber nur zurück, wenn seine
+   * Rolle in `allowedRoles` liegt und das Konto aktiv ist. Andernfalls (falsche Rolle/inaktiv oder
+   * falsches Passwort) wird die zuvor bestehende (Board-)Sitzung wiederhergestellt und `null` geliefert.
+   * Bewusst NICHT über die vorab geladene Kontoliste geprüft: ein Board-Konto sieht fremde E-Mails nur
+   * bei `emailVisibility=true` — der authentifizierte Record selbst trägt Rolle/Status aber immer.
+   */
+  kioskExitAuth(email: string, password: string, allowedRoles: Role[]): Promise<AuthUser | null>;
   // Passwort setzen (privilegierter Endpunkt /api/set-password): Admin → jedes Konto, Nutzer → sein eigenes.
   setPassword(userId: string, newPassword: string): Promise<void>;
 

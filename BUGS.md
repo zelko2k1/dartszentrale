@@ -24,6 +24,15 @@
 
 ## Behoben
 
+_Behoben am 2026-07-03 — im lokalen Verein-Test verifiziert._
+
+### [x] #7 — Kiosk: Admin kann sich zum Verlassen des Board-Modus nicht anmelden
+- **Prio:** 🔴 · **Bereich:** Kiosk-Ausstieg (Board-Modus) · **Gerät:** Board-Monitor
+- **Symptom:** Nach Eingabe korrekter Admin-Zugangsdaten im Exit-Dialog passiert nichts / „Anmeldung fehlgeschlagen".
+- **Ursache:** `kioskExitLogin` prüfte die Rolle **vorab per E-Mail-Vergleich** gegen die geladene Kontoliste. Ein Board-Konto sieht fremde E-Mails aber nur bei `emailVisibility=true` (bei manuell im PB-Panel angelegten Admins default **aus**) → Konto wird nicht gefunden → Abbruch **vor** jedem Login-Versuch.
+- **Fix:** Neue Provider-Methode `kioskExitAuth(email, pw, allowedRoles)` — meldet an, prüft die Rolle am echten authentifizierten Record und stellt die Board-Sitzung bei Ablehnung/falschem Passwort wieder her. `app/src/data/provider.ts`, `pocketbaseProvider.ts`, `localProvider.ts`, `store/useStore.ts`.
+- **Verifiziert:** lokaler Verein-Test T1–T5 (Admin mit versteckter E-Mail, Admin/Kapitän mit sichtbarer E-Mail, Spieler-Ablehnung + Board-Sitzung erhalten, falsches Passwort).
+
 _Behoben am 2026-07-02 — verifiziert in der Preview._
 
 ### [x] #1 — Startbildschirm: „PocketBase" → „Datenbank"

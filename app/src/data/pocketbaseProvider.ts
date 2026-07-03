@@ -198,6 +198,23 @@ export class PocketBaseProvider implements DataProvider {
     const auth = await this.pb.collection('users').authWithPassword(email, password);
     return toAuthUser(auth.record as unknown as ProviderRecord)!;
   }
+  async kioskExitAuth(email: string, password: string, allowedRoles: Role[]): Promise<AuthUser | null> {
+    // Board-Sitzung merken, damit sie bei Ablehnung unverändert weiterläuft.
+    const prevToken = this.pb.authStore.token;
+    const prevRecord = this.pb.authStore.record;
+    const restore = () => { if (prevToken) this.pb.authStore.save(prevToken, prevRecord); };
+    try {
+      const auth = await this.pb.collection('users').authWithPassword(email, password);
+      const user = toAuthUser(auth.record as unknown as ProviderRecord);
+      if (user && user.active && allowedRoles.includes(user.role)) return user; // Session bleibt der neue Nutzer.
+      restore(); // Falsche Rolle / inaktiv → zurück zur Board-Sitzung.
+      return null;
+    } catch {
+      // Fehlgeschlagener authWithPassword lässt den authStore unberührt; zur Sicherheit dennoch wiederherstellen.
+      restore();
+      return null;
+    }
+  }
   async logout(): Promise<void> { this.pb.authStore.clear(); this.prefsId = null; }
   currentUser(): AuthUser | null { return toAuthUser(this.pb.authStore.record as unknown as ProviderRecord | null); }
   // Privilegierter Endpunkt (pb_hooks/set_password.pb.js): umgeht die oldPassword/Superuser-Pflicht der Records-API.

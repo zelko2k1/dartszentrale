@@ -827,26 +827,25 @@ export const useStore = create<AppState>((set, get) => ({
   // Meldet den angegebenen Account an (ersetzt das Board-Konto) und gibt die volle App frei.
   async kioskExitLogin(email, pw) {
     const st = get();
-    // Rolle VORAB aus den geladenen Konten prüfen (kein Login-Versuch bei falscher Rolle), damit die
-    // bestehende Board-Sitzung unangetastet bleibt. Nur Admin/Kapitän dürfen den Board-Modus verlassen.
-    const acc = st.accounts.find((a) => a.email.trim().toLowerCase() === email.trim().toLowerCase());
-    if (!acc || !acc.active || (acc.role !== 'admin' && acc.role !== 'captain')) return false;
+    // Nur Admin/Kapitän dürfen den Board-Modus verlassen.
     if (!st.pbMode) {
-      // Lokaler/Demo-Pfad: Passwort beliebig.
+      // Lokaler/Demo-Pfad: keine echte Anmeldung → Rolle aus der lokalen Kontoliste prüfen (E-Mails hier
+      // immer sichtbar), Passwort beliebig.
+      const acc = st.accounts.find((a) => a.email.trim().toLowerCase() === email.trim().toLowerCase());
+      if (!acc || !acc.active || (acc.role !== 'admin' && acc.role !== 'captain')) return false;
       write(LS.session, acc.id);
       set({ session: acc.id, kioskUnlocked: true, screen: 'dashboard' });
       return true;
     }
-    try {
-      // Ein fehlgeschlagener authWithPassword lässt die aktuelle Sitzung im PB-Client unberührt.
-      const user = await st.provider.login(email.trim(), pw);
-      if (!user.active) return false;
-      set({ session: user.id, kioskUnlocked: true, screen: 'dashboard' });
-      void applySnapshot(get, set);
-      return true;
-    } catch {
-      return false;
-    }
+    // Server-Pfad: NICHT auf die vorab geladene E-Mail verlassen — ein Board-Konto sieht fremde E-Mails nur
+    // bei emailVisibility=true (bei manuell angelegten Admins default aus), sonst wäre acc leer und der Login
+    // scheiterte grundlos. Der Provider meldet an, prüft die Rolle am echten Record und stellt die
+    // Board-Sitzung bei Ablehnung/Fehler wieder her.
+    const user = await st.provider.kioskExitAuth(email.trim(), pw, ['admin', 'captain']);
+    if (!user) return false;
+    set({ session: user.id, kioskUnlocked: true, screen: 'dashboard' });
+    void applySnapshot(get, set);
+    return true;
   },
   // „Zurück zum Board": Kapitäns-/Admin-Sitzung beenden → der Board-Rechner meldet sich wieder mit seinem Board-Konto an.
   relockKiosk() { get().logout(); set({ kioskUnlocked: false, screen: 'setup' }); },

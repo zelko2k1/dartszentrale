@@ -80,6 +80,8 @@ export class LocalProvider implements DataProvider {
 
   // Lokal: keine echte Anmeldung — voller Zugriff.
   async login(): Promise<AuthUser> { return { id: 'local', name: 'Lokal', role: 'admin', active: true }; }
+  // Lokal gibt es keine echte Anmeldung — der Kiosk-Ausstieg wird im Store vor dem Provider abgehandelt.
+  async kioskExitAuth(): Promise<AuthUser | null> { return { id: 'local', name: 'Lokal', role: 'admin', active: true }; }
   async logout(): Promise<void> { /* noop */ }
   currentUser(): AuthUser | null { return null; }
   async setPassword(): Promise<void> { /* lokaler Modus hat keine Anmeldung/Passwörter */ }
