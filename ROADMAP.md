@@ -65,16 +65,18 @@ Aus [`DATA_MODEL.md §5`](DATA_MODEL.md). Manche Punkte sind evtl. schon erledig
 
 ## 4. Offen / später (nach 1.0 oder optional)
 
-- [ ] 🧑‍💻 **Autodarts-Integration (optional, opt-in, nach 1.0)** — am autodarts-Board im LAN die
-      Wurf-Events (WebSocket des Board-Managers) lesen und im **Board-/Kiosk-Modus** die Aufnahme
-      automatisch eintragen (Würfe sammeln bis zum **Takeout-Event** → 3-Dart-Score übernehmen); Tastatur
-      bleibt Override. **Killer-Feature (nur wir, nicht autodarts.io): Ergebnis fließt automatisch in den
-      Ligaspielbericht/Fixture.** Ansatz: **lokaler Board-WebSocket (LAN-first) > Cloud-API**;
-      Community-Browser-Extension (Autodarts Tools) nur als Notlösung. **Spike-first** (~1 Tag: Wurf-/
-      Takeout-Events gegen ein echtes Board lesen & loggen) → dann MVP (~2–3 Tage). **Testhardware
-      vorhanden** (Betreiber spielt selbst autodarts). ⚠ Nutzen nur für autodarts-Vereine; die lokale
-      Board-API ist community-dokumentiert und ändert sich mit autodarts-Versionen → **laufender
-      Wartungsaufwand**. Als „drittes Scoreboard" lohnt es nicht — nur wegen der Liga-Ergebnis-Kopplung.
+- [ ] 🧑‍💻 **Autodarts-Integration (optional, opt-in, nach 1.0)** — autodarts ist **hybrid**: Erkennung
+      läuft lokal auf dem autodarts-PC, Plattform/Spiel über die Cloud (`autodarts.io`). Wir **konsumieren
+      nur** die Wurf-/**Takeout**-Events und tragen im **Board-/Kiosk-Modus** die Aufnahme automatisch ein
+      (Würfe sammeln bis Takeout → 3-Dart-Score); Tastatur bleibt Override. **Killer-Feature (nur wir, nicht
+      autodarts.io): Ergebnis fließt automatisch in den Ligaspielbericht/Fixture.** Ansatz: **Cloud-API
+      (`autodarts.io`, wss+Token) zuerst** — passt zum cloud-basierten Betrieb und kein Mixed-Content-Problem;
+      **lokale Board-API optional** (offline, falls die autodarts-Version sie exponiert). Community-Browser-
+      Extension (Autodarts Tools) nur als Notlösung. **Spike-first:** Events erst per Browser-DevTools
+      (Network→WS) beobachten, dann Node-Logger (`spikes/autodarts/`) → MVP (~2–3 Tage). **Testhardware
+      vorhanden** (Betreiber spielt selbst autodarts). ⚠ Nutzen nur für autodarts-Vereine; die API ist
+      community-dokumentiert und ändert sich mit autodarts-Versionen → **laufender Wartungsaufwand**. Als
+      „drittes Scoreboard" lohnt es nicht — nur wegen der Liga-Ergebnis-Kopplung.
 - [ ] Mobile-Layout für die Verwaltung (Counter ist bereits tablettauglich)
 - [ ] Backup-Retention + Größen-Monitoring von `pb_data` (größerer Hebel als Saison-Auslagern)
 - [ ] Optional: Grafana/Postgres-Export aus dem Saison-Bundle für freie Auswertung
