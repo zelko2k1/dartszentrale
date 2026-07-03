@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { useStore } from '../store/useStore';
-import { aggregateFor } from '../store/selectors';
+import { aggregateFor, inSeason } from '../store/selectors';
 import { Avatar } from '../components/Avatar';
 import { IconBack } from '../lib/icons';
 import { useIsPhone } from '../lib/useIsPhone';
@@ -7,9 +8,20 @@ import { useIsPhone } from '../lib/useIsPhone';
 export function PlayerDetail() {
   const s = useStore();
   const isPhone = useIsPhone(); // Hooks vor dem early return aufrufen (rules-of-hooks)
+  const [seasonId, setSeasonId] = useState<string>('all'); // 'all' = alle Saisons (Lebenszeit)
   const player = s.players.find((p) => p.id === s.selectedPlayerId) || s.players[0];
   if (!player) { return <div style={{ padding: '28px 32px' }}>Kein Spieler ausgewählt.</div>; }
-  const agg = aggregateFor(player, s.matches);
+  const scopedMatches = seasonId === 'all' ? s.matches : inSeason(s.matches, seasonId);
+  const agg = aggregateFor(player, scopedMatches);
+  const rec = agg.records;
+  const records: { value: string; label: string; color: string }[] = [
+    { value: rec.bestAvg ? rec.bestAvg.toFixed(1) : '–', label: 'Bester Ø (Spiel)', color: '#2BD377' },
+    { value: rec.bestF9 != null ? rec.bestF9.toFixed(1) : '–', label: 'Bester First-9', color: '#2bd3c0' },
+    { value: rec.bestCo != null ? rec.bestCo + '%' : '–', label: 'Beste Checkout-Quote', color: '#3B9EFF' },
+    { value: rec.best180 ? String(rec.best180) : '–', label: 'Meiste 180 (Spiel)', color: '#E0594B' },
+    { value: rec.best100 ? String(rec.best100) : '–', label: 'Meiste 100+ (Spiel)', color: '#19A463' },
+    { value: rec.longestWinStreak ? String(rec.longestWinStreak) : '–', label: 'Längste Siegesserie', color: '#F2B829' },
+  ];
 
   const stats: { value: string; label: string; color: string }[] = [
     { value: agg.avg ? agg.avg.toFixed(1) : '–', label: 'Ø 3-Dart', color: '#2BD377' },
@@ -31,10 +43,19 @@ export function PlayerDetail() {
 
   return (
     <div style={{ padding: '28px 32px', maxWidth: 1080, margin: '0 auto' }}>
-      <button onClick={() => s.go('players')} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 18, padding: 0 }}>
-        <IconBack size={15} />
-        Alle Spieler
-      </button>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
+        <button onClick={() => s.go('players')} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>
+          <IconBack size={15} />
+          Alle Spieler
+        </button>
+        {s.seasons.length > 0 && (
+          <select value={seasonId} onChange={(e) => setSeasonId(e.target.value)} title="Statistik-Zeitraum"
+            style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '8px 12px', color: 'var(--text)', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', outline: 'none' }}>
+            <option value="all">Alle Saisons</option>
+            {s.seasons.map((se) => <option key={se.id} value={se.id}>{se.name}</option>)}
+          </select>
+        )}
+      </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 24 }}>
         <Avatar photo={player.photo} short={player.short} avi={player.avi} size={78} />
@@ -44,7 +65,7 @@ export function PlayerDetail() {
         </div>
         <div style={{ textAlign: 'center', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 22px' }}>
           <div style={{ fontFamily: 'var(--font-num)', fontSize: 32, fontWeight: 800, color: '#2BD377' }}>{agg.avg ? agg.avg.toFixed(1) : '–'}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>Saison-Ø</div>
+          <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>{seasonId === 'all' ? 'Gesamt-Ø' : (s.seasons.find((x) => x.id === seasonId)?.name || 'Saison-Ø')}</div>
         </div>
       </div>
 
@@ -72,22 +93,35 @@ export function PlayerDetail() {
         </div>
       </div>
 
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '18px 20px', marginBottom: 20 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 14 }}>Rekorde · Bestwerte</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
+          {records.map((r) => (
+            <div key={r.label} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '14px 16px' }}>
+              <div style={{ fontFamily: 'var(--font-num)', fontSize: 24, fontWeight: 800, color: r.color, lineHeight: 1 }}>{r.value}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, marginTop: 5 }}>{r.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: isPhone ? 'minmax(0, 1fr)' : '1.4fr 1fr', gap: 18, alignItems: 'start' }}>
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 22 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-            <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Form · letzte Spiele · Ø 3-Dart</span>
+            <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Form · Verlauf · Ø 3-Dart</span>
+            <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600 }}>{agg.history.length > 24 ? 'letzte 24' : `${agg.history.length} Spiele`}</span>
           </div>
-          {agg.recent.length === 0 ? (
+          {agg.history.length === 0 ? (
             <div style={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-4)', fontSize: 13, border: '1px dashed var(--border-2)', borderRadius: 12 }}>Noch keine gespielten Partien.</div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 140 }}>
-              {agg.recent.slice().reverse().map((f, i, arr) => {
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: agg.history.length > 14 ? 3 : 8, height: 140 }}>
+              {agg.history.slice(-24).map((f, i, arr) => {
                 const vals = arr.map((x) => x.avg); const mx = Math.max(...vals, 1); const mn = Math.min(...vals) - 4;
                 const h = Math.round(((f.avg - mn) / (mx - mn || 1)) * 100);
                 return (
-                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, height: '100%', justifyContent: 'flex-end' }}>
-                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, color: 'var(--text-4)', fontWeight: 700 }}>{f.avg ? f.avg.toFixed(0) : '0'}</span>
-                    <div style={{ width: '100%', height: `${h}%`, borderRadius: '6px 6px 0 0', background: i === arr.length - 1 ? s.settings.accent : 'linear-gradient(180deg,#2a6e4a,#1c4a32)' }} />
+                  <div key={i} title={`${f.avg.toFixed(1)} · ${f.won ? 'S' : 'N'} vs. ${f.opp}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, height: '100%', justifyContent: 'flex-end' }}>
+                    {arr.length <= 14 && <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, color: 'var(--text-4)', fontWeight: 700 }}>{f.avg ? f.avg.toFixed(0) : '0'}</span>}
+                    <div style={{ width: '100%', height: `${h}%`, borderRadius: '4px 4px 0 0', background: i === arr.length - 1 ? s.settings.accent : (f.won ? 'linear-gradient(180deg,#2a6e4a,#1c4a32)' : 'linear-gradient(180deg,#6e2a2a,#4a1c1c)') }} />
                   </div>
                 );
               })}

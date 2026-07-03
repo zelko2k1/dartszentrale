@@ -33,10 +33,30 @@ export function Statistics() {
       rowBg: idx === 0 && agg.games ? 'rgba(242,184,41,.05)' : 'transparent',
     }));
 
+  // Bestenliste als CSV herunterladen (Semikolon-getrennt + BOM → öffnet sauber in Excel).
+  const exportCsv = () => {
+    const head = ['#', 'Spieler', 'Ø 3-Dart', 'First 9', 'Sp', 'S', 'N', '60+', '100+', '140+', '180', 'Short Legs', 'Checkout-%', 'High Finish'];
+    const body = rows.map((l) => [l.rank, l.name, l.avg, l.f9, l.sp, l.sw, l.sn, l.s60, l.s100, l.s140, l.s180, l.shortLegs, l.checkout, l.highFinish]);
+    const esc = (c: string | number) => { const v = String(c); return /[";\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    const csv = [head, ...body].map((r) => r.map(esc).join(';')).join('\r\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `statistik-${(viewSeason?.name || 'bestenliste').replace(/[^0-9a-zA-Z]+/g, '-')}.csv`;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  };
+
   return (
     <div style={{ padding: '28px 32px', maxWidth: 1180, margin: '0 auto' }}>
-      <h1 style={{ margin: '0 0 6px', fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>Statistiken · Bestenliste</h1>
-      <p style={{ margin: '0 0 20px', fontSize: 13, color: 'var(--text-4)' }}>Sp / S / N zählen nur X01-Einzelspiele (1 gegen 1).</p>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
+        <div>
+          <h1 style={{ margin: '0 0 6px', fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>Statistiken · Bestenliste</h1>
+          <p style={{ margin: 0, fontSize: 13, color: 'var(--text-4)' }}>Sp / S / N zählen nur X01-Einzelspiele (1 gegen 1).</p>
+        </div>
+        {rows.length > 0 && (
+          <button onClick={exportCsv} className="dh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>CSV exportieren</button>
+        )}
+      </div>
       {snap && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'rgba(242,184,41,.1)', border: '1px solid rgba(242,184,41,.35)', borderRadius: 11, padding: '10px 14px', marginBottom: 18, fontSize: 13, color: 'var(--text-2)' }}>
           <span style={{ fontSize: 11, fontWeight: 800, color: '#F2B829', background: 'var(--btn)', border: '1px solid var(--border-2)', padding: '2px 8px', borderRadius: 6 }}>AUSGELAGERT</span>

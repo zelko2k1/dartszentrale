@@ -60,17 +60,22 @@ export function computeStandings(league: League | null): StandingRow[] {
 }
 
 // ── Spieler-Aggregation aus gespeicherten Matches ──
+export interface PlayerGame { date: string; opp: string; won: boolean; avg: number; f9: number | null; co: number | null; c180: number; c100: number; darts: number; score: string; }
+export interface PlayerRecords { bestAvg: number; best180: number; best100: number; bestCo: number | null; bestF9: number | null; longestWinStreak: number; }
 export interface PlayerAggregate {
   games: number; wins: number; losses: number; avg: number;
   c180: number; c140: number; c100: number; c60: number; high: number; shortLegs: number;
   co: number | null; f9: number | null; // Ø Checkout-% / First-9; null, wenn kein Match diese Werte trägt (Alt-Matches)
-  recent: { opp: string; won: boolean; avg: number; score: string; date: string }[];
+  history: PlayerGame[];                 // ALLE Partien, chronologisch (alt→neu) – für Verlauf & Rekorde
+  records: PlayerRecords;                // Bestwerte über alle betrachteten Partien
+  recent: { opp: string; won: boolean; avg: number; score: string; date: string }[]; // letzte 6 (neueste zuerst)
 }
 
 // Aggregiert die gespeicherten Matches eines Spielers. Abgleich robust über playerId (Fallback: Name),
 // damit Umbenennungen/Namensgleichheit die Statistik nicht verfälschen.
 export function aggregateFor(player: { id: string; name: string }, matches: Match[]): PlayerAggregate {
-  const out: PlayerAggregate = { games: 0, wins: 0, losses: 0, avg: 0, c180: 0, c140: 0, c100: 0, c60: 0, high: 0, shortLegs: 0, co: null, f9: null, recent: [] };
+  const records: PlayerRecords = { bestAvg: 0, best180: 0, best100: 0, bestCo: null, bestF9: null, longestWinStreak: 0 };
+  const out: PlayerAggregate = { games: 0, wins: 0, losses: 0, avg: 0, c180: 0, c140: 0, c100: 0, c60: 0, high: 0, shortLegs: 0, co: null, f9: null, history: [], records, recent: [] };
   let avgSum = 0, avgN = 0, coSum = 0, coN = 0, f9Sum = 0, f9N = 0;
   matches.forEach((m) => {
     const mine = m.perPlayer.find((p) => (p.playerId ? p.playerId === player.id : p.name === player.name));
@@ -85,12 +90,23 @@ export function aggregateFor(player: { id: string; name: string }, matches: Matc
     if (typeof mine.co === 'number') { coSum += mine.co; coN++; }
     if (typeof mine.f9 === 'number') { f9Sum += mine.f9; f9N++; }
     const opp = m.perPlayer.find((p) => p !== mine);
-    out.recent.push({ opp: opp ? opp.name : '—', won, avg: mine.avg3 || 0, score: m.scoreLine, date: m.date });
+    out.history.push({ date: m.date, opp: opp ? opp.name : '—', won, avg: mine.avg3 || 0, f9: typeof mine.f9 === 'number' ? mine.f9 : null, co: typeof mine.co === 'number' ? mine.co : null, c180: mine.c180 || 0, c100: mine.c100 || 0, darts: mine.darts || 0, score: m.scoreLine });
   });
   out.avg = avgN ? avgSum / avgN : 0;
   out.co = coN ? Math.round(coSum / coN) : null;
   out.f9 = f9N ? f9Sum / f9N : null;
-  out.recent = out.recent.slice(-6).reverse();
+  out.history.sort((a, b) => a.date.localeCompare(b.date)); // chronologisch (alt→neu)
+  // Rekorde + längste Siegesserie aus der chronologischen Historie.
+  let streak = 0;
+  out.history.forEach((g) => {
+    if (g.avg > records.bestAvg) records.bestAvg = g.avg;
+    if (g.c180 > records.best180) records.best180 = g.c180;
+    if (g.c100 > records.best100) records.best100 = g.c100;
+    if (g.co != null && (records.bestCo == null || g.co > records.bestCo)) records.bestCo = g.co;
+    if (g.f9 != null && (records.bestF9 == null || g.f9 > records.bestF9)) records.bestF9 = g.f9;
+    if (g.won) { streak++; if (streak > records.longestWinStreak) records.longestWinStreak = streak; } else streak = 0;
+  });
+  out.recent = out.history.slice(-6).reverse().map((g) => ({ opp: g.opp, won: g.won, avg: g.avg, score: g.score, date: g.date }));
   return out;
 }
 
