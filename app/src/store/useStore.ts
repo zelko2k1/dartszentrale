@@ -189,6 +189,7 @@ export interface AppState {
   pendingStart: boolean;
   bullMode: boolean;
   spinPick: number | null;
+  nextGameDismissed: string | null; // Kiosk: positionId des „Nächstes Spiel"-Overlays, das per „Später" weggeklickt wurde
   abortConfirm: boolean;
   matchSaved: boolean;
   freePlay: boolean;        // laufendes Spiel ist „Freies Spiel" → kein Speichern
@@ -379,7 +380,8 @@ export interface AppState {
   setSetup: <K extends keyof SetupState>(key: K, val: SetupState[K]) => void;
   startGame: () => void;
   quickStart: (preset?: Partial<SetupState>) => void;
-  startBoardGame: (leagueId: string, fixtureId: string, positionId: string, ownPlayerId: string, oppName: string) => void;
+  startBoardGame: (leagueId: string, fixtureId: string, positionId: string, ownPlayerId: string, oppName: string, starterIdx?: number) => void;
+  dismissNextGame: (positionId: string) => void;
   chooseStarter: (idx: number) => void;
   openBullOff: () => void;
   closeBullOff: () => void;
@@ -459,6 +461,7 @@ export const useStore = create<AppState>((set, get) => ({
   pendingStart: false,
   bullMode: false,
   spinPick: null,
+  nextGameDismissed: null,
   abortConfirm: false,
   matchSaved: false,
   freePlay: false,
@@ -848,7 +851,7 @@ export const useStore = create<AppState>((set, get) => ({
     return true;
   },
   // „Zurück zum Board": Kapitäns-/Admin-Sitzung beenden → der Board-Rechner meldet sich wieder mit seinem Board-Konto an.
-  relockKiosk() { get().logout(); set({ kioskUnlocked: false, screen: 'setup' }); },
+  relockKiosk() { get().logout(); set({ kioskUnlocked: false, screen: 'setup', nextGameDismissed: null }); },
 
   // ── Daten-Backup (Export/Import aller gespeicherten Daten) ──
   exportData() {
@@ -1744,12 +1747,16 @@ export const useStore = create<AppState>((set, get) => ({
     get().startGame();
   },
   // Startet ein konkretes Ligaspiel vom Board: eigener Spieler als Slot 0, Gegner als Gast, mit Positions-Verknüpfung.
-  startBoardGame(leagueId, fixtureId, positionId, ownPlayerId, oppName) {
+  startBoardGame(leagueId, fixtureId, positionId, ownPlayerId, oppName, starterIdx) {
     const st = get();
     const idx = st.players.findIndex((p) => p.id === ownPlayerId);
     set((s) => ({ setup: { ...s.setup, mode: 'single', p1: idx < 0 ? 0 : idx, p1Guest: '', p2Guest: (oppName || 'Gast'), freePlay: false, link: { leagueId, fixtureId, positionId } } }));
     get().startGame();
+    // Anwurf schon im „Nächstes Spiel"-Overlay festgelegt (Spieler/Ausbullen) → Starter direkt setzen,
+    // damit das normale WhoStarts-Overlay nicht kurz aufblitzt. Ohne Angabe bleibt es beim WhoStarts-Flow.
+    if (typeof starterIdx === 'number') get().chooseStarter(starterIdx);
   },
+  dismissNextGame(positionId) { set({ nextGameDismissed: positionId }); },
   chooseStarter(idx) { set({ startOffset: idx, pendingStart: false, bullMode: false, spinPick: null }); },
   openBullOff() { set({ bullMode: true }); },
   closeBullOff() { set({ bullMode: false }); },

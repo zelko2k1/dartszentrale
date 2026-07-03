@@ -22,6 +22,7 @@ import { TrainingGame } from './screens/TrainingGame';
 import { Counter } from './screens/Counter';
 import { CounterSetup } from './screens/CounterSetup';
 import { BoardPanel } from './components/BoardPanel';
+import { NextGameOverlay } from './components/NextGameOverlay';
 import { CommandPalette } from './components/CommandPalette';
 import { LiveClock } from './components/LiveClock';
 import { Modals } from './modals/Modals';
@@ -233,7 +234,7 @@ export default function App() {
               {s.screen === 'training' ? <Training />
                 : s.screen === 'trainSetup' ? <TrainingSetup />
                 : s.screen === 'settings' ? <Settings kiosk />
-                : <><BoardPanel /><CounterSetup /></>}
+                : <><BoardPanel /><CounterSetup /><NextGameOverlay /></>}
             </main>
           </div>
         )

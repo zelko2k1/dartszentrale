@@ -1,4 +1,4 @@
-import type { Account, League, LeagueTeam, Settings, Player, Team, EventItem, Match, Fixture, TeamKind, Season } from '../data/types';
+import type { Account, League, LeagueTeam, Settings, Player, Team, EventItem, Match, Fixture, TeamKind, Season, LineupPosition } from '../data/types';
 import { FONTS, THEMES_DARK, THEMES_LIGHT } from '../data/constants';
 import { parseIso } from '../lib/format';
 
@@ -149,7 +149,7 @@ export function teamRoster(team: Team, players: Player[]): Player[] {
 }
 
 // ── Board-Anzeige (Kiosk): welches Spiel ist diesem Board (Board-Nummer) zugeordnet? ──
-export interface BoardGame { positionId: string; label: string; kind: 'single' | 'double'; players: Player[]; }
+export interface BoardGame { positionId: string; label: string; kind: 'single' | 'double'; players: Player[]; result?: LineupPosition['result']; }
 export interface BoardAssignment {
   leagueId: string; fixtureId: string;
   leagueName: string; ownTeamName: string; oppName: string; ownIsHome: boolean; date: string; games: BoardGame[];
@@ -188,7 +188,7 @@ export function boardAssignment(leagues: League[], players: Player[], boardNumbe
   for (const p of fx.lineup!.positions) {
     const label = p.kind === 'single' ? `Einzel ${++sNo}` : `Doppel ${++dNo}`;
     if (boardOf(p.board) === boardNumber && p.playerIds.length) {
-      games.push({ positionId: p.id, label, kind: p.kind, players: p.playerIds.map(pById).filter((x): x is Player => !!x) });
+      games.push({ positionId: p.id, label, kind: p.kind, players: p.playerIds.map(pById).filter((x): x is Player => !!x), result: p.result });
     }
   }
   return { leagueId: lg.id, fixtureId: fx.id, leagueName: lg.name, ownTeamName: own ? own.name : '—', oppName: opp ? opp.name : '—', ownIsHome, date: fx.date || '', games };
