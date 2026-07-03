@@ -97,6 +97,7 @@ export interface LineupModalState {
   rosterIds: string[];                 // Kader-Spieler zur Auswahl (Player.id)
   positions: LineupPosition[];         // frei konfigurierbar, geordnet
   substitutes: string[];               // geordnet → E1, E2, …
+  boardLive: boolean;                  // „An Boards senden": zeigt die Begegnung sofort an den Boards (unabh. Datum)
 }
 export interface ResultRow { id: string; kind: 'single' | 'double'; label: string; playerNames: string[]; won: 'own' | 'opp' | null; ownLegs: string; oppLegs: string; auto: boolean; }
 export interface ResultModalState {
@@ -190,6 +191,7 @@ export interface AppState {
   bullMode: boolean;
   spinPick: number | null;
   nextGameDismissed: string | null; // Kiosk: positionId des „Nächstes Spiel"-Overlays, das per „Später" weggeklickt wurde
+  boardForceShow: boolean;          // Kiosk: „Jetzt anzeigen" am Board → zeigt die zugeordnete Begegnung auch außerhalb des Datumsfensters
   abortConfirm: boolean;
   matchSaved: boolean;
   freePlay: boolean;        // laufendes Spiel ist „Freies Spiel" → kein Speichern
@@ -320,6 +322,7 @@ export interface AppState {
   // Shortcut aus der Mannschafts-Ansicht: wählt die passende Liga und öffnet das Aufstellungs-Modal direkt.
   openLineupAt: (leagueIndex: number, fixtureId: string) => void;
   closeLineup: () => void;
+  toggleLineupBoardLive: () => void;
   addLineupPosition: (kind: 'single' | 'double') => void;
   removeLineupPosition: (id: string) => void;
   moveLineupPosition: (id: string, dir: -1 | 1) => void;
@@ -382,6 +385,7 @@ export interface AppState {
   quickStart: (preset?: Partial<SetupState>) => void;
   startBoardGame: (leagueId: string, fixtureId: string, positionId: string, ownPlayerId: string, oppName: string, starterIdx?: number) => void;
   dismissNextGame: (positionId: string) => void;
+  showBoardNow: () => void;
   chooseStarter: (idx: number) => void;
   openBullOff: () => void;
   closeBullOff: () => void;
@@ -462,6 +466,7 @@ export const useStore = create<AppState>((set, get) => ({
   bullMode: false,
   spinPick: null,
   nextGameDismissed: null,
+  boardForceShow: false,
   abortConfirm: false,
   matchSaved: false,
   freePlay: false,
@@ -851,7 +856,7 @@ export const useStore = create<AppState>((set, get) => ({
     return true;
   },
   // „Zurück zum Board": Kapitäns-/Admin-Sitzung beenden → der Board-Rechner meldet sich wieder mit seinem Board-Konto an.
-  relockKiosk() { get().logout(); set({ kioskUnlocked: false, screen: 'setup', nextGameDismissed: null }); },
+  relockKiosk() { get().logout(); set({ kioskUnlocked: false, screen: 'setup', nextGameDismissed: null, boardForceShow: false }); },
 
   // ── Daten-Backup (Export/Import aller gespeicherten Daten) ──
   exportData() {
@@ -1300,7 +1305,7 @@ export const useStore = create<AppState>((set, get) => ({
       }
     }
     const substitutes = (ex?.substitutes || []).filter((id) => rosterIds.includes(id));
-    set({ lineupModal: { leagueId: lg.id, fixtureId, ownTeamName: ownTeam.name, oppName: opp ? opp.name : '—', ownIsHome, rosterIds, positions, substitutes } });
+    set({ lineupModal: { leagueId: lg.id, fixtureId, ownTeamName: ownTeam.name, oppName: opp ? opp.name : '—', ownIsHome, rosterIds, positions, substitutes, boardLive: !!fx.boardLive } });
   },
   openLineupAt(leagueIndex, fixtureId) {
     const i = Math.max(0, Math.min(get().leagues.length - 1, leagueIndex));
@@ -1308,6 +1313,7 @@ export const useStore = create<AppState>((set, get) => ({
     get().openLineup(fixtureId); // liest selectedLeague (gerade gesetzt) und öffnet das Modal
   },
   closeLineup() { set({ lineupModal: null }); },
+  toggleLineupBoardLive() { set((st) => st.lineupModal ? { lineupModal: { ...st.lineupModal, boardLive: !st.lineupModal.boardLive } } : {}); },
   addLineupPosition(kind) {
     set((st) => st.lineupModal ? { lineupModal: { ...st.lineupModal, positions: [...st.lineupModal.positions, { id: uid(), kind, playerIds: kind === 'double' ? ['', ''] : [''], board: '' }] } } : {});
   },
@@ -1372,7 +1378,7 @@ export const useStore = create<AppState>((set, get) => ({
       let changed: League | null = null;
       const leagues = st.leagues.map((l) => {
         if (l.id !== m.leagueId) return l;
-        changed = { ...l, fixtures: l.fixtures.map((f) => f.id === m.fixtureId ? { ...f, lineup } : f) };
+        changed = { ...l, fixtures: l.fixtures.map((f) => f.id === m.fixtureId ? { ...f, lineup, boardLive: m.boardLive } : f) };
         return changed;
       });
       if (changed) persist(st, set, LS.leagues, leagues, (p) => p.updateRecord('leagues', changed!.id, changed! as unknown as ProviderRecord));
@@ -1757,6 +1763,7 @@ export const useStore = create<AppState>((set, get) => ({
     if (typeof starterIdx === 'number') get().chooseStarter(starterIdx);
   },
   dismissNextGame(positionId) { set({ nextGameDismissed: positionId }); },
+  showBoardNow() { set({ boardForceShow: true, nextGameDismissed: null }); },
   chooseStarter(idx) { set({ startOffset: idx, pendingStart: false, bullMode: false, spinPick: null }); },
   openBullOff() { set({ bullMode: true }); },
   closeBullOff() { set({ bullMode: false }); },

@@ -119,6 +119,7 @@ export interface Fixture {
   hs: number | '';     // Punkte (gewonnene Spiele) Heim → Mannschaftspunkte + Differenz
   as: number | '';     // Punkte Gast
   lineup?: FixtureLineup; // Aufstellung der eigenen Mannschaft (nur bei eigenen Begegnungen)
+  boardLive?: boolean;    // manuell an die Boards „gesendet" → zeigt die Begegnung sofort, unabhängig vom Datumsfenster
 }
 
 // Ein Block des Spielformats, z. B. 8 Einzel oder 4 Doppel. Die REIHENFOLGE der Segmente bildet
@@ -215,6 +216,10 @@ export interface Settings {
   deckSize: number;
   legSize: number;
   boardScale: number;   // Board-Gesamtskalierung (%) – nur Desktop/Board, Default 100
+  // Zentrale (vereinsweite) Einstellung: wie viele Tage um das Begegnungsdatum ein Board die zugeordnete
+  // Begegnung automatisch zeigt. 0 = nur am Spieltag, 1 = ±1 Tag, … Manuell „An Boards senden" (Fixture.boardLive)
+  // überschreibt das Fenster; am Board holt „Jetzt anzeigen" das Spiel ebenfalls außerhalb des Fensters.
+  boardMatchWindow: number;
   // Counter-Darstellung (gerätelokal): 'big' = große Restscore-Zahl (Standard), 'sheet' = voller
   // Aufschrieb im n01-Stil (beide Spieler, Dart-Zähler, Ton-Markierung) unter einer kompakten Score-Leiste.
   counterView?: 'big' | 'sheet';

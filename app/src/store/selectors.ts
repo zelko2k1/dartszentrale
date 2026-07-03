@@ -153,30 +153,42 @@ export interface BoardGame { positionId: string; label: string; kind: 'single' |
 export interface BoardAssignment {
   leagueId: string; fixtureId: string;
   leagueName: string; ownTeamName: string; oppName: string; ownIsHome: boolean; date: string; games: BoardGame[];
+  boardLive: boolean;  // manuell „an die Boards gesendet" (Fixture.boardLive) → überschreibt das Datumsfenster
+  inWindow: boolean;   // Begegnung liegt im Anzeigefenster (±windowDays um heute) ODER ist boardLive
 }
 // Eine Aufstellungsposition zählt zu Board N, wenn ihr board-Feld (Freitext-Nummer) zur Nummer passt.
 const boardOf = (raw?: string): number | null => { const n = parseInt((raw || '').replace(/[^0-9]/g, ''), 10); return isNaN(n) ? null : n; };
 // Sucht über alle Ligen die für dieses Board (Nummer) passende Begegnung (heute/nächste bevorzugt) und liefert
 // die diesem Board zugewiesenen Einzel/Doppel mit den eigenen Spielern. null = keine Nummer / keine Zuordnung.
-export function boardAssignment(leagues: League[], players: Player[], boardNumber: number | null | undefined, todayIsoStr: string): BoardAssignment | null {
+export function boardAssignment(leagues: League[], players: Player[], boardNumber: number | null | undefined, todayIsoStr: string, windowDays = 1): BoardAssignment | null {
   if (boardNumber == null) return null;
   const pById = (id: string) => players.find((p) => p.id === id);
 
-  const cands: { lg: League; fx: Fixture; bucket: number; diff: number }[] = [];
+  const cands: { lg: League; fx: Fixture; live: boolean; inWin: boolean; future: number; diff: number }[] = [];
   for (const lg of leagues) {
     for (const fx of lg.fixtures || []) {
       const own = lg.teams.find((t) => (t.id === fx.homeId || t.id === fx.awayId) && t.own);
       if (!own || !fx.lineup?.positions?.length) continue;
       if (!fx.lineup.positions.some((p) => boardOf(p.board) === boardNumber && p.playerIds.length)) continue;
       const d = fx.date || '';
-      const future = d >= todayIsoStr;
       const diff = d ? Math.abs((+parseIso(d) - +parseIso(todayIsoStr)) / 86400000) : 9999;
-      cands.push({ lg, fx, bucket: future ? 0 : 1, diff });
+      const live = !!fx.boardLive;
+      // Im Fenster, wenn manuell gesendet (live), ohne Datum (nicht filterbar) oder |Tagesabstand| <= windowDays.
+      const inWin = live || !d || diff <= windowDays;
+      cands.push({ lg, fx, live, inWin, future: d >= todayIsoStr ? 0 : 1, diff });
     }
   }
   if (!cands.length) return null;
-  cands.sort((a, b) => a.bucket - b.bucket || a.diff - b.diff);
+  // Priorität: manuell gesendet → im Fenster → kommend → nächstgelegen.
+  cands.sort((a, b) =>
+    (a.live === b.live ? 0 : a.live ? -1 : 1) ||
+    (a.inWin === b.inWin ? 0 : a.inWin ? -1 : 1) ||
+    (a.future - b.future) ||
+    (a.diff - b.diff),
+  );
   const { lg, fx } = cands[0];
+  const boardLive = !!fx.boardLive;
+  const inWindow = boardLive || !fx.date || (Math.abs((+parseIso(fx.date) - +parseIso(todayIsoStr)) / 86400000) <= windowDays);
   const home = lg.teams.find((t) => t.id === fx.homeId) || null;
   const away = lg.teams.find((t) => t.id === fx.awayId) || null;
   const ownIsHome = !!(home && home.own);
@@ -191,7 +203,7 @@ export function boardAssignment(leagues: League[], players: Player[], boardNumbe
       games.push({ positionId: p.id, label, kind: p.kind, players: p.playerIds.map(pById).filter((x): x is Player => !!x), result: p.result });
     }
   }
-  return { leagueId: lg.id, fixtureId: fx.id, leagueName: lg.name, ownTeamName: own ? own.name : '—', oppName: opp ? opp.name : '—', ownIsHome, date: fx.date || '', games };
+  return { leagueId: lg.id, fixtureId: fx.id, leagueName: lg.name, ownTeamName: own ? own.name : '—', oppName: opp ? opp.name : '—', ownIsHome, date: fx.date || '', games, boardLive, inWindow };
 }
 
 // ── Nächster Spieltag der eigenen Mannschaft (Shortcut „Aufstellen" aus der Mannschafts-Ansicht) ──

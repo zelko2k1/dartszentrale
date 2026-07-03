@@ -28,6 +28,7 @@ export const DEFAULT_SETTINGS: Settings = {
   deckSize: 100,
   legSize: 100,
   boardScale: 100,
+  boardMatchWindow: 1,
   counterView: 'big',
   legColor: null,
   scoreColor: null,

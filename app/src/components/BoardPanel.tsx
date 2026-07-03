@@ -10,19 +10,36 @@ export function BoardPanel() {
   const me = s.accounts.find((a) => a.id === s.session) || null;
   const boardNumber = me?.isBoard ? (me.boardNumber ?? null) : null;
   const boardName = boardNumber != null ? `Board ${boardNumber}` : '';
-  const assignment = boardAssignment(s.leagues, s.players, boardNumber, todayIso());
+  const windowDays = s.settings.boardMatchWindow ?? 1;
+  const assignment = boardAssignment(s.leagues, s.players, boardNumber, todayIso(), windowDays);
+  const visible = !!assignment && assignment.games.length > 0 && (assignment.inWindow || s.boardForceShow);
 
   if (boardNumber == null) return null; // nur an einem Board-Konto angemeldet
 
   const wrap = (children: React.ReactNode) => (
     <div style={{ maxWidth: 1000, margin: '0 auto', padding: '20px 32px 0' }}>{children}</div>
   );
+  const boardBadge = <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '3px 9px', borderRadius: 7 }}>{boardName}</span>;
 
   if (!assignment || assignment.games.length === 0) {
     return wrap(
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 10, color: 'var(--text-4)', fontSize: 13 }}>
-        <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '3px 9px', borderRadius: 7 }}>{boardName}</span>
+        {boardBadge}
         Kein Spiel für dieses Board eingetragen.
+      </div>,
+    );
+  }
+
+  // Zugeordnet, aber außerhalb des Anzeige-Zeitfensters (und nicht „an Boards gesendet"/„Jetzt anzeigen").
+  if (!visible) {
+    return wrap(
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', color: 'var(--text-4)', fontSize: 13 }}>
+        {boardBadge}
+        <span>Nächste Begegnung{assignment.date ? ` am ${shortLong(assignment.date)}` : ''} gegen {assignment.oppName} — außerhalb des Anzeige-Zeitfensters.</span>
+        <button onClick={() => s.showBoardNow()} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 7, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '7px 13px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
+          Jetzt anzeigen
+        </button>
       </div>,
     );
   }

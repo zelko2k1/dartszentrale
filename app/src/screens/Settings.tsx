@@ -559,6 +559,9 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
       <Row label="Board-Konten" sub="Jeder Brett-Rechner meldet sich mit seinem eigenen Board-Konto (Board 1…N) an und startet damit automatisch im gesperrten Kiosk. Konten anlegen unter Benutzer → Board-Konten.">
         <button onClick={() => s.go('users')} className="dh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Zu den Benutzern →</button>
       </Row>
+      <Row label="Spiele am Board anzeigen" sub="Wie viele Tage um den Spieltag ein Board die zugeordnete Begegnung automatisch zeigt. Manuell überschreibbar in der Aufstellung (an die Boards senden) oder direkt am Board (jetzt anzeigen). Vereinsweit.">
+        {ed('boardMatchWindow', seg('boardMatchWindow', [{ label: 'Nur Spieltag', val: 0 }, { label: '±1 Tag', val: 1 }, { label: '±2 Tage', val: 2 }, { label: '±3 Tage', val: 3 }], '9px 14px'))}
+      </Row>
     </Section>
   );
 

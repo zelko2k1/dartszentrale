@@ -13,7 +13,8 @@ export function NextGameOverlay() {
   const rootRef = useRef<HTMLDivElement>(null);
   const me = s.accounts.find((a) => a.id === s.session) || null;
   const boardNumber = me?.isBoard ? (me.boardNumber ?? null) : null;
-  const assignment = boardAssignment(s.leagues, s.players, boardNumber, todayIso());
+  const assignment = boardAssignment(s.leagues, s.players, boardNumber, todayIso(), s.settings.boardMatchWindow ?? 1);
+  const visible = !!assignment && (assignment.inWindow || s.boardForceShow); // Datumsfenster bzw. manuell freigegeben
   const games = assignment?.games ?? [];
 
   // „Gespielt" = Ergebnis bestätigt ODER ein verknüpftes Board-Match existiert (fixtureId+positionId).
@@ -21,7 +22,7 @@ export function NextGameOverlay() {
     !!result || s.matches.some((m) => m.fixtureId === assignment?.fixtureId && m.positionId === positionId && (m.perPlayer?.length || 0) >= 2);
   const pending = assignment ? games.filter((g) => !isPlayed(g.positionId, g.result)) : [];
   const game = pending[0] || null; // immer nur das nächste offene Spiel
-  const show = boardNumber != null && !!assignment && !!game && s.nextGameDismissed !== game.positionId;
+  const show = boardNumber != null && visible && !!game && s.nextGameDismissed !== game.positionId;
 
   // Ausbullen-Schritt an die positionId gebunden → bei Spielwechsel automatisch zurück (ohne Reset-Effect).
   const [bullFor, setBullFor] = useState<string | null>(null);

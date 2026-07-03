@@ -132,6 +132,19 @@ export function LineupModal() {
 
       {/* Fester Fuß mit Speichern – immer sichtbar, auch bei vielen Spielen/Ersatzspielern. */}
       <div style={{ flexShrink: 0, borderTop: '1px solid var(--border)', paddingTop: 14, marginTop: 4 }}>
+        <button
+          onClick={() => s.toggleLineupBoardLive()}
+          title="Zeigt diese Begegnung sofort an den zugeordneten Boards – unabhängig vom Datums-Anzeigefenster."
+          style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, background: m.boardLive ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--btn)', border: `1px solid ${m.boardLive ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 11, padding: '10px 14px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', boxSizing: 'border-box' }}
+        >
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: 'block', fontSize: 13, fontWeight: 800, color: 'var(--text)' }}>Jetzt an die Boards senden</span>
+            <span style={{ display: 'block', fontSize: 12, color: 'var(--text-4)', lineHeight: 1.4 }}>Zeigt die Begegnung sofort an den zugeordneten Boards – unabhängig vom Anzeige-Zeitfenster. Wird beim Speichern übernommen.</span>
+          </span>
+          <span style={{ flexShrink: 0, width: 40, height: 22, borderRadius: 999, background: m.boardLive ? 'var(--accent)' : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative' }}>
+            <span style={{ position: 'absolute', top: 2, left: m.boardLive ? 20 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff' }} />
+          </span>
+        </button>
         <ModalFooter onCancel={() => s.closeLineup()} onSave={() => s.saveLineup()} />
       </div>
     </Modal>
