@@ -117,14 +117,17 @@ export function NextGameOverlay() {
                 <kbd style={kbd}>2</kbd>
               </button>
             </div>
-            <button className="dh-hover-border" onClick={() => setBullFor(game.positionId)} style={{ ...starterBtn, marginTop: 12, flexDirection: 'row', justifyContent: 'center', gap: 10 }}>
-              <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#E0594B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#19A463' }} /></span>
-              <span style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Ausbullen</span>
-              <kbd style={kbd}>B</kbd>
-            </button>
-            <button onClick={() => s.dismissNextGame(game.positionId)} style={{ marginTop: 18, background: 'transparent', border: 'none', color: 'rgba(255,255,255,.5)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: 8 }}>
-              Später <kbd style={{ ...kbd, marginLeft: 6 }}>Esc</kbd>
-            </button>
+            <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+              <button className="dh-hover-border" onClick={() => setBullFor(game.positionId)} style={{ ...starterBtn, flexDirection: 'row', justifyContent: 'center', gap: 10 }}>
+                <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#E0594B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#19A463' }} /></span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Ausbullen</span>
+                <kbd style={kbd}>B</kbd>
+              </button>
+              <button className="dh-hover-border" onClick={() => s.dismissNextGame(game.positionId)} style={{ ...starterBtn, flexDirection: 'row', justifyContent: 'center', gap: 10 }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: 'rgba(255,255,255,.7)' }}>Später</span>
+                <kbd style={kbd}>Esc</kbd>
+              </button>
+            </div>
           </>
         ) : (
           <>
