@@ -49,7 +49,7 @@ export function Players() {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
         {players.map((pl) => {
-          const agg = aggregateFor(pl.name, s.matches);
+          const agg = aggregateFor(pl, s.matches);
           const linked = linkedPlayerIds.has(pl.id);
           return (
             <div key={pl.id} className="dh-hover-border" onClick={() => s.openPlayer(pl.id)} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 20, cursor: 'pointer', position: 'relative' }}>

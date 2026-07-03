@@ -63,26 +63,33 @@ export function computeStandings(league: League | null): StandingRow[] {
 export interface PlayerAggregate {
   games: number; wins: number; losses: number; avg: number;
   c180: number; c140: number; c100: number; c60: number; high: number; shortLegs: number;
+  co: number | null; f9: number | null; // Ø Checkout-% / First-9; null, wenn kein Match diese Werte trägt (Alt-Matches)
   recent: { opp: string; won: boolean; avg: number; score: string; date: string }[];
 }
 
-export function aggregateFor(name: string, matches: Match[]): PlayerAggregate {
-  const out: PlayerAggregate = { games: 0, wins: 0, losses: 0, avg: 0, c180: 0, c140: 0, c100: 0, c60: 0, high: 0, shortLegs: 0, recent: [] };
-  let avgSum = 0, avgN = 0;
+// Aggregiert die gespeicherten Matches eines Spielers. Abgleich robust über playerId (Fallback: Name),
+// damit Umbenennungen/Namensgleichheit die Statistik nicht verfälschen.
+export function aggregateFor(player: { id: string; name: string }, matches: Match[]): PlayerAggregate {
+  const out: PlayerAggregate = { games: 0, wins: 0, losses: 0, avg: 0, c180: 0, c140: 0, c100: 0, c60: 0, high: 0, shortLegs: 0, co: null, f9: null, recent: [] };
+  let avgSum = 0, avgN = 0, coSum = 0, coN = 0, f9Sum = 0, f9N = 0;
   matches.forEach((m) => {
-    const mine = m.perPlayer.find((p) => p.name === name);
+    const mine = m.perPlayer.find((p) => (p.playerId ? p.playerId === player.id : p.name === player.name));
     if (!mine) return;
     out.games++;
-    const won = m.winnerName === name;
+    const won = m.winnerId ? m.winnerId === player.id : m.winnerName === player.name;
     if (won) out.wins++; else out.losses++;
     out.c180 += mine.c180 || 0; out.c140 += mine.c140 || 0; out.c100 += mine.c100 || 0; out.c60 += mine.c60 || 0;
     out.shortLegs += mine.shortLegs || 0;
     out.high = Math.max(out.high, mine.highFinish || 0);
     if (mine.avg3) { avgSum += mine.avg3; avgN++; }
-    const opp = m.perPlayer.find((p) => p.name !== name);
+    if (typeof mine.co === 'number') { coSum += mine.co; coN++; }
+    if (typeof mine.f9 === 'number') { f9Sum += mine.f9; f9N++; }
+    const opp = m.perPlayer.find((p) => p !== mine);
     out.recent.push({ opp: opp ? opp.name : '—', won, avg: mine.avg3 || 0, score: m.scoreLine, date: m.date });
   });
   out.avg = avgN ? avgSum / avgN : 0;
+  out.co = coN ? Math.round(coSum / coN) : null;
+  out.f9 = f9N ? f9Sum / f9N : null;
   out.recent = out.recent.slice(-6).reverse();
   return out;
 }
@@ -96,7 +103,7 @@ export function dashboardMetrics(players: Player[], teams: Team[], leagues: Leag
   const teamCount = teams.length;
   // Team Ø 3-Dart: Mittel der gewerteten Spieler
   const avgs: number[] = [];
-  players.forEach((p) => { const a = aggregateFor(p.name, matches); if (a.avg) avgs.push(a.avg); });
+  players.forEach((p) => { const a = aggregateFor(p, matches); if (a.avg) avgs.push(a.avg); });
   const teamAvg = avgs.length ? avgs.reduce((x, y) => x + y, 0) / avgs.length : null;
   // Tabellenplatz aus erster Liga (eigenes Team)
   let tablePos: number | null = null; let leagueName: string | null = null;

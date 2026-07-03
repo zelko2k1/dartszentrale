@@ -9,7 +9,7 @@ import { downscaleSquare } from '../lib/image';
 import {
   scores as cScores, progress as cProgress, currentPlayer as cCurrentPlayer,
   matchOver as cMatchOver, average as cAverage, countAtLeast,
-  finishStats as cFinishStats, shortLegs as cShortLegs,
+  finishStats as cFinishStats, shortLegs as cShortLegs, first9Match as cFirst9Match,
   type CounterSlice,
 } from './counter';
 import {
@@ -2018,7 +2018,7 @@ function buildSeasonSnapshot(season: Season, st: AppState): SeasonSnapshot {
   const sMatches = ofSeason(st.matches, sid, asid);
   const standings = sLeagues.map((l) => ({ leagueId: l.id, leagueName: l.name, kind: (l.kind === 'cup' ? 'cup' : 'league') as TeamKind, rows: computeStandings(l) }));
   const playerStats = st.players.map((p) => {
-    const a = aggregateFor(p.name, sMatches);
+    const a = aggregateFor(p, sMatches);
     return { playerId: p.id, name: p.name, games: a.games, wins: a.wins, losses: a.losses, avg: a.avg, c180: a.c180, c140: a.c140, c100: a.c100, c60: a.c60, high: a.high, shortLegs: a.shortLegs };
   }).filter((x) => x.games > 0);
   const teamRosters = sTeams.map((t) => ({ teamId: t.id, name: t.name, kind: (t.kind === 'cup' ? 'cup' : 'league') as TeamKind, captainId: t.captainId, memberIds: t.memberIds }));
@@ -2121,24 +2121,30 @@ function saveMatch(get: () => AppState, set: (p: Partial<AppState>) => void) {
   const prog = cProgress(slice);
   const w = cMatchOver(slice) ? prog.winnerId : null;
   const winnerName = st.gamePlayers.find((p) => p.id === w)?.name || '';
-  // playerId nur setzen, wenn die Spieler-ID einem echten Spieler entspricht (Gäste haben temporäre numerische IDs).
-  const playerIds = new Set(st.players.map((pl) => pl.id));
-  const perPlayer: MatchPlayerStat[] = st.gamePlayers.map((p) => ({
-    name: p.name, short: p.short, av: p.av,
-    legsWon: prog.legsSet[p.id] || 0, setsWon: prog.setsWon[p.id] || 0,
-    avg3: cAverage(slice, p.id), c180: countAtLeast(slice, p.id, 180, true), c140: countAtLeast(slice, p.id, 140),
-    c100: countAtLeast(slice, p.id, 100), c60: countAtLeast(slice, p.id, 60),
-    highFinish: cFinishStats(slice, p.id).hf, darts: st.allThrows.filter((t) => t.playerId === p.id).reduce((a, t) => a + (t.darts ?? 3), 0),
-    shortLegs: cShortLegs(slice, p.id),
-    ...(typeof p.id === 'string' && playerIds.has(p.id) ? { playerId: p.id } : {}),
-  }));
+  // Spieler-ID über den Namen auflösen (gamePlayer.id ist nur der Slot 1/2). Gäste-Namen ohne echten
+  // Spieler bleiben ohne playerId → Statistik fällt für sie auf den Namen zurück.
+  const byName = new Map(st.players.map((pl) => [pl.name, pl.id]));
+  const winnerId = winnerName && byName.has(winnerName) ? byName.get(winnerName) : undefined;
+  const perPlayer: MatchPlayerStat[] = st.gamePlayers.map((p) => {
+    const fs = cFinishStats(slice, p.id);
+    return {
+      name: p.name, short: p.short, av: p.av,
+      legsWon: prog.legsSet[p.id] || 0, setsWon: prog.setsWon[p.id] || 0,
+      avg3: cAverage(slice, p.id), c180: countAtLeast(slice, p.id, 180, true), c140: countAtLeast(slice, p.id, 140),
+      c100: countAtLeast(slice, p.id, 100), c60: countAtLeast(slice, p.id, 60),
+      highFinish: fs.hf, co: fs.co, f9: cFirst9Match(slice, p.id),
+      darts: st.allThrows.filter((t) => t.playerId === p.id).reduce((a, t) => a + (t.darts ?? 3), 0),
+      shortLegs: cShortLegs(slice, p.id),
+      ...(byName.has(p.name) ? { playerId: byName.get(p.name) } : {}),
+    };
+  });
   const unit = st.settings.unit;
   const scoreLine = st.gamePlayers.map((p) => unit === 'sets' ? (prog.setsWon[p.id] || 0) : (prog.legsSet[p.id] || 0)).join(':');
   const match: Match = {
     id: uid(), date: new Date().toISOString(), startScore: st.settings.startScore,
     doubleOut: st.settings.doubleOut, doubleIn: st.settings.doubleIn, unit, mode: st.gameMode,
     bestOf: st.settings.bestOf, bestOfSets: st.settings.bestOfSets,
-    gameLabel: `X01 ${st.settings.startScore} · Bo${st.settings.bestOf}`, winnerName, scoreLine, perPlayer,
+    gameLabel: `X01 ${st.settings.startScore} · Bo${st.settings.bestOf}`, winnerName, ...(winnerId ? { winnerId } : {}), scoreLine, perPlayer,
     // #4: Ersteller stempeln (Vereinsmodus: muss == auth.id sein, sonst lehnt die API ab).
     ...(st.session ? { createdBy: st.session } : {}),
     ...(st.activeSeasonId ? { seasonId: st.activeSeasonId } : {}),

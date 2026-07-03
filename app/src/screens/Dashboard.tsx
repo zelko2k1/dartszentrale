@@ -83,7 +83,7 @@ function VereinDashboard() {
   const leaguesView = dLeagues
     .filter((lg) => lg.teams.some((t) => t.own && (!personalView || namesView.has(norm(t.name)))));
 
-  const myAgg = myPlayer ? aggregateFor(myPlayer.name, dMatches) : null;
+  const myAgg = myPlayer ? aggregateFor(myPlayer, dMatches) : null;
   const results = recentResults(leaguesView, 4);
   const metrics = dashboardMetrics(s.players, dTeams, dLeagues, dMatches);
 
@@ -430,7 +430,7 @@ function LocalDashboard() {
 
   // zuletzt gespielt + Bestenliste
   const recent = [...lMatches].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4);
-  const top = s.players.map((pl) => ({ pl, agg: aggregateFor(pl.name, lMatches) })).sort((a, b) => b.agg.avg - a.agg.avg).slice(0, 5);
+  const top = s.players.map((pl) => ({ pl, agg: aggregateFor(pl, lMatches) })).sort((a, b) => b.agg.avg - a.agg.avg).slice(0, 5);
 
   const startX01 = (bestOf: number) => s.quickStart({ startScore: 501, doubleOut: true, outMode: 'double', doubleIn: false, unit: 'legs', bestOf });
   const quickItems: { key: string; color: string; iconPath: string | null; title: string; sub: string; onClick: () => void }[] = [

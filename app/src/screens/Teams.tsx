@@ -104,7 +104,7 @@ export function Teams() {
               {members.length === 0 && <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--text-4)' }}>Kein Spieler im Kader.</div>}
               {members.length > 0 && roster.length === 0 && <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--text-4)' }}>Kein Spieler passt zu „{query}".</div>}
               {roster.map((m) => {
-                const agg = aggregateFor(m.name, s.matches);
+                const agg = aggregateFor(m, s.matches);
                 const isCaptain = sel.captainId === m.id;
                 const isVice = (sel.viceCaptainIds || []).includes(m.id);
                 return (

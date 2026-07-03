@@ -9,14 +9,16 @@ export function PlayerDetail() {
   const isPhone = useIsPhone(); // Hooks vor dem early return aufrufen (rules-of-hooks)
   const player = s.players.find((p) => p.id === s.selectedPlayerId) || s.players[0];
   if (!player) { return <div style={{ padding: '28px 32px' }}>Kein Spieler ausgewählt.</div>; }
-  const agg = aggregateFor(player.name, s.matches);
+  const agg = aggregateFor(player, s.matches);
 
   const stats: { value: string; label: string; color: string }[] = [
     { value: agg.avg ? agg.avg.toFixed(1) : '–', label: 'Ø 3-Dart', color: '#2BD377' },
+    { value: agg.f9 != null ? agg.f9.toFixed(1) : '–', label: 'First 9', color: '#2bd3c0' },
     { value: agg.games ? Math.round(agg.wins / agg.games * 100) + '%' : '–', label: 'Siegquote', color: '#F2B829' },
     { value: String(agg.games), label: 'Spiele (X01)', color: 'var(--text)' },
     { value: String(agg.wins), label: 'Siege', color: '#19A463' },
     { value: String(agg.losses), label: 'Niederlagen', color: '#E0594B' },
+    { value: agg.co != null ? agg.co + '%' : '–', label: 'Checkout-Quote', color: '#3B9EFF' },
     { value: agg.high ? String(agg.high) : '–', label: 'High Finish', color: 'var(--text)' },
   ];
   const scoring: { value: string; label: string; color: string }[] = [

@@ -65,6 +65,17 @@ export function first9(s: CounterSlice, pid: string | number) {
   if (!ts.length) return 0;
   return ts.reduce((a, t) => a + (t.bust ? 0 : t.score), 0) / ts.length;
 }
+export function first9Match(s: CounterSlice, pid: string | number) {
+  // Match-weiter First-9-Schnitt: Ø der ersten 3 Aufnahmen JE Leg, über alle Legs gemittelt (für die Statistik).
+  const byLeg: Record<number, Throw[]> = {};
+  s.allThrows.filter((t) => t.playerId === pid).forEach((t) => { (byLeg[t.leg] = byLeg[t.leg] || []).push(t); });
+  const perLeg: number[] = [];
+  for (const leg of Object.keys(byLeg)) {
+    const ts = byLeg[+leg].slice(0, 3);
+    if (ts.length) perLeg.push(ts.reduce((a, t) => a + (t.bust ? 0 : t.score), 0) / ts.length);
+  }
+  return perLeg.length ? perLeg.reduce((a, b) => a + b, 0) / perLeg.length : 0;
+}
 export function countAtLeast(s: CounterSlice, pid: string | number, n: number, exact?: boolean) {
   return s.allThrows.filter((t) => t.playerId === pid && !t.bust && (exact ? t.raw === n : t.raw >= n)).length;
 }

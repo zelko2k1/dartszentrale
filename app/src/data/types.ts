@@ -170,6 +170,8 @@ export interface MatchPlayerStat {
   highFinish: number;
   darts: number;
   shortLegs?: number; // gewonnene Legs ≤19 Darts (Liga-Highlight); optional für Abwärtskompatibilität alter Matches
+  co?: number;        // Checkout-Quote in % (optional; fehlt bei Alt-Matches → „–")
+  f9?: number;        // First-9-Schnitt (Ø der ersten 3 Aufnahmen je Leg; optional; Alt-Matches → „–")
   playerId?: string;  // → Player.id; robuste, saisonübergreifende Statistik (Name allein ist mehrdeutig)
 }
 
@@ -185,6 +187,7 @@ export interface Match {
   bestOfSets: number;
   gameLabel: string;
   winnerName: string;
+  winnerId?: string;   // → Player.id des Siegers (robuster Sieg-Abgleich; fehlt bei Alt-Matches → Name-Fallback)
   scoreLine: string;
   perPlayer: MatchPlayerStat[];
   // Optionale Verknüpfung zu einer Liga-Aufstellungsposition (Board-Spiel → Spielbericht).
