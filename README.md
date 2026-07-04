@@ -1,4 +1,34 @@
-# Handoff: DartsZentrale — Darts-Verein Verwaltung & Counter
+# DartsZentrale — Darts-Verein Verwaltung & Counter
+
+## Über dieses Projekt — Herkunft, Stand & Haftung
+
+**Was das ist:** eine lauffähige Verwaltungs- und Scoring-App für Darts-Vereine
+(Vite + React + PocketBase). Der eigentliche App-Code liegt in **`app/`**, das Backend
+in **`pocketbase/`**. Es läuft im echten Vereinsbetrieb.
+
+**Wer dahintersteht — offen gesagt:** Ich bin **Vereins-Admin, kein Entwickler** und habe
+keinen Programmier-Hintergrund. DartsZentrale ist aus einer konkreten Not im Verein
+entstanden und **mit KI-Unterstützung (Anthropic Claude) gebaut** — von der ersten Zeile
+bis zur Doku. Ich halte das hier bewusst transparent: Es ist mir lieber, das offen zu sagen,
+als so zu tun, als käme es aus jahrelanger Entwickler-Erfahrung.
+
+**Was das für dich heißt:**
+- Ich **pflege** das Projekt und **teste es im echten Betrieb** — aber ich kann nicht jeden
+  Codepfad selbst tief bewerten. **Code-Reviews, Hinweise und PRs sind ausdrücklich willkommen.**
+- **Support ist begrenzt.** Bei Issues/PRs mit tiefergehendem Code kann es sein, dass ich
+  nur eingeschränkt beurteilen oder reagieren kann. Bitte habt dafür Verständnis.
+- **Nutzung auf eigenes Risiko**, ohne Gewähr — siehe [`LICENSE`](LICENSE) (MIT).
+- **Sicherheit & Datenschutz:** Die App verwaltet **personenbezogene Mitgliederdaten** (DSGVO).
+  Wer sie selbst hostet, sollte das bewusst und sorgfältig tun. Der aktuelle Stand,
+  offene Punkte und eine Go-live-Checkliste stehen in
+  [`docs/security-audit.md`](docs/security-audit.md). Prüft das für euren Einsatz selbst.
+
+> **Hinweis zum Rest dieses README:** Die Abschnitte unterhalb sind der **ursprüngliche
+> Design-/Prototyp-Handoff** (HTML-Prototyp `DartsZentrale.dc.html` + Design-Tokens), aus dem
+> die App entstanden ist. Sie beschreiben Aussehen/Verhalten, **nicht** den aktuellen
+> Produktivcode — der liegt in `app/`. Als Design- und Datenmodell-Referenz weiterhin gültig.
+
+---
 
 > **📖 Dokumentation — wo finde ich was?**
 > - **App aufsetzen (eigener Server):** [`docs/admin-anleitung-cloud.md`](docs/admin-anleitung-cloud.md) + [`docs/coolify-homelab-anleitung.md`](docs/coolify-homelab-anleitung.md)
