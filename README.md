@@ -28,6 +28,13 @@ als so zu tun, als käme es aus jahrelanger Entwickler-Erfahrung.
 > die App entstanden ist. Sie beschreiben Aussehen/Verhalten, **nicht** den aktuellen
 > Produktivcode — der liegt in `app/`. Als Design- und Datenmodell-Referenz weiterhin gültig.
 
+## ☕ Unterstützen
+
+DartsZentrale ist kostenlos und quelloffen ([MIT](LICENSE)) und bleibt es auch. Die
+Entwicklung läuft **KI-gestützt** — das verursacht laufende Kosten (KI-Nutzung, Hosting).
+Wer mag, kann einen Kaffee spendieren: **[buymeacoffee.com/zelko2k1](https://buymeacoffee.com/zelko2k1)**.
+Kein Muss — alles bleibt frei nutzbar.
+
 ---
 
 > **📖 Dokumentation — wo finde ich was?**
