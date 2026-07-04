@@ -209,7 +209,8 @@ echo "• Caddyfile schreiben …"
 # DartsZentrale — von einrichten-cloud.sh erzeugt. Caddy holt/erneuert die
 # Let's-Encrypt-Zertifikate automatisch (Ports 80+443 müssen offen sein).
 
-# Basis-Security-Header (Pendant zu app/nginx.conf, Befund #9/#13). HSTS aktiv,
+# Basis-Security-Header (Befund #9/#13) — Caddy setzt sie im Cloud-Modus.
+# (app/nginx.conf ist nur das Coolify-Homelab/Dev-Pendant.) HSTS aktiv,
 # weil Caddy ausschließlich über HTTPS ausliefert.
 (security_headers) {
 	header {
@@ -226,7 +227,7 @@ ${APP_DOMAIN} {
 	import security_headers
 	header X-Frame-Options "DENY"
 
-	# Content-Security-Policy — ERST nach Test einkommentieren (connect-src ist
+	# #9 Content-Security-Policy — ERST nach Test einkommentieren (connect-src ist
 	# bereits auf https://${DB_DOMAIN} gesetzt). Bricht sonst ggf. API/PWA.
 	# header Content-Security-Policy "default-src 'self'; connect-src 'self' https://${DB_DOMAIN}; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
 

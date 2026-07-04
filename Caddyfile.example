@@ -1,19 +1,27 @@
 # DartsZentrale — Caddy-Reverse-Proxy mit Auto-HTTPS (schlanke Variante, ohne Coolify/Docker).
 #
-# Nach /etc/caddy/Caddyfile kopieren, <domain> ersetzen, dann:
+# NUR fuer den CLOUD-MODUS. on-board und LAN brauchen kein Caddy (kein Netz-Exposé
+# bzw. Absicherung per Firewall/VPN). Coolify ist nur Homelab/Dev, nicht dieser Pfad.
+#
+# `einrichten-cloud.sh` GENERIERT /etc/caddy/Caddyfile aus den Domains automatisch —
+# diese Datei ist die Referenz zum Nachvollziehen + fuer die manuellen Schritte #5/#9.
+# Manuell: nach /etc/caddy/Caddyfile kopieren, <domain> ersetzen, dann:
 #   sudo caddy validate --config /etc/caddy/Caddyfile
 #   sudo systemctl reload caddy
 #
 # Caddy holt und erneuert die Let's-Encrypt-Zertifikate VOLLAUTOMATISCH.
 # Voraussetzung: Ports 80 + 443 sind aus dem Internet erreichbar und die
 # DNS-A-Records app.<domain> / db.<domain> zeigen auf diese Server-IP.
+# Siehe docs/security-audit.md (Abschnitt „Caddyfile-Template", Findings #3/#5/#9).
 
 # (optional) globale Optionen — E-Mail für Zertifikats-Benachrichtigungen:
 # {
 # 	email du@deinedomain.de
 # }
 
-# ── Basis-Security-Header (Pendant zu app/nginx.conf, Befund #9/#13) ──────────
+# ── Basis-Security-Header (Befund #9/#13) ────────────────────────────────────
+# Im Cloud-Modus setzt Caddy die Header. (app/nginx.conf ist das Pendant nur im
+# Coolify-Homelab/Dev-Pfad — hier nicht relevant.)
 # HSTS ist hier aktiv, weil Caddy AUSSCHLIESSLICH über HTTPS ausliefert.
 # Caddy setzt den Server-Header nur auf "Caddy" (keine Version) — wir entfernen ihn ganz.
 (security_headers) {
@@ -33,7 +41,7 @@ app.deinedomain.de {
 	# App wird nirgends eingebettet → Clickjacking komplett verbieten.
 	header X-Frame-Options "DENY"
 
-	# Content-Security-Policy — DEPLOYMENT-SPEZIFISCH, daher aus. ERST nach Test
+	# #9 Content-Security-Policy — DEPLOYMENT-SPEZIFISCH, daher aus. ERST nach Test
 	# einkommentieren. WICHTIG: 'connect-src' MUSS die PocketBase-Domain enthalten,
 	# sonst schlägt jeder API-Aufruf fehl. (React setzt Inline-Styles via DOM →
 	# 'style-src' braucht 'unsafe-inline'; Schriften sind ins Bundle gebacken.)
@@ -52,7 +60,7 @@ db.deinedomain.de {
 	# Standard: alles durchreichen.
 	reverse_proxy 127.0.0.1:8090
 
-	# (optional, empfohlen) Admin-Konsole /_/ nur aus deinem Netz erlauben.
+	# #5 (empfohlen) Admin-Konsole /_/ nur aus deinem Netz erlauben.
 	# WICHTIG: dafür die einzelne reverse_proxy-Zeile OBEN entfernen — Caddy darf
 	# handle-Blöcke nicht mit einer nackten reverse_proxy-Direktive mischen.
 	# IP per `curl ifconfig.me` ermitteln; /32 = genau diese eine IP.
