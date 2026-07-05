@@ -6,11 +6,14 @@ import { PocketBaseProvider } from './pocketbaseProvider';
 
 export function createProvider(mode: 'local' | 'verein', pbUrl?: string): DataProvider {
   if (mode === 'verein') {
-    // Laufzeit-URL aus den App-Einstellungen hat Vorrang (so kann jeder Verein/Rechner auf
-    // seine eigene Instanz zeigen, ohne neu zu bauen); VITE_PB_URL dient nur als Build-Default.
-    const url = (pbUrl && pbUrl.trim()) || import.meta.env.VITE_PB_URL;
+    // Priorität: 1) Laufzeit-URL aus den App-Einstellungen (Board zeigt auf beliebige Instanz),
+    // 2) VITE_PB_URL (Build-Default beim Modell „Frontend getrennt vom Backend", z. B. Cloud/Caddy),
+    // 3) SAME-ORIGIN (`location.origin`) — für das Single-Binary-Modell, in dem PocketBase das
+    //    Frontend selbst aus pb_public/ ausliefert; dann liegt die API auf derselben Origin und es
+    //    muss KEINE URL eingebacken werden (kein Rebuild bei IP-Wechsel, kein CORS).
+    const sameOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+    const url = (pbUrl && pbUrl.trim()) || import.meta.env.VITE_PB_URL || sameOrigin;
     if (url) return new PocketBaseProvider(url);
-    // Kein Backend konfiguriert (z. B. Dev ohne PocketBase) → lokal als Fallback.
   }
   return new LocalProvider();
 }
