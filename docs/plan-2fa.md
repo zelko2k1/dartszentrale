@@ -59,11 +59,11 @@ Neue, **abgeschottete** Collection `user_mfa` (Secrets nie über die normale API
 
 | Route | Methode | Auth | Tut |
 |---|---|---|---|
-| `/api/2fa/setup` | POST | eingeloggt | Secret erzeugen, `pending` anlegen, `otpauth://`-URI + Secret zurück |
-| `/api/2fa/enable` | POST | eingeloggt | übergebenen Code prüfen → `enabled=true`; **Backup-Codes erzeugen** (einmalig zurückgeben, gehasht speichern) |
-| `/api/2fa/disable` | POST | eingeloggt | nach gültigem Code/Passwort → `user_mfa` löschen |
-| `/api/2fa/backup/regenerate` | POST | eingeloggt | neue Backup-Codes (alte entwerten) |
-| `/api/login` | POST | — | **zentraler Login** (siehe §5) |
+| `/api/2fa/setup` | POST | eingeloggt | ✅ **umgesetzt** (`pb_hooks/2fa_hooks.pb.js`) — Secret erzeugen, `pending` anlegen, `otpauth://`-URI + Secret zurück |
+| `/api/2fa/enable` | POST | eingeloggt | ✅ **umgesetzt** (`pb_hooks/2fa_hooks.pb.js`) — übergebenen Code prüfen → `enabled=true`; **Backup-Codes** (10× 8-stellig, einmalig zurück, sha256-gehasht) |
+| `/api/2fa/disable` | POST | eingeloggt | ✅ **umgesetzt** — nach gültigem Code/Passwort (Re-Auth) → `user_mfa` löschen |
+| `/api/2fa/backup/regenerate` | POST | eingeloggt | ✅ **umgesetzt** — nach Re-Auth 10 neue Backup-Codes (alte vollständig entwertet) |
+| `/api/login` | POST | — | ✅ **umgesetzt** (`pb_hooks/2fa_hooks.pb.js`) — zentraler Login mit 2FA-Challenge (§5), TOTP **oder** Backup-Code, Lockout 5/5min |
 
 Token-Ausgabe im Hook über `$apis.recordAuthResponse(e, user, "password", meta)`;
 Passwortprüfung über `user.validatePassword(pw)`.
@@ -91,9 +91,10 @@ Frontend (`store.loginEmail` / `Login.tsx`): nach Schritt 4 ein **6-stelliges Co
 
 - **Backup-Codes:** bei der Aktivierung **einmalig** angezeigt (Anzeige + Download), 10× z. B.
   8-stellig, **gehasht** gespeichert, **Einmalgebrauch** (used-Flag). Im Login statt TOTP nutzbar.
-- **Superuser-Rettung:** Skript `pocketbase/reset-2fa.mjs` (analog zu `reset-password.mjs`):
-  authentifiziert als Superuser → löscht den `user_mfa`-Datensatz eines Kontos = 2FA aus.
+- **Superuser-Rettung:** ✅ **umgesetzt** — `pocketbase/reset-2fa.mjs` (analog zu `reset-password.mjs`):
+  authentifiziert als Superuser → löscht den `user_mfa`-Datensatz eines Kontos = 2FA aus (mit Gegenprobe).
   Letzter Notnagel bei „Handy weg **und** Backup-Codes weg".
+  Aufruf: `USER_EMAIL=… node reset-2fa.mjs` (Cloud zusätzlich `PB_URL`/`PB_SU_EMAIL`/`PB_SU_PASS`).
 
 ---
 
@@ -137,9 +138,9 @@ nach dem Turnier-Scaffold in beide portieren. Empfehlung: **zuerst in `dartszent
 
 | Phase | Inhalt |
 |---|---|
-| **A — Spike** | TOTP-Verifikation im pb_hook beweisen (HMAC-SHA1 verfügbar? sonst einbetten). De-risk. |
-| **B — Backend** | `user_mfa`-Collection (abgeschottet) + Hooks (`setup/enable/disable/backup`, `/api/login` mit Challenge), Backup-Codes (gehasht), Lockout, `reset-2fa.mjs`. |
-| **C — Frontend** | Settings-Assistent (QR + Bestätigung + Backup-Codes), Login-Challenge-Feld, Deaktivieren/Neu-Erzeugen. |
+| **A — Spike** | ✅ **ERLEDIGT 2026-07-05** ([`../spikes/2fa/ERGEBNIS.md`](../spikes/2fa/ERGEBNIS.md)). Befund: `$security` hat **kein** SHA-1/HMAC-SHA1 → Pure-JS-Routine (`spikes/2fa/totp.js`, ES5.1, inline im Hook) eingebettet; im echten goja-JSVM gegen alle RFC-6238-Vektoren + 200× Node-`crypto`-Kreuzvergleich verifiziert. |
+| **B — Backend** | ✅ **fast fertig** (2026-07-05): `user_mfa` (Migration `1782300002_user_mfa.js` + provision.mjs, abgeschottet) · Hooks `setup` + `enable` + `/api/login`-Challenge (TOTP/Backup, Lockout 5/5min) + **`disable` + `backup/regenerate`** (Re-Auth via Code ODER Passwort) — alle in `pb_hooks/2fa_hooks.pb.js`, plus **`reset-2fa.mjs`** (Superuser-Rettung), E2E gegen frische PB grün (setup/enable 17/17, login 13/13, disable/regenerate 14/14, reset 3/3 + Rand-Fälle). **✅ Phase B abgeschlossen** — nächster Schritt Phase C (Frontend). **⚠ Zwei JSVM-Fallen (verifiziert):** (1) `record.get('<json>')` liefert ROHE UTF-8-Bytes (byte-Array), nicht geparst → per `String.fromCharCode`+`JSON.parse` dekodieren. (2) Route-Handler laufen in **isolierter VM ohne Modul-Scope** → geteilte Helfer (z. B. Re-Auth) MÜSSEN handler-lokal sein, ein Top-Level-`function` wirft `ReferenceError` (= generischer 400). |
+| **C — Frontend** | ⬅ **als Nächstes.** Settings-Assistent (QR + Bestätigung + Backup-Codes), Login-Challenge-Feld, Deaktivieren/Neu-Erzeugen. **Kernumstellung:** `Login.tsx`/`pocketbaseProvider.ts` von direktem `authWithPassword` auf **`POST /api/login`** umstellen — sonst umgeht die App das serverseitige 2FA (Sicherheits-Voraussetzung, muss zusammen mit dem Feature ausgerollt werden). |
 | **D — Härtung+Doku** | HTTPS/Exposition-Guidance, Admin-Nudge, Policy-Schalter, Docs (`admin-anleitung-cloud.md`/`lokaler-betrieb.md`). |
 | **E — Turnier-App** | über Fork erben bzw. portieren + verifizieren. |
 

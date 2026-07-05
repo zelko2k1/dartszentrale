@@ -44,6 +44,12 @@
 ### `user_prefs` (Base) — persönliche Einstellungen je Nutzer
 `user` (relation → users, max 1, eindeutig) · `settings` (json) · `trainingPlays` (json)
 
+### `user_mfa` (Base) — 2FA/TOTP, **abgeschottet**
+`user` (relation → users, max 1, eindeutig, cascadeDelete) · `secret` (text, hidden) · `enabled` (bool) ·
+`pending` (bool) · `backupCodes` (json, hidden — gehashte Einmal-Codes) · `failedAttempts` (number) ·
+`lockedUntil` (text) · `confirmedAt` (text). **Alle API-Rules = `null`** → nur Superuser bzw. `pb_hooks`
+lesen/schreiben; das TOTP-Secret verlässt nie über die REST-API den Server (Plan `docs/plan-2fa.md` §3).
+
 ### `users` (Auth — eingebaute Collection, erweitert)
 `email` + `password` sind eingebaut. Zusätzlich: `name` · `first` · `last` ·
 `role` (select: `admin`, `captain`, `player`, `viewer`, `board`) · `playerId` (json) · `position` ·
@@ -73,6 +79,7 @@
 | `users` | authed | admin | admin | admin |
 | `club_config` | authed | admin | admin | admin |
 | `user_prefs` | `auth.id = user` | `auth.id = user` | `auth.id = user` | `auth.id = user` |
+| `user_mfa` | **`null` (nur Superuser/Hooks)** | `null` | `null` | `null` |
 
 **Härtung (Sicherheits-Audit):**
 - **#4 matches:** anlegen nur mit `createdBy == eigene id` (keine fremden/forgierten Ergebnisse); ändern

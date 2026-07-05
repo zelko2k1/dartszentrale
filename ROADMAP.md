@@ -39,10 +39,11 @@
 
 ## 2. Features für 1.0
 
-- [ ] 🧑‍💻 **2FA / TOTP** (optional, opt-in) — vollständig geplant, noch nichts umgesetzt.
-      Plan: [`docs/plan-2fa.md`](docs/plan-2fa.md). **Erster Schritt:** Feasibility-Spike —
-      ist HMAC-SHA1 im PB-`pb_hooks`-JSVM verfügbar? Falls nein, geprüfte Pure-JS-Routine einbetten.
-      Danach: Collection `user_mfa`, Enrollment (QR), serverseitige Verifikation, Backup-Codes, Rettungsskript.
+- [~] 🧑‍💻 **2FA / TOTP** (optional, opt-in) — **Phasen A (Spike) + B (Backend) erledigt** (2026-07-05); nur noch Phase C (Frontend).
+      Plan: [`docs/plan-2fa.md`](docs/plan-2fa.md) · Spike: [`spikes/2fa/ERGEBNIS.md`](spikes/2fa/ERGEBNIS.md).
+      **A:** PB-JSVM hat **kein** HMAC-SHA1 → geprüfte Pure-JS-Routine (`spikes/2fa/totp.js`), im goja-JSVM gegen alle RFC-6238-Vektoren verifiziert.
+      **B (fertig):** abgeschottete Collection `user_mfa` (Migration + provision.mjs) · Hooks `setup`/`enable`/`disable`/`backup/regenerate` + zentraler **`/api/login`**-Challenge (TOTP+Backup-Codes, Lockout 5/5min) in `pb_hooks/2fa_hooks.pb.js` · Rettungsskript `reset-2fa.mjs` — alles E2E gegen frische PocketBase getestet.
+      **Offen (C):** Frontend-Assistent (QR + Bestätigung + Backup-Codes), Login-Code-Feld, **Login auf `/api/login` umstellen** (sonst wird 2FA umgangen).
 - [x] 🧑‍💻 **Saison-Lebenszyklus** (Abschluss · Neubeginn · Soft-Archiv · Auslagern) — Phasen 1–4 umgesetzt
       ([`docs/plan-saison.md`](docs/plan-saison.md)).
 

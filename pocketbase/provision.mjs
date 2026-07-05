@@ -188,6 +188,30 @@ async function main() {
   if (prefsCur) { await pb.collections.update(prefsCur.id, prefsDef); console.log('✓ aktualisiert: user_prefs'); }
   else { await pb.collections.create(prefsDef); console.log('✓ angelegt:     user_prefs'); }
 
+  // 3.5) user_mfa (2FA/TOTP) — ABGESCHOTTET: alle Rules null → nur Superuser/pb_hooks.
+  //      Secret verlässt nie über die REST-API den Server (Plan docs/plan-2fa.md §3).
+  //      Spiegelbild der Migration pb_migrations/1782300002_user_mfa.js (Docker/Coolify-Weg).
+  const mfaDef = {
+    name: 'user_mfa', type: 'base',
+    listRule: null, viewRule: null, createRule: null, updateRule: null, deleteRule: null,
+    fields: [
+      { name: 'user', type: 'relation', required: true, maxSelect: 1, collectionId: usersId, cascadeDelete: true },
+      text('secret', { hidden: true }),   // TOTP-Base32-Secret (nie über API lesbar)
+      bool('enabled'),                     // aktiv (nach Bestätigung)
+      bool('pending'),                     // im Enrollment, noch nicht bestätigt
+      json('backupCodes'),                 // gehashte Einmal-Codes (+ used-Flag)
+      { name: 'failedAttempts', type: 'number', required: false, onlyInt: true },
+      text('lockedUntil'),                 // temporäre Sperre nach zu vielen Fehlversuchen
+      text('confirmedAt'),                 // Aktivierungszeitpunkt
+    ],
+    indexes: ['CREATE UNIQUE INDEX `idx_user_mfa_user` ON `user_mfa` (`user`)'],
+  };
+  // backupCodes zusätzlich als hidden markieren (json-Helfer setzt es nicht).
+  mfaDef.fields.find((f) => f.name === 'backupCodes').hidden = true;
+  const mfaCur = byName.get('user_mfa');
+  if (mfaCur) { await pb.collections.update(mfaCur.id, mfaDef); console.log('✓ aktualisiert: user_mfa'); }
+  else { await pb.collections.create(mfaDef); console.log('✓ angelegt:     user_mfa'); }
+
   // 4) Ersten App-Admin anlegen — NUR wenn noch gar kein Admin existiert.
   //    Kein hartcodiertes Konto mehr: E-Mail/Passwort werden interaktiv abgefragt
   //    (oder per APP_ADMIN_EMAIL/APP_ADMIN_PASS gesetzt — z. B. Cloud/CI ohne Terminal).
