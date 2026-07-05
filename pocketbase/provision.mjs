@@ -166,6 +166,10 @@ async function main() {
     fields: [...users.fields, ...addUserFields],
     listRule: LOGGED_IN, viewRule: LOGGED_IN,
     createRule: ADMIN, updateRule: ADMIN, deleteRule: ADMIN,
+    // manageRule = Admin: nötig, damit App-Admins die E-Mail (managed Auth-Feld) eines Kontos
+    // direkt ändern dürfen. Ohne sie blockt PocketBase E-Mail-Änderungen für Nicht-Superuser
+    // (400 „values don't match"). Deckungsgleich mit updateRule. Siehe pb_migrations/…_users_manage_rule.js.
+    manageRule: ADMIN,
     // Deaktivierte Konten können sich serverseitig gar nicht erst anmelden (auch nicht per Roh-API).
     authRule: 'active = true',
   };

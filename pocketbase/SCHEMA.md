@@ -55,6 +55,8 @@ lesen/schreiben; das TOTP-Secret verlässt nie über die REST-API den Server (Pl
 `role` (select: `admin`, `captain`, `player`, `viewer`, `board`) · `playerId` (json) · `position` ·
 `active` (bool) · `avi` (number) · `last_login` · `isBoard` (bool) · `boardNumber` (number, onlyInt) ·
 `photo` (file). **Auth-Rule `active = true`** → deaktivierte Konten können sich nicht anmelden.
+**Manage-Rule `role = "admin"`** → App-Admins dürfen E-Mail/Passwort/verified direkt ändern (ohne
+diese Rule blockt PocketBase E-Mail-Änderungen für Nicht-Superuser).
 
 > `board` = Maschinen-Rolle der Board-Rechner (nur spielen). Über `pb_hooks/board_role_guard.pb.js` fest
 > an `isBoard` gekoppelt — ein Board-Konto kann serverseitig nie eine andere Rolle erhalten, und `board`

@@ -24,6 +24,16 @@
 
 ## Behoben
 
+_Behoben am 2026-07-05 — gegen PocketBase reproduziert & verifiziert._
+
+### [x] #8 — Benutzerverwaltung: E-Mail-Adresse eines Kontos lässt sich nicht ändern
+- **Prio:** 🔴 · **Bereich:** Benutzerverwaltung · **Gerät:** alle
+- **Symptom:** Beim Ändern der E-Mail eines Kontos (auch des eigenen Admin-Kontos) → „Änderung konnte nicht gespeichert werden". Andere Felder (Name, Rolle …) speichern normal.
+- **Ursache:** Die `users`-Collection hatte **keine `manageRule`** (war `null`). PocketBase behandelt `email`/`verified` als „managed" Auth-Felder und lässt sie über die Records-API nur von einem **Superuser** oder einer Anfrage mit erfüllter `manageRule` ändern. Die App meldet sich als normaler `users`-Datensatz an (App-Rolle `admin`, kein PB-Superuser) → E-Mail-Änderung wird mit HTTP 400 `validation_values_mismatch` („Values don't match") abgewiesen, das ganze Update scheitert. Der echte Feld-Fehler landete nur in der Konsole (`persist` → generisches `syncError`).
+- **Fix:** `manageRule = "@request.auth.role = \"admin\""` an der `users`-Collection (deckungsgleich mit `updateRule`). Migration `pocketbase/pb_migrations/1782300003_users_manage_rule.js` + gespiegelt in `pocketbase/provision.mjs`.
+- **Verifiziert:** Reproduktion gegen PocketBase — vorher 400, nach der Migration ändert der App-Admin fremde **und** eigene E-Mail mit 200; Superuser-Pfad unverändert.
+- **Nebenwirkung (erwartet):** Ändert ein Admin seine **eigene** E-Mail, invalidiert PocketBase dessen Session-Token (wie bei Passwortänderung) → danach neu anmelden.
+
 _Behoben am 2026-07-03 — im lokalen Verein-Test verifiziert._
 
 ### [x] #7 — Kiosk: Admin kann sich zum Verlassen des Board-Modus nicht anmelden
