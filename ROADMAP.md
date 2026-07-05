@@ -26,7 +26,8 @@
 - [x] 🧑‍💻 **#6-Rest:** Kapitän-Roster-Editing auf die *eigene* Mannschaft gescoped (`captainId == auth.playerId`)
       — Migration `1782600100_scope_team_update_to_captain` + provision; gegen lokale PB verifiziert.
 - [x] 🧑‍💻 #11 `reset-password.mjs`: `NEW_PW` ist Pflicht (kein stiller Default `dartszentrale123` mehr) — Fehlerpfade getestet.
-- [ ] 🧑‍💻 #12 (abwägen) Kader-Lesbarkeit für eingeloggte Nutzer — bei Minderjährigen einschränken
+
+> **#12 (Kader-Lesbarkeit)** ist **kein Go-live-Blocker** → als optionales Feature nach Abschnitt 4 verschoben. Entscheidung 2026-07-05: **aktuell keine Einschränkung nötig.**
 
 **Offen — Betreiber / Pre-Go-live-Checkliste** (⚙️ nicht von Claude erledigbar, nur vorbereitbar):
 - [ ] ⚙️ #1 PB-Superuser-Passwort rotiert, Literal aus `seed-remote.sh` entfernt
@@ -81,6 +82,7 @@ Aus [`DATA_MODEL.md §5`](DATA_MODEL.md). Manche Punkte sind evtl. schon erledig
       vorhanden** (Betreiber spielt selbst autodarts). ⚠ Nutzen nur für autodarts-Vereine; die API ist
       community-dokumentiert und ändert sich mit autodarts-Versionen → **laufender Wartungsaufwand**. Als
       „drittes Scoreboard" lohnt es nicht — nur wegen der Liga-Ergebnis-Kopplung.
+- [ ] 🧑‍💻 **#12 Kaderliste einschränken (auf Wunsch)** — aktuell ist der Kader für jeden eingeloggten Nutzer lesbar (E-Mails bleiben geschützt); als Vereins-Verzeichnis vertretbar. **Entscheidung 2026-07-05: keine Einschränkung nötig.** Nur umsetzen, **falls ein Verein es wünscht** (z. B. wegen Minderjähriger). Rationale: [`docs/security-audit.md`](docs/security-audit.md) #12.
 - [ ] Mobile-Layout für die Verwaltung (Counter ist bereits tablettauglich)
 - [ ] Backup-Retention + Größen-Monitoring von `pb_data` (größerer Hebel als Saison-Auslagern)
 - [ ] Optional: Grafana/Postgres-Export aus dem Saison-Bundle für freie Auswertung

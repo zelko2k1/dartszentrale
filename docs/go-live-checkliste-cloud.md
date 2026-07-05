@@ -141,8 +141,9 @@ Alle in `~/dartszentrale/pocketbase/`, laufen als Superuser gegen `127.0.0.1:809
 
 ---
 
-## Offene Abwägung (kein Blocker)
+## Kein Blocker
 
-- [ ] **#12** Kaderliste ist für jeden eingeloggten Nutzer lesbar (E-Mails geschützt). Bei **Minderjährigen** im
-  Verein abwägen, ob die Kaderliste weiter eingeschränkt werden soll. Details: [`security-audit.md`](security-audit.md) #12.
+- **#12** Kaderliste ist für jeden eingeloggten Nutzer lesbar (E-Mails geschützt). **Entscheidung 2026-07-05:
+  aktuell keine Einschränkung nötig** — nur auf Vereinswunsch umsetzen (z. B. wegen Minderjähriger). Steht als
+  optionales Feature in der [ROADMAP](../ROADMAP.md) §4. Rationale: [`security-audit.md`](security-audit.md) #12.
 </content>
