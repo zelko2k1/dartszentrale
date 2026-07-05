@@ -14,6 +14,8 @@
 
 ## 1. Sicherheit & Go-live (höchste Priorität)
 
+> **Cloud-Start:** abhakbare Schritt-für-Schritt-Liste in [`docs/go-live-checkliste-cloud.md`](docs/go-live-checkliste-cloud.md).
+
 **Code-seitig bereits gehärtet** (Details: [`docs/security-audit.md`](docs/security-audit.md)):
 - [x] 🧑‍💻 #4 Match-Ergebnisse an Ersteller gebunden (`createdBy`-Stempel)
 - [x] 🧑‍💻 #6 (Kern) `seasons`/`leagues`/`teams` anlegen/löschen admin-only (Migration `harden_authz`)
