@@ -52,6 +52,19 @@ make_update_pkg(){
   echo "  → $(basename "$out")"
 }
 
+# Baut das Frontend OHNE VITE_PB_URL (Same-Origin) und legt es als pb_public/ ab — für den
+# Single-Binary-Betrieb (PocketBase liefert die App selbst aus, kein separater Web-Dienst,
+# keine eingebackene IP). Sichert app/.env.local und stellt es danach wieder her.
+build_pubdir(){ local d="$1"; echo "▶ Baue Frontend (Same-Origin) für pb_public/ …"
+  local bak=""; [ -f "$REPO/app/.env.local" ] && { bak="$(mktemp)"; cp "$REPO/app/.env.local" "$bak"; }
+  printf 'VITE_PB_URL=\n' > "$REPO/app/.env.local"
+  ( cd "$REPO/app" && npm run build >/dev/null 2>&1 ); local rc=$?
+  if [ -n "$bak" ]; then cp "$bak" "$REPO/app/.env.local"; rm -f "$bak"; else rm -f "$REPO/app/.env.local"; fi
+  [ "$rc" -eq 0 ] || { echo "  ⚠ Build fehlgeschlagen (node_modules in app/ installiert?) — Einfach-Bundle übersprungen."; return 1; }
+  mkdir -p "$d/pb_public"; cp -r "$REPO/app/dist/." "$d/pb_public/"
+  echo "  → pb_public/ ($(du -sh "$d/pb_public" 2>/dev/null | cut -f1))"
+}
+
 
 echo "▶ Ziel: $TARGET"
 rm -rf "$TARGET"; mkdir -p "$TARGET"
@@ -130,6 +143,42 @@ UPDATE spaeter — per Skript (auch PocketBase):  ./update-server.sh
 (erkennt die Dienste, baut neu, startet neu). pb_data (deine DB) bleibt erhalten.
 TXT
 
+# ── 04 — Vereinsmodus EINFACH (ein Binary: PocketBase liefert App + API) ─────
+# Kein Node, kein Build beim Verein: das fertige Frontend liegt in pb_public/, PocketBase
+# liefert es selbst aus. start-einfach lädt beim ersten Mal nur noch das PB-Binary + legt den Admin an.
+E="$TARGET/04-lan-einfach"; mkdir -p "$E"
+if build_pubdir "$E"; then
+  cp -r "$REPO/pocketbase/pb_migrations" "$REPO/pocketbase/pb_hooks" "$E/"
+  for f in start-einfach.sh start-einfach.bat start-einfach.ps1; do cpf "$REPO/$f" "$E/"; done
+  copy_docs "$E" handbuch.md security-audit.md
+  cat > "$E/LIESMICH.txt" <<'TXT'
+DartsZentrale — Vereinsmodus EINFACH (ein Programm, kein Node, kein Build)
+-------------------------------------------------------------------------
+EIN Programm (PocketBase) liefert die App UND die Daten — ueber einen Port.
+
+STARTEN:
+  Linux/Pi -> ./start-einfach.sh        Windows -> Doppelklick start-einfach.bat
+Beim ERSTEN Start wird der Admin angelegt (E-Mail + Passwort). Danach nur noch starten.
+Voraussetzung: einmal Internet beim ersten Start (laedt das ~15 MB PocketBase-Binary).
+Node.js wird NICHT gebraucht.
+
+BEDIENUNG:
+  Dieser Rechner : http://127.0.0.1:8090   (oeffnet sich automatisch im Browser)
+  Andere Bretter/Tablets im gleichen Netz: die angezeigte Adresse http://<server-ip>:8090
+    - Board-PC : als Lesezeichen / Kiosk-Verknuepfung anlegen
+    - Tablet/Handy : in der App unter Einstellungen den Beitritts-QR scannen
+  Mit dem jeweiligen Board-Konto anmelden.
+
+WICHTIG (Netz/Sicherheit): Port 8090 nur im LAN lassen, NIE ins Internet weiterleiten.
+Recovery (Passwort/Superuser): PocketBase-Konsole http://127.0.0.1:8090/_/ — die Zugangsdaten
+  des internen Superusers stehen nach der Einrichtung in der Datei .superuser (sicher aufbewahren!).
+
+Bedienung der App: docs/handbuch.md · Sicherheit: docs/security-audit.md
+TXT
+else
+  rmdir "$E" 2>/dev/null || true
+fi
+
 # ── Shell-Skripte auf LF normalisieren + ausführbar machen ──────────────────
 # Wird build.sh unter Windows (Git Bash) ausgeführt, hätten kopierte .sh sonst CRLF
 # und würden auf einem Linux-Server scheitern (#!/usr/bin/env bash\r).
@@ -150,7 +199,7 @@ make_zip(){ local base="$1"
 }
 echo
 echo "── ZIPs erstellen ──"
-for b in 01-lokal-ein-board 02-lan-vereinsmodus 03-cloud-vereinsmodus; do make_zip "$b"; done
+for b in 01-lokal-ein-board 02-lan-vereinsmodus 03-cloud-vereinsmodus 04-lan-einfach; do [ -d "$TARGET/$b" ] && make_zip "$b"; done
 
 echo
 echo "── Update-Paket erstellen (für spätere In-App-Updates) ──"
