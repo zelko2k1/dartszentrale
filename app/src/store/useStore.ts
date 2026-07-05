@@ -300,6 +300,10 @@ export interface AppState {
   toggleUserActive: (id: string) => void;
   // Eigenes Passwort ändern (jeder angemeldete Nutzer). Liefert true bei Erfolg.
   changeOwnPassword: (newPassword: string) => Promise<boolean>;
+  // 2FA-Verwaltung (Admin): IDs der Konten mit aktivem 2FA (für die Benutzerliste) + Zurücksetzen.
+  twoFAUserIds: string[];
+  loadTwoFAAdminList: () => void;
+  resetUserTwoFA: (userId: string) => Promise<boolean>;
   // Board-Rechner-Konten nach festem Schema anlegen (Board 1…count, gemeinsames Passwort). Nur Vereinsmodus/Admin.
   createBoardAccounts: (count: number, password: string) => void;
   // Profilfoto für Spieler/Benutzerkonto setzen/entfernen (nur Vereinsmodus, PocketBase-File-Feld).
@@ -425,6 +429,7 @@ export const useStore = create<AppState>((set, get) => ({
   screen: 'dashboard',
   selectedPlayerId: null,
   session: null,
+  twoFAUserIds: [],
   loginForm: { email: '', pw: '', code: '', mfaStep: false, err: '' },
   now: Date.now(),
 
@@ -1153,6 +1158,22 @@ export const useStore = create<AppState>((set, get) => ({
       if (me?.email) { try { await st.provider.login(me.email, newPassword); } catch { /* nicht kritisch – ggf. neu anmelden */ } }
       return true;
     } catch (e) { console.error('[pw]', e); set({ syncError: 'Passwort konnte nicht geändert werden.' }); return false; }
+  },
+  loadTwoFAAdminList() {
+    const st = get();
+    if (st.provider.mode !== 'verein') { set({ twoFAUserIds: [] }); return; }
+    // Nur Admins dürfen die Liste abrufen (Endpunkt ist admin-gated); für andere Rollen gar nicht erst versuchen.
+    if (st.accounts.find((a) => a.id === st.session)?.role !== 'admin') { set({ twoFAUserIds: [] }); return; }
+    void st.provider.twoFactorAdminList().then((ids) => set({ twoFAUserIds: ids })).catch(() => { /* Endpunkt fehlt (Altinstanz) → Spalte bleibt leer */ });
+  },
+  async resetUserTwoFA(userId) {
+    const st = get();
+    if (st.provider.mode !== 'verein') return false;
+    try {
+      await st.provider.twoFactorAdminReset(userId);
+      set((s) => ({ twoFAUserIds: s.twoFAUserIds.filter((id) => id !== userId) }));
+      return true;
+    } catch (e) { console.error('[2fa-reset]', e); set({ syncError: '2FA konnte nicht zurückgesetzt werden.' }); return false; }
   },
   toggleUserActive(id) {
     set((st) => {

@@ -13,6 +13,8 @@ export function UserModal() {
   const s = useStore();
   const [playerQuery, setPlayerQuery] = useState('');
   const [photoErr, setPhotoErr] = useState('');
+  const [confirm2fa, setConfirm2fa] = useState(false); // 2FA-Reset: Inline-Bestätigung
+  const [reset2faMsg, setReset2faMsg] = useState('');
   const m = s.userModal;
   if (!m) return null;
   const preview = (initials(`${m.first} ${m.last}`.trim()) || '?').toUpperCase();
@@ -219,6 +221,26 @@ export function UserModal() {
           <span style={{ position: 'absolute', top: 2, left: 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'transform .15s', transform: m.active ? 'translateX(20px)' : 'translateX(0)' }} />
         </button>
       </div>
+
+      {/* 2FA zurücksetzen (nur Bearbeiten/Verein, Konto hat 2FA aktiv, kein Board-Konto). */}
+      {m.mode === 'edit' && isVerein && !m.isBoard && (s.twoFAUserIds.includes(m.id!) || reset2faMsg) && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 16px', background: 'var(--btn)', borderRadius: 12, marginBottom: 22 }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 600 }}>2-Faktor-Authentifizierung</div>
+            <div style={{ fontSize: 12, color: reset2faMsg ? 'var(--success)' : 'var(--text-4)', marginTop: 2 }}>
+              {reset2faMsg || 'Aktiv. Zurücksetzen nur, wenn der Nutzer keinen Zugriff mehr hat (Handy & Backup-Codes verloren) — er muss 2FA danach neu einrichten.'}
+            </div>
+          </div>
+          {!reset2faMsg && (confirm2fa ? (
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <button onClick={() => setConfirm2fa(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
+              <button onClick={() => { void s.resetUserTwoFA(m.id!).then((okr) => { setConfirm2fa(false); if (okr) setReset2faMsg('✓ 2FA zurückgesetzt.'); }); }} style={{ background: '#E0594B', border: 'none', color: '#fff', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Ja, zurücksetzen</button>
+            </div>
+          ) : (
+            <button onClick={() => setConfirm2fa(true)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>2FA zurücksetzen</button>
+          ))}
+        </div>
+      )}
       </div>
 
       {/* Fester Fuß mit Speichern – immer sichtbar, auch bei langer Spielerliste. */}

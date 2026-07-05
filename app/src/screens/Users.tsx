@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { ROLES, ROLE_ORDER } from '../data/constants';
 import { IconPlus, IconEdit, IconBack } from '../lib/icons';
@@ -14,6 +14,8 @@ export function Users() {
   const linked = accounts.filter((a) => a.playerId).length;
   const order = s.settings.nameOrder ?? 'first';
   const [query, setQuery] = useState('');
+  // 2FA-Status aller Konten laden (nur Admin/Verein; Action guardet selbst). Für die 2FA-Spalte.
+  useEffect(() => { useStore.getState().loadTwoFAAdminList(); }, []);
 
   const playerName = (id: string | null) => { const p = s.players.find((x) => x.id === id); return p ? p.name : null; };
 
@@ -71,8 +73,8 @@ export function Users() {
       </div>
 
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1.1fr 92px 56px', gap: 10, padding: '13px 20px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', minWidth: 520 }}>
-          <span>Benutzer</span><span>Rolle</span><span>Spielerprofil</span><span style={{ textAlign: 'center' }}>Status</span><span />
+        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1.1fr 64px 92px 56px', gap: 10, padding: '13px 20px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', minWidth: 584 }}>
+          <span>Benutzer</span><span>Rolle</span><span>Spielerprofil</span><span style={{ textAlign: 'center' }}>2FA</span><span style={{ textAlign: 'center' }}>Status</span><span />
         </div>
         {visible.length === 0 && (
           <div style={{ padding: '28px 20px', textAlign: 'center', color: 'var(--text-4)', fontSize: 14 }}>
@@ -84,7 +86,7 @@ export function Users() {
           const pn = playerName(u.playerId);
           const me = u.id === s.session;
           return (
-            <div key={u.id} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1.1fr 92px 56px', gap: 10, alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid var(--hairline)', opacity: u.active ? 1 : 0.55, minWidth: 520 }}>
+            <div key={u.id} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1.1fr 64px 92px 56px', gap: 10, alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid var(--hairline)', opacity: u.active ? 1 : 0.55, minWidth: 584 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
                 <Avatar photo={u.photo} short={(u.first[0] || '') + (u.last[0] || '')} avi={u.avi} size={38} />
                 <div style={{ minWidth: 0 }}>
@@ -101,6 +103,13 @@ export function Users() {
                 {u.position && <div style={{ fontSize: 11, color: 'var(--text-4)', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.position}</div>}
               </div>
               <div style={{ fontSize: 12, color: pn ? 'var(--text-2)' : 'var(--text-5)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pn ? `↔ ${pn}` : 'kein Spielerprofil'}</div>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                {u.isBoard
+                  ? <span style={{ fontSize: 12, color: 'var(--text-5)' }}>–</span>
+                  : s.twoFAUserIds.includes(u.id)
+                    ? <span title="2FA aktiv" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 800, color: 'var(--success)' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--success)' }} />2FA</span>
+                    : <span title="2FA nicht eingerichtet" style={{ fontSize: 12, color: 'var(--text-5)' }}>–</span>}
+              </div>
               <button onClick={() => s.toggleUserActive(u.id)} title="Konto aktivieren / deaktivieren" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: u.active ? '#19A463' : 'var(--text-5)' }} />
                 <span style={{ fontSize: 12, fontWeight: 600, color: u.active ? 'var(--success)' : 'var(--text-4)' }}>{u.active ? 'Aktiv' : 'Inaktiv'}</span>

@@ -88,6 +88,12 @@ export interface DataProvider {
   twoFactorDisable(auth: { code?: string; password?: string }): Promise<void>;
   /** Erzeugt neue Backup-Codes nach Re-Auth; entwertet die alten. Liefert die neuen (nur EINMALIG). */
   twoFactorRegenerateBackup(auth: { code?: string; password?: string }): Promise<{ backupCodes: string[] }>;
+
+  // ── 2FA-Verwaltung durch Admins (fremde Konten); Lokal: leer/no-op ──
+  /** Nur Admin: IDs aller Konten mit aktivem 2FA (für die Spalte in der Benutzerliste). */
+  twoFactorAdminList(): Promise<string[]>;
+  /** Nur Admin: setzt 2FA eines Kontos zurück (löscht den Datensatz). Der Nutzer muss danach neu einrichten. */
+  twoFactorAdminReset(userId: string): Promise<{ wasEnabled: boolean }>;
   /**
    * Login-Versuch für den Kiosk-Ausstieg: meldet den Nutzer an, gibt ihn aber nur zurück, wenn seine
    * Rolle in `allowedRoles` liegt und das Konto aktiv ist. Andernfalls (falsche Rolle/inaktiv oder

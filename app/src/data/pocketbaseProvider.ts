@@ -233,6 +233,14 @@ export class PocketBaseProvider implements DataProvider {
     const r = await this.pb.send('/api/2fa/backup/regenerate', { method: 'POST', body: { code: auth.code ?? '', password: auth.password ?? '' } }) as { backupCodes: string[] };
     return { backupCodes: r.backupCodes };
   }
+  async twoFactorAdminList(): Promise<string[]> {
+    const r = await this.pb.send('/api/2fa/admin/list', { method: 'GET' }) as { enabled?: string[] };
+    return Array.isArray(r?.enabled) ? r.enabled : [];
+  }
+  async twoFactorAdminReset(userId: string): Promise<{ wasEnabled: boolean }> {
+    const r = await this.pb.send('/api/2fa/admin/reset', { method: 'POST', body: { userId } }) as { wasEnabled?: boolean };
+    return { wasEnabled: !!r?.wasEnabled };
+  }
   async kioskExitAuth(email: string, password: string, allowedRoles: Role[]): Promise<AuthUser | null> {
     // Board-Sitzung merken, damit sie bei Ablehnung unverändert weiterläuft.
     const prevToken = this.pb.authStore.token;

@@ -63,6 +63,39 @@ routerAdd('GET', '/api/2fa/status', (e) => {
   return e.json(200, { enabled: enabled, pending: pending });
 }, $apis.requireAuth('users'));
 
+// ---- GET /api/2fa/admin/list — welche Konten haben 2FA aktiv? (nur Admin) -
+// Für die 2FA-Spalte in der Benutzerliste. user_mfa ist abgeschottet → nur hier (App-Kontext) lesbar.
+routerAdd('GET', '/api/2fa/admin/list', (e) => {
+  const auth = e.auth;
+  if (!auth) throw new ForbiddenError('Anmeldung erforderlich.');
+  if (auth.get('role') !== 'admin') throw new ForbiddenError('Nur Admins dürfen den 2FA-Status einsehen.');
+  const ids = [];
+  try {
+    const recs = e.app.findRecordsByFilter('user_mfa', 'enabled = true', '', 1000, 0);
+    for (let i = 0; i < recs.length; i++) ids.push(recs[i].get('user'));
+  } catch (_) { /* keine Datensätze → leer */ }
+  return e.json(200, { enabled: ids });
+}, $apis.requireAuth('users'));
+
+// ---- POST /api/2fa/admin/reset — 2FA eines Kontos zurücksetzen (nur Admin) -
+// In-App-Gegenstück zu reset-2fa.mjs: löscht den user_mfa-Datensatz (2FA aus). Für „Handy + Codes weg".
+routerAdd('POST', '/api/2fa/admin/reset', (e) => {
+  const auth = e.auth;
+  if (!auth) throw new ForbiddenError('Anmeldung erforderlich.');
+  if (auth.get('role') !== 'admin') throw new ForbiddenError('Nur Admins dürfen 2FA zurücksetzen.');
+  const data = new DynamicModel({ userId: '' });
+  e.bindBody(data);
+  const userId = ('' + (data.userId || '')).trim();
+  if (!userId) throw new BadRequestError('userId fehlt.');
+  let wasEnabled = false;
+  try {
+    const mfa = e.app.findFirstRecordByFilter('user_mfa', 'user = {:uid}', { uid: userId });
+    wasEnabled = mfa.getBool('enabled');
+    e.app.delete(mfa);
+  } catch (_) { /* kein Datensatz → nichts zu tun */ }
+  return e.json(200, { ok: true, wasEnabled: wasEnabled });
+}, $apis.requireAuth('users'));
+
 // ---- POST /api/2fa/enable ------------------------------------------------
 routerAdd('POST', '/api/2fa/enable', (e) => {
   const auth = e.auth;

@@ -64,6 +64,9 @@ Neue, **abgeschottete** Collection `user_mfa` (Secrets nie über die normale API
 | `/api/2fa/disable` | POST | eingeloggt | ✅ **umgesetzt** — nach gültigem Code/Passwort (Re-Auth) → `user_mfa` löschen |
 | `/api/2fa/backup/regenerate` | POST | eingeloggt | ✅ **umgesetzt** — nach Re-Auth 10 neue Backup-Codes (alte vollständig entwertet) |
 | `/api/login` | POST | — | ✅ **umgesetzt** (`pb_hooks/2fa_hooks.pb.js`) — zentraler Login mit 2FA-Challenge (§5), TOTP **oder** Backup-Code, Lockout 5/5min |
+| `/api/2fa/status` | GET | eingeloggt | ✅ **umgesetzt** — eigener 2FA-Status (die UI erfährt ihn nur so, da `user_mfa` abgeschottet ist) |
+| `/api/2fa/admin/list` | GET | **Admin** | ✅ **umgesetzt** — IDs aller Konten mit aktivem 2FA (für die Spalte in der Benutzerliste) |
+| `/api/2fa/admin/reset` | POST | **Admin** | ✅ **umgesetzt** — 2FA eines Kontos zurücksetzen (In-App-Gegenstück zu `reset-2fa.mjs`) |
 
 Token-Ausgabe im Hook über `$apis.recordAuthResponse(e, user, "password", meta)`;
 Passwortprüfung über `user.validatePassword(pw)`.
@@ -91,9 +94,14 @@ Frontend (`store.loginEmail` / `Login.tsx`): nach Schritt 4 ein **6-stelliges Co
 
 - **Backup-Codes:** bei der Aktivierung **einmalig** angezeigt (Anzeige + Download), 10× z. B.
   8-stellig, **gehasht** gespeichert, **Einmalgebrauch** (used-Flag). Im Login statt TOTP nutzbar.
-- **Superuser-Rettung:** ✅ **umgesetzt** — `pocketbase/reset-2fa.mjs` (analog zu `reset-password.mjs`):
+- **Admin-Reset in der App:** ✅ **umgesetzt** — in der Benutzerliste zeigt eine **2FA-Spalte**, wer
+  2FA aktiv hat; im Bearbeiten-Dialog eines Kontos kann der Admin **„2FA zurücksetzen"** (mit Bestätigung).
+  Löscht den `user_mfa`-Datensatz → der Nutzer meldet sich nur mit Passwort an und richtet 2FA neu ein.
+  Endpunkte `/api/2fa/admin/list` + `/api/2fa/admin/reset` (admin-gated). Der erste Anlaufpunkt bei
+  „Handy/Codes weg" — ohne CLI/Superuser.
+- **Superuser-Rettung (CLI):** ✅ **umgesetzt** — `pocketbase/reset-2fa.mjs` (analog zu `reset-password.mjs`):
   authentifiziert als Superuser → löscht den `user_mfa`-Datensatz eines Kontos = 2FA aus (mit Gegenprobe).
-  Letzter Notnagel bei „Handy weg **und** Backup-Codes weg".
+  Letzter Notnagel, falls **kein** App-Admin verfügbar ist.
   Aufruf: `USER_EMAIL=… node reset-2fa.mjs` (Cloud zusätzlich `PB_URL`/`PB_SU_EMAIL`/`PB_SU_PASS`).
 
 ---

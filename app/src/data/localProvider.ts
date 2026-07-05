@@ -86,6 +86,8 @@ export class LocalProvider implements DataProvider {
   async twoFactorEnable(): Promise<{ backupCodes: string[] }> { throw new Error('2-Faktor-Authentifizierung gibt es nur im Vereinsmodus.'); }
   async twoFactorDisable(): Promise<void> { /* lokal nichts zu tun */ }
   async twoFactorRegenerateBackup(): Promise<{ backupCodes: string[] }> { throw new Error('2-Faktor-Authentifizierung gibt es nur im Vereinsmodus.'); }
+  async twoFactorAdminList(): Promise<string[]> { return []; }
+  async twoFactorAdminReset(): Promise<{ wasEnabled: boolean }> { return { wasEnabled: false }; }
   // Lokal gibt es keine echte Anmeldung — der Kiosk-Ausstieg wird im Store vor dem Provider abgehandelt.
   async kioskExitAuth(): Promise<AuthUser | null> { return { id: 'local', name: 'Lokal', role: 'admin', active: true }; }
   async logout(): Promise<void> { /* noop */ }
