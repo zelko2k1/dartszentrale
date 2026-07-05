@@ -104,7 +104,9 @@ Frontend (`store.loginEmail` / `Login.tsx`): nach Schritt 4 ein **6-stelliges Co
   - Status (aus/aktiv), **Aktivieren-Assistent**: QR anzeigen → Code bestätigen → **Backup-Codes**
     anzeigen/herunterladen.
   - Deaktivieren (mit Code/Passwort), Backup-Codes neu erzeugen.
-  - **QR-Rendering:** kleine Pure-JS-QR-Erzeugung (SVG) — leichte Abhängigkeit, kein schweres Paket.
+  - **QR-Rendering:** ✅ eigener vendored Pure-JS-Encoder `app/src/lib/qrcode.ts` (Byte-Modus, ECC-M,
+  Versionen 1–10, Reed-Solomon + Masken + Versions-Info) → SVG; **kein npm-Paket**. Gegen node-qrcode
+  (0/2401 Zell-Diff) und per jsQR-Dekodierung verifiziert.
 - **Login:** nach Passwort ggf. Code-Feld (TOTP / Backup-Code).
 - **Admin-Nudge (optional):** Admins ohne 2FA sehen einen dezenten Hinweis-Banner „2FA empfohlen".
 - **Policy-Schalter (default aus):** „2FA für Admins erzwingen" — vorbereitet für den Internet-Betrieb.
@@ -140,7 +142,7 @@ nach dem Turnier-Scaffold in beide portieren. Empfehlung: **zuerst in `dartszent
 |---|---|
 | **A — Spike** | ✅ **ERLEDIGT 2026-07-05** ([`../spikes/2fa/ERGEBNIS.md`](../spikes/2fa/ERGEBNIS.md)). Befund: `$security` hat **kein** SHA-1/HMAC-SHA1 → Pure-JS-Routine (`spikes/2fa/totp.js`, ES5.1, inline im Hook) eingebettet; im echten goja-JSVM gegen alle RFC-6238-Vektoren + 200× Node-`crypto`-Kreuzvergleich verifiziert. |
 | **B — Backend** | ✅ **fast fertig** (2026-07-05): `user_mfa` (Migration `1782300002_user_mfa.js` + provision.mjs, abgeschottet) · Hooks `setup` + `enable` + `/api/login`-Challenge (TOTP/Backup, Lockout 5/5min) + **`disable` + `backup/regenerate`** (Re-Auth via Code ODER Passwort) — alle in `pb_hooks/2fa_hooks.pb.js`, plus **`reset-2fa.mjs`** (Superuser-Rettung), E2E gegen frische PB grün (setup/enable 17/17, login 13/13, disable/regenerate 14/14, reset 3/3 + Rand-Fälle). **✅ Phase B abgeschlossen** — nächster Schritt Phase C (Frontend). **⚠ Zwei JSVM-Fallen (verifiziert):** (1) `record.get('<json>')` liefert ROHE UTF-8-Bytes (byte-Array), nicht geparst → per `String.fromCharCode`+`JSON.parse` dekodieren. (2) Route-Handler laufen in **isolierter VM ohne Modul-Scope** → geteilte Helfer (z. B. Re-Auth) MÜSSEN handler-lokal sein, ein Top-Level-`function` wirft `ReferenceError` (= generischer 400). |
-| **C — Frontend** | ⬅ **als Nächstes.** Settings-Assistent (QR + Bestätigung + Backup-Codes), Login-Challenge-Feld, Deaktivieren/Neu-Erzeugen. **Kernumstellung:** `Login.tsx`/`pocketbaseProvider.ts` von direktem `authWithPassword` auf **`POST /api/login`** umstellen — sonst umgeht die App das serverseitige 2FA (Sicherheits-Voraussetzung, muss zusammen mit dem Feature ausgerollt werden). |
+| **C — Frontend** | ✅ **umgesetzt** (2026-07-05). Login auf **`POST /api/login`** umgestellt (`pocketbaseProvider.login` → `LoginResult`, Store `loginEmail` behandelt `mfaRequired`, `Login.tsx` blendet Code-Feld ein). Settings-Assistent „2-Faktor-Authentifizierung" unter *Mein Konto* (`TwoFactorSettings` in `Settings.tsx`): QR (eigener vendored Pure-JS-Encoder `app/src/lib/qrcode.ts`, gegen node-qrcode + jsQR verifiziert) + Secret-Fallback → Bestätigung → Backup-Codes (kopieren/herunterladen) · Deaktivieren · Neu-Erzeugen (Re-Auth). Neuer Backend-Endpunkt `GET /api/2fa/status`. **End-to-End im echten Browser (Playwright) verifiziert: 9/9.** |
 | **D — Härtung+Doku** | HTTPS/Exposition-Guidance, Admin-Nudge, Policy-Schalter, Docs (`admin-anleitung-cloud.md`/`lokaler-betrieb.md`). |
 | **E — Turnier-App** | über Fork erben bzw. portieren + verifizieren. |
 

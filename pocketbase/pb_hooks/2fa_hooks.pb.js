@@ -49,6 +49,20 @@ routerAdd('POST', '/api/2fa/setup', (e) => {
   return e.json(200, { secret: secret, otpauth_uri: uri, issuer: issuer, account: email });
 }, $apis.requireAuth('users'));
 
+// ---- GET /api/2fa/status — ist 2FA für den eingeloggten Nutzer aktiv? -----
+// Die Collection user_mfa ist abgeschottet; die Settings-UI erfährt den Status nur hierüber.
+routerAdd('GET', '/api/2fa/status', (e) => {
+  const auth = e.auth;
+  if (!auth) throw new ForbiddenError('Anmeldung erforderlich.');
+  let enabled = false, pending = false;
+  try {
+    const mfa = e.app.findFirstRecordByFilter('user_mfa', 'user = {:uid}', { uid: auth.id });
+    enabled = mfa.getBool('enabled');
+    pending = mfa.getBool('pending');
+  } catch (_) { /* kein Datensatz → 2FA aus */ }
+  return e.json(200, { enabled: enabled, pending: pending });
+}, $apis.requireAuth('users'));
+
 // ---- POST /api/2fa/enable ------------------------------------------------
 routerAdd('POST', '/api/2fa/enable', (e) => {
   const auth = e.auth;

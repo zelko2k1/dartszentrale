@@ -56,9 +56,23 @@ export function Login() {
             style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 6 }}
           />
 
+          {s.loginForm.mfaStep && (
+            <div style={{ marginTop: 8 }}>
+              <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 6 }}>Bestätigungscode</label>
+              <input
+                className="dh-input" type="text" inputMode="numeric" autoComplete="one-time-code" autoFocus
+                value={s.loginForm.code} placeholder="123456"
+                onChange={(e) => s.setLoginField('code', e.target.value.replace(/\s/g, ''))}
+                onKeyDown={(e) => { if (e.key === 'Enter') s.loginEmail(); }}
+                style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 18, letterSpacing: '.25em', fontFamily: 'var(--font-num, monospace)', marginBottom: 6 }}
+              />
+              <div style={{ fontSize: 11, color: 'var(--text-5)', margin: '2px 2px 0' }}>Code aus deiner Authenticator-App. Kein Zugriff? Gib stattdessen einen deiner 8-stelligen Backup-Codes ein.</div>
+            </div>
+          )}
+
           {s.loginForm.err && <div style={{ fontSize: 12, color: '#E0594B', fontWeight: 600, margin: '6px 2px 0' }}>{s.loginForm.err}</div>}
 
-          <button className="dh-primary" onClick={() => s.loginEmail()} style={{ width: '100%', marginTop: 16, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Anmelden</button>
+          <button className="dh-primary" onClick={() => s.loginEmail()} style={{ width: '100%', marginTop: 16, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{s.loginForm.mfaStep ? 'Bestätigen' : 'Anmelden'}</button>
 
           {demos.length > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '22px 0 16px' }}>

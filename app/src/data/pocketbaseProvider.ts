@@ -4,8 +4,8 @@
 // PocketBase-Record und der generische CRUD-Pfad funktioniert ohne Feld-Mapping.
 // Einzige Sonderfälle: 'accounts' → PB-Auth-Collection 'users' (Passwort), sowie
 // user_prefs (persönliche Einstellungen) und club_config (Vereinsname/Logo).
-import PocketBase from 'pocketbase';
-import type { DataProvider, Snapshot, CollectionName, AuthUser, ProviderRecord, PublicConfig } from './provider';
+import PocketBase, { type RecordModel } from 'pocketbase';
+import type { DataProvider, Snapshot, CollectionName, AuthUser, ProviderRecord, PublicConfig, LoginResult, TwoFactorStatus, TwoFactorSetup } from './provider';
 import type { Settings, Role } from './types';
 import { DEVICE_LOCAL_SETTING_KEYS } from './constants';
 
@@ -194,9 +194,44 @@ export class PocketBaseProvider implements DataProvider {
     else { const rec = await this.pb.collection('user_prefs').create(body); this.prefsId = rec.id; }
   }
 
-  async login(email: string, password: string): Promise<AuthUser> {
-    const auth = await this.pb.collection('users').authWithPassword(email, password);
-    return toAuthUser(auth.record as unknown as ProviderRecord)!;
+  // Login über den serverseitigen 2FA-Endpunkt (pb_hooks/2fa_hooks.pb.js /api/login) statt direktem
+  // authWithPassword — sonst würde die App aktives 2FA umgehen. Bei aktivem 2FA ohne/mit falschem Code
+  // kommt kein Token, sondern { mfa_required:true } (200) bzw. 400/429 mit mfa_required im Fehlerbody.
+  async login(email: string, password: string, code?: string): Promise<LoginResult> {
+    try {
+      const res = await this.pb.send('/api/login', { method: 'POST', body: { email, password, code: code ?? '' } }) as
+        { token?: string; record?: ProviderRecord; mfa_required?: boolean; error?: string };
+      if (res?.token && res?.record) {
+        this.pb.authStore.save(res.token, res.record as unknown as RecordModel);
+        return { ok: true, user: toAuthUser(res.record)! };
+      }
+      if (res?.mfa_required) return { ok: false, mfaRequired: true, error: res.error };
+      throw new Error('Unerwartete Login-Antwort.');
+    } catch (err: unknown) {
+      const resp = (err as { response?: { mfa_required?: boolean; error?: string; message?: string } })?.response;
+      if (resp?.mfa_required) return { ok: false, mfaRequired: true, error: resp.error || resp.message };
+      throw err; // echte Auth-Fehler (falsches Passwort, deaktiviert) an den Store weiterreichen
+    }
+  }
+
+  async twoFactorStatus(): Promise<TwoFactorStatus> {
+    const r = await this.pb.send('/api/2fa/status', { method: 'GET' }) as { enabled?: boolean; pending?: boolean };
+    return { enabled: !!r?.enabled, pending: !!r?.pending };
+  }
+  async twoFactorSetup(): Promise<TwoFactorSetup> {
+    const r = await this.pb.send('/api/2fa/setup', { method: 'POST', body: {} }) as { secret: string; otpauth_uri: string; account: string };
+    return { secret: r.secret, otpauthUri: r.otpauth_uri, account: r.account };
+  }
+  async twoFactorEnable(code: string): Promise<{ backupCodes: string[] }> {
+    const r = await this.pb.send('/api/2fa/enable', { method: 'POST', body: { code } }) as { backupCodes: string[] };
+    return { backupCodes: r.backupCodes };
+  }
+  async twoFactorDisable(auth: { code?: string; password?: string }): Promise<void> {
+    await this.pb.send('/api/2fa/disable', { method: 'POST', body: { code: auth.code ?? '', password: auth.password ?? '' } });
+  }
+  async twoFactorRegenerateBackup(auth: { code?: string; password?: string }): Promise<{ backupCodes: string[] }> {
+    const r = await this.pb.send('/api/2fa/backup/regenerate', { method: 'POST', body: { code: auth.code ?? '', password: auth.password ?? '' } }) as { backupCodes: string[] };
+    return { backupCodes: r.backupCodes };
   }
   async kioskExitAuth(email: string, password: string, allowedRoles: Role[]): Promise<AuthUser | null> {
     // Board-Sitzung merken, damit sie bei Ablehnung unverändert weiterläuft.

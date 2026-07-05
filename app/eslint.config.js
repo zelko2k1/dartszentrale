@@ -25,6 +25,9 @@ export default defineConfig([
       'react-hooks/set-state-in-effect': 'warn',
       'react-hooks/preserve-manual-memoization': 'warn',
       'react-hooks/refs': 'warn',
+      // Unterstrich-Präfix = absichtlich ungenutzt (Standard-Konvention, z. B. Positionsargumente
+      // wie in den QR-Maskenfunktionen (r, _c) oder ignorierte catch-Fehler).
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
     },
   },
 ])

@@ -138,7 +138,7 @@ export interface AppState {
   screen: Screen;
   selectedPlayerId: string | null;
   session: string | null;
-  loginForm: { email: string; pw: string; err: string };
+  loginForm: { email: string; pw: string; code: string; mfaStep: boolean; err: string };
   now: number;
 
   // Datenquelle (lokal = localStorage, verein = PocketBase wenn VITE_PB_URL gesetzt)
@@ -224,7 +224,7 @@ export interface AppState {
   openPlayer: (id: string) => void;
 
   // login
-  setLoginField: (key: 'email' | 'pw', val: string) => void;
+  setLoginField: (key: 'email' | 'pw' | 'code', val: string) => void;
   login: (id: string) => void;
   loginEmail: () => void;
   logout: () => void;
@@ -425,7 +425,7 @@ export const useStore = create<AppState>((set, get) => ({
   screen: 'dashboard',
   selectedPlayerId: null,
   session: null,
-  loginForm: { email: '', pw: '', err: '' },
+  loginForm: { email: '', pw: '', code: '', mfaStep: false, err: '' },
   now: Date.now(),
 
   provider: createProvider('local'),
@@ -731,33 +731,44 @@ export const useStore = create<AppState>((set, get) => ({
   go(screen) { set({ screen }); },
   openPlayer(id) { set({ selectedPlayerId: id, screen: 'playerDetail' }); },
 
-  setLoginField(key, val) { set((st) => ({ loginForm: { ...st.loginForm, [key]: val, err: '' } })); },
+  setLoginField(key, val) {
+    // Ändert der Nutzer E-Mail/Passwort, startet der Login-Flow neu (2FA-Schritt zurücksetzen).
+    set((st) => ({ loginForm: { ...st.loginForm, [key]: val, err: '', ...(key === 'code' ? {} : { mfaStep: false, code: '' }) } }));
+  },
   // Schnellanmeldung per Konto-Klick — nur im lokalen Demo-Modus (kein Passwort).
   login(id) {
     if (get().pbMode) return; // im echten Vereinsmodus ist Passwort-Login Pflicht
     const acc = get().accounts.find((a) => a.id === id);
     if (!acc || !acc.active) return;
     write(LS.session, id);
-    set({ session: id, screen: 'dashboard', loginForm: { email: '', pw: '', err: '' } });
+    set({ session: id, screen: 'dashboard', loginForm: { email: '', pw: '', code: '', mfaStep: false, err: '' } });
   },
   loginEmail() {
     const st = get();
     const email = st.loginForm.email.trim();
     if (st.pbMode) {
-      // Echte PocketBase-Anmeldung mit E-Mail + Passwort.
-      void st.provider.login(email, st.loginForm.pw).then((user) => {
-        // Deaktivierte Konten dürfen sich nicht anmelden (analog zum lokalen Modus).
-        // Server-seitig ebenfalls per authRule "active = true" erzwungen; diese Prüfung
-        // liefert die verständliche Meldung und greift auch bei Altinstanzen ohne Rule.
-        if (!user.active) {
+      // Echte Anmeldung über /api/login (serverseitiges 2FA). Bei aktivem 2FA kommt zuerst
+      // { ok:false, mfaRequired } — dann blendet die Login-Seite das Code-Feld ein und ruft
+      // loginEmail() erneut auf, diesmal mit dem 6-stelligen Code (oder Backup-Code).
+      const code = st.loginForm.mfaStep ? st.loginForm.code.trim() : undefined;
+      void st.provider.login(email, st.loginForm.pw, code).then((res) => {
+        if (!res.ok) {
+          // 2FA erforderlich: Code-Feld einblenden. `error` gesetzt = voriger Code war falsch/gesperrt.
+          set((s) => ({ loginForm: { ...s.loginForm, mfaStep: true, err: res.error || '' } }));
+          return;
+        }
+        const user = res.user;
+        if (!user.active) { // Zusatzabsicherung (Server blockt inaktive bereits).
           void st.provider.logout();
           set((s) => ({ session: null, loginForm: { ...s.loginForm, err: 'Dieses Konto ist deaktiviert. Bitte wende dich an die Vereinsverwaltung.' } }));
           return;
         }
-        set({ session: user.id, screen: 'dashboard', loginForm: { email: '', pw: '', err: '' } });
+        set({ session: user.id, screen: 'dashboard', loginForm: { email: '', pw: '', code: '', mfaStep: false, err: '' } });
         void applySnapshot(get, set); // Daten + persönliche Einstellungen des Nutzers nachladen
-      }).catch(() => {
-        set((s) => ({ loginForm: { ...s.loginForm, err: 'Anmeldung fehlgeschlagen. E-Mail oder Passwort falsch.' } }));
+      }).catch((e: unknown) => {
+        // Echter Auth-Fehler: server-seitige Meldung (deutsch) anzeigen, sonst generisch.
+        const msg = (e as { response?: { message?: string } })?.response?.message;
+        set((s) => ({ loginForm: { ...s.loginForm, err: msg || 'Anmeldung fehlgeschlagen. E-Mail oder Passwort falsch.' } }));
       });
       return;
     }
@@ -2058,7 +2069,7 @@ async function applySnapshot(get: () => AppState, set: SetFn) {
       const me = snap.accounts.find((a) => a.id === sessionId);
       if (!me || me.active === false) {
         void get().provider.logout();
-        set({ session: null, screen: 'dashboard', loginForm: { email: '', pw: '', err: 'Dein Konto wurde deaktiviert. Bitte wende dich an die Vereinsverwaltung.' } });
+        set({ session: null, screen: 'dashboard', loginForm: { email: '', pw: '', code: '', mfaStep: false, err: 'Dein Konto wurde deaktiviert. Bitte wende dich an die Vereinsverwaltung.' } });
         return;
       }
     }

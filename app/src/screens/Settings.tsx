@@ -6,6 +6,8 @@ import type { Settings as SettingsType } from '../data/types';
 import { IconUsers, IconChevronRight } from '../lib/icons';
 import { comboFromEvent, isValidCombo, formatCombo } from '../lib/shortcut';
 import { suggestBoardScale } from '../lib/displayScale';
+import { qrSvg } from '../lib/qrcode';
+import type { TwoFactorStatus, TwoFactorSetup } from '../data/provider';
 
 const ACCENTS = ['#FFFFFF', '#000000', '#2BD377', '#19A463', '#3B9EFF', '#F2B829', '#E0594B', '#9b6dff', '#2bd3c0', '#FF8A3D'];
 const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'];
@@ -175,6 +177,151 @@ function PasswordChange() {
       <input type="password" autoComplete="new-password" value={pw2} onChange={(e) => { setPw2(e.target.value); setMsg(null); }} placeholder="Wiederholen" style={field} />
       <button onClick={submit} disabled={busy || !pw || !pw2} style={{ background: accent, color: 'var(--accent-fg)', border: 'none', borderRadius: 10, padding: '10px 18px', fontSize: 13, fontWeight: 800, cursor: busy ? 'default' : 'pointer', fontFamily: 'inherit', opacity: busy || !pw || !pw2 ? 0.6 : 1 }}>{busy ? 'Speichern …' : 'Passwort ändern'}</button>
       {msg && <span style={{ fontSize: 12, fontWeight: 600, color: msg.ok ? 'var(--success)' : '#E0594B' }}>{msg.text}</span>}
+    </div>
+  );
+}
+
+// Backup-Codes als Textdatei herunterladen (einmalige Anzeige → sicher speichern).
+function downloadBackupCodes(codes: string[], account: string) {
+  const body = [
+    'DartsZentrale — 2FA Backup-Codes',
+    `Konto: ${account}`,
+    '',
+    'Jeder Code ist EINMALIG beim Login statt des Authenticator-Codes nutzbar.',
+    'Sicher aufbewahren, nicht weitergeben.',
+    '',
+    ...codes.map((c, i) => `${String(i + 1).padStart(2, '0')}.  ${c}`),
+  ].join('\n');
+  const url = URL.createObjectURL(new Blob([body], { type: 'text/plain;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = 'dartszentrale-backup-codes.txt';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+// Self-Service 2-Faktor-Authentifizierung (TOTP). Nutzt die serverseitigen Endpunkte über den Provider.
+function TwoFactorSettings() {
+  const provider = useStore((st) => st.provider);
+  const accent = useStore((st) => st.settings.accent);
+  const [status, setStatus] = useState<TwoFactorStatus | null>(null);
+  const [phase, setPhase] = useState<'idle' | 'setup' | 'backup' | 'disable' | 'regen'>('idle');
+  const [setup, setSetup] = useState<TwoFactorSetup | null>(null);
+  const [code, setCode] = useState('');       // Enrollment-Bestätigung
+  const [reauth, setReauth] = useState('');   // Code ODER Passwort für disable/regenerate
+  const [backupCodes, setBackupCodes] = useState<string[] | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const loadStatus = () => { void provider.twoFactorStatus().then(setStatus).catch(() => setStatus({ enabled: false, pending: false })); };
+  useEffect(loadStatus, [provider]);
+
+  const errText = (e: unknown) => (e as { response?: { message?: string } })?.response?.message || 'Aktion fehlgeschlagen. Bitte erneut versuchen.';
+  const reauthArg = () => (/^\d{6}$|^\d{8}$/.test(reauth.trim()) ? { code: reauth.trim() } : { password: reauth });
+  const reset = () => { setPhase('idle'); setSetup(null); setCode(''); setReauth(''); setBackupCodes(null); setErr(''); setBusy(false); };
+
+  const field: CSSProperties = { width: 210, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'var(--font-num, monospace)', fontSize: 15, letterSpacing: '.12em', outline: 'none' };
+  const btn = (primary?: boolean): CSSProperties => ({ background: primary ? accent : 'var(--btn)', color: primary ? 'var(--accent-fg)' : 'var(--text)', border: primary ? 'none' : '1px solid var(--border-2)', padding: '10px 18px', borderRadius: 10, fontSize: 13, fontWeight: primary ? 800 : 700, cursor: busy ? 'default' : 'pointer', fontFamily: 'inherit', opacity: busy ? 0.6 : 1 });
+
+  const beginSetup = async () => {
+    setBusy(true); setErr('');
+    try { const s = await provider.twoFactorSetup(); setSetup(s); setPhase('setup'); }
+    catch (e) { setErr(errText(e)); }
+    finally { setBusy(false); }
+  };
+  const confirmSetup = async () => {
+    setBusy(true); setErr('');
+    try { const r = await provider.twoFactorEnable(code.trim()); setBackupCodes(r.backupCodes); setPhase('backup'); setCode(''); loadStatus(); }
+    catch (e) { setErr(errText(e)); }
+    finally { setBusy(false); }
+  };
+  const doDisable = async () => {
+    setBusy(true); setErr('');
+    try { await provider.twoFactorDisable(reauthArg()); reset(); loadStatus(); }
+    catch (e) { setErr(errText(e)); setBusy(false); }
+  };
+  const doRegen = async () => {
+    setBusy(true); setErr('');
+    try { const r = await provider.twoFactorRegenerateBackup(reauthArg()); setBackupCodes(r.backupCodes); setReauth(''); setPhase('backup'); loadStatus(); }
+    catch (e) { setErr(errText(e)); }
+    finally { setBusy(false); }
+  };
+
+  const errBox = err ? <div style={{ fontSize: 12, color: '#E0594B', fontWeight: 600, marginTop: 8 }}>{err}</div> : null;
+
+  // Backup-Codes-Ansicht (nach Aktivierung oder Neu-Erzeugung) — nur EINMALIG sichtbar.
+  if (phase === 'backup' && backupCodes) {
+    const acct = setup?.account || '';
+    return (
+      <div style={{ maxWidth: 420 }}>
+        <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 10 }}><b>Backup-Codes</b> — jeder Code ist einmal beim Login statt des App-Codes nutzbar. Jetzt sicher speichern; sie werden <b>nicht erneut angezeigt</b>.</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: 14 }}>
+          {backupCodes.map((c) => <span key={c} style={{ fontFamily: 'var(--font-num, monospace)', fontSize: 15, letterSpacing: '.1em', textAlign: 'center' }}>{c}</span>)}
+        </div>
+        <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+          <button style={btn()} onClick={() => { void navigator.clipboard?.writeText(backupCodes.join('\n')).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}>{copied ? '✓ Kopiert' : 'Kopieren'}</button>
+          <button style={btn()} onClick={() => downloadBackupCodes(backupCodes, acct)}>Herunterladen</button>
+          <button style={btn(true)} onClick={reset}>Fertig</button>
+        </div>
+      </div>
+    );
+  }
+
+  // Einrichtungs-Assistent (QR + Secret + Bestätigungscode).
+  if (phase === 'setup' && setup) {
+    const svg = qrSvg(setup.otpauthUri, { moduleSize: 4, margin: 2 });
+    const dataUri = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    return (
+      <div style={{ maxWidth: 420 }}>
+        <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 12 }}>1. Scanne den QR-Code mit einer Authenticator-App (Google Authenticator, Microsoft, 2FAS, Authy …).</div>
+        <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+          <img src={dataUri} alt="QR-Code für die Authenticator-App" width={168} height={168} style={{ background: '#fff', borderRadius: 10, padding: 8 }} />
+          <div style={{ minWidth: 160 }}>
+            <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, marginBottom: 4 }}>Oder manuell eingeben:</div>
+            <div style={{ fontFamily: 'var(--font-num, monospace)', fontSize: 13, wordBreak: 'break-all', color: 'var(--text-2)', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '8px 10px' }}>{setup.secret}</div>
+          </div>
+        </div>
+        <div style={{ fontSize: 13, color: 'var(--text-2)', margin: '16px 0 8px' }}>2. Gib den aktuellen 6-stelligen Code zur Bestätigung ein:</div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <input type="text" inputMode="numeric" autoComplete="one-time-code" value={code} placeholder="123456" onChange={(e) => { setCode(e.target.value.replace(/\s/g, '')); setErr(''); }} onKeyDown={(e) => { if (e.key === 'Enter' && code.trim()) void confirmSetup(); }} style={field} />
+          <button style={btn(true)} disabled={busy || code.trim().length < 6} onClick={() => void confirmSetup()}>{busy ? 'Prüfe …' : 'Aktivieren'}</button>
+          <button style={btn()} disabled={busy} onClick={reset}>Abbrechen</button>
+        </div>
+        {errBox}
+      </div>
+    );
+  }
+
+  // Re-Auth-Eingabe für Deaktivieren / Neu-Erzeugen.
+  if (phase === 'disable' || phase === 'regen') {
+    const isDisable = phase === 'disable';
+    return (
+      <div style={{ maxWidth: 420, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+        <div style={{ fontSize: 13, color: 'var(--text-2)', alignSelf: 'stretch' }}>{isDisable ? '2FA deaktivieren' : 'Neue Backup-Codes'} — bitte mit einem aktuellen Code (oder Backup-Code) oder deinem Passwort bestätigen.</div>
+        <input type="password" autoComplete="off" value={reauth} placeholder="Code oder Passwort" onChange={(e) => { setReauth(e.target.value); setErr(''); }} onKeyDown={(e) => { if (e.key === 'Enter' && reauth) void (isDisable ? doDisable() : doRegen()); }} style={{ ...field, fontFamily: 'inherit', letterSpacing: 0, width: 240 }} />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button style={btn()} disabled={busy} onClick={reset}>Abbrechen</button>
+          <button style={btn(true)} disabled={busy || !reauth} onClick={() => void (isDisable ? doDisable() : doRegen())}>{busy ? 'Bitte warten …' : (isDisable ? 'Deaktivieren' : 'Neu erzeugen')}</button>
+        </div>
+        {errBox}
+      </div>
+    );
+  }
+
+  // Ruhezustand: Status + Aktionen.
+  if (!status) return <span style={{ fontSize: 13, color: 'var(--text-4)' }}>Lädt …</span>;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+      <span style={{ fontSize: 13, fontWeight: 700, color: status.enabled ? 'var(--success)' : 'var(--text-4)' }}>{status.enabled ? '● Aktiv' : '○ Nicht aktiv'}</span>
+      {status.enabled ? (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <button style={btn()} onClick={() => { setErr(''); setPhase('regen'); }}>Backup-Codes neu</button>
+          <button style={btn()} onClick={() => { setErr(''); setPhase('disable'); }}>Deaktivieren</button>
+        </div>
+      ) : (
+        <button style={btn(true)} disabled={busy} onClick={() => void beginSetup()}>{busy ? 'Bitte warten …' : '2FA einrichten'}</button>
+      )}
+      {errBox}
     </div>
   );
 }
@@ -592,6 +739,9 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     <Section title="Mein Konto">
       <Row label="Passwort ändern" sub="Neues Passwort für deinen eigenen Login. Mindestens 8 Zeichen; bestehende Sitzungen werden danach abgemeldet." top>
         <PasswordChange />
+      </Row>
+      <Row label="2-Faktor-Authentifizierung" sub="Zusätzlicher Schutz beim Login per Authenticator-App (TOTP). Optional. Mit Backup-Codes für den Notfall." top>
+        <TwoFactorSettings />
       </Row>
     </Section>
   );

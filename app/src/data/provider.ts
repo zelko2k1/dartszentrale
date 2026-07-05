@@ -34,6 +34,16 @@ export interface PublicConfig {
 
 export interface AuthUser { id: string; name: string; role: Role; active: boolean; }
 
+/** Ergebnis eines Login-Versuchs: erfolgreich, oder 2FA-Code erforderlich (kein Token vergeben). */
+export type LoginResult =
+  | { ok: true; user: AuthUser }
+  | { ok: false; mfaRequired: true; error?: string };
+
+/** Status der 2-Faktor-Authentifizierung des eingeloggten Nutzers. */
+export interface TwoFactorStatus { enabled: boolean; pending: boolean; }
+/** Rückgabe von /api/2fa/setup: Base32-Secret + fertige otpauth://-URI für den QR-Code. */
+export interface TwoFactorSetup { secret: string; otpauthUri: string; account: string; }
+
 export type ProviderRecord = Record<string, unknown>;
 
 export interface DataProvider {
@@ -62,9 +72,22 @@ export interface DataProvider {
   saveTrainingPlays(plays: Record<string, number>): Promise<void>;
 
   // ── Auth (Verein); Lokal: kein-op ──
-  login(email: string, password: string): Promise<AuthUser>;
+  /** Login über /api/login (serverseitiges 2FA). `code` = TOTP- oder Backup-Code (2. Schritt).
+   *  Liefert `{ok:false, mfaRequired:true}`, wenn 2FA aktiv ist und (noch) kein/ein falscher Code kam. */
+  login(email: string, password: string, code?: string): Promise<LoginResult>;
   logout(): Promise<void>;
   currentUser(): AuthUser | null;
+
+  // ── 2-Faktor-Authentifizierung (Verein); Lokal: nicht verfügbar ──
+  twoFactorStatus(): Promise<TwoFactorStatus>;
+  /** Startet die Einrichtung: neues Secret + otpauth-URI (QR). Noch nicht aktiv. */
+  twoFactorSetup(): Promise<TwoFactorSetup>;
+  /** Bestätigt die Einrichtung mit einem TOTP-Code → aktiv; liefert die Backup-Codes (nur EINMALIG). */
+  twoFactorEnable(code: string): Promise<{ backupCodes: string[] }>;
+  /** Deaktiviert 2FA nach Re-Auth (TOTP-/Backup-Code ODER Passwort). */
+  twoFactorDisable(auth: { code?: string; password?: string }): Promise<void>;
+  /** Erzeugt neue Backup-Codes nach Re-Auth; entwertet die alten. Liefert die neuen (nur EINMALIG). */
+  twoFactorRegenerateBackup(auth: { code?: string; password?: string }): Promise<{ backupCodes: string[] }>;
   /**
    * Login-Versuch für den Kiosk-Ausstieg: meldet den Nutzer an, gibt ihn aber nur zurück, wenn seine
    * Rolle in `allowedRoles` liegt und das Konto aktiv ist. Andernfalls (falsche Rolle/inaktiv oder

@@ -1,5 +1,5 @@
 // LocalProvider — bildet das aktuelle localStorage-Verhalten hinter der DataProvider-Schnittstelle ab.
-import type { DataProvider, Snapshot, CollectionName, AuthUser, ProviderRecord } from './provider';
+import type { DataProvider, Snapshot, CollectionName, AuthUser, ProviderRecord, LoginResult, TwoFactorStatus, TwoFactorSetup } from './provider';
 import type { Settings } from './types';
 import { STORAGE_KEYS } from './storageKeys';
 
@@ -79,7 +79,13 @@ export class LocalProvider implements DataProvider {
   async saveTrainingPlays(plays: Record<string, number>): Promise<void> { write(STORAGE_KEYS.trainplays, plays); }
 
   // Lokal: keine echte Anmeldung — voller Zugriff.
-  async login(): Promise<AuthUser> { return { id: 'local', name: 'Lokal', role: 'admin', active: true }; }
+  async login(): Promise<LoginResult> { return { ok: true, user: { id: 'local', name: 'Lokal', role: 'admin', active: true } }; }
+  // 2FA gibt es nur im Vereinsmodus (serverseitig). Lokal: aus / nicht verfügbar.
+  async twoFactorStatus(): Promise<TwoFactorStatus> { return { enabled: false, pending: false }; }
+  async twoFactorSetup(): Promise<TwoFactorSetup> { throw new Error('2-Faktor-Authentifizierung gibt es nur im Vereinsmodus.'); }
+  async twoFactorEnable(): Promise<{ backupCodes: string[] }> { throw new Error('2-Faktor-Authentifizierung gibt es nur im Vereinsmodus.'); }
+  async twoFactorDisable(): Promise<void> { /* lokal nichts zu tun */ }
+  async twoFactorRegenerateBackup(): Promise<{ backupCodes: string[] }> { throw new Error('2-Faktor-Authentifizierung gibt es nur im Vereinsmodus.'); }
   // Lokal gibt es keine echte Anmeldung — der Kiosk-Ausstieg wird im Store vor dem Provider abgehandelt.
   async kioskExitAuth(): Promise<AuthUser | null> { return { id: 'local', name: 'Lokal', role: 'admin', active: true }; }
   async logout(): Promise<void> { /* noop */ }

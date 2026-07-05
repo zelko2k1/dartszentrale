@@ -39,11 +39,12 @@
 
 ## 2. Features für 1.0
 
-- [~] 🧑‍💻 **2FA / TOTP** (optional, opt-in) — **Phasen A (Spike) + B (Backend) erledigt** (2026-07-05); nur noch Phase C (Frontend).
+- [x] 🧑‍💻 **2FA / TOTP** (optional, opt-in) — **KOMPLETT umgesetzt** (Phasen A+B+C, 2026-07-05).
       Plan: [`docs/plan-2fa.md`](docs/plan-2fa.md) · Spike: [`spikes/2fa/ERGEBNIS.md`](spikes/2fa/ERGEBNIS.md).
       **A:** PB-JSVM hat **kein** HMAC-SHA1 → geprüfte Pure-JS-Routine (`spikes/2fa/totp.js`), im goja-JSVM gegen alle RFC-6238-Vektoren verifiziert.
-      **B (fertig):** abgeschottete Collection `user_mfa` (Migration + provision.mjs) · Hooks `setup`/`enable`/`disable`/`backup/regenerate` + zentraler **`/api/login`**-Challenge (TOTP+Backup-Codes, Lockout 5/5min) in `pb_hooks/2fa_hooks.pb.js` · Rettungsskript `reset-2fa.mjs` — alles E2E gegen frische PocketBase getestet.
-      **Offen (C):** Frontend-Assistent (QR + Bestätigung + Backup-Codes), Login-Code-Feld, **Login auf `/api/login` umstellen** (sonst wird 2FA umgangen).
+      **B:** abgeschottete Collection `user_mfa` (Migration + provision.mjs) · Hooks `setup`/`enable`/`disable`/`backup/regenerate`/`status` + zentraler **`/api/login`**-Challenge (TOTP+Backup-Codes, Lockout 5/5min) in `pb_hooks/2fa_hooks.pb.js` · Rettungsskript `reset-2fa.mjs` — E2E getestet.
+      **C:** Login auf `/api/login` umgestellt (2FA greift jetzt wirklich); Settings-Assistent unter *Mein Konto* mit QR (eigener Pure-JS-Encoder `app/src/lib/qrcode.ts`), Bestätigung, Backup-Codes, Deaktivieren, Neu-Erzeugen — E2E im echten Browser (Playwright) 9/9 verifiziert.
+      **Offen (optional, später):** 2FA für Admins erzwingbar machen (Policy-Schalter); Turnier-App erbt es über den Fork (Phase E).
 - [x] 🧑‍💻 **Saison-Lebenszyklus** (Abschluss · Neubeginn · Soft-Archiv · Auslagern) — Phasen 1–4 umgesetzt
       ([`docs/plan-saison.md`](docs/plan-saison.md)).
 
