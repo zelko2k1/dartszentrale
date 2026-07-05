@@ -326,6 +326,37 @@ function TwoFactorSettings() {
   );
 }
 
+// „Geräte hinzufügen": zeigt die Server-Adresse als QR-Code (Tablets/Handys scannen) — nutzt den
+// vendored QR-Encoder aus der 2FA-Arbeit. Board-PCs legen die Adresse als Lesezeichen/Kiosk an.
+function JoinDevicesPanel() {
+  const [url, setUrl] = useState(() => {
+    try { return localStorage.getItem('darts_join_url') || window.location.origin; } catch { return window.location.origin; }
+  });
+  const [copied, setCopied] = useState(false);
+  const setAndSave = (v: string) => { setUrl(v); try { localStorage.setItem('darts_join_url', v); } catch { /* ignore */ } };
+  const isLocalOnly = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|\/|$)/i.test(url.trim());
+  const valid = /^https?:\/\/.+/i.test(url.trim());
+  const dataUri = valid ? 'data:image/svg+xml;utf8,' + encodeURIComponent(qrSvg(url.trim(), { moduleSize: 5, margin: 2 })) : '';
+  const field: CSSProperties = { width: 280, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'var(--font-num, monospace)', fontSize: 13, outline: 'none' };
+  const btn: CSSProperties = { background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' };
+  return (
+    <Section title="Geräte hinzufügen">
+      <Row label="Beitritts-Adresse" sub="So kommen weitere Geräte auf denselben Server: Tablet/Handy scannt den QR-Code, ein Board-PC legt die Adresse als Lesezeichen (Kiosk) an. Danach am Gerät mit dem jeweiligen Board-Konto anmelden." top>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
+          {valid && <img src={dataUri} width={184} height={184} alt="QR-Code zum Beitreten" style={{ background: '#fff', borderRadius: 10, padding: 8 }} />}
+          <input value={url} onChange={(e) => setAndSave(e.target.value)} placeholder="http://192.168.1.50:8090" style={field} />
+          <button style={btn} onClick={() => { void navigator.clipboard?.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}>{copied ? '✓ Kopiert' : 'Adresse kopieren'}</button>
+          {isLocalOnly && (
+            <div style={{ fontSize: 12, color: '#E0594B', fontWeight: 600, maxWidth: 320, textAlign: 'right' }}>
+              Das ist die lokale Adresse dieses Rechners — andere Geräte erreichen sie nicht. Trage hier die Netzwerk-Adresse des Servers ein (z. B. http://192.168.1.50:8090); sie wird beim Serverstart angezeigt.
+            </div>
+          )}
+        </div>
+      </Row>
+    </Section>
+  );
+}
+
 export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const s = useStore();
   const cfg = s.settings;
@@ -843,6 +874,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     { key: 'rechtliches', label: 'Rechtliches', show: isVerein && p.manageClub, node: rechtlichesNode },
     { key: 'benutzer', label: 'Benutzer & Rechte', show: isVerein && p.manageUsers, node: benutzerNode },
     { key: 'board', label: 'Board-Rechner', show: isVerein && p.manageUsers, node: boardNode },
+    { key: 'geraete', label: 'Geräte', show: isVerein && p.manageUsers, node: <JoinDevicesPanel /> },
     { key: 'konto', label: 'Mein Konto', show: isVerein && !!s.session && !s.accounts.find((a) => a.id === s.session)?.isBoard, node: kontoNode },
     { key: 'eingabe', label: 'Eingabe & Tasten', show: true, node: eingabeNode },
     { key: 'darstellung', label: 'Darstellung', show: true, node: darstellungNode },
