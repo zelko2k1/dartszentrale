@@ -37,3 +37,12 @@ app/dist.old/
 
 # Automatische Backups (serve-dist.mjs) – enthalten Nutzerdaten, nie committen
 /backup/
+
+# Vom Einfach-Start (start-einfach.*) im Projekt-Root erzeugt – nie committen
+# .superuser enthält das Superuser-Passwort im Klartext
+.superuser
+# pb_data/ ist die PocketBase-DB mit Nutzerdaten
+pb_data/
+# heruntergeladenes Binary (Linux/Mac bzw. Windows)
+/pocketbase
+/pocketbase.exe
