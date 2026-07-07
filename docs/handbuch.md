@@ -276,9 +276,10 @@ automatische Sicherungen aktivieren (ideal extern, z. B. Hetzner Storage Box / S
 > Bewahre das **Superuser-Passwort sicher** auf (Passwort-Manager) — es ist dein
 > einziger Rückweg, wenn du dich aus der App aussperrst.
 
-**Updates.** Neue App-Version einspielen und das passende Update-Skript ausführen
-(`update-server.sh` für den Server, `update-lokal.*` lokal) — es baut neu und startet die
-Dienste neu. PocketBase-Version kontrolliert aktualisieren (feste Version statt `:latest`).
+**Updates.** Neue App-Version einspielen und das passende Update-Skript ausführen:
+`update-verein-lan.*` (LAN-Vereinspaket, tauscht `pb_public/`, kein Neustart), `update-server.sh`
+(Cloud, baut neu + startet die Dienste) oder `update-lokal.*` (lokal). PocketBase-Version
+kontrolliert aktualisieren (feste Version statt `:latest`).
 
 ---
 

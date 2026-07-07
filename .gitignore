@@ -39,8 +39,6 @@ app/dist.old/
 /backup/
 
 # Vom Einfach-Start (start-einfach.*) im Projekt-Root erzeugt – nie committen
-# .superuser enthält das Superuser-Passwort im Klartext
-.superuser
 # pb_data/ ist die PocketBase-DB mit Nutzerdaten
 pb_data/
 # heruntergeladenes Binary (Linux/Mac bzw. Windows)

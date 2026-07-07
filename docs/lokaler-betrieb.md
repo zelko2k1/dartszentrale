@@ -121,65 +121,41 @@ npm --prefix app run dev -- --port 5174 --strictPort   # Kiosk    → http://loc
 
 ### Updates einspielen (ohne git)
 
-Liegt eine neue Version vor (neuer Stick/Ordner mit frischem `app/` + `pocketbase/`), übernimmt das
-mitgelieferte **Update-Skript** alles in einem Rutsch: Code übernehmen → `npm install` → (optional)
-bauen. **`pb_data/` (deine Daten), `node_modules/`, `app/.env.local` und die PocketBase-Binärdatei
-bleiben unangetastet.**
+Updates sind **modusspezifisch** — nutze das Skript des jeweiligen Pakets. **`pb_data/` (deine Daten),
+`node_modules/`, `app/.env.local` und die PocketBase-Binärdatei bleiben immer unangetastet.**
 
-**Linux / Raspberry Pi / Git Bash** (im Projektordner ausführen, Stick als Quelle):
-```bash
-cd ~/dartszentrale
-./update-server.sh /media/usb            # Quelle = Stick (ohne Argument: /media/usb)
-./update-server.sh /media/usb --build    # zusätzlich app/dist bauen (nur wenn ihr dist/ ausliefert)
-```
+| Modus | Update |
+|---|---|
+| **Ein Board lokal** (`01`) | `./update-lokal.sh <quelle>` bzw. `update-lokal.bat` — oder in der App *Einstellungen → App & Updates → Installieren* |
+| **Verein LAN** (`02`, Single-Binary) | `./update-verein-lan.sh` bzw. `update-verein-lan.bat` — tauscht `pb_public/`, kein Neustart |
+| **Verein Cloud** (`03`) | `./update-server.sh` (baut neu + startet die Dienste) — oder In-App |
 
-**Windows / PowerShell:**
-```powershell
-cd C:\dartszentrale
-.\update-server.ps1 -Source E:\          # Quelle = Stick
-.\update-server.ps1 -Source E:\ -Build   # zusätzlich app\dist bauen
-```
-
-Danach:
-1. **App-Terminal(s) neu starten** (`npm --prefix app run dev …`) — der Dev-Server übernimmt die
-   neuen Dateien sauber erst nach Neustart.
-2. Hat sich das **Schema** geändert, **PocketBase neu starten** (Migrations laufen beim Start
-   automatisch; bei Bedarf `node provision.mjs`).
-3. An den **Boards die Seite neu laden** (ggf. zweimal — der PWA-Cache hält die alte Version evtl.
-   noch einen Ladevorgang lang).
-
-> **Wichtig:** das **lokale** `update-server.sh`/`update-server.ps1` im Projektordner starten (nicht die Kopie auf
-> dem Stick) — es nimmt seinen eigenen Ort als Ziel. Wer nicht zwischen geänderten Dateien
-> unterscheiden will: einfach den ganzen `app/`-Ordner vom Stick (ohne `node_modules/`) mitnehmen —
-> das Skript ersetzt `src/`+`public/` ohnehin komplett.
+Danach an den **Boards die Seite neu laden** (ggf. zweimal — der PWA-Cache hält die alte Version evtl.
+noch einen Ladevorgang lang). Details je Modus in den `admin-anleitung-*`-Dokumenten.
 
 ### Linux: Vereinsmodus als Dienst (Autostart)
 
-Auf Linux müssen im **Vereinsmodus** zwei Dinge laufen — **PocketBase** (Backend, `:8090`) und das
-**Frontend** (`:4173`). Zwei Skripte im Projekt-Root übernehmen das:
+Der Vereinsmodus-LAN läuft als **ein** Programm (PocketBase liefert App + API aus `pb_public/`) —
+**kein Node, kein Build.** Zwei Skripte im Projekt-Root übernehmen das:
 
-- **Manuell starten** (zum Testen; Strg+C beendet beide):
+- **Manuell starten** (der Erststart lädt das Binary + legt die zwei Admin-Konten an; Strg+C beendet):
   ```bash
-  ./start-lan.sh
+  ./start-verein-lan.sh
   ```
-- **Als Daemon einrichten** (systemd-User-Dienste: Autostart beim Boot, Auto-Restart, journald-Logs):
+- **Als Dienst einrichten** (systemd-User: Autostart beim Boot, Auto-Restart, journald-Logs):
   ```bash
-  ./autostart-lan.sh        # baut + installiert + startet beide Dienste
+  ./autostart-verein-lan.sh
   ```
   Verwaltung danach:
   ```bash
-  systemctl --user status darts-web darts-pocketbase
-  journalctl --user -u darts-pocketbase -f     # Logs live
-  systemctl --user restart darts-web           # nach einem Rebuild (z. B. update-server.sh --build)
-  ./autostart-lan-entfernen.sh                         # Autostart wieder entfernen (Daten bleiben)
+  systemctl --user status dartszentrale
+  journalctl --user -u dartszentrale -f          # Logs live
+  systemctl --user disable --now dartszentrale   # Autostart wieder entfernen (Daten bleiben)
   ```
 
-**Voraussetzung:** PocketBase einmalig einrichten (Superuser + Schema):
-```bash
-cd pocketbase && ./pocketbase superuser upsert <mail> '<pw>' --dir ./pb_data && node provision.mjs
-```
-Mehrere Boards im LAN? `VITE_PB_URL` auf die LAN-IP setzen, neu bauen, und in den Units
-`127.0.0.1 → 0.0.0.0` ändern. (Windows-Pendant: `start-lan.bat` / `autostart-lan.bat`.)
+Vollständige Schritt-für-Schritt-Anleitung (auch Windows, Backups, Updates):
+[admin-anleitung-lan-linux.md](admin-anleitung-lan-linux.md) bzw.
+[admin-anleitung-lan-windows.md](admin-anleitung-lan-windows.md).
 
 ### Wichtigste Git-Befehle
 

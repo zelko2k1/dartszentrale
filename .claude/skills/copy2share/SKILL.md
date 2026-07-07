@@ -1,28 +1,30 @@
 ---
 name: copy2share
-description: Erzeugt unter copy2share/ vier Verteil-Bundles (lokal ein Board · Vereinsmodus LAN · Vereinsmodus LAN „einfach"/ein Binary · Vereinsmodus Cloud) mit NUR den jeweils nötigen DartsZentrale-Dateien/Skripten — zum Kopieren auf USB-Stick, Netzwerkshare oder in die Cloud. Aufrufen, wenn der Nutzer ein Verteilpaket / „copy2share" / Dateien für einen bestimmten Betrieb zusammenstellen will.
+description: Erzeugt unter copy2share/ drei Verteil-Bundles (lokal ein Board · Vereinsmodus LAN als Single-Binary · Vereinsmodus Cloud) mit NUR den jeweils nötigen DartsZentrale-Dateien/Skripten — zum Kopieren auf USB-Stick, Netzwerkshare oder in die Cloud. Aufrufen, wenn der Nutzer ein Verteilpaket / „copy2share" / Dateien für einen bestimmten Betrieb zusammenstellen will.
 ---
 
 # copy2share — Verteil-Bundles bauen
 
-Baut aus dem Projekt vier in sich geschlossene Ordner, sodass man genau den passenden auf
+Baut aus dem Projekt drei in sich geschlossene Ordner, sodass man genau den passenden auf
 einen USB-Stick, einen Netzwerkshare oder in die Cloud kopieren kann:
 
 | Ordner | Für |
 |---|---|
-| `01-lokal-ein-board` | Lokaler Betrieb, ein Board (nur Frontend, kein Server) |
-| `02-lan-vereinsmodus` | Vereinsmodus im eigenen Netz — geführt (`einrichten-lan.*`, baut lokal mit Node) |
-| `03-cloud-vereinsmodus` | Vereinsmodus in der Cloud (schlank per Caddy, `einrichten-cloud.sh`) |
-| `04-lan-einfach` | Vereinsmodus im eigenen Netz — **EINFACH**: ein Binary (PocketBase liefert die App aus `pb_public/` selbst aus), **kein Node, kein Build** (`start-einfach.*`) |
+| `01-lokal-ein-board` | Ein Board lokal: starten & loslegen, **kein Server, kein Login** (Daten im Browser, mit Auto-Backup nach `backup/`). Node/serve-dist. |
+| `02-verein-lan` | Vereinsmodus im eigenen Netz — **EINFACH**: ein Binary (PocketBase liefert die App aus `pb_public/` selbst aus), **kein Node, kein Build** (`start-verein-lan.*`, `update-verein-lan.*`, `autostart-verein-lan.*`) |
+| `03-verein-cloud` | Vereinsmodus in der Cloud (schlank per Caddy, `einrichten-cloud.sh`) |
 
-Jeder Ordner enthält **nur die nötigen** Dateien + eine `LIESMICH.txt`. Bewusst ausgeschlossen (01–03):
+Jeder Ordner enthält **nur die nötigen** Dateien + eine `LIESMICH.txt`. Bewusst ausgeschlossen:
 `node_modules`, `dist`, `.env.local`, `pb_data`, das PocketBase-Binary, die `demo-*.mjs` (Testdaten)
 und `seed-remote.sh` (Secrets).
 
-> **Ausnahme 04-lan-einfach:** enthält bewusst das **vorgebaute Frontend als `pb_public/`** (Same-Origin,
+> **`02-verein-lan`** enthält bewusst das **vorgebaute Frontend als `pb_public/`** (Same-Origin,
 > ohne `VITE_PB_URL`), damit der Verein weder Node noch Build braucht. Das PocketBase-Binary lädt
-> `start-einfach.*` beim ersten Start selbst. Baut nur, wenn `app/node_modules` vorhanden sind
+> `start-verein-lan.*` beim ersten Start selbst. Baut nur, wenn `app/node_modules` vorhanden sind
 > (`build_pubdir` in `build.sh`); sonst wird das Bundle mit Hinweis übersprungen.
+>
+> **Coolify/Docker** ist bewusst **kein** copy2share-Bundle, sondern der separate Weg für
+> Fortgeschrittene (Homelab/Cloud) — siehe `docs/coolify-homelab-anleitung.md`.
 
 ## Ausführen
 

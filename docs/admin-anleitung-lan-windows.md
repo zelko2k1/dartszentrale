@@ -1,250 +1,144 @@
-# DartsZentrale auf Windows – Inbetriebnahme & Updates
+# DartsZentrale im Vereinsnetz (LAN) – Inbetriebnahme & Updates (Windows)
 
-Schritt für Schritt für **Windows**, ohne Vorkenntnisse. (Linux/Raspberry Pi? →
-[admin-anleitung-lan-linux.md](admin-anleitung-lan-linux.md).)
+Schritt für Schritt, ohne Vorkenntnisse. (Linux/Raspberry Pi? → [admin-anleitung-lan-linux.md](admin-anleitung-lan-linux.md).)
 
-> **Welcher Weg ist meiner?**
-> - **Nur ein Brett/Gerät, schnell zählen, keine Anmeldung** → **Abschnitt 1**. Am einfachsten.
-> - **Mehrere Geräte, echte Logins, Ligen/Mannschaften** → **Abschnitt 2**.
-> - **Server im Internet/Cloud** (von überall erreichbar) → eigenes **Cloud-Paket** (`03-cloud-vereinsmodus`, Linux-Server).
+Dieser Weg ist die **einfache Vereinsvariante:** **ein einziges Programm** (PocketBase) liefert die
+App **und** die Daten — **kein Node, kein Build.** Ideal fürs Vereinsnetz mit mehreren Brettern/Tablets.
+
+> **Andere Betriebsarten:**
+> - **Nur ein Gerät, ohne Anmeldung** (starten & loslegen, Daten im Browser) → Paket
+>   `01-lokal-ein-board` ([anleitung-lokal-windows.md](anleitung-lokal-windows.md)).
+> - **Server im Internet/Cloud** (von überall erreichbar) → Paket `03-verein-cloud`
+>   ([admin-anleitung-cloud.md](admin-anleitung-cloud.md)).
 >
-> Tägliche Bedienung: [`handbuch.md`](handbuch.md).
+> Tägliche Bedienung: [`handbuch.md`](handbuch.md) · Sicherheit: [`security-audit.md`](security-audit.md).
 
 ---
 
 ## 0. Einmal vorweg
 
-### 0a. Die App auf den PC holen — der „Projektordner"
-Du brauchst die Programmdateien als Ordner. Du bekommst sie **per USB-Stick** (vom Einrichter).
+### 0a. Die App auf den Rechner holen — der „Ordner"
+Du bekommst das Paket **`02-verein-lan`** als Ordner (USB-Stick/Share vom Einrichter). Darin liegen u. a.
+`start-verein-lan.bat`, `pb_public\`, `pb_migrations\`, `pb_hooks\`. **Alles gehört in diesen Ordner.**
 
-> **Projektordner** = der Ordner, in dem **`app`** und **`pocketbase`** direkt nebeneinander liegen.
-> Alle Befehle und Doppelklick-Skripte gehören in **diesen** Ordner.
+> **Node.js ist NICHT nötig.** Das Programm ist ein einziges Binary, das beim ersten Start automatisch
+> geladen wird. Du brauchst nur **einmal Internet** beim allerersten Start.
 
-### 0b. Node.js installieren (Pflicht)
-1. [nodejs.org](https://nodejs.org) öffnen → **LTS**-Version laden → Installer starten → **Weiter / Weiter / Fertig**.
-2. **Erfolg prüfen:** ein Terminal öffnen (0c), `node -v` tippen, **Enter** → es muss `v20…`/`v22…` erscheinen.
-
-### 0c. Ein „Terminal" im Projektordner öffnen
-Den Projektordner im **Explorer** öffnen → oben in die **Adressleiste** klicken → `cmd` tippen → **Enter**.
-(Es öffnet sich ein schwarzes Fenster — da tippst du die Befehle rein.)
-
-> Läuft ein Befehl „endlos" weiter (z. B. ein Server), ist das **gewollt** — Fenster **offen lassen**.
-> Für einen weiteren Befehl ein **zweites** Terminal öffnen.
-
-### 0d. Platzhalter in Befehlen
-Steht etwas in **spitzen Klammern** wie `<starkes-pw>` oder `<server-ip>`, ersetzt du es durch deinen
-Wert — **die Klammern `< >` weglassen.**
-- **Server-IP finden:** im Terminal `ipconfig` → Zeile **„IPv4-Adresse"** (z. B. `192.168.1.50`).
-  Auf demselben PC geht auch `127.0.0.1`.
+### 0b. Platzhalter
+`<server-ip>` u. Ä. durch deinen Wert ersetzen (**Klammern `< >` weglassen**). **Server-IP finden:**
+Eingabeaufforderung → `ipconfig` → „IPv4-Adresse" (z. B. `192.168.1.50`).
 
 ---
 
-## 1. Lokaler Modus (ein Gerät, kein Server)
+## 1. Starten & einrichten (Doppelklick)
 
-**Einfach:** Doppelklick auf **`start-lokal.bat`** im Projektordner → der Browser öffnet die App →
-beim **ersten Start** „**Lokal**" wählen. Fertig. (Kein Server, kein PocketBase — die Daten liegen im Browser.)
+**Doppelklick auf `start-verein-lan.bat`** im Ordner.
 
-> Schließt sich das schwarze Fenster **sofort wieder**? Dann fehlt meist **Node.js** (0b).
-> **Kiosk-Board, das beim Anmelden von selbst startet:** Doppelklick **`autostart-lokal.bat`**.
+Beim **allerersten Start** passiert automatisch:
+1. das **PocketBase-Binary** wird geladen (~15 MB, einmal Internet nötig),
+2. es werden **zwei Konten abgefragt**, die **du** festlegst — die Passwörter werden **nicht
+   gespeichert** (im Passwortmanager notieren!):
+   - **PocketBase-Konsole** (Wartung/Notfall unter `…:8090/_/`)
+   - **App-Administrator** (dein tägliches Login *in der App*)
+3. die App startet, der Browser öffnet **`http://127.0.0.1:8090`**.
 
-**Von Hand (Terminal):**
-```bat
-cd app
-npm install
-npm run dev
-```
-Dann im Browser **`http://localhost:5173`** öffnen. **Terminal-Fenster offen lassen.**
+Jedes weitere Mal genügt wieder der Doppelklick auf `start-verein-lan.bat` — die Einrichtung läuft
+**nur beim ersten Mal**. **Fenster offen lassen; zum Beenden das Fenster schließen.**
+
+> Bricht das Fenster sofort ab? Meist ist das Antivirus/SmartScreen im Weg — Ordner freigeben.
 
 ---
 
-## 2. Vereinsmodus (mehrere Geräte, Server im eigenen Netz)
+## 2. Andere Bretter & Tablets anbinden
 
-Hier laufen **zwei** Programme gleichzeitig: **PocketBase** (Datenbank) und das **Frontend** (die App).
+Die App ist im Netz unter **`http://<server-ip>:8090`** erreichbar.
+- **Board-PC:** diese Adresse als **Lesezeichen / Kiosk-Verknüpfung** anlegen.
+- **Tablet/Handy:** in der App unter *Einstellungen* den **Beitritts-QR** scannen.
 
-### 2 — Empfohlen: geführte Einrichtung (Doppelklick)
+Mit dem jeweiligen Konto anmelden.
 
-Doppelklick auf **`einrichten-lan.bat`**. Das Skript **fragt das Nötige ab** (Netz-Zugriff/Server-IP,
-Superuser-Login, erster App-Admin) und macht dann **alles** automatisch: **`pocketbase.exe`
-herunterladen**, App bauen, Superuser + Schema + ersten Admin anlegen, beide Programme starten und
-**Autostart beim Anmelden** einrichten. Danach ist die App im Netz unter **`http://<server-ip>:4173`**
-erreichbar.
+---
 
-> Voraussetzung: nur **Node.js** (0b). PocketBase lädt das Skript selbst.
-> Update später: Doppelklick **`update-server.bat`** — baut neu **und startet die Dienste neu**.
+## 3. Autostart (Board startet beim Anmelden von selbst)
 
-Wer lieber jeden Schritt selbst kontrolliert, folgt **2a + 2b von Hand**:
+**Doppelklick auf `autostart-verein-lan.bat`** — legt eine Startup-Verknüpfung an. Voraussetzung:
+einmal `start-verein-lan.bat` gelaufen (Binary + Konten vorhanden).
 
-### 2a. PocketBase von Hand einrichten (nur einmal)
+> **Entfernen:** `Win+R` → `shell:startup` → dort `DartsZentrale.lnk` löschen.
 
-**Schritt 1 — herunterladen:** [Release-Seite](https://github.com/pocketbase/pocketbase/releases/tag/v0.39.5)
-öffnen → **`pocketbase_0.39.5_windows_amd64.zip`** laden → Rechtsklick → **„Alle extrahieren"** → die
-Datei **`pocketbase.exe`** in den Ordner **`pocketbase`** kopieren.
+---
 
-**Schritt 2 — Server-Admin (Superuser) anlegen** (Verwalter der Datenbank, *nicht* dein App-Login;
-starkes Passwort merken). Terminal im Ordner `pocketbase` (0c), dann:
-```bat
-pocketbase.exe superuser upsert admin@deinverein.de "<starkes-pw>" --dir .\pb_data
-```
+## 4. Die zwei Logins nicht verwechseln
 
-**Schritt 3 — PocketBase starten** (Schema/Funktionen entstehen automatisch):
-```bat
-pocketbase.exe serve --automigrate=0 --http=0.0.0.0:8090 --dir .\pb_data --migrationsDir .\pb_migrations --hooksDir .\pb_hooks
-```
-> **Erfolg:** „Server started" erscheint. **Fenster offen lassen!** Fragt die **Windows-Firewall** →
-> **„Zugriff zulassen"**. (`0.0.0.0` = von anderen Geräten erreichbar; nur dieser PC: `127.0.0.1`.)
-
-**Schritt 4 — deinen App-Admin anlegen** (dein Login *in der App*):
-1. Browser → **`http://<server-ip>:8090/_/`** → mit dem Superuser aus Schritt 2 anmelden.
-2. Links auf **`users`** → **„+ New record"**.
-3. **email** = Login-Mail, **password** = starkes Passwort, **role** = **`admin`**, Häkchen bei
-   **active** → **„Create".** *(Keine Beispieldaten nötig.)*
-
-### 2b. Frontend starten
-
-**Schritt 1 — Server-Adresse hinterlegen** (Datei `app\.env.local` anlegen). Im Terminal (`<server-ip>` ersetzen):
-```bat
-cd app
-echo VITE_PB_URL=http://<server-ip>:8090> .env.local
-```
-
-**Schritt 2 — bauen & starten:**
-```bat
-cd app
-npm install
-npm run build
-npm run serve
-```
-> Sollen **andere Geräte im LAN** dieses Frontend erreichen (statt je Gerät ein eigenes):
-> `set HOST=0.0.0.0&& npm run serve` — dann über `http://<server-ip>:4173`.
-
-Browser → **`http://localhost:4173`** → beim **ersten Start „Vereinsmodus"** wählen → mit dem
-**App-Admin** (2a, Schritt 4) anmelden. **Fenster offen lassen.**
-
-> **Bequemer:** **`start-lan.bat`** startet PocketBase **und** Frontend zusammen.
-> **Autostart beim Hochfahren:** Doppelklick auf **`autostart-lan.bat`** (Voraussetzung: 2a erledigt).
-
-### 2c. Die zwei Logins nicht verwechseln
-
-| | **App-Admin** | **PocketBase-Superuser** |
+| | **App-Administrator** | **PocketBase-Superuser** |
 |---|---|---|
-| Wofür? | normale Nutzung (Verein verwalten) | Datenbank/Server verwalten |
-| Wo anmelden? | in der App (`…:4173`) | unter `…:8090/_/` |
+| Wofür? | normale Nutzung (Verein verwalten) | Datenbank/Server verwalten, Backups |
+| Wo anmelden? | in der App (`…:8090`) | unter `…:8090/_/` |
 | Wie oft? | täglich | selten (Backups, Notfall) |
 
 ---
 
-## 3. Updates einspielen
+## 5. Backups (wichtig!)
 
-Eine neue Version sind neue Dateien für `app`. **Deine Daten (`pb_data`) und Konfiguration bleiben
-unangetastet.**
-
-### 3a. Einfachster Weg — direkt in der App (nur Frontend)
-
-Für reine App-Updates (kein PocketBase-Wechsel) — ohne Terminal, ohne Neustart der Dienste:
-
-1. Die Datei **`dartszentrale-update-<version>.tar.gz`** in den Ordner **`updates`** der Installation legen
-   (genauer Pfad steht in der App unter *Einstellungen → App & Updates*).
-2. In der App: **Einstellungen → „App & Updates" → „Nach Updates suchen"** → **„Installieren"**.
-
-- **Direkt am Board-PC** (localhost): ohne Token.
-- **Von einem anderen Board** (über die Server-IP): einmalig den **Update-Token** eintragen, den
-  `einrichten-lan.bat` am Ende angezeigt hat (steht auch in der Datei `.update-token` im Projektordner).
-
-> Für Updates, die auch **PocketBase** betreffen, weiter mit dem Skript (3b).
-
-### 3b. Per Skript (USB-Stick, auch PocketBase)
-
-> **Lokales Paket (ein Board):** dort heißt das Update-Skript **`update-lokal.bat`** (Linux:
-> `./update-lokal.sh`) — gleicher Ablauf, ohne PocketBase. Der folgende Befehl `update-server.bat`
-> gilt fürs **Vereins-Paket**.
-
-**Einfach (neue Version auf USB-Stick):** Doppelklick auf **`update-server.bat`** — übernimmt die
-neuen Dateien vom Stick, baut die App neu **und startet die Dienste neu**. Per Doppelklick wird
-**Laufwerk `E:\`** angenommen; hat dein Stick einen anderen Buchstaben, im Terminal mit Laufwerk
-aufrufen, z. B. `update-server.bat F:\`. *(Alternativ in PowerShell: `.\update-server.ps1 -Source E:\`.)*
-
-> Wurde der Server per **`einrichten-lan.bat`** eingerichtet, schließt das Update die DartsZentrale-Fenster
-> und startet sie automatisch neu. Lief alles **von Hand**, danach `start-lan.bat` erneut starten.
-
-**Danach:** an den **Brettern die Seite neu laden** (zur Sicherheit zweimal, wegen PWA-Cache).
+Eine ganze Saison hängt an **`pb_data\`**. Richte Backups ein:
+- **PocketBase-Backups:** `…:8090/_/` → **Settings → Backups** → Zeitplan (z. B. täglich).
+- **Zusätzlich** `pb_data\` regelmäßig auf einen Stick/anderes Gerät kopieren (Schutz vor Geräteverlust).
 
 ---
 
-## 4. Spickzettel — wichtigste Befehle/Aktionen
+## 6. Updates einspielen
 
-| Zweck | Wie |
-|---|---|
-| **Lokal starten** (ein Board) | Doppelklick **`start-lokal.bat`** · Autostart: **`autostart-lokal.bat`** |
-| **Vereinsmodus einrichten (geführt)** | Doppelklick **`einrichten-lan.bat`** |
-| **Verein von Hand starten/Autostart** | **`start-lan.bat`** · **`autostart-lan.bat`** |
-| **Update (In-App, nur Frontend)** | `dartszentrale-update-*.tar.gz` in **`updates\`** legen → Einstellungen → „App & Updates" → Installieren |
-| **Update (USB, auch PocketBase)** | Doppelklick **`update-server.bat`** |
-| Lokal von Hand | `cd app` → `npm run dev` |
-| PocketBase starten | `pocketbase.exe serve --automigrate=0 --http=0.0.0.0:8090 --dir .\pb_data --migrationsDir .\pb_migrations --hooksDir .\pb_hooks` |
+Eine neue Version kommt als **`dartszentrale-update-<version>.tar.gz`**. **Deine Daten (`pb_data\`)
+bleiben unangetastet.**
 
-**Optional / für später (fortgeschritten):**
+- Paket in den Ordner **`updates`** legen → **Doppelklick auf `update-verein-lan.bat`**.
+- Oder mit Pfad/Laufwerk: Eingabeaufforderung im Ordner → `update-verein-lan.bat E:\` (Stick).
 
-| Zweck | Befehl (eine Zeile) |
-|---|---|
-| Board-Konto fürs Brett | `set BOARD_EMAIL=board1@deinverein.de && set BOARD_PW=<pw> && set PB_URL=http://<ip>:8090 && set PB_SU_EMAIL=<mail> && set PB_SU_PASS=<pw> && node pocketbase\add-board-account.mjs` |
-| App-Passwort zurücksetzen | `set USER_EMAIL=<mail> && set NEW_PW=<min-8> && set PB_URL=http://<ip>:8090 && set PB_SU_EMAIL=<mail> && set PB_SU_PASS=<pw> && node pocketbase\reset-password.mjs` |
+Tauscht das Frontend in `pb_public\` aus — **kein Neustart nötig**, an den Brettern nur die Seite neu
+laden (ggf. zweimal, wegen PWA-Cache). Die alte Version landet in `backup\`.
+
+> **Ändern sich Migrationen/Hooks (Backend)?** Dann den **kompletten Ordner** durch die neue Version
+> ersetzen und dabei **`pb_data\` behalten** (deine Datenbank). Migrationen laufen beim nächsten Start.
 
 ---
 
-## 5. Wenn etwas nicht klappt
+## 7. Netz & Sicherheit
 
-- **Schwarzes Fenster geht sofort zu** → meist fehlt **Node.js** (0b) bzw. die **`pocketbase.exe`** im Ordner `pocketbase`.
-- **Browser sagt „nicht erreichbar"** → läuft das passende Fenster noch? (App-Fenster für `…:5173`/`…:4173`,
-  PocketBase-Fenster für `…:8090`.) Stimmen Adresse/Port?
-- **Andere Geräte erreichen den Server nicht** → PocketBase mit `0.0.0.0` gestartet? Firewall „Zugriff
-  zulassen"? Stimmt die **Server-IP** in `app\.env.local` (0d)?
-- **`.env.local` wirkt nicht** → heißt die Datei wirklich exakt `.env.local` (Windows blendet die Endung
-  `.txt` manchmal aus → im Explorer „Dateinamenerweiterungen" einblenden und prüfen)? Liegt sie im Ordner **`app`**?
-- **„Port belegt"** → das Programm läuft schon in einem anderen Fenster. Eines schließen.
+- **Port 8090 nur im LAN lassen — NIE ins Internet weiterleiten/portforwarden.** Wer von außen
+  erreichbar sein will, nimmt das **Cloud-Paket** (TLS via Caddy).
+- Die PocketBase-Konsole `…:8090/_/` nur im vertrauenswürdigen Netz nutzen; in den Settings
+  **Rate-Limit** und **Superuser-2FA** aktivieren. Details: [`security-audit.md`](security-audit.md).
 
 ---
 
-## 6. Notfälle (Passwörter)
+## 8. Wenn etwas nicht klappt
 
-- **App-Passwort vergessen** → mit dem **Superuser** zurücksetzen: `…:8090/_/` → `users` → Konto → neues Passwort.
-- **Superuser-Passwort weg** → neu setzen: `pocketbase.exe superuser upsert <mail> "<neues-pw>" --dir .\pb_data`.
-- **Vorsorge:** Superuser-Passwort im **Passwortmanager** sichern und früh einen **zweiten App-Admin** anlegen.
+- **Fenster schließt sofort** → Antivirus/SmartScreen? Ordner freigeben. Steht `pocketbase.exe` im Ordner (nach dem ersten Start)?
+- **Andere Geräte erreichen den Server nicht** → Windows-Firewall fragt beim ersten Start nach — **Zugriff im privaten Netz erlauben**. Richtige **`<server-ip>`** (`ipconfig`)?
+- **„Port belegt"** → es läuft schon ein Fenster/der Autostart. Das andere Fenster schließen.
+- **Erstes Binary lädt nicht** → einmal Internet nötig; hinter Proxy ggf. `pocketbase.exe` manuell in den Ordner legen.
 
 ---
 
-## Anhang A — Welche Dateien braucht der Betrieb?
+## 9. Notfälle (Passwörter)
 
-**Müssen da sein (Betrieb):**
-- `app\` — das **Frontend**. Ohne `node_modules\` und `dist\` (die entstehen beim ersten
-  `npm install` / `npm run build`).
-- **Nur Vereinsmodus:** `pocketbase\pb_migrations\` + `pocketbase\pb_hooks\` (Schema & Funktionen),
-  die selbst geladene **`pocketbase.exe`**, und `pocketbase\pb_data\` (deine Datenbank — entsteht
-  beim Start). Außerdem `app\.env.local` (Server-Adresse).
-- Die Start-/Autostart-/Update-Skripte (siehe Tabelle).
+- **App-Passwort vergessen** → in der App als Admin zurücksetzen, oder über die Konsole `…:8090/_/` → `users` → Konto → neues Passwort.
+- **Superuser-Passwort weg** → Fenster schließen, dann in der Eingabeaufforderung im Ordner:
+  `pocketbase.exe superuser upsert <mail> "<neues-pw>" --dir pb_data`.
+- **Vorsorge:** beide Passwörter in den **Passwortmanager**; früh einen **zweiten App-Admin** anlegen.
 
-**Beim Update austauschen:** das neue `app\src`, `app\public` und die Konfig-Dateien
-(`package.json` usw.). **`pb_data` und `app\.env.local` bleiben unangetastet** — `update-server.bat`
-macht genau das.
+---
 
-## Anhang B — Welches Skript wofür?
+## Anhang — Welche Datei wofür?
 
 | Datei | Zweck |
 |---|---|
-| `start-lokal.bat` | **Lokal starten** (ein Board, nur Frontend — kein Server) |
-| `autostart-lokal.bat` | **Lokaler Autostart** (nur Frontend, fürs Kiosk-Board) |
-| `update-lokal.bat` | **Lokal-Update** (nur Frontend, kein PocketBase) |
-| `einrichten-lan.bat` | **Geführte Vereinsmodus-Einrichtung** (Download, Build, Admin, Autostart) — empfohlen |
-| `start-lan.bat` | **Verein von Hand starten** (PocketBase **und** Frontend) |
-| `autostart-lan.bat` | **Vereins-Autostart** beim Hochfahren einrichten |
-| `update-server.bat` | **Update** einspielen (Daten bleiben, Dienste starten neu) |
-| `update-server.ps1` | Update über PowerShell (Alternative zu `.bat`) |
-| *Vereinsmodus, einmalig/selten:* | |
-| `pocketbase\provision.mjs` | Schema anlegen/aktualisieren + Admin (Alternative zum Auto-Schema) |
-| `pocketbase\add-board-account.mjs` | Board-Konto fürs Brett anlegen |
-| `pocketbase\reset-password.mjs` | App-Passwort per Superuser zurücksetzen |
-| `pocketbase\season-export\import\offload.mjs` | Saison sichern · zurückspielen · auslagern |
-| `pocketbase\_security-guard.mjs` | interner Helfer (nicht direkt starten) |
-| `pocketbase\demo-*.mjs` | **nur Testdaten — NICHT im Betrieb verwenden** |
+| `start-verein-lan.bat` | **Starten** (Erststart lädt das Binary + legt die zwei Konten an) |
+| `autostart-verein-lan.bat` | **Autostart** beim Anmelden (Startup-Verknüpfung) |
+| `update-verein-lan.bat` | **Update** einspielen (tauscht `pb_public\`, `pb_data\` bleibt) |
+| `pb_public\` | das ausgelieferte Frontend (wird beim Update getauscht) |
+| `pb_migrations\` · `pb_hooks\` | Schema & Server-Funktionen |
+| `pb_data\` | **deine Datenbank** (entsteht beim ersten Start) — **sichern!** |
 
 > Fertige Verteil-Pakete (genau diese Dateien je Betriebsart, ohne Test-/Secret-Dateien) erzeugt der
-> Einrichter mit dem `copy2share`-Vorgang — du bekommst dann einen einzelnen, passenden Ordner.
+> Einrichter mit dem `copy2share`-Vorgang.

@@ -107,7 +107,7 @@ case "$SVC_MODE" in
     ;;
   none)
     echo "✅ Update übernommen."
-    echo "   → App NEU STARTEN:  ./start-lan.sh   (oder: npm --prefix app run dev -- --port 5173 --strictPort)"
+    echo "   → Frontend NEU STARTEN (so wie gestartet): systemd-Dienst 'darts-web' bzw. 'node app/serve-dist.mjs'."
     [ "$PB_TOUCHED" = "1" ] && echo "   → Schema evtl. geändert: PocketBase NEU STARTEN (Migrations laufen beim Start) – bei Bedarf:  node provision.mjs"
     ;;
 esac
