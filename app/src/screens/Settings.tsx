@@ -880,7 +880,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     { key: 'darstellung', label: 'Darstellung', show: true, node: darstellungNode },
     { key: 'hilfen', label: 'Hilfen & Anzeige', show: true, node: dim(hilfenNode) },
     { key: 'listen', label: 'Listen', show: true, node: listenNode },
-    { key: 'daten', label: 'Daten', show: true, node: dim(datenNode) },
+    { key: 'daten', label: 'Backup', show: true, node: dim(datenNode) },
     { key: 'app', label: 'App & Updates', show: true, node: appNode },
   ];
   // Im Kiosk nur die gerätenahen Counter-Rubriken (kein Admin/Daten) – als eigener Board-Tab.
