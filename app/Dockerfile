@@ -11,8 +11,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-# Vite backt VITE_PB_URL beim Build ins Bundle. Coolify reicht die als Build-Arg rein
-# (Env-Variable muss als "Build Variable / available at buildtime" markiert sein).
+# Vite backt VITE_PB_URL beim Build ins Bundle. Der Wert kommt als Build-Arg aus der
+# Compose-Datei (app/docker-compose.yaml → build.args), z. B. bei Arcane im Homelab.
 ARG VITE_PB_URL
 ENV VITE_PB_URL=$VITE_PB_URL
 RUN npm run build

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ═══════ [ PRODUKTIV / OPS ] — Cloud-Deploy OHNE Coolify & OHNE Docker ═══════
+# ═══════ [ PRODUKTIV / OPS ] — Cloud-Deploy OHNE Docker (systemd + Caddy) ═══════
 # Schlanke Variante: zwei native systemd-System-Dienste + Caddy als HTTPS-Reverse-Proxy.
 #
 #   • darts-pocketbase.service  → PocketBase-Binary, lauscht NUR auf 127.0.0.1:8090
@@ -7,7 +7,7 @@
 #   • Caddy                        → 80/443 öffentlich, Auto-HTTPS (Let's Encrypt),
 #                                    routet  app.<domain> → :4173  und  db.<domain> → :8090
 #
-# Kein Docker, kein Coolify, kein nginx. Läuft auf einem 1–2-GB-Nano (Ubuntu/Debian).
+# Kein Docker, kein nginx. Läuft auf einem 1–2-GB-Nano (Ubuntu/Debian).
 #
 # AUFRUF (als root / mit sudo — installiert Pakete + Dienste). Das Skript FRAGT alles
 # Nötige interaktiv ab; Eingaben lassen sich auch vorab als Env-Variablen setzen:
@@ -92,7 +92,7 @@ if [ "$DO_ACCOUNTS" = "1" ]; then
 fi
 
 echo
-echo "▶ DartsZentrale schlankes Cloud-Setup (ohne Coolify/Docker)"
+echo "▶ DartsZentrale schlankes Cloud-Setup (ohne Docker)"
 echo "  Repo        : $ROOT"
 echo "  Dienst-User : $RUN_USER:$RUN_GROUP"
 echo "  App-Domain  : $APP_DOMAIN  →  127.0.0.1:${WEB_PORT}"
@@ -210,7 +210,7 @@ echo "• Caddyfile schreiben …"
 # Let's-Encrypt-Zertifikate automatisch (Ports 80+443 müssen offen sein).
 
 # Basis-Security-Header (Befund #9/#13) — Caddy setzt sie im Cloud-Modus.
-# (app/nginx.conf ist nur das Coolify-Homelab/Dev-Pendant.) HSTS aktiv,
+# (app/nginx.conf ist nur das Arcane-/Docker-Homelab/Dev-Pendant.) HSTS aktiv,
 # weil Caddy ausschließlich über HTTPS ausliefert.
 (security_headers) {
 	header {

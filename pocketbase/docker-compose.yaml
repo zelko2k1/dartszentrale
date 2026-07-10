@@ -1,11 +1,12 @@
-# PocketBase für den Vereinsmodus — Deployment via Coolify (Docker Compose).
-# Coolify übernimmt Reverse-Proxy + HTTPS; die Domain (db.<deine-domain>) wird in der Coolify-UI gesetzt.
+# PocketBase für den Vereinsmodus — Deployment via Arcane (Docker Compose).
+# Im LAN/Homelab wird Port 8090 direkt veröffentlicht (kein Proxy). In der Cloud sitzt
+# Caddy davor und terminiert HTTPS (db.<deine-domain> → 8090); Arcane selbst bringt keinen Proxy mit.
 # WICHTIG: Das Volume pb_data ist persistent → enthält SQLite-DB + Uploads + Backups.
 #          Ohne dieses Volume wären die Daten nach einem Redeploy weg.
 services:
   pocketbase:
     # Eigenes Image (Basis: muchobien/pocketbase) mit fest eingebackenem Schema +
-    # Hooks — siehe Dockerfile. Robuster als Bind-Mounts, die in Coolify je nach
+    # Hooks — siehe Dockerfile. Robuster als Bind-Mounts, die je nach
     # Arbeitsverzeichnis leer bleiben.
     build:
       context: .
@@ -23,12 +24,12 @@ services:
       - --dir=/pb_data
       - --hooksDir=/pb/hooks
       - --migrationsDir=/pb/migrations
-    # Zielport für Coolifys Proxy (in der UI db.<domain> → Port 8090 verdrahten).
+    # Host-Port 8090 — im LAN direkt erreichbar; in der Cloud routet Caddy db.<domain> → 8090.
     # ⚠ SICHERHEIT (Internet-Betrieb): "8090:8090" veröffentlicht PocketBase als
     # KLARTEXT-HTTP auf dem Host (0.0.0.0:8090) – am TLS-Proxy vorbei. Solange die
     # App PB direkt über die LAN-IP erreicht (VITE_PB_URL=http://<lan-ip>:8090), wird
     # dieses Mapping gebraucht. Sobald PB AUSSCHLIESSLICH hinter dem HTTPS-Proxy läuft:
-    # dieses Mapping ENTFERNEN (Coolify routet intern) ODER auf "127.0.0.1:8090:8090"
+    # dieses Mapping ENTFERNEN (Caddy routet intern übers Docker-Netz) ODER auf "127.0.0.1:8090:8090"
     # binden und Port 8090 in der Host-Firewall vom Internet sperren. Siehe
     # docs/security-audit.md (Befund #3).
     ports:

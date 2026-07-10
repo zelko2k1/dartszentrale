@@ -16,8 +16,8 @@ Die App kennt zwei Modi (umschaltbar in den Einstellungen, mit automatischer Erk
   (gleiche `darts_*`-Schlüssel wie der Prototyp).
 - **Verein** — mit Login und Rollen (admin / captain / player / viewer),
   Daten über ein **PocketBase**-Backend. Der passende Data-Provider liegt in
-  `src/data/pocketbaseProvider.ts`; das Deploy-Setup (Coolify auf Hetzner)
-  ist unter `../docs/coolify-homelab-anleitung.md` dokumentiert.
+  `src/data/pocketbaseProvider.ts`; das Deploy-Setup (Arcane im Homelab
+  bzw. systemd+Caddy in der Cloud) ist unter `../docs/arcane-homelab-anleitung.md` dokumentiert.
 
 Die Datenquelle ist über austauschbare Provider gekapselt (`src/data/provider.ts`,
 `localProvider.ts`, `pocketbaseProvider.ts`).

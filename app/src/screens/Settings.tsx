@@ -82,7 +82,7 @@ function Row({ label, sub, children, top }: { label: string; sub?: string; child
 
 // „App & Updates": prüft/installiert Datei-basierte Updates über den serve-dist-Endpunkt
 // (/admin/update/*). Läuft lokal/LAN/Cloud über http. Wird die App anders ausgeliefert (z. B.
-// Coolify/nginx → Endpunkt fehlt), zeigt der Panel einen Hinweis statt eines Installers.
+// Arcane/nginx → Endpunkt fehlt), zeigt der Panel einen Hinweis statt eines Installers.
 const UPDATE_TOKEN_KEY = 'darts_update_token';
 function UpdatePanel() {
   const accent = useStore((st) => st.settings.accent);

@@ -1,7 +1,7 @@
-# DartsZentrale schlank in der Cloud — ohne Coolify, ohne Docker
+# DartsZentrale schlank in der Cloud — systemd + Caddy, ohne Docker
 
 Die **leichteste** Art, den Vereinsmodus online zu betreiben: zwei native systemd-Dienste
-plus **Caddy** als HTTPS-Proxy. Kein Coolify (~1 GB Dauerlast gespart), kein Docker.
+plus **Caddy** als HTTPS-Proxy. Kein Docker, keine Container-Verwaltung (~1 GB Dauerlast gespart).
 Läuft auf einem **1–2-GB-Nano** ab ~3–4 €/Monat.
 
 > **Geführt per Skript:** `einrichten-cloud.sh` fragt alles Nötige ab (Domains, Superuser,

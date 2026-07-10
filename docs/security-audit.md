@@ -19,7 +19,7 @@ DartsZentrale läuft in **drei Modi** — die Checkliste unten ist entsprechend 
 > brauchen **kein** Caddy — dort ist entweder gar kein Netz-Exposé (on-board) oder die Absicherung
 > läuft über Firewall/VPN (LAN). Der komplette Cloud-Aufbau ist in **`einrichten-cloud.sh`**
 > automatisiert (systemd-Units + Caddy); das Template dazu ist **`Caddyfile.example`** (Referenz-Block
-> unten). **Coolify ist nur Homelab/Dev, nicht der Produktions-Cloud-Pfad.**
+> unten). **Arcane/Docker ist nur Homelab/Dev, nicht der Produktions-Cloud-Pfad.**
 
 ## Verdikt
 
@@ -53,9 +53,9 @@ Kurz dokumentiert für die Nachvollziehbarkeit der Nummern; Details in der Git-H
 - **#9 / #13** Security-Header + `-Server` (kein Versions-Header) als `security_headers`-Snippet im
   **Caddyfile** (`einrichten-cloud.sh` / `Caddyfile.example`). *Die CSP-Aktivierung bleibt ein
   Deploy-Schritt → siehe #9 in der Checkliste.* (Das alte `app/nginx.conf` gilt nur für den
-  Coolify-**Homelab/Dev**-Pfad; im Cloud-Modus übernimmt Caddy die Header.)
+  Arcane-/Docker-**Homelab/Dev**-Pfad; im Cloud-Modus übernimmt Caddy die Header.)
 - **#11** `reset-password.mjs`: `NEW_PW` ist Pflicht, kein stiller Default mehr.
-- **Nebenbefund (nur Homelab/Dev):** Der Coolify-Deploy backt Migrations/Hooks **ins Image**
+- **Nebenbefund (nur Homelab/Dev):** Der Arcane-/Docker-Deploy backt Migrations/Hooks **ins Image**
   (Dockerfile `COPY`), Frontend über `app/Dockerfile`. Für den **Cloud-Produktivpfad irrelevant** —
   dort laufen PB + Frontend als systemd-Units hinter Caddy (`einrichten-cloud.sh`).
 
@@ -72,7 +72,7 @@ committed** — verifiziert). Trotzdem: **Passwort rotieren** und den Literal au
 
 **#2 — Produktiv-Admin manuell anlegen, keine Seeds gegen Prod** (Betriebsregel)
 Der erste App-Admin wird von `provision.mjs` interaktiv abgefragt (oder per `APP_ADMIN_EMAIL`/
-`APP_ADMIN_PASS`); ein reiner Coolify-Deploy legt **kein** Konto an (nur Migrations+Hooks). **Regel:**
+`APP_ADMIN_PASS`); ein reiner Arcane-/Docker-Deploy legt **kein** Konto an (nur Migrations+Hooks). **Regel:**
 Produktiv-Admin mit **starkem** Passwort selbst anlegen; die `demo-*`-Seeds sind lokal-only (der
 Guard blockiert sie gegen nicht-lokale Ziele).
 
@@ -85,7 +85,7 @@ Guard blockiert sie gegen nicht-lokale Ziele).
   **Host-/Router-Firewall** (Port 8090 nur im LAN, nie ins Internet forwarden); wer im LAN auch TLS
   will, kann Caddy lokal davorstellen — kein Muss.
 - **on-board:** kein Netz-Exposé, entfällt.
-- *(Der `8090:8090`-Port in `pocketbase/docker-compose.yaml` betrifft nur den Coolify-Homelab-Pfad.)*
+- *(Der `8090:8090`-Port in `pocketbase/docker-compose.yaml` betrifft nur den Arcane-/Docker-Homelab-Pfad.)*
 
 ### 🟡 Mittel
 
@@ -204,11 +204,11 @@ db.deinedomain.de {
 **Warum das sicher ist (Cloud):** Caddy erzwingt **HTTPS/WSS** (Auto-Let's-Encrypt, HSTS) → kein
 Netzwerk-Mitlesen. PB + Frontend lauschen **nur auf Loopback** → nur Caddy spricht mit ihnen, von außen
 sind 8090/4173 unerreichbar. Angriffsfläche = ein Caddy-Binary + zwei localhost-Dienste, kein
-Docker-/Coolify-Stack.
+Docker-/Arcane-Stack.
 
 ### Secrets im Cloud-Modus (systemd)
 
-Ohne Coolify-Secrets-Store liegen Geheimnisse (z. B. der geplante **autodarts-Token**,
+Ohne einen Docker-Secrets-Store liegen Geheimnisse (z. B. der geplante **autodarts-Token**,
 [`autodarts-api.md`](autodarts-api.md)) als **`EnvironmentFile`** einer systemd-Unit:
 `/etc/dartszentrale/*.env`, **`chmod 600`, `root`-only**, **nicht** im Git-Repo. So verlässt der Token
 nie den Server und landet in keinem Browser-Bundle.

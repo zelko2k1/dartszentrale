@@ -1,4 +1,4 @@
-# Vereinsmodus: Backend mit PocketBase + Coolify — Umsetzungsplan
+# Vereinsmodus: Backend mit PocketBase — Umsetzungsplan
 
 > Lokaler Modus bleibt unverändert (localStorage, offline, kein Backend).
 > Dieser Plan betrifft **nur den Vereinsmodus**: geteilte Daten, echte Logins von mehreren Rechnern.
@@ -14,9 +14,9 @@
 ## 1. Architektur (Überblick)
 
 ```
-                    Hetzner-Server (Docker + Coolify)
+                    Server (Arcane/Docker oder systemd)
    ┌───────────────────────────────────────────────────────────┐
-   │  Coolify (Traefik Reverse-Proxy + Let's Encrypt / HTTPS)   │
+   │  Caddy (Reverse-Proxy + Let's Encrypt / HTTPS)             │
    │                                                            │
    │   ┌──────────────────┐        ┌──────────────────────┐    │
    │   │ Frontend (statisch)│  →    │ PocketBase (1 Container)│  │
@@ -178,18 +178,23 @@ Heute laufen alle Daten zentral über `read`/`write` im Zustand-Store → guter 
 
 ---
 
-## 5. Coolify-Deployment
+## 5. Deployment
+
+> **Aktueller Stand (statt dieses ursprünglichen Coolify-Plans):** Homelab läuft über **Arcane**
+> (Docker-Compose-Stacks) — siehe [`arcane-homelab-anleitung.md`](arcane-homelab-anleitung.md);
+> die Cloud über **systemd + Caddy** (schlank, ohne Docker) — siehe
+> [`admin-anleitung-cloud.md`](admin-anleitung-cloud.md). Die Skizze unten bleibt als Konzept erhalten.
 
 ### 5.1 PocketBase-Service
 - Docker-Image (z. B. `ghcr.io/muchobien/pocketbase`) **oder** eigenes Dockerfile mit dem PB-Binary.
 - **Persistentes Volume** → Mount `/pb_data` (enthält SQLite-DB + Uploads). **Kritisch**, sonst Datenverlust beim Redeploy.
-- Coolify-Domain z. B. `db.example.com`, HTTPS automatisch.
+- Domain z. B. `db.example.com`, HTTPS via Caddy automatisch.
 - Erststart: Admin-Konto im PB-Admin-UI (`/_/`) anlegen, dann Collections + Rules importieren (per `pb_migrations` oder UI).
 
 ### 5.2 Frontend-Service
-- Aus dem Git-Repo deployen (Coolify Nixpacks erkennt Vite, oder eigenes Dockerfile + statischer Webserver).
+- Aus dem Git-Repo bauen (eigenes Dockerfile + statischer Webserver / nginx).
 - Build: `npm run build` → `dist/` statisch ausliefern.
-- Env `VITE_PB_URL=https://db.example.com` setzen.
+- Build-Arg `VITE_PB_URL=https://db.example.com` setzen (Build-Zeit!).
 - Domain z. B. `app.example.com`, HTTPS automatisch (für PWA nötig).
 
 ### 5.3 CORS / Domains
@@ -200,7 +205,7 @@ Heute laufen alle Daten zentral über `read`/`write` im Zustand-Store → guter 
 
 ## 6. Backups & Betrieb
 - **PocketBase** hat eingebaute Backups (Admin-UI), Ziel auch S3/Hetzner Storage Box möglich → automatisieren.
-- Zusätzlich **Coolify-Volume-Snapshots** des `/pb_data`.
+- Zusätzlich **Volume-Snapshots** des `/pb_data` (Arcane/Docker) bzw. Datei-Backup der `pb_data/` (systemd).
 - Empfehlung: tägliches automatisches Backup + gelegentlicher Restore-Test.
 
 ---
@@ -215,7 +220,7 @@ Heute laufen alle Daten zentral über `read`/`write` im Zustand-Store → guter 
 
 | Phase | Inhalt | Aufwand |
 |---|---|---|
-| 0 | PocketBase auf Coolify, Collections + Rules, Admin-Konto | klein–mittel |
+| 0 | PocketBase deployen, Collections + Rules, Admin-Konto | klein–mittel |
 | 1 | `DataProvider`-Abstraktion, PB-SDK, **Lese**-Pfade Verein | mittel |
 | 2 | **Schreib**-Pfade + echte Auth + Rollen serverseitig | mittel |
 | 3 | Datenimport-Tool, Realtime (optional), Backups, Feinschliff | klein–mittel |

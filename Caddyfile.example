@@ -1,7 +1,7 @@
-# DartsZentrale — Caddy-Reverse-Proxy mit Auto-HTTPS (schlanke Variante, ohne Coolify/Docker).
+# DartsZentrale — Caddy-Reverse-Proxy mit Auto-HTTPS (schlanke Variante, ohne Docker).
 #
 # NUR fuer den CLOUD-MODUS. on-board und LAN brauchen kein Caddy (kein Netz-Exposé
-# bzw. Absicherung per Firewall/VPN). Coolify ist nur Homelab/Dev, nicht dieser Pfad.
+# bzw. Absicherung per Firewall/VPN). Arcane/Docker ist nur Homelab/Dev, nicht dieser Pfad.
 #
 # `einrichten-cloud.sh` GENERIERT /etc/caddy/Caddyfile aus den Domains automatisch —
 # diese Datei ist die Referenz zum Nachvollziehen + fuer die manuellen Schritte #5/#9.
@@ -21,7 +21,7 @@
 
 # ── Basis-Security-Header (Befund #9/#13) ────────────────────────────────────
 # Im Cloud-Modus setzt Caddy die Header. (app/nginx.conf ist das Pendant nur im
-# Coolify-Homelab/Dev-Pfad — hier nicht relevant.)
+# Arcane-/Docker-Homelab/Dev-Pfad — hier nicht relevant.)
 # HSTS ist hier aktiv, weil Caddy AUSSCHLIESSLICH über HTTPS ausliefert.
 # Caddy setzt den Server-Header nur auf "Caddy" (keine Version) — wir entfernen ihn ganz.
 (security_headers) {

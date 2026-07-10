@@ -23,8 +23,8 @@ und `seed-remote.sh` (Secrets).
 > `start-verein-lan.*` beim ersten Start selbst. Baut nur, wenn `app/node_modules` vorhanden sind
 > (`build_pubdir` in `build.sh`); sonst wird das Bundle mit Hinweis übersprungen.
 >
-> **Coolify/Docker** ist bewusst **kein** copy2share-Bundle, sondern der separate Weg für
-> Fortgeschrittene (Homelab/Cloud) — siehe `docs/coolify-homelab-anleitung.md`.
+> **Arcane/Docker** ist bewusst **kein** copy2share-Bundle, sondern der separate Weg für
+> Fortgeschrittene (Homelab/Cloud) — siehe `docs/arcane-homelab-anleitung.md`.
 
 ## Ausführen
 

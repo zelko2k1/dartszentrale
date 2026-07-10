@@ -6,8 +6,8 @@
 # Jeder Verein bekommt die passende ZIP. Aufruf:  bash build.sh [ZIEL]   (Standard: <repo>/copy2share)
 # Bewusst NICHT kopiert: node_modules, dist, .env.local, pb_data, das PocketBase-Binary,
 # die demo-*.mjs (Testdaten) und seed-remote.sh (Secrets).
-# Der Coolify-/Docker-Weg ist bewusst SEPARAT (für Fortgeschrittene) und nicht Teil dieser Bundles
-# — siehe docs/coolify-homelab-anleitung.md.
+# Der Arcane-/Docker-Weg ist bewusst SEPARAT (für Fortgeschrittene) und nicht Teil dieser Bundles
+# — siehe docs/arcane-homelab-anleitung.md.
 set -euo pipefail
 
 SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -43,7 +43,7 @@ copy_verein_lan(){ for f in start-verein-lan.sh start-verein-lan.ps1 start-verei
 
 copy_docs(){ local d="$1/docs"; mkdir -p "$d"; shift; for f in "$@"; do cpf "$REPO/docs/$f" "$d/"; done; }
 
-# Schlanke Cloud-Variante (ohne Coolify/Docker): Installer + Caddy-Referenzkonfig — direkt ins Bundle-Root
+# Schlanke Cloud-Variante (systemd + Caddy, ohne Docker): Installer + Caddy-Referenzkonfig — direkt ins Bundle-Root
 copy_cloud(){ for f in einrichten-cloud.sh Caddyfile.example; do cpf "$REPO/$f" "$1/"; done; }
 
 # Update-Paket: fertiges dist/ (inkl. version.json) als .tar.gz. Für alle Modi identisch (nur Frontend):
@@ -142,7 +142,7 @@ else
   rmdir "$B" 2>/dev/null || true
 fi
 
-# ── 03 — Vereinsmodus in der Cloud (schlank: ohne Coolify, ohne Docker) ─────
+# ── 03 — Vereinsmodus in der Cloud (schlank: systemd + Caddy, ohne Docker) ──
 C="$TARGET/03-verein-cloud"; mkdir -p "$C"
 copy_app "$C" 0
 copy_pb "$C" 0
@@ -150,7 +150,7 @@ copy_cloud "$C"
 cpf "$REPO/update-server.sh" "$C/"
 copy_docs "$C" admin-anleitung-cloud.md go-live-checkliste-cloud.md handbuch.md
 cat > "$C/LIESMICH.txt" <<'TXT'
-DartsZentrale — Vereinsmodus in der Cloud (schlank: ohne Coolify, ohne Docker)
+DartsZentrale — Vereinsmodus in der Cloud (schlank: systemd + Caddy, ohne Docker)
 ------------------------------------------------------------------------
 EIN Befehl richtet alles ein — fragt Domains, Superuser und ersten App-Admin ab und
 laeuft bis alles steht (PocketBase laden, App bauen, systemd-Dienste, Caddy/HTTPS):
