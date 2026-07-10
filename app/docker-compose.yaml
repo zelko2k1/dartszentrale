@@ -3,8 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - VITE_PB_URL=http://192.168.200.7:8090
     ports:
       - "8081:80"
-    environment:
-      - VITE_PB_URL=http://192.168.200.7:8090
     restart: unless-stopped
