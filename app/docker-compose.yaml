@@ -4,8 +4,9 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        # ← auf die IP DEINES PocketBase-Servers anpassen (Build-Zeit, nicht Laufzeit!)
-        - VITE_PB_URL=http://192.168.1.50:8090
+        # Wert kommt aus app/.env (NICHT versioniert) oder aus der Arcane-Stack-Umgebung.
+        # Build-Zeit, nicht Laufzeit! Fehlt er, bricht der Build bewusst ab (siehe .env.example).
+        - VITE_PB_URL=${VITE_PB_URL:?bitte VITE_PB_URL in app/.env setzen (Vorlage: app/.env.example)}
     ports:
       - "8081:80"
     restart: unless-stopped

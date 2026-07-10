@@ -83,15 +83,19 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        - VITE_PB_URL=http://192.168.1.50:8090   # ← auf deine <IP> anpassen!
+        # Wert kommt aus app/.env (nicht versioniert), NICHT hier hartkodieren.
+        - VITE_PB_URL=${VITE_PB_URL:?bitte VITE_PB_URL in app/.env setzen (Vorlage: app/.env.example)}
     ports:
       - "8081:80"
     restart: unless-stopped
 ```
 
-1. **`VITE_PB_URL` auf deine `<IP>` setzen** — im File (`http://<IP>:8090`). Anders als bei Coolify
-   gibt es **kein Build-Variable-Häkchen** mehr: der Wert steht versioniert in der Compose-Datei und
-   wird von Vite **zur Build-Zeit** ins Bundle gebacken (`ARG VITE_PB_URL` im Dockerfile).
+1. **`VITE_PB_URL` in einer eigenen `app/.env` setzen** (nicht im Compose-File):
+   `cp app/.env.example app/.env`, dann darin `VITE_PB_URL=http://<IP>:8090` eintragen. Die `.env` ist
+   **gitignored** → deine IP landet nie im Repo und übersteht `git pull`. Compose liest sie beim Build
+   automatisch aus dem `app/`-Ordner; Vite backt den Wert **zur Build-Zeit** ins Bundle (`ARG VITE_PB_URL`
+   im Dockerfile). Fehlt die Variable, bricht der Build bewusst ab, statt eine falsche URL einzubacken.
+   *(Alternativ statt `.env`: `VITE_PB_URL` als Stack-Umgebungsvariable in Arcane setzen.)*
 2. In Arcane einen zweiten **Compose-Stack** aus dem Verzeichnis **`app/`** anlegen.
 3. **Deploy / Up.**
 
@@ -111,8 +115,8 @@ services:
 2. Mit dem **App-Admin** (aus Schritt 1.4) anmelden.
 3. Klappt das Laden, aber Login/Daten gehen nicht → **F12 → Tab „Network"**, Login wiederholen,
    den Request **`auth-with-password`** ansehen (Ziel-URL + Status-Code):
-   - Geht an `localhost:8090` → `VITE_PB_URL` stand beim Build falsch/leer → in `app/docker-compose.yaml`
-     korrigieren + **Rebuild**.
+   - Geht an `localhost:8090` oder eine falsche IP → `VITE_PB_URL` stand beim Build falsch/leer → in
+     `app/.env` korrigieren + **Rebuild**.
    - Geht an `http://<IP>:8090`, **Status 400** (`Failed to authenticate`) → falsche Mail/falsches Passwort
      → Record in `users` → „Change password" neu setzen.
    - Geht an `http://<IP>:8090`, **Status 403** → Auth-Rule `active = true` nicht erfüllt
@@ -232,7 +236,7 @@ Die echte Zugriffskontrolle sind die **PocketBase-API-Rules** (serverseitig) —
 ## 7. Merksätze
 
 - **Superuser** = PB-Verwaltung · **App-Admin** = App-Login (`users`, `role=admin`). Zwei verschiedene Dinge.
-- **`VITE_PB_URL`** ist **Build-Zeit** → ändern heißt **Rebuild**; der Wert steht in `app/docker-compose.yaml` (kein UI-Häkchen mehr).
+- **`VITE_PB_URL`** ist **Build-Zeit** → ändern heißt **Rebuild**; der Wert steht in `app/.env` (gitignored, Vorlage `app/.env.example`), nicht im versionierten Compose-File.
 - **Erster-Superuser-Dialog** erscheint nur, wenn `pb_data` **leer** ist. Sonst nur Login.
 - **Alles http im LAN** ist ok, solange App und PB beide http sind (kein Mixed Content).
 - **Arcane hat keinen Proxy/HTTPS** — im LAN egal (direkte Ports), in der Cloud brauchst du Caddy (Weg A oder B).
