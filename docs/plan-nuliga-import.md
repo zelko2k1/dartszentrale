@@ -5,7 +5,7 @@
 
 ## 1. Ziel & Geltungsbereich
 
-Die eigene Liga-Gruppe bei nuLiga (z. B. `MFr 2025/26`, Gruppe `211260`) liefert öffentlich Tabelle und
+Die eigene Liga-Gruppe bei nuLiga (z. B. `<Verband> 2025/26`, Gruppe `123456`) liefert öffentlich Tabelle und
 Spielplan als HTML. DartsZentrale soll diese Daten **read-only** spiegeln und im Vereinskontext anzeigen
 (Tabelle, kommende/vergangene Spieltage, eigenes Team hervorgehoben).
 
@@ -20,7 +20,7 @@ Spielplan als HTML. DartsZentrale soll diese Daten **read-only** spiegeln und im
 ## 2. Datenquelle (verifiziert 2026-07-07)
 
 Basis-URL: `https://bdv-dart.liga.nu/cgi-bin/WebObjects/nuLigaDARTDE.woa/wa/groupPage`
-Parameter: `championship=<Saison>` (z. B. `MFr 2025/26`, url-enkodiert `MFr+2025%2F26`), `group=<id>` (z. B. `211260`).
+Parameter: `championship=<Saison>` (z. B. `<Verband> 2025/26`, url-enkodiert `<Verband>+2025%2F26`), `group=<id>` (z. B. `123456`).
 
 | Zweck | URL-Zusatz |
 |---|---|
@@ -76,9 +76,9 @@ Eine Collection **`nuliga_group`** (admin-verwaltet), je verfolgter Gruppe ein R
 
 | Feld | Typ | Zweck |
 |---|---|---|
-| `label` | text | Anzeigename (z. B. „Bezirksoberliga Mittelfranken") |
-| `championship` | text | z. B. `MFr 2025/26` |
-| `group` | text | z. B. `211260` |
+| `label` | text | Anzeigename (z. B. „Bezirksoberliga") |
+| `championship` | text | z. B. `<Verband> 2025/26` |
+| `group` | text | z. B. `123456` |
 | `own_team` | text | eigener Teamname (zum Hervorheben; optional) |
 | `enabled` | bool | Abruf an/aus |
 | `standings` | json | geparste Tabelle (Array von Zeilen) |

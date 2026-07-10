@@ -35,7 +35,7 @@ function pdfToText(pdf) {
 function parseReport(text) {
   const lines = text.split(/\r?\n/);
 
-  // Saison + Staffel aus dem Kopf (z. B. "Mittelfranken 2025/26" → "5. Bezirksliga D")
+  // Saison + Staffel aus dem Kopf (z. B. "<Verband> 2025/26" → "5. Bezirksliga D")
   let season = '';
   let league = '';
   for (let i = 0; i < lines.length; i++) {
