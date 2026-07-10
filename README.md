@@ -1,301 +1,270 @@
-# DartsZentrale — Darts-Verein Verwaltung & Counter
+# 🎯 DartsZentrale
 
-## Über dieses Projekt — Herkunft, Stand & Haftung
+**Die kostenlose Vereins- und Zähl-App für Darts-Clubs.** Spielstände zählen, Trainings­spiele,
+Ligen mit automatischer Tabelle, Mannschaften, Termine, Statistiken und Benutzer­verwaltung —
+alles an einem Ort, auf deinem eigenen Gerät oder Server.
 
-**Was das ist:** eine lauffähige Verwaltungs- und Scoring-App für Darts-Vereine
-(Vite + React + PocketBase). Der eigentliche App-Code liegt in **`app/`**, das Backend
-in **`pocketbase/`**. Es läuft im echten Vereinsbetrieb.
+Quelloffen ([MIT](LICENSE)) · deutschsprachig · läuft im echten Vereins­betrieb · Version **1.0.0**
 
-**Wer dahintersteht — offen gesagt:** Ich bin **Vereins-Admin, kein Entwickler** und habe
-keinen Programmier-Hintergrund. DartsZentrale ist aus einer konkreten Not im Verein
-entstanden und **mit KI-Unterstützung (Anthropic Claude) gebaut** — von der ersten Zeile
-bis zur Doku. Ich halte das hier bewusst transparent: Es ist mir lieber, das offen zu sagen,
-als so zu tun, als käme es aus jahrelanger Entwickler-Erfahrung.
+---
 
-**Was das für dich heißt:**
-- Ich **pflege** das Projekt und **teste es im echten Betrieb** — aber ich kann nicht jeden
-  Codepfad selbst tief bewerten. **Code-Reviews, Hinweise und PRs sind ausdrücklich willkommen.**
-- **Support ist begrenzt.** Bei Issues/PRs mit tiefergehendem Code kann es sein, dass ich
-  nur eingeschränkt beurteilen oder reagieren kann. Bitte habt dafür Verständnis.
-- **Nutzung auf eigenes Risiko**, ohne Gewähr — siehe [`LICENSE`](LICENSE) (MIT).
-- **Sicherheit & Datenschutz:** Die App verwaltet **personenbezogene Mitgliederdaten** (DSGVO).
-  Wer sie selbst hostet, sollte das bewusst und sorgfältig tun. Der aktuelle Stand,
-  offene Punkte und eine Go-live-Checkliste stehen in
-  [`docs/security-audit.md`](docs/security-audit.md). Prüft das für euren Einsatz selbst.
+## Was ist das hier — in einfachen Worten?
 
-> **Hinweis zum Rest dieses README:** Die Abschnitte unterhalb sind der **ursprüngliche
-> Design-/Prototyp-Handoff** (HTML-Prototyp `DartsZentrale.dc.html` + Design-Tokens), aus dem
-> die App entstanden ist. Sie beschreiben Aussehen/Verhalten, **nicht** den aktuellen
-> Produktivcode — der liegt in `app/`. Als Design- und Datenmodell-Referenz weiterhin gültig.
+DartsZentrale ist eine App, mit der ein Darts-Verein seinen kompletten Alltag abbilden kann:
+
+- **Am Board zählen** statt Kreide und Tafel — mit Checkout-Vorschlägen und Live-Statistik.
+- **Trainingsspiele** wie Cricket, Around the Clock oder Bob's 27 mit Rangliste.
+- **Den Ligabetrieb organisieren** — Spielplan importieren, Ergebnisse eintragen, Tabelle rechnet sich selbst aus.
+- **Mannschaften & Aufstellungen** verwalten und direkt „an die Boards senden".
+- **Statistiken** für jeden Spieler (Ø 3-Dart, 180er, Checkout-Quote, Rekorde …).
+- **Benutzerkonten mit Rollen**, damit nicht jeder alles ändern darf.
+
+Du brauchst **keine Cloud-Firma und keine monatliche Gebühr**. Die App läuft entweder komplett
+auf einem einzelnen PC am Board, im eigenen Vereins-Netzwerk oder auf einem eigenen Internet-Server —
+du entscheidest. Deine Mitglieder­daten bleiben bei dir.
+
+> ### Ehrlich gesagt: Wer steckt dahinter?
+> Ich bin **Vereins-Admin, kein ausgebildeter Entwickler**. DartsZentrale ist aus einer konkreten
+> Not im Verein entstanden und **mit KI-Unterstützung (Anthropic Claude) gebaut** — von der ersten
+> Zeile bis zur Doku. Das sage ich lieber offen, als so zu tun, als käme es aus jahrelanger
+> Entwickler-Erfahrung.
+>
+> **Was das für dich heißt:** Ich pflege das Projekt und teste es im echten Betrieb, kann aber nicht
+> jeden Codepfad tief bewerten. **Code-Reviews, Hinweise und Pull Requests sind ausdrücklich willkommen.**
+> Der Support ist begrenzt. Nutzung **auf eigenes Risiko, ohne Gewähr** (siehe [LICENSE](LICENSE)).
+> Die App verwaltet **personenbezogene Mitglieder­daten (DSGVO)** — wer sie selbst hostet, sollte das
+> bewusst und sorgfältig tun. Aktueller Sicherheits­stand und eine Go-live-Checkliste stehen in
+> [`docs/security-audit.md`](docs/security-audit.md).
+
+---
+
+## Bildschirmfotos
+
+| Anmeldung | Dashboard | Darts Counter |
+|:--:|:--:|:--:|
+| ![Anmeldung](screenshots/01-login.png) | ![Dashboard](screenshots/02-dashboard.png) | ![Darts Counter](screenshots/07-counter.png) |
+| **Ligen** | **Mannschaften** | **Spieler** |
+| ![Ligen](screenshots/03-ligen.png) | ![Mannschaften](screenshots/04-mannschaften.png) | ![Spieler](screenshots/05-spieler.png) |
+| **Benutzer & Rechte** | **Einstellungen** | |
+| ![Benutzer](screenshots/06-benutzer.png) | ![Einstellungen](screenshots/08-einstellungen.png) | |
+
+*(Bildschirmfotos aus dem Vereinsmodus, als Administrator angemeldet.)*
+
+---
+
+## Was die App alles kann
+
+### 🎯 Spielen & Zählen (Darts Counter)
+- **X01-Spiele** mit Startpunkten 301 / 501 / 701 / 1001
+- Auscheck-Modi **Single / Double / Master Out**, Double-In-Hinweis
+- Wertung nach **Legs** (Best of 1–11) oder nach **Sätzen**
+- **Anwurf** per Ausbullen, Auslosen oder manueller Wahl
+- **Gastspieler** (einfach Namen eintippen) und **freies Spiel** (zählt nicht in die Statistik)
+- Eingabe per **Tablet-Ziffernfeld oder Tastatur**, frei belegbare Schnell-Scores (F1–F8), Checkout mit 1/2/3 Darts
+- **Checkout-Vorschläge** (Finish-Wege bis 170), **Rückgängig**, Bust-Erkennung
+- **Live-Werte** je Spieler: Ø 3-Dart, First 9, 180/140+, Checkout-Quote, High Finish
+- Zwei Ansichten: **„Große Zahl"** (fernlesbar am Board) oder **„Aufschrieb"** im klassischen Sheet-Stil
+- **Revanche** per Klick; fertige Spiele werden automatisch mit allen Einzelwerten gespeichert
+
+### 🏋️ Trainingsspiele (9 Modi, vollständig)
+- **Solo:** Doppel-Training, Around the Clock, Bob's 27, 121 Checkout
+- **Mehrspieler (bis 8):** Around the Clock, Cricket (mit MPR), Baseball, Halve It, Elimination, Killer
+- Jeder Modus mit Regel-Dialog, Rangliste, Rückgängig und Revanche; meistgespielte Modi als Schnellstart
+
+### 👥 Vereinsverwaltung
+- **Spieler** anlegen/bearbeiten mit Avatar-Farbe, Kürzel und (im Vereinsmodus) **Profilfoto**
+- **Mannschaften** als Liga-, Pokal- oder Freundschafts­mannschaft — mit Kader, Kapitän und bis zu 2 Ersatzkapitänen
+- **Benutzerkonten** mit Rolle, optionaler Verknüpfung zu einem Spielerprofil, aktiv/inaktiv-Schalter
+- **Vereinsidentität:** Vereinsname und Logo (wird automatisch verkleinert), Logo-Größe auf der Anmeldeseite
+- **Rechtstexte** (Impressum & Datenschutz) — auf der Login-Seite ohne Anmeldung erreichbar
+- **Schnellanlage** von Spieler / Benutzer / Mannschaft / Wettbewerb / Termin direkt aus dem Admin-Dashboard
+
+### 🏆 Ligen & Wettbewerbe
+- **Ligen, Pokale und Freundschaftsspiele** als getrennte Wettbewerbe
+- **Spielformat-Vorlagen** (Bezirks-/Bayernliga, Landesliga) oder frei konfigurierbare Blockfolge
+- **Automatische Tabelle** (Sp/S/U/N/Differenz/Punkte), eigene Mannschaft hervorgehoben
+- **Begegnungen** mit Datum, Uhrzeit, Ort und Ergebnis
+- **Aufstellung pro Spieltag:** Einzel/Doppel frei anordnen, Spieler zuordnen, **Boards zuweisen**, Ersatzliste, „An die Boards senden"
+- **Spielbericht** Brett für Brett, mit **Highlights** (180er, Short Legs, High Finish)
+- **Spielplan-Import (CSV):** erkennt das BDV-Exportformat, legt Tabelle, Begegnungen und Kalender-Termine an — **wiederholbar ohne Duplikate**
+
+### 📅 Kalender
+- Monatsansicht mit farbigen Termintypen (Training, Ligaspiel, Verein, Pokal, Freundschaft, Sonstiges)
+- Termine anlegen/bearbeiten, automatische Ligaspiel-Termine aus dem Spielplan-Import, nach Saison gefiltert
+
+### 📊 Statistiken
+- **Bestenliste** aller Spieler (Ø 3-Dart, First 9, 60+/100+/140+/180, Short Legs, Checkout-Quote, High Finish) — **als CSV exportierbar**
+- **Spieler-Detailseite** mit Rekorden, Siegquote, Scoring-Verlauf; umschaltbar zwischen allen Saisons und einzelner Saison
+
+### 🔄 Saison-Verwaltung
+- Genau **eine aktive Saison** plus lesbares Archiv früherer Saisons
+- **Saison abschließen:** friert Tabelle & Statistik als Schnappschuss ein, lädt eine Sicherung herunter, legt die Folgesaison an
+- **Vorsaison übernehmen** (Mannschaften/Ligen ohne Ergebnisse klonen) und **Saison auslagern** (Platz sparen, Statistik läuft aus dem Schnappschuss weiter)
+
+### 🔐 Benutzer, Rollen & Sicherheit
+- **Fünf Rollen mit abgestuften Rechten:** Administrator · Kapitän · Spieler · Betrachter (nur lesen) · Board-Rechner (Maschinen­konto, darf nur spielen)
+- **Zwei-Faktor-Anmeldung (2FA/TOTP)** zum Selbst-Einrichten — QR-Code, Backup-Codes, Admin-Reset
+- **Login** per E-Mail + Passwort (optional mit 2FA-Code); eigenes Passwort änderbar, inaktive Konten werden abgewiesen
+
+### 💻 Betriebsmodi & Technik
+- **Board-/Kiosk-Betrieb:** Board-PC meldet sich mit Board-Konto an → gesperrter Kiosk mit reduzierter Bedienung; zugeordnete Begegnung wird automatisch angezeigt; **Geräte per QR-Code hinzufügen**
+- **Darstellung:** Hell/Dunkel, Akzentfarben, 5 Schriftarten, viele Größenregler, Befehls-Palette (Strg+K), konfigurierbare Tastenkürzel
+- **Progressive Web App (PWA):** installierbar und **offline lauffähig**, Update-Hinweis ohne Zwangs-Neustart
+- **Backup:** Voll-Export/-Import aller Daten als JSON; im lokalen Betrieb zusätzlich automatisches tägliches Backup
+
+---
+
+## Die zwei Betriebsmodi
+
+DartsZentrale kann auf zwei Arten laufen. Beim ersten Start wählst du aus:
+
+| | **Lokal** (ein Board) | **Verein** (Netzwerk/Server) |
+|---|---|---|
+| **Für wen?** | Ein einzelner PC/Tablet am Board | Ganzer Verein, mehrere Geräte |
+| **Anmeldung?** | Nein | Ja, mit Benutzer & Rollen |
+| **Daten liegen …** | im Browser des Geräts | in einer zentralen Datenbank (PocketBase) |
+| **Gemeinsam nutzen?** | Nein | Ja — alle Geräte sehen dieselben Daten, live |
+| **Enthält** | Counter, Training, Spieler, Statistik | zusätzlich Ligen, Mannschaften, Kalender, Benutzer, Saisons |
+
+Mehr dazu in [`WORKFLOWS.md`](WORKFLOWS.md) (Abläufe der beiden Modi).
+
+---
+
+## Loslegen — welche Anleitung passt zu mir?
+
+Such dir das Szenario aus, das zu deinem Verein passt:
+
+| Ich will … | Anleitung |
+|---|---|
+| **Nur ein Board** auf einem PC betreiben (ohne Server) | [`docs/anleitung-lokal-linux.md`](docs/anleitung-lokal-linux.md) · [`docs/anleitung-lokal-windows.md`](docs/anleitung-lokal-windows.md) |
+| **Im Vereinsheim/LAN** für mehrere Geräte (ein Rechner als Server) | [`docs/admin-anleitung-lan-linux.md`](docs/admin-anleitung-lan-linux.md) · [`docs/admin-anleitung-lan-windows.md`](docs/admin-anleitung-lan-windows.md) |
+| **Im Internet** mit eigener Domain & HTTPS betreiben | [`docs/admin-anleitung-cloud.md`](docs/admin-anleitung-cloud.md) + [`docs/go-live-checkliste-cloud.md`](docs/go-live-checkliste-cloud.md) |
+| Im **Homelab mit Docker/Arcane** laufen lassen | [`docs/arcane-homelab-anleitung.md`](docs/arcane-homelab-anleitung.md) |
+| Die App im Alltag **bedienen** (als Vereins-Admin) | [`docs/handbuch.md`](docs/handbuch.md) |
+
+> **Für Entwickler:** App lokal starten mit `cd app && npm install && npm run dev` (öffnet
+> `http://localhost:5173`). Details in [`app/README.md`](app/README.md).
+
+---
+
+## Die Skripte — was macht welches?
+
+Damit du nicht raten musst, welche Datei wofür ist. Das **Namensschema** verrät den Einsatzzweck:
+
+- **`…-lokal…`** → ein einzelnes Board auf einem PC (nur die App, keine Anmeldung)
+- **`…-verein-lan…`** → Vereinsmodus im eigenen Netzwerk, als „alles-in-einem"-Paket (ein Programm liefert App **und** Datenbank aus)
+- **`…-cloud` / `…-server`** → Vereinsmodus auf einem Internet-Server
+
+Pro Aufgabe gibt es meist eine **Linux-Version (`.sh`)** und eine **Windows-Version (`.bat`/`.ps1`)** —
+die `.bat` startet dabei oft nur die `.ps1`.
+
+### Einrichten (einmalig)
+| Datei | Zweck |
+|---|---|
+| `einrichten-cloud.sh` | Richtet einen **Internet-Server** komplett ein (Datenbank + App als Hintergrund­dienste + Caddy für HTTPS). Linux, als root. |
+| `pocketbase/provision.mjs` | Legt die **Datenbank-Struktur** des Vereinsmodus an. Beliebig oft wiederholbar. |
+
+### Starten
+| Datei | Zweck |
+|---|---|
+| `start-lokal.sh` / `.bat` | Startet **ein Board** unter `http://127.0.0.1:4173` — ohne Server, ohne Anmeldung. |
+| `start-verein-lan.sh` / `.ps1` / `.bat` | Startet den **Vereinsmodus im LAN** (ein Programm für App + Datenbank), legt beim Erststart die Admin-Konten an. |
+
+### Aktualisieren
+| Datei | Zweck |
+|---|---|
+| `update-lokal.sh` / `.bat` | Spielt eine **neue App-Version** für ein Board ein (von USB-Stick/Ordner). |
+| `update-verein-lan.sh` / `.ps1` / `.bat` | Tauscht im LAN-Betrieb **nur die App** aus; die Daten bleiben, die alte Version wird gesichert. |
+| `update-server.sh` | Aktualisiert einen **Internet-/Pi-Server** (App + Datenbank) von Stick/Ordner. |
+
+### Automatisch beim Hochfahren starten (Autostart)
+| Datei | Zweck |
+|---|---|
+| `autostart-lokal.sh` / `.bat` | Board startet **beim Einschalten** automatisch (ideal für einen Kiosk-PC). |
+| `autostart-verein-lan.sh` / `.bat` | LAN-Server startet **beim Einschalten** automatisch. |
+
+### Wartung & Notfälle (Datenbank-Werkzeuge, brauchen Node.js)
+| Datei | Zweck |
+|---|---|
+| `pocketbase/reset-password.mjs` | **Passwort zurücksetzen**, wenn ein Admin ausgesperrt ist. |
+| `pocketbase/reset-2fa.mjs` | **2-Faktor entfernen**, wenn Authenticator *und* Backup-Codes weg sind. |
+| `pocketbase/add-board-account.mjs` | Legt ein **Board-Rechner-Konto** (Kiosk-PC) an. |
+| `pocketbase/season-export.mjs` | **Saison sichern** (als JSON-Datei). |
+| `pocketbase/season-import.mjs` | Eine gesicherte **Saison zurückspielen**. |
+| `pocketbase/season-offload.mjs` | Eine archivierte **Saison auslagern** (Platz sparen) — vorher sichern! |
+| `tools/pdf2schedule.mjs` | Wandelt einen **Spielplan aus einer PDF** in importierbare Daten um. |
+
+### Nur zum Testen (nicht gegen echte Daten laufen lassen!)
+| Datei | Zweck |
+|---|---|
+| `pocketbase/demo-seed-dsv-fuerth.mjs` | Erzeugt eine **komplette Demo-Datenbank** („DSV Fürth 86") zum Ausprobieren. |
+| `pocketbase/seed-remote.sh` | Spielt Testdaten gegen eine entfernte Test-Datenbank ein. |
+| `pocketbase/_security-guard.mjs` | Interner Schutz: verhindert, dass Standard-Passwörter versehentlich gegen einen echten Server laufen. |
+
+### Für den Docker-Betrieb
+| Datei | Zweck |
+|---|---|
+| `pocketbase/Dockerfile` · `pocketbase/docker-compose.yaml` | Baut & startet die **Datenbank** als Container. |
+| `app/Dockerfile` · `app/docker-compose.yaml` · `app/nginx.conf` | Baut & startet die **App** als Container. |
+| `app/serve-dist.mjs` | Kleiner, mitgelieferter Server, der die fertige App ausliefert (nutzen die Start-Skripte intern). |
+
+---
+
+## Projektstruktur — was liegt wo?
+
+```
+dartszentrale/
+├─ app/            → Die App selbst (Benutzeroberfläche). Quellcode in app/src/
+├─ pocketbase/     → Das Backend: Datenbank, Login/Rollen, Server-Logik, Wartungs-Skripte
+├─ docs/           → Alle Anleitungen und Pläne (siehe Tabelle unten)
+├─ screenshots/    → Bildschirmfotos für dieses README
+├─ tools/          → Kleine Helfer (z. B. Spielplan aus PDF einlesen)
+├─ spikes/         → Experimentierecke für neue Ideen (noch nicht im Einsatz)
+├─ backup/ updates/→ Ablage für Sicherungen bzw. Update-Pakete
+└─ (Start-/Update-/Autostart-Skripte, siehe oben)
+```
+
+**Wichtige Dateien im Hauptordner:**
+
+| Datei | Zweck |
+|---|---|
+| [`README.md`](README.md) | Dieses Dokument. |
+| [`LICENSE`](LICENSE) | Die MIT-Lizenz (frei nutzbar). |
+| [`WORKFLOWS.md`](WORKFLOWS.md) | Praktische Abläufe der beiden Betriebsmodi (Lokal vs. Verein). |
+| [`ROADMAP.md`](ROADMAP.md) | Überblick über offene Punkte und geplante Verbesserungen. |
+| [`BUGS.md`](BUGS.md) | Sammelstelle für bekannte Fehler und Testfunde. |
+| [`DATA_MODEL.md`](DATA_MODEL.md) | Beschreibung des Datenmodells (historisch; maßgeblich ist heute `pocketbase/SCHEMA.md`). |
+| [`Caddyfile.example`](Caddyfile.example) | Beispiel-Konfiguration für HTTPS im Cloud-Betrieb. |
+| `DartsZentrale.dc.html` · `support.js` | Der **ursprüngliche HTML-Prototyp**, aus dem die App entstand — nur noch als Design-Referenz. |
+
+**Dokumentation im Ordner [`docs/`](docs/):**
+
+| Datei | Inhalt |
+|---|---|
+| `handbuch.md` | Benutzerhandbuch für den Alltag |
+| `anleitung-lokal-linux.md` · `anleitung-lokal-windows.md` | Ein-Board-Betrieb einrichten |
+| `lokaler-betrieb.md` (+ `.pdf`) | Ausführliche Doku zum lokalen Betrieb |
+| `admin-anleitung-lan-linux.md` · `admin-anleitung-lan-windows.md` | Vereinsmodus im Netzwerk einrichten |
+| `admin-anleitung-cloud.md` · `go-live-checkliste-cloud.md` | Betrieb im Internet + Start-Checkliste |
+| `arcane-homelab-anleitung.md` | Betrieb im Homelab mit Docker/Arcane |
+| `security-audit.md` | Sicherheits­stand und Härtungs­maßnahmen |
+| `verein-pocketbase-plan.md` · `plan-saison.md` · `plan-2fa.md` · `plan-nuliga-import.md` · `plan-autodarts-autoscore.md` · `autodarts-api.md` | Konzepte & Pläne (umgesetzt bzw. geplant) |
+| [`pocketbase/SCHEMA.md`](pocketbase/SCHEMA.md) | **Maßgebliche** Beschreibung der Datenstruktur & Rechte |
+
+---
 
 ## ☕ Unterstützen
 
-DartsZentrale ist kostenlos und quelloffen ([MIT](LICENSE)) und bleibt es auch. Die
-Entwicklung läuft **KI-gestützt** — das verursacht laufende Kosten (KI-Nutzung, Hosting).
-Wer mag, kann einen Kaffee spendieren: **[buymeacoffee.com/zelko2k1](https://buymeacoffee.com/zelko2k1)**.
-Kein Muss — alles bleibt frei nutzbar.
+DartsZentrale ist kostenlos und quelloffen ([MIT](LICENSE)) — und bleibt es. Die Entwicklung läuft
+KI-gestützt und verursacht laufende Kosten (KI-Nutzung, Hosting). Wer mag, spendiert einen Kaffee:
+**[buymeacoffee.com/zelko2k1](https://buymeacoffee.com/zelko2k1)**. Kein Muss — alles bleibt frei nutzbar.
 
----
+## Mitmachen
 
-> **📖 Dokumentation — wo finde ich was?**
-> - **App aufsetzen (eigener Server):** [`docs/admin-anleitung-cloud.md`](docs/admin-anleitung-cloud.md) + [`docs/arcane-homelab-anleitung.md`](docs/arcane-homelab-anleitung.md)
-> - **App im Alltag nutzen (Vereins-Admins):** [`docs/handbuch.md`](docs/handbuch.md)
-> - **Datenmodell & Rechte:** [`pocketbase/SCHEMA.md`](pocketbase/SCHEMA.md) (aktuelles PB-Schema) · [`DATA_MODEL.md`](DATA_MODEL.md) (App-Datenmodell) · [`docs/verein-pocketbase-plan.md`](docs/verein-pocketbase-plan.md) (ursprünglicher Plan, historisch)
-> - **Offene Punkte bis 1.0:** [`ROADMAP.md`](ROADMAP.md) (Master-Überblick aller Arbeitspakete)
->
-> Dieses README selbst ist ein **Entwickler-/Design-Handoff** (Prototyp & Design-Tokens), kein Endnutzer-Dokument.
+Rückmeldungen, Fehlerberichte, Verbesserungs­ideen und Pull Requests sind herzlich willkommen —
+gerade weil das Projekt aus dem Verein und nicht aus dem Entwicklerbüro kommt. Bitte hab Verständnis,
+dass ich bei sehr tiefgehenden Code-Themen nur begrenzt reagieren kann.
 
-## Overview
-DartsZentrale ist eine Verwaltungs- und Scoring-App für Darts-Vereine. Sie deckt zwei
-Betriebsmodi ab: **Lokal** (ein Gerät am Board, kein Login) und **Verein**
-(server-gehostet, mit Anmeldung, Rollen, Ligen, Mannschaften und Benutzerverwaltung).
-Funktionsumfang: Dashboard, Darts Counter (X01 etc.), Trainingsspiele, Kalender,
-Ligen mit berechneter Tabelle & manueller Ergebniseingabe, Mannschaftskader,
-Spielerliste, Statistiken, Benutzer-/Rechteverwaltung und Einstellungen.
+## Lizenz
 
-Die Oberfläche ist **deutschsprachig** und als **Desktop-Web-App** mit fester
-Seitenleiste (248px) gestaltet; der Counter ist zusätzlich tablettauglich.
-
-## About the Design Files
-Die Dateien in diesem Paket sind **Design-Referenzen, erstellt in HTML** — ein
-Prototyp, der Aussehen und Verhalten zeigt, **kein** Produktionscode zum 1:1-Kopieren.
-Aufgabe ist, diese Designs in der **Zielumgebung** des Projekts nachzubauen
-(z. B. React/Vue/Svelte + echtes Backend) mit deren etablierten Mustern und
-Bibliotheken. Existiert noch keine Codebasis, das am besten passende Framework
-wählen (Empfehlung: React/TypeScript-SPA + REST/GraphQL-Backend mit DB & Auth).
-
-Technischer Hinweis zum Prototyp: Er ist als „Design Component" (`*.dc.html`)
-gebaut — ein deklaratives Template plus eine `Component`-Logikklasse, gerendert von
-`support.js`. Das ist **nur das Prototyp-Laufzeitsystem**; nicht übernehmen. Relevant
-sind Layout, Styling-Werte, Datenflüsse und Verhalten, nicht das DC-Framework.
-
-Der Prototyp persistiert alles in **localStorage**. In der echten App gehören diese
-Daten in eine Datenbank hinter einem Server; siehe `DATA_MODEL.md`.
-
-## Fidelity
-**High-fidelity.** Finale Farben, Typografie, Abstände, Komponenten und Interaktionen.
-Die UI sollte pixelgenau mit den Bibliotheken/Patterns der Zielcodebasis nachgebaut
-werden. Exakte Werte siehe „Design Tokens".
-
----
-
-## Architektur & Navigation
-
-**App-Shell** (Vereinsmodus, eingeloggt): feste Sidebar links (248px) + scrollender
-Hauptbereich.
-- **Sidebar:** Logo + Vereinsname oben; Navigation; unten die angemeldete Konto-Karte
-  mit Abmelden-Button.
-- **Navigationspunkte:** Dashboard, Darts Counter, Trainingsspiele, Kalender,
-  Ligen*, Mannschaften*, Spieler, Statistiken, Benutzer*, Einstellungen.
-  (* = nur Vereinsmodus / rollenabhängig, siehe Rechte.)
-- **Lokaler Modus** blendet Ligen/Mannschaften/Benutzer und die Konto-Karte aus.
-
-**Login-Screen** (Vereinsmodus, nicht angemeldet): zentrierte Karte (420px) auf
-dunklem Radial-Verlauf-Hintergrund — Logo, „Anmelden", E-Mail + Passwort,
-Anmelden-Button, Trenner „Demo-Konten", Liste anklickbarer Demo-Konten.
-Im Prototyp ist das Passwort wirkungslos (Demo).
-
----
-
-## Screens / Views
-
-### 1. Dashboard
-- **Zweck:** Überblick; Schnellzugriff aufs Spielen, Termine, Form.
-- **Layout:** Kopf (Datum/Uhrzeit klein, große Begrüßung) + primärer Button „Darts
-  Counter" rechts (nur mit Spielrecht). Termin-Leiste. Dann 4-Spalten-Statistikraster.
-  Darunter zwei Spalten (links Schnellstart/„Nächster Spieltag" + „Letzte Ergebnisse",
-  rechts Training-Quicklaunch / Top-Spieler).
-- **Statistikkarten (Verein, echte Daten):** „Spieler" (Anzahl), „Mannschaften"
-  (Anzahl Kader), „Team Ø 3-Dart" (Mittel der gewerteten Spieler, sonst „–"),
-  „Tabellenplatz" (aus der Liga berechnet). Karte: `--surface`, 1px `--border`,
-  radius 16px, Padding 16–22px; großer Wert in **JetBrains Mono** 24px/800.
-- **„Nächster Spieltag":** Karte mit grünem Verlauf
-  (`linear-gradient(135deg,#13241b,var(--surface) 60%)`, Border `#234032`), zeigt
-  die nächste offene Begegnung der eigenen Mannschaft: zwei 54px-Team-Badges
-  (eigenes Team grüner Verlauf, sonst grau) mit Namen, „VS", Heim/Auswärts + Liga.
-- **„Letzte Ergebnisse":** Liste; je Zeile farbiger 5px-Balken (S=grün, U=gold,
-  N=rot), Gegner + Liga, Legs-Ergebnis (Mono 18px/800), Ergebnis-Kürzel.
-
-### 2. Darts Counter (Setup + Spiel)
-- **Zweck:** X01-Spiel zählen (Einzel/Mannschaft), inkl. „Wer beginnt?"/Ausbullen.
-- Großflächige Score-Anzeige, Tablet-Tastenfeld oder Desktop-Tastatur (F1–F8 =
-  Schnellscores). Einstellbar: Startscore (301/501/701/1001), Double-In/Out, Best of
-  Legs/Sätze. Abgeschlossene Spiele werden gespeichert (→ Statistik).
-- Nur mit **Spielrecht** (admin/captain/player; viewer nicht).
-
-### 3. Trainingsspiele
-- Kartenübersicht der Modi (Cricket, Around the Clock, Doubles, Bob's 27, Checkout
-  121, Elimination, Baseball, Halve-it, Killer …) mit Regel-Overlays und Setup
-  (Spieleranzahl/Auswahl). Ergebnisse werden gespeichert.
-
-### 4. Kalender
-- Monatsansicht (7-Spalten-Grid) + Listenleiste „Termine". Termin-Typen farbcodiert
-  (Training, Ligaspiel, Verein, Competition, Pokal, Sonstiges). Termin-anlegen-Button
-  nur mit „Termine verwalten"-Recht.
-
-### 5. Ligen
-- **Zweck:** Mehrere Ligen verwalten; Mannschaften zuordnen; Ergebnisse manuell
-  eintragen; Tabelle berechnen.
-- **Layout:** Titel „Ligen" + „+ Liga" (rechts). Liga-**Tabs** (Name + Saison).
-  Sub-Kopf mit Liga-Name/Saison + „Mannschaften" (Liga bearbeiten) + „+ Begegnung".
-  Zwei Spalten: links **Tabelle**, rechts **Begegnungen & Ergebnisse**.
-- **Tabelle (berechnet):** Spalten `# · Mannschaft · Sp · S · U · N · Diff · Pkt`
-  (Grid `28px 1fr 30px 30px 30px 30px 44px 40px`). Eigene Mannschaft grün hinterlegt
-  (`rgba(25,164,99,.08)`) + fett, mit grünem Badge. Top 2 grün, Letzter rot.
-  Zahlen in **JetBrains Mono**. Punkte: Sieg 2 / Unentschieden 1 / Niederlage 0;
-  Sortierung Punkte → Legdifferenz → erzielte Legs → Name.
-- **Begegnungen:** je Zeile Datum (Mon/Tag), Paarung „Heim — Gast", Status
-  (Beendet/Geplant), Legs-Ergebnis. Klick öffnet Ergebnis-Modal (nur mit Recht).
-- Leerzustände: „Noch keine Liga" / „Noch keine Ergebnisse" / „Noch keine Begegnungen".
-
-### 6. Mannschaften
-- **Zweck:** Vereinsmannschaften; Kader aus der Spielerliste bilden.
-- **Layout:** Titel + „+ Mannschaft". Mannschafts-**Tabs** (Name + Spielerzahl).
-  Team-Kopf (Badge aus Initialen, Name, Liga · Spielerzahl · Kapitän, „Bearbeiten").
-  Zwei Spalten: **Kader** (Spielerzeilen, Kapitän mit „C"-Badge, Ø 3-Dart) und
-  **Aufstellung** (Einzel 1–4 + Doppel 1–2, gefüllt/„Noch offen").
-- Kader & Aufstellung leiten sich aus `Team.memberIds` (→ Spieler) ab.
-
-### 7. Spieler
-- Kartenraster (3 Spalten). Je Karte: Avatar (Initialen-Badge), Name, Nickname/
-  Spielanzahl, zwei Statistikkacheln (Ø 3-Dart, Siege). Bearbeiten-Stift + „+ Spieler"
-  nur mit „Spieler verwalten"-Recht. Klick öffnet Spieler-Detail.
-
-### 8. Spieler-Detail
-- Kopf (Avatar, Name, Nickname/Rolle), Statistik-Kacheln, Scoring (60+/100+/140+/180),
-  Form-Balkendiagramm, „letzte Spiele". (Detailwerte teils Demo, solange keine echten
-  Match-Daten — siehe DATA_MODEL.md.)
-
-### 9. Statistiken
-- Bestenliste (Tabelle) aus der Spielerliste: Rang, Spieler, Ø 3-Dart, Spiele, Siege/
-  Niederlagen, Checkout-%, 60+/100+/140+/180, High Finish.
-
-### 10. Benutzer & Rechte (nur Admin)
-- **Zweck:** Vereinskonten verwalten, getrennt von der Spielerliste.
-- **Layout:** Titel + „+ Benutzer". 3 Statistikkacheln (Konten gesamt / aktiv / mit
-  Spieler verknüpft). Tabelle: `Benutzer · Rolle · Spielerprofil · Status · ⋯`
-  (Grid `1.5fr 1fr 1.1fr 92px 56px`). Je Zeile: Avatar+Name (eigenes Konto „DU"-Badge)
-  + E-Mail; Rollen-Badge + Position darunter; „↔ Spielername" oder „kein
-  Spielerprofil"; Status-Punkt+Label (klickbar = aktiv/inaktiv); Bearbeiten-Stift.
-  Deaktivierte Zeilen mit `opacity:.55`. Rollen-Legende unten.
-
-### 11. Einstellungen
-- App-Modus / Vereinsname / Logo (nur Admin), „Benutzer & Rechte"-Verknüpfung (Admin),
-  Eingabe & Tasten, Counter-Darstellung (Akzentfarbe, Theme, Schrift, Größen) usw.
-
----
-
-## Modals (Dialoge)
-Gemeinsamer Stil: Overlay `rgba(8,10,12,.78)` + `backdrop-filter: blur(6px)`,
-zentrierte Karte `--surface`, 1px `--border-2`, radius 20px, Padding 28px,
-Schatten `0 30px 70px rgba(0,0,0,.55)`. Fußzeile: links ggf. „Löschen" (rot), rechts
-„Abbrechen" + „Speichern" (Akzent). Speichern ist deaktiviert, solange Pflichtfeld leer.
-
-- **Spieler** (add/edit): Avatar-Farbwahl, Name, Kürzel (max 3).
-- **Mannschaft** (add/edit): Name, Liga (Freitext), Kader-Auswahl per Checkbox aus
-  der Spielerliste, Kapitän-Stern je gewähltem Spieler.
-- **Benutzer** (add/edit): Avatar-Farbwahl, **Vorname + Nachname**, E-Mail,
-  **Position im Verein** (optional), **Rolle** (4 Radio-Karten mit Beschreibung),
-  **Mit Spieler verknüpfen** (optionale Chips), Aktiv-Schalter.
-- **Liga** (add/edit): Name, Saison, dynamische Mannschaftsliste (Name + „Eigene"-
-  Toggle + Entfernen + „Mannschaft hinzufügen").
-- **Begegnung/Ergebnis** (add/edit): Heim/Gast (Chip-Auswahl, Gegenteam deaktiviert),
-  Datum, „Ergebnis eingetragen"-Schalter, der ein Leg-Eingabefeld `hs : as` einblendet.
-- **Termin** (add/edit): Titel, Datum, Uhrzeit, Typ, Ort.
-
----
-
-## Interactions & Behavior
-- **Login:** E-Mail → passendes aktives Konto wird angemeldet (Demo: Passwort egal);
-  Demo-Konto-Klick meldet direkt an. Sitzung persistent bis Abmelden.
-- **Tabs** (Ligen/Mannschaften): wechseln die aktive Auswahl, aktiver Tab mit
-  Akzent-Rahmen.
-- **Tabelle** rechnet bei jeder Ergebnisänderung neu.
-- **Schalter/Toggles:** 44×24px Pille, 20px Knopf, `transform: translateX(20px)` an,
-  Transition 0.15s.
-- **Hover:** Karten/Listenzeilen heben `border-color` auf `--border-strong`; Buttons
-  haben dezente Hover-Hintergründe.
-- **Leerzustände** überall vorhanden (gestrichelte Karten + Hinweistext).
-- **Rechte** werden doppelt durchgesetzt: UI blendet Aktionen aus **und** die
-  Aktionen prüfen die Rolle (im echten Backend serverseitig erzwingen!).
-
-## State Management
-Siehe `DATA_MODEL.md` (§2 Entitäten, §3 Beziehungen). Kern-Zustände: aktueller Screen,
-angemeldetes Konto (Session), ausgewählte Liga/Mannschaft/Spieler, sowie die
-persistierten Sammlungen (Spieler, Teams, Accounts, Ligen, Events, Matches, Training,
-Settings). Abgeleitet werden: Tabelle (`computeStandings`), Kader/Aufstellung,
-Spieler-Aggregate (`aggregateFor`), Dashboard-Kennzahlen.
-
----
-
-## Design Tokens
-
-### Farben — Dark-Theme (Standard)
-| Token | Hex | Verwendung |
-|-------|-----|------------|
-| sidebar | `#0a0c0e` | Seitenleisten-Hintergrund |
-| bg | `#0d0f12` | App-Hintergrund |
-| surface | `#14181c` | Karten |
-| surface-2 | `#13171c` | leicht abgesetzt |
-| surface-3 | `#161b20` | – |
-| btn | `#1a2026` | Buttons/Eingaben/Kacheln |
-| border | `#232a31` | Standard-Rahmen |
-| border-2 | `#2a333c` | stärker |
-| border-strong | `#3a434d` | Hover/aktiv |
-| hairline | `#1c2229` | Trennlinien |
-| text | `#ECEAE3` | Primärtext |
-| text-2 | `#aeb4bd` | |
-| text-3 | `#8a9099` | |
-| text-4 | `#6b7480` | Labels/sekundär |
-| text-5 | `#5b626b` | dezent |
-| success | `#7fd7a6` (Marke `#19A463` / live `#2BD377`) | Siege, Akzent |
-| danger | `#c98b86` (kräftig `#E0594B`) | Niederlagen, Löschen |
-| nav-active | `#13241b` / fg `#7fd7a6` | aktiver Navi-Punkt |
-
-### Akzent-/Statusfarben (fix)
-- Primär-Grün `#19A463`, Live-Grün `#2BD377`, Gold `#F2B829` (Kapitän/1. Platz/
-  Unentschieden), Blau `#3B9EFF`, Rot `#E0594B`, Lila `#9b6dff`, Türkis `#2bd3c0`.
-- Akzentfarbe ist in den Einstellungen wählbar (CSS-Variable, wirkt auf Buttons/
-  Highlights). Es gibt auch ein **Light-Theme** (Tokens im `:root[data-theme="light"]`).
-
-### Rollenfarben
-admin `#E0594B`, captain `#F2B829`, player `#19A463`, viewer `#3B9EFF`
-(jeweils mit ~13% Hintergrund + ~40% Rahmen).
-
-### Typografie
-- **UI-Schrift:** Inter (wählbar: Archivo, Rubik, Oswald). Gewichte 400–800.
-- **Zahlen/Scores:** **JetBrains Mono** (500–800).
-- Größen: H1 27px/800 (letter-spacing −0.02em); Karten-Werte 24px/800; Listenname
-  14px/600; Labels 11–12px/700 uppercase (letter-spacing .05–.08em); Kleintext 11–12px.
-
-### Radius / Schatten / Spacing
-- Radius: Buttons/Eingaben 10–11px, Karten 14–16px, große Karten/Modals 18–20px,
-  Avatare 8–16px, Pillen/Chips 999px.
-- Schatten: Modals `0 30px 70px rgba(0,0,0,.55)`; Primärbutton
-  `0 8px 24px rgba(25,164,99,.28)`.
-- Abstände: Seiteninhalt-Padding 28–32px; Kartenabstände/Gaps 16–18px; Grid-Gaps
-  5–18px. Sidebar 248px breit.
-- Avatar-Farben: feste 8er-Palette aus Verläufen (Index `avi` am Datensatz).
-
-## Assets
-- **Logo:** inline-SVG (Dartscheibe aus konzentrischen Kreisen, Farben
-  `#0f2419`/`#E04B43`/`#19A463`/`#F2B829`). Eigenes Logo per Upload möglich (Settings).
-- **Icons:** durchgängig inline-SVG im Stroke-Stil (`stroke-width` ~1.9–2, round caps),
-  passend zu Lucide/Feather. In der Zielcodebasis durch das dortige Icon-Set ersetzbar.
-- Keine externen Bilddateien; ein paar Emoji in Statistik-Kacheln.
-- Fonts via Google Fonts (Inter, Archivo, Rubik, Oswald, JetBrains Mono).
-
-## Files
-- `DartsZentrale.dc.html` — der vollständige Prototyp (alle Screens, Logik, Seed-Daten).
-- `support.js` — Laufzeit des Prototyp-Frameworks (nur zum Ausführen der HTML-Datei;
-  **nicht** Teil der Zielimplementierung).
-- `DATA_MODEL.md` — **maßgebliche** Doku zu Entitäten, Beziehungen, Rollen-Matrix,
-  localStorage-Schlüsseln und offenen Entscheidungen fürs echte Backend.
-- `screenshots/` — Referenzbilder der wichtigsten Screens:
-  `01-login`, `02-dashboard`, `03-ligen`, `04-mannschaften`, `05-spieler`,
-  `06-benutzer` (jeweils Vereinsmodus, als Admin angemeldet).
-
-### So öffnest du den Prototyp
-`DartsZentrale.dc.html` + `support.js` im selben Ordner lassen und die HTML-Datei im
-Browser öffnen. Demo-Daten werden beim ersten Start angelegt. Zum Zurücksetzen den
-localStorage der Seite leeren.
+[MIT](LICENSE) — frei nutzbar, ohne Gewähr. Nutzung auf eigenes Risiko.

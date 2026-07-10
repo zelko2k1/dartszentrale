@@ -83,7 +83,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        - VITE_PB_URL=http://192.168.200.7:8090   # ← auf deine <IP> anpassen!
+        - VITE_PB_URL=http://192.168.1.50:8090   # ← auf deine <IP> anpassen!
     ports:
       - "8081:80"
     restart: unless-stopped

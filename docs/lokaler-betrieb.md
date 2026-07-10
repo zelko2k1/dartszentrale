@@ -347,6 +347,12 @@ npm run dev
 | Inaktiv (Login gesperrt) | `t.reiter@web.de` |
 | PocketBase-Konsole | `admin@dartszentrale.local` / `dartszentrale-admin-2026` |
 
+> ⚠️ **Diese Passwörter (`dartszentrale123`, `dartszentrale-admin-2026`) sind reine Vorgabewerte
+> für die lokale Ersteinrichtung und den Test** — sie stehen bewusst offen in der Doku. Für einen
+> echten Betrieb (LAN/Cloud) **beim ersten Login bzw. beim Anlegen eigene, starke Passwörter setzen.**
+> Ein Sicherheits-Guard (`pocketbase/_security-guard.mjs`) bricht ab, sobald ein bekannter Default
+> gegen ein nicht-lokales Ziel liefe.
+
 ---
 
 ## Zwei Instanzen (Desktop + Kiosk testen)
