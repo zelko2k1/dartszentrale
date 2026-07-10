@@ -1,7 +1,7 @@
 services:
   dartzentrale:
     build:
-      context: .
+      context: ./app
       dockerfile: Dockerfile
     ports:
       - "8081:80"
