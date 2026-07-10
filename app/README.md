@@ -1,55 +1,55 @@
-# DartsZentrale — React + TypeScript SPA
+# DartsZentrale — App (Frontend)
 
-Pixelnahe Implementierung des DartsZentrale-Designs (Vereinsmodus) auf Basis von
-`../DartsZentrale.dc.html` und den Referenz-Screenshots in `../screenshots/`.
+Die eigentliche DartsZentrale-Web-App: **Vite + React + TypeScript**. Das ist der Produktivstand
+(Version 1.0.0), nicht mehr der ursprüngliche HTML-Prototyp — der liegt nur noch als historische
+Design-Referenz unter `../DartsZentrale.dc.html`.
+
+> **Was die App fachlich alles kann** (Counter, Training, Ligen, Saisons, Rollen, 2FA, Board-Modus …)
+> steht ausführlich im **[Haupt-README](../README.md)**. Dieses Dokument ist die technische
+> Kurzübersicht für Entwickler.
 
 ## Stack
 - **Vite 8 + React 19 + TypeScript**
-- **zustand** für State (spiegelt die Logik-Klasse des Prototyps)
-- **PWA** (`vite-plugin-pwa`) — installierbar, offline-tauglich
-- Reine Inline-Styles + CSS-Variablen (Design-Tokens 1:1 aus dem Prototyp), Pseudo-States
-  über `src/styles/global.css`. Keine UI-Bibliothek.
+- **zustand** für den State
+- **PWA** (`vite-plugin-pwa`) — installierbar, offline-tauglich, Update-Modus „prompt"
+- Reine Inline-Styles + CSS-Variablen (Design-Tokens), Pseudo-States über `src/styles/global.css`. Keine UI-Bibliothek.
 
 ## Betriebsmodi
 Die App kennt zwei Modi (umschaltbar in den Einstellungen, mit automatischer Erkennung):
-- **Local** — alles im Browser, kein Login. Persistenz in `localStorage`
-  (gleiche `darts_*`-Schlüssel wie der Prototyp).
-- **Verein** — mit Login und Rollen (admin / captain / player / viewer),
-  Daten über ein **PocketBase**-Backend. Der passende Data-Provider liegt in
-  `src/data/pocketbaseProvider.ts`; das Deploy-Setup (Arcane im Homelab
-  bzw. systemd+Caddy in der Cloud) ist unter `../docs/arcane-homelab-anleitung.md` dokumentiert.
+- **Lokal** — alles im Browser, kein Login. Persistenz in `localStorage`.
+- **Verein** — mit Login und Rollen (**admin / captain / player / viewer / board**), Daten über ein
+  **PocketBase**-Backend, mit Realtime-Sync über mehrere Geräte. Der passende Data-Provider liegt in
+  `src/data/pocketbaseProvider.ts`.
 
-Die Datenquelle ist über austauschbare Provider gekapselt (`src/data/provider.ts`,
-`localProvider.ts`, `pocketbaseProvider.ts`).
+Die Datenquelle ist über austauschbare Provider gekapselt: `src/data/provider.ts` (Schnittstelle),
+`localProvider.ts` (localStorage, synchron) und `pocketbaseProvider.ts` (API, asynchron, Realtime).
+Deploy-Setup: `../docs/arcane-homelab-anleitung.md` (Homelab/Docker) bzw. `../docs/admin-anleitung-cloud.md` (Cloud).
 
 ## Starten
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # Produktions-Build nach dist/
-npm run preview  # Build lokal testen
+npm run dev      # Dev-Server auf http://localhost:5173
+npm run build    # Produktions-Build nach dist/ (tsc + vite build)
+npm run preview  # Build lokal testen (vite preview)
+npm run serve    # dist/ mit dem mitgelieferten Node-Server ausliefern (serve-dist.mjs)
 npm run lint     # ESLint
 ```
+Im **Lokal**-Modus werden Demo-Daten angelegt; Zurücksetzen = `localStorage` der Seite leeren.
+Für den **Verein**-Modus braucht es ein laufendes PocketBase-Backend (siehe `../pocketbase/`).
 
-Beim ersten Start werden die Demo-Daten angelegt (Spieler, 2 Mannschaften, Verbandsliga
-Nord 2025/26, 6 Benutzerkonten, Termine). Anmeldung über ein Demo-Konto auf dem
-Login-Screen (Passwort beliebig). Zum Zurücksetzen den `localStorage` der Seite leeren.
-
-## Struktur
-- `src/data/` — Typen, Konstanten (Tokens, Rollen, Avatare, Checkouts, Trainingsmodi), Seed-Daten
-- `src/store/` — zustand-Store, Selektoren (`computeStandings`, `aggregateFor` …), Counter-Engine
+## Struktur (`src/`)
+- `src/data/` — Typen (`types.ts`), Konstanten (Design-Tokens, Rollen/Rechte, Avatare, Checkout-Wege,
+  Trainingsmodi), Provider-Abstraktion (`provider.ts`, `localProvider.ts`, `pocketbaseProvider.ts`) + Seed-Daten
+- `src/store/` — zustand-Store, Selektoren (`computeStandings`, `aggregateFor` …), X01- und Trainings-Engine
 - `src/components/`, `src/layout/` — wiederverwendbare UI + App-Shell/Sidebar
-- `src/screens/` — alle Screens (Login, Dashboard, Ligen, Mannschaften, Spieler, Spieler-Detail,
-  Benutzer, Kalender, Statistiken, Einstellungen, Counter-Setup + In-Game,
-  Training-Übersicht + Setup + In-Game)
-- `src/modals/` — Dialoge (Spieler, Mannschaft, Benutzer, Liga, Begegnung, Termin, Regeln)
+- `src/screens/` — alle Screens: Login, Dashboard, Counter (Setup + In-Game), Training (Übersicht +
+  Setup + In-Game), Kalender, Ligen, Mannschaften, Spieler (+ Detail), Statistiken, Benutzer,
+  Einstellungen, Modus-Auswahl
+- `src/modals/` — Dialoge (Spieler, Mannschaft, Benutzer, Liga, Begegnung, Aufstellung, Termin, Regeln, 2FA …)
+- `src/styles/` — globale CSS-Variablen und Pseudo-States
 
-## Umfang
-Alle App-Screens interaktiv mit Demo-Daten: Navigation (Desktop-Sidebar + Mobile-Drawer,
-responsiv), Login/Logout, Tabs, Tabellen-Neuberechnung, Modals (anlegen/bearbeiten/löschen),
-Theme- & Akzent-Umschaltung. Dazu:
-- ein voll funktionsfähiger **X01-Counter** (Score-Eingabe, Bust/Checkout, Legs/Sätze,
-  „Wer beginnt?"/Ausbullen, Statistik-Speicherung),
-- ein **Trainingsmodus** mit eigenen Übungsvarianten,
-- **PWA-Installation** und Offline-Betrieb,
-- konfigurierbare Tastenkürzel (neues Spiel, Schnellstart Bo3/Bo5) und Layout-Größen.
+## Auslieferung / Container
+- `serve-dist.mjs` — abhängigkeitsfreier Node-Server für `dist/` (SPA-Fallback, Auto-Backup-Endpunkt,
+  Datei-Update); wird von den Start-/Autostart-Skripten im Wurzelverzeichnis genutzt
+- `Dockerfile` · `docker-compose.yaml` · `nginx.conf` — Container-Betrieb (Node baut das Bundle,
+  nginx liefert es aus). `VITE_PB_URL` ist ein **Build-Arg** (Adresse des PocketBase-Servers).

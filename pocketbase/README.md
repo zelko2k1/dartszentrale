@@ -16,6 +16,7 @@ Jedes Skript trägt dieselbe Markierung auch im Kopf (`[ PRODUKTIV / OPS ]` / `[
 | `provision.mjs` | Schema anlegen/aktualisieren (idempotent, merge-sicher) + ersten App-Admin. Setup-Werkzeug. |
 | `add-board-account.mjs` | Rechtearmes **Board-Konto** (Rolle `board`) für die Kiosk-Rechner anlegen. |
 | `reset-password.mjs` | **Rettungsanker:** Passwort eines App-Kontos per Superuser zurücksetzen + Konto reaktivieren. |
+| `reset-2fa.mjs` | **Notnagel:** 2-Faktor (TOTP) eines App-Kontos entfernen — bei verlorenem Authenticator *und* Backup-Codes. |
 | `season-export.mjs` | Saison als JSON-Bundle **wegsichern** (Backup / Re-Import-Grundlage). |
 | `season-import.mjs` | Saison-Bundle **zurückspielen** (idempotent). |
 | `season-offload.mjs` | Archivierte Saison **auslagern** (Matches löschen, Platz freigeben) — Export vorher Pflicht! |
@@ -48,5 +49,5 @@ Entwicklung/Demos. Der Guard verhindert sie gegen Nicht-localhost-Ziele.
 
 ---
 
-Mehr zum lokalen Betrieb: `../docs/lokaler-betrieb.md` · Deploy: `../docs/coolify-homelab-anleitung.md` ·
-Sicherheit: `../docs/security-audit.md`.
+Mehr zum lokalen Betrieb: `../docs/lokaler-betrieb.md` · Deploy: `../docs/arcane-homelab-anleitung.md`
+(Homelab) bzw. `../docs/admin-anleitung-cloud.md` (Cloud) · Sicherheit: `../docs/security-audit.md`.
