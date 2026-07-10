@@ -197,7 +197,7 @@ die `.bat` startet dabei oft nur die `.ps1`.
 ### Nur zum Testen (nicht gegen echte Daten laufen lassen!)
 | Datei | Zweck |
 |---|---|
-| `pocketbase/demo-seed-dsv-fuerth.mjs` | Erzeugt eine **komplette Demo-Datenbank** („DSV Fürth 86") zum Ausprobieren. |
+| `pocketbase/demo-seed.mjs` | Erzeugt eine **komplette Demo-Datenbank** („Dartverein Demo") zum Ausprobieren. |
 | `pocketbase/seed-remote.sh` | Spielt Testdaten gegen eine entfernte Test-Datenbank ein. |
 | `pocketbase/_security-guard.mjs` | Interner Schutz: verhindert, dass Standard-Passwörter versehentlich gegen einen echten Server laufen. |
 

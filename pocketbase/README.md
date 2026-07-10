@@ -30,7 +30,7 @@ PB_URL=https://db.deinverein.de PB_SU_EMAIL=… PB_SU_PASS='<stark>' node provis
 
 | Skript | Zweck |
 |---|---|
-| `demo-seed-dsv-fuerth.mjs` | Frische Demo-DB „DSV Fürth 86" (20 Mitglieder, 2 Mannschaften, 2 Ligen, Spielplan). Legt **keinen** Admin an. |
+| `demo-seed.mjs` | Frische Demo-DB „Dartverein Demo" (20 Mitglieder, 2 Mannschaften, 2 Ligen, Spielplan). Legt **keinen** Admin an. |
 
 Diese legen Konten mit dem **öffentlichen Default-Passwort** an und sind ausschließlich für lokale
 Entwicklung/Demos. Der Guard verhindert sie gegen Nicht-localhost-Ziele.

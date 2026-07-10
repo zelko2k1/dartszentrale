@@ -361,7 +361,7 @@ export function deriveLeagueEvents(parsed: ParsedSchedule, existingEvents: Event
 export function scheduleTemplate(): string {
   return [
     'Termin;Saison;Staffel;SpiellokalName;HeimMannschaftName;GastMannschaftName;ToreHeim;ToreGast',
-    '06.09.2025 19:30;2025/26;Bezirksoberliga Mittelfranken;Vereinsheim DSV Fürth;DSV Fürth 86 I;DC Falken Nürnberg;8;4',
-    '13.09.2025 19:30;2025/26;Bezirksoberliga Mittelfranken;Sportheim Falken;DC Falken Nürnberg;DSV Fürth 86 I;;',
+    '06.09.2025 19:30;2025/26;Bezirksoberliga;Vereinsheim;Dartverein Demo I;DC Falken;8;4',
+    '13.09.2025 19:30;2025/26;Bezirksoberliga;Sportheim Falken;DC Falken;Dartverein Demo I;;',
   ].join('\r\n');
 }

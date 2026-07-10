@@ -1,12 +1,12 @@
 // ═══════ [ NUR TEST / DEMO ] — NICHT gegen die Produktiv-DB ausführen! ═══════
-// Importiert eine FRISCHE DartsZentrale-Datenbank für den Verein "DSV Fürth 86".
+// Importiert eine FRISCHE DartsZentrale-Datenbank für den Verein "Dartverein Demo".
 // Saison 2026/27 (Anfang September 2026 – Ende Juli 2027), 20 Mitglieder (als Spieler UND Benutzer),
 // 2 Mannschaften (je 8 Spieler + Kapitän), 2 Ligen mit je 10 Teams und vollständigem
 // Hin-/Rückrunden-Spielplan (ohne Ergebnisse, Termine über die Saison verteilt).
 //
 // Idempotent: leert die Inhalts-Collections vorher und legt frisch an.
 // Legt KEINEN Admin an — vorhandene Admin-Konten bleiben unberührt (Admin legst du selbst an).
-// Aufruf:  node demo-seed-dsv-fuerth.mjs
+// Aufruf:  node demo-seed.mjs
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
 import { assertSafePassword } from './_security-guard.mjs';
 
@@ -19,8 +19,8 @@ const MEMBER_PW = process.env.MEMBER_PW || 'dartszentrale123';
 assertSafePassword(URL, 'Superuser-Login', SU_PASS, 'PB_SU_PASS=…');
 assertSafePassword(URL, 'Mitglieder-Konten', MEMBER_PW, 'MEMBER_PW=…');
 
-const CLUB = 'DSV Fürth 86';
-const DOMAIN = 'dsv-fuerth.de';
+const CLUB = 'Dartverein Demo';
+const DOMAIN = 'dartverein-demo.de';
 const SEASON = '2026/27';
 const SEASON_START = '2026-09-04'; // erster Spieltag (Anfang September)
 const SEASON_END = '2027-07-30';   // letzter Spieltag (Ende Juli)
@@ -116,24 +116,24 @@ async function main() {
 
   // 3) 2 Mannschaften (je 8 Spieler + Kapitän)
   await pb.collection('teams').create({
-    id: uid(), name: '1. Mannschaft', league: 'Bezirksoberliga Mittelfranken', kind: 'league', seasonId: SID,
+    id: uid(), name: '1. Mannschaft', league: 'Bezirksoberliga', kind: 'league', seasonId: SID,
     memberIds: [0, 1, 2, 3, 4, 5, 6, 7].map(P), captainId: P(0), viceCaptainIds: [],
   });
   await pb.collection('teams').create({
-    id: uid(), name: '2. Mannschaft', league: 'Bezirksliga Mittelfranken', kind: 'league', seasonId: SID,
+    id: uid(), name: '2. Mannschaft', league: 'Bezirksliga', kind: 'league', seasonId: SID,
     memberIds: [8, 9, 10, 11, 12, 13, 14, 15].map(P), captainId: P(8), viceCaptainIds: [],
   });
   console.log('✓ 2 Mannschaften angelegt (je 8 Spieler + Kapitän); 4 Mitglieder ohne Mannschaft');
 
   // 4) 2 Ligen mit je 10 Teams + vollständigem Hin-/Rückrunden-Spielplan (ohne Ergebnis)
   const tm = (name, own) => ({ id: uid(), name, own: !!own });
-  const OPP1 = ['DC Falken Nürnberg', 'Bulls Eye Erlangen', 'DSC Schwabach', 'Adler Zirndorf', 'Steel Kings Fürth', 'DC Phoenix Ansbach', 'Red Dragons Roth', 'Checkout Crew Cadolzburg', '180 Club Stein'];
+  const OPP1 = ['DC Falken', 'Bulls Eye', 'DSC Steel', 'Adler Darts', 'Steel Kings', 'DC Phoenix', 'Red Dragons', 'Checkout Crew', '180 Club'];
   const OPP2 = OPP1.map((n) => n + ' II');
-  const league1Teams = [tm('DSV Fürth 86 I', true), ...OPP1.map((n) => tm(n))];
-  const league2Teams = [tm('DSV Fürth 86 II', true), ...OPP2.map((n) => tm(n))];
+  const league1Teams = [tm('Dartverein Demo I', true), ...OPP1.map((n) => tm(n))];
+  const league2Teams = [tm('Dartverein Demo II', true), ...OPP2.map((n) => tm(n))];
   const ligen = [
-    { name: 'Bezirksoberliga Mittelfranken', teams: league1Teams, fixtures: buildFixtures(league1Teams) },
-    { name: 'Bezirksliga Mittelfranken', teams: league2Teams, fixtures: buildFixtures(league2Teams) },
+    { name: 'Bezirksoberliga', teams: league1Teams, fixtures: buildFixtures(league1Teams) },
+    { name: 'Bezirksliga', teams: league2Teams, fixtures: buildFixtures(league2Teams) },
   ];
   for (const lg of ligen) {
     // Bezirksliga-Format: 8 Einzel + 4 Doppel
@@ -177,7 +177,7 @@ async function main() {
   if (cfg) await pb.collection('club_config').update(cfg.id, cfgBody); else await pb.collection('club_config').create(cfgBody);
   console.log(`✓ Vereinsname gesetzt: ${CLUB}`);
 
-  console.log('\nFertig. Datenbank für „DSV Fürth 86" steht bereit.');
+  console.log('\nFertig. Datenbank für „Dartverein Demo" steht bereit.');
   console.log(`\nMitglieder-Logins (alle Passwort „${MEMBER_PW}"):`);
   console.log(`  (Admin: dein selbst angelegtes Konto — vom Seed unberührt)`);
   console.log(`  Kapitän 1. Mann. : ${slug(NAMES[0][0])}.${slug(NAMES[0][1])}@${DOMAIN}`);
