@@ -344,11 +344,11 @@ function JoinDevicesPanel() {
       <Row label="Beitritts-Adresse" sub="So kommen weitere Geräte auf denselben Server: Tablet/Handy scannt den QR-Code, ein Board-PC legt die Adresse als Lesezeichen (Kiosk) an. Danach am Gerät mit dem jeweiligen Board-Konto anmelden." top>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
           {valid && <img src={dataUri} width={184} height={184} alt="QR-Code zum Beitreten" style={{ background: '#fff', borderRadius: 10, padding: 8 }} />}
-          <input value={url} onChange={(e) => setAndSave(e.target.value)} placeholder="http://192.168.1.50:8090" style={field} />
+          <input value={url} onChange={(e) => setAndSave(e.target.value)} placeholder="http://192.168.0.10:8090" style={field} />
           <button style={btn} onClick={() => { void navigator.clipboard?.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}>{copied ? '✓ Kopiert' : 'Adresse kopieren'}</button>
           {isLocalOnly && (
             <div style={{ fontSize: 12, color: '#E0594B', fontWeight: 600, maxWidth: 320, textAlign: 'right' }}>
-              Das ist die lokale Adresse dieses Rechners — andere Geräte erreichen sie nicht. Trage hier die Netzwerk-Adresse des Servers ein (z. B. http://192.168.1.50:8090); sie wird beim Serverstart angezeigt.
+              Das ist die lokale Adresse dieses Rechners — andere Geräte erreichen sie nicht. Trage hier die Netzwerk-Adresse des Servers ein (z. B. http://192.168.0.10:8090); sie wird beim Serverstart angezeigt.
             </div>
           )}
         </div>
