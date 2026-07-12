@@ -16,6 +16,7 @@ export interface NuligaRow {
   date: string;        // YYYY-MM-DD
   time: string;        // HH:MM ('' = unbekannt)
   loc: string;         // Hallenname ('' = unbekannt)
+  round?: string;      // Pokal-Runde (leer bei Ligen)
   home: string;
   away: string;
   hs: number | null;   // gewonnene Spiele Heim (null = offen)
@@ -105,6 +106,7 @@ export function mergeNuliga(leagues: League[], leagueId: string, rows: NuligaRow
       fx = {
         id: uid(), homeId: home.id, awayId: away.id, date: r.date,
         time: r.time || undefined, loc: r.loc || undefined,
+        round: r.round || undefined,
         played: false, hs: '', as: '',
       };
       league.fixtures.push(fx);
@@ -112,9 +114,10 @@ export function mergeNuliga(leagues: League[], leagueId: string, rows: NuligaRow
       counts.fixturesNew++;
       changed = true;
     } else {
-      // Zeit/Ort aus nuLiga nachtragen, falls an der Begegnung noch nicht gesetzt.
+      // Zeit/Ort/Runde aus nuLiga nachtragen, falls an der Begegnung noch nicht gesetzt.
       if (r.time && !fx.time) { fx.time = r.time; counts.metaFilled++; changed = true; }
       if (r.loc && !fx.loc) { fx.loc = r.loc; counts.metaFilled++; changed = true; }
+      if (r.round && fx.round !== r.round) { fx.round = r.round; changed = true; }
     }
 
     // Offene nuLiga-Begegnung: kein Ergebnis anfassen (nie löschen).

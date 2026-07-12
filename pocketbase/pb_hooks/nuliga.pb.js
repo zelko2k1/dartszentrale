@@ -65,34 +65,72 @@ routerAdd('POST', '/api/nuliga/fetch', (e) => {
   function venueOf(cell) { const m = ('' + cell).match(/title="([^"]*)"/i); return m ? decodeEntities(m[1]).replace(/\s+/g, ' ').trim() : ''; }
   function isoDate(de) { const m = ('' + de).match(/(\d{2})\.(\d{2})\.(\d{4})/); return m ? (m[3] + '-' + m[2] + '-' + m[1]) : ''; }
   function hhmm(s) { const m = ('' + s).match(/(\d{1,2}):(\d{2})/); if (!m) return ''; const h = m[1].length < 2 ? '0' + m[1] : m[1]; return h + ':' + m[2]; }
+  // Pokal-Runden (nuLiga liefert sie englisch als Abschnitts-Überschrift) → deutsche Bezeichnung.
+  function germanRound(s) {
+    const t = ('' + s).replace(/\s+/g, ' ').trim();
+    const map = { 'Final': 'Finale', 'Semifinal': 'Halbfinale', 'Quarterfinal': 'Viertelfinale', 'Round of 16': 'Achtelfinale', 'Round of 32': 'Runde der letzten 32' };
+    if (map[t]) return map[t];
+    let m = t.match(/^(\d+)\.\s*Round$/i); if (m) return m[1] + '. Runde';
+    m = t.match(/^Freilose\s+(\d+)\.\s*Round$/i); if (m) return 'Freilose ' + m[1] + '. Runde';
+    return t;
+  }
 
   const tblM = html.match(/<table[^>]*class="result-set"[^>]*>([\s\S]*?)<\/table>/i);
   if (!tblM) throw new BadRequestError('Spielplan-Tabelle nicht gefunden.');
   const table = tblM[1];
+
+  // Spaltenindizes aus der Kopfzeile ableiten (colspan berücksichtigt): Liga = Heim/Gast/Spiele 4/5/6,
+  // Pokal (mit Zusatzspalten Runde+Nr.) = 6/7/8. Datum/Zeit/Spiellokal liegen in beiden Layouts bei 1/2/3.
+  function headerCols(tableHtml) {
+    const idx = { home: 4, away: 5, result: 6 }; // Fallback = Liga-Layout
+    const rows = tableHtml.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) || [];
+    let headRow = null;
+    for (let i = 0; i < rows.length; i++) { if (/Heimmannschaft/i.test(rows[i])) { headRow = rows[i]; break; } }
+    if (!headRow) return idx;
+    const thRe = /<th([^>]*)>([\s\S]*?)<\/th>/gi;
+    let m, phys = 0;
+    while ((m = thRe.exec(headRow)) !== null) {
+      const cs = m[1].match(/colspan\s*=\s*"?(\d+)"?/i);
+      const span = cs ? parseInt(cs[1], 10) : 1;
+      const label = m[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (label === 'Heimmannschaft') idx.home = phys;
+      else if (label === 'Gastmannschaft') idx.away = phys;
+      else if (label === 'Spiele') idx.result = phys;
+      phys += span;
+    }
+    return idx;
+  }
+  const col = headerCols(table);
+
   const trRe = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
   const fixtures = [];
   let lastDate = '';
+  let currentRound = ''; // Pokal: aktuelle Runde (aus der Abschnitts-Überschrift, wird fortgeschrieben)
   let tr;
   while ((tr = trRe.exec(table)) !== null) {
     const row = tr[1];
-    if (/<th[\s>]/i.test(row)) continue; // Kopfzeile
+    if (/<th[\s>]/i.test(row)) continue; // Kopf- bzw. Spalten-Header-Zeile
     const cells = row.match(/<td[^>]*>[\s\S]*?<\/td>/gi);
-    if (!cells || cells.length < 7) continue;
+    if (!cells) continue;
+    // Runden-Abschnittstitel (Pokal): eine Zelle (colspan) mit <h2>Runde</h2>.
+    if (cells.length === 1) { const t = textOf(cells[0]); if (t) currentRound = germanRound(t); continue; }
+    if (cells.length <= col.result) continue; // zu kurz (Freilos o. Ä.)
     const dateRaw = textOf(cells[1]);
     const date = isoDate(dateRaw) || lastDate;
     if (isoDate(dateRaw)) lastDate = isoDate(dateRaw);
     const time = hhmm(textOf(cells[2]));
-    const loc = venueOf(cells[3]);
-    const home = textOf(cells[4]);
-    const away = textOf(cells[5]);
-    if (!home || !away) continue;
-    const resTxt = textOf(cells[6]);
+    const loc = cells.length > 3 ? venueOf(cells[3]) : '';
+    const home = textOf(cells[col.home]);
+    const away = textOf(cells[col.away]);
+    if (!home || !away) continue; // Freilos/unvollständig
+    const resTxt = textOf(cells[col.result]);
     const rm = resTxt.match(/(\d+)\s*:\s*(\d+)/);
     const played = !!rm;
     fixtures.push({
       date: date,
       time: time,
       loc: loc,
+      round: currentRound,
       home: home,
       away: away,
       hs: played ? parseInt(rm[1], 10) : null,

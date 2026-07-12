@@ -31,7 +31,9 @@ export function Leagues() {
   const selIdx = Math.max(0, Math.min(leagues.length - 1, s.selectedLeague));
   const sel = leagues[selIdx] || null;
   const isFriendly = sel?.kind === 'friendly';
-  const standings = sel && !isFriendly ? computeStandings(sel) : [];
+  // Keine Tabellenwertung bei Freundschaften und Pokal (K.-o.) – nur Begegnungen/Ergebnisse.
+  const noTable = isFriendly || sel?.kind === 'cup';
+  const standings = sel && !noTable ? computeStandings(sel) : [];
   const teamNameById = (id: string) => { const t = sel?.teams.find((x) => x.id === id); return t ? t.name : '?'; };
   const fxSorted = sel ? sel.fixtures.slice().sort((a, b) => a.date.localeCompare(b.date)) : [];
   // Eingeklappte Ansicht: Fenster um die erste noch offene Begegnung (2 gespielte davor + Rest nach vorn);
@@ -139,9 +141,9 @@ export function Leagues() {
             )}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: (isFriendly || isPhone) ? 'minmax(0, 1fr)' : '1.5fr 1fr', gap: 18, alignItems: 'start' }}>
-            {/* standings – bei Freundschaften ausgeblendet (keine Tabellenwertung) */}
-            {!isFriendly && (
+          <div style={{ display: 'grid', gridTemplateColumns: (noTable || isPhone) ? 'minmax(0, 1fr)' : '1.5fr 1fr', gap: 18, alignItems: 'start' }}>
+            {/* standings – bei Freundschaften & Pokal ausgeblendet (keine Tabellenwertung) */}
+            {!noTable && (
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '28px minmax(104px,1fr) 26px 24px 24px 24px 58px 42px 52px', gap: 5, padding: '13px 18px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', minWidth: 508 }}>
                 <span>#</span><span>Mannschaft</span><span style={{ textAlign: 'center' }}>Sp</span><span style={{ textAlign: 'center' }}>S</span><span style={{ textAlign: 'center' }}>U</span><span style={{ textAlign: 'center' }}>N</span><span style={{ textAlign: 'center' }}>Legs</span><span style={{ textAlign: 'center' }}>+/−</span><span style={{ textAlign: 'right' }}>Pkt</span>
@@ -193,7 +195,10 @@ export function Leagues() {
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{teamNameById(f.homeId)} — {teamNameById(f.awayId)}</div>
-                        <div style={{ fontSize: 11, color: played ? 'var(--text-4)' : 'var(--success)', fontWeight: 600, marginTop: 2 }}>{[played ? 'Beendet' : 'Geplant', f.time, f.loc].filter(Boolean).join(' · ')}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2, minWidth: 0 }}>
+                          {f.round && <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, letterSpacing: '.03em', textTransform: 'uppercase', color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 12%, transparent)', padding: '1px 6px', borderRadius: 6 }}>{f.round}</span>}
+                          <span style={{ fontSize: 11, color: played ? 'var(--text-4)' : 'var(--success)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{[played ? 'Beendet' : 'Geplant', f.time, f.loc].filter(Boolean).join(' · ')}</span>
+                        </div>
                       </div>
                       <span style={{ fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: played ? 'var(--text)' : 'var(--text-4)' }}>{score}</span>
                     </div>

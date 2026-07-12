@@ -120,6 +120,7 @@ export interface Fixture {
   as: number | '';     // Punkte Gast
   lineup?: FixtureLineup; // Aufstellung der eigenen Mannschaft (nur bei eigenen Begegnungen)
   boardLive?: boolean;    // manuell an die Boards „gesendet" → zeigt die Begegnung sofort, unabhängig vom Datumsfenster
+  round?: string;         // Pokal-Runde (z. B. „Viertelfinale", „1. Runde") – aus nuLiga; bei Ligen leer
   // Herkunft des aktuellen Ergebnisses. 'counter'/'manual' gelten als autoritativ (eigene Heimspiele),
   // 'nuliga'/'csv' als Import. Fehlt = alt/unbekannt (wie Import behandelt). Steuert den nuLiga-Vorrang.
   resultSource?: 'counter' | 'manual' | 'nuliga' | 'csv';
