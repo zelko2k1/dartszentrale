@@ -115,6 +115,20 @@ export function shortLegs(s: CounterSlice, pid: string | number, maxDarts = 19):
   return count;
 }
 
+/** Dart-Zahlen der vom Spieler GEWONNENEN Short Legs (≤ maxDarts eigene Darts) – für die Verteilung 9–19. */
+export function shortLegDarts(s: CounterSlice, pid: string | number, maxDarts = 19): number[] {
+  const byLeg: Record<number, Throw[]> = {};
+  s.allThrows.filter((t) => t.playerId === pid).forEach((t) => { (byLeg[t.leg] = byLeg[t.leg] || []).push(t); });
+  const out: number[] = [];
+  for (const leg of Object.keys(byLeg)) {
+    const ts = byLeg[+leg];
+    if (!ts.some((t) => t.checkout)) continue; // nur gewonnene Legs
+    const darts = ts.reduce((a, t) => a + (t.darts || 3), 0);
+    if (darts <= maxDarts) out.push(darts);
+  }
+  return out;
+}
+
 export interface ScoreRow { round: number; scored: string | number; rest: number; bust: boolean; checkout: boolean; }
 export function scoreList(s: CounterSlice, pid: string | number): ScoreRow[] {
   let rest = s.settings.startScore; const rows: ScoreRow[] = [];

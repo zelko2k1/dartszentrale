@@ -9,6 +9,7 @@ export function PlayerDetail() {
   const s = useStore();
   const isPhone = useIsPhone(); // Hooks vor dem early return aufrufen (rules-of-hooks)
   const [seasonId, setSeasonId] = useState<string>('all'); // 'all' = alle Saisons (Lebenszeit)
+  const [slOpen, setSlOpen] = useState(false);             // Short-Leg-Verteilung ein-/ausgeklappt
   const player = s.players.find((p) => p.id === s.selectedPlayerId) || s.players[0];
   if (!player) { return <div style={{ padding: '28px 32px' }}>Kein Spieler ausgewählt.</div>; }
   const scopedMatches = seasonId === 'all' ? s.matches : inSeason(s.matches, seasonId);
@@ -38,8 +39,13 @@ export function PlayerDetail() {
     { value: String(agg.c100), label: '100+', color: '#19A463' },
     { value: String(agg.c140), label: '140+', color: '#F2B829' },
     { value: String(agg.c180), label: '180', color: '#E0594B' },
-    { value: String(agg.shortLegs), label: 'Short Legs (≤19)', color: '#2bd3c0' },
   ];
+  // Short Legs: niedrigster Wert (bestes) für die Übersicht + Verteilung nach Darts (9–19) für die Aufklappung.
+  const slDarts = agg.shortLegDarts;
+  const slMin = slDarts.length ? Math.min(...slDarts) : null;
+  const slBuckets = new Map<number, number>();
+  slDarts.forEach((d) => slBuckets.set(d, (slBuckets.get(d) || 0) + 1));
+  const slSorted = [...slBuckets.entries()].sort((a, b) => a[0] - b[0]); // aufsteigend (bestes zuerst)
 
   return (
     <div style={{ padding: '28px 32px', maxWidth: 1080, margin: '0 auto' }}>
@@ -90,7 +96,48 @@ export function PlayerDetail() {
               </div>
             </div>
           ))}
+          {/* Short Legs: Übersicht = niedrigster Wert (bestes), Klick → Verteilung 9–19 */}
+          <button onClick={() => setSlOpen((v) => !v)} title="Short-Leg-Verteilung anzeigen"
+            style={{ background: 'var(--btn)', border: `1px solid ${slOpen ? '#2bd3c0' : 'var(--border-2)'}`, borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 13, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+            <span style={{ width: 8, height: 36, borderRadius: 4, background: '#2bd3c0', flexShrink: 0 }} />
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontFamily: 'var(--font-num)', fontSize: 24, fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>
+                {slMin != null ? slMin : (agg.shortLegs || '–')}
+                {slMin != null && <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-4)', marginLeft: 4 }}>Darts</span>}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, marginTop: 5 }}>
+                {slMin != null ? 'Bestes Short Leg' : 'Short Legs (≤19)'}{agg.shortLegs ? ` · ${agg.shortLegs}×` : ''}
+              </div>
+            </div>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-4)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transform: slOpen ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}><path d="M6 9l6 6 6-6" /></svg>
+          </button>
         </div>
+        {slOpen && (
+          <div style={{ marginTop: 16, borderTop: '1px solid var(--hairline)', paddingTop: 16 }}>
+            {slSorted.length === 0 ? (
+              <div style={{ fontSize: 12.5, color: 'var(--text-4)', lineHeight: 1.5 }}>
+                {agg.shortLegs ? 'Für diese Short Legs liegen noch keine Detail-Zahlen vor (aus älteren Spielen). ' : 'Noch keine Short Legs. '}
+                Die Verteilung nach Darts wird ab jetzt für neue Spiele erfasst.
+              </div>
+            ) : (
+              <>
+                <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', marginBottom: 12 }}>Verteilung nach Darts · gewonnene Legs ≤19</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {slSorted.map(([darts, cnt]) => {
+                    const best = darts === slMin;
+                    return (
+                      <div key={darts} style={{ display: 'flex', alignItems: 'baseline', gap: 6, background: best ? 'color-mix(in srgb, #2bd3c0 14%, transparent)' : 'var(--btn)', border: `1px solid ${best ? '#2bd3c0' : 'var(--border-2)'}`, borderRadius: 10, padding: '8px 12px' }}>
+                        <span style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800, color: best ? '#2bd3c0' : 'var(--text)' }}>{darts}</span>
+                        <span style={{ fontSize: 10.5, color: 'var(--text-4)', fontWeight: 700 }}>Darts</span>
+                        <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: 'var(--text-3)', marginLeft: 4 }}>{cnt}×</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '18px 20px', marginBottom: 20 }}>

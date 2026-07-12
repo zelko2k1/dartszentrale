@@ -9,7 +9,7 @@ import { downscaleSquare } from '../lib/image';
 import {
   scores as cScores, progress as cProgress, currentPlayer as cCurrentPlayer,
   matchOver as cMatchOver, average as cAverage, countAtLeast,
-  finishStats as cFinishStats, shortLegs as cShortLegs, first9Match as cFirst9Match,
+  finishStats as cFinishStats, shortLegs as cShortLegs, shortLegDarts as cShortLegDarts, first9Match as cFirst9Match,
   type CounterSlice,
 } from './counter';
 import {
@@ -2284,6 +2284,7 @@ function saveMatch(get: () => AppState, set: (p: Partial<AppState>) => void) {
       highFinish: fs.hf, co: fs.co, f9: cFirst9Match(slice, p.id),
       darts: st.allThrows.filter((t) => t.playerId === p.id).reduce((a, t) => a + (t.darts ?? 3), 0),
       shortLegs: cShortLegs(slice, p.id),
+      ...((): { shortLegDarts?: number[] } => { const sld = cShortLegDarts(slice, p.id); return sld.length ? { shortLegDarts: sld } : {}; })(),
       ...(byName.has(p.name) ? { playerId: byName.get(p.name) } : {}),
     };
   });

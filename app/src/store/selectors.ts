@@ -65,6 +65,7 @@ export interface PlayerRecords { bestAvg: number; best180: number; best100: numb
 export interface PlayerAggregate {
   games: number; wins: number; losses: number; avg: number;
   c180: number; c140: number; c100: number; c60: number; high: number; shortLegs: number;
+  shortLegDarts: number[];               // Dart-Zahlen aller Short Legs (für niedrigsten Wert + Verteilung 9–19)
   co: number | null; f9: number | null; // Ø Checkout-% / First-9; null, wenn kein Match diese Werte trägt (Alt-Matches)
   history: PlayerGame[];                 // ALLE Partien, chronologisch (alt→neu) – für Verlauf & Rekorde
   records: PlayerRecords;                // Bestwerte über alle betrachteten Partien
@@ -75,7 +76,7 @@ export interface PlayerAggregate {
 // damit Umbenennungen/Namensgleichheit die Statistik nicht verfälschen.
 export function aggregateFor(player: { id: string; name: string }, matches: Match[]): PlayerAggregate {
   const records: PlayerRecords = { bestAvg: 0, best180: 0, best100: 0, bestCo: null, bestF9: null, longestWinStreak: 0 };
-  const out: PlayerAggregate = { games: 0, wins: 0, losses: 0, avg: 0, c180: 0, c140: 0, c100: 0, c60: 0, high: 0, shortLegs: 0, co: null, f9: null, history: [], records, recent: [] };
+  const out: PlayerAggregate = { games: 0, wins: 0, losses: 0, avg: 0, c180: 0, c140: 0, c100: 0, c60: 0, high: 0, shortLegs: 0, shortLegDarts: [], co: null, f9: null, history: [], records, recent: [] };
   let avgSum = 0, avgN = 0, coSum = 0, coN = 0, f9Sum = 0, f9N = 0;
   matches.forEach((m) => {
     const mine = m.perPlayer.find((p) => (p.playerId ? p.playerId === player.id : p.name === player.name));
@@ -85,6 +86,7 @@ export function aggregateFor(player: { id: string; name: string }, matches: Matc
     if (won) out.wins++; else out.losses++;
     out.c180 += mine.c180 || 0; out.c140 += mine.c140 || 0; out.c100 += mine.c100 || 0; out.c60 += mine.c60 || 0;
     out.shortLegs += mine.shortLegs || 0;
+    if (mine.shortLegDarts && mine.shortLegDarts.length) out.shortLegDarts.push(...mine.shortLegDarts);
     out.high = Math.max(out.high, mine.highFinish || 0);
     if (mine.avg3) { avgSum += mine.avg3; avgN++; }
     if (typeof mine.co === 'number') { coSum += mine.co; coN++; }

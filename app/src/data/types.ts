@@ -179,6 +179,7 @@ export interface MatchPlayerStat {
   highFinish: number;
   darts: number;
   shortLegs?: number; // gewonnene Legs ≤19 Darts (Liga-Highlight); optional für Abwärtskompatibilität alter Matches
+  shortLegDarts?: number[]; // Dart-Zahlen dieser Short Legs (z. B. [12,15,18]) → Verteilung 9–19; ab neuen Matches
   co?: number;        // Checkout-Quote in % (optional; fehlt bei Alt-Matches → „–")
   f9?: number;        // First-9-Schnitt (Ø der ersten 3 Aufnahmen je Leg; optional; Alt-Matches → „–")
   playerId?: string;  // → Player.id; robuste, saisonübergreifende Statistik (Name allein ist mehrdeutig)
