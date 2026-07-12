@@ -7,6 +7,7 @@
 import PocketBase, { type RecordModel } from 'pocketbase';
 import type { DataProvider, Snapshot, CollectionName, AuthUser, ProviderRecord, PublicConfig, LoginResult, TwoFactorStatus, TwoFactorSetup } from './provider';
 import type { Settings, Role } from './types';
+import type { NuligaResponse } from '../lib/nuligaImport';
 import { DEVICE_LOCAL_SETTING_KEYS } from './constants';
 
 const PB_COLLECTION: Record<CollectionName, string> = {
@@ -263,6 +264,10 @@ export class PocketBaseProvider implements DataProvider {
   // Privilegierter Endpunkt (pb_hooks/set_password.pb.js): umgeht die oldPassword/Superuser-Pflicht der Records-API.
   async setPassword(userId: string, newPassword: string): Promise<void> {
     await this.pb.send('/api/set-password', { method: 'POST', body: { userId, password: newPassword } });
+  }
+  // Server-seitiger nuLiga-Abruf (pb_hooks/nuliga.pb.js): umgeht CORS, nur Admin. Liefert geparste Begegnungen.
+  async fetchNuliga(url: string): Promise<NuligaResponse> {
+    return await this.pb.send('/api/nuliga/fetch', { method: 'POST', body: { url } }) as NuligaResponse;
   }
 
   subscribe(onChange: () => void): () => void {

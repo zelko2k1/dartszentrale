@@ -3,6 +3,78 @@
 > Stand: 2026-07-07. Konzept, noch nicht umgesetzt. Ziel: die **Tabelle** und die **Spieltage** aus
 > nuLiga (BDV, `bdv-dart.liga.nu`) automatisch in DartsZentrale anzeigen — **max. einmal täglich** abgerufen.
 
+---
+
+## Revision 2026-07-12 — Architekturentscheidung: Merge statt Mirror
+
+> **UMGESETZT 2026-07-12** (v1, manueller Abruf). Migration `1782300004` (nuligaUrl), Hook
+> `pb_hooks/nuliga.pb.js`, `app/src/lib/nuligaImport.ts`, Store-Actions (`importNuliga`,
+> `resolveNuligaConflict`), UI (URL-Feld im Liga-Modal, Button, `NuligaSyncModal`, Konflikt-Badge).
+> Parser gegen reales Markup verifiziert (spikes/nuliga), gerechnete Tabelle = nuLigas offizielle.
+> **OFFEN:** Phase-2-Cron (täglicher Auto-Abruf); Live-End-to-End durch Betreiber (Login → Button → Abruf).
+
+> **Diese Revision ersetzt die Architektur der §§4–7.** Die Datenquelle (§2), Abruf-Politik (§6),
+> Robustheit/Recht (§8) und der ein-board-Nebenweg (§9) gelten unverändert weiter.
+
+**Kernentscheidung:** Kein separater read-only Snapshot (`nuliga_group`), sondern **Merge in das
+bestehende Liga-Modell** (`leagues`-Collection) — analog zum bestehenden CSV-Import
+(`app/src/lib/scheduleImport.ts`). Die App **rechnet die Tabelle weiter selbst** (`computeStandings`);
+nuLiga liefert nur die fehlenden Ergebnisse, damit die Rechnung vollständig/korrekt ist.
+
+**Warum:** Die App hat bereits ein reiches Liga-Modell (Tabelle, Spielplan, Aufstellungen, Highlights aus
+Board-Spielen, Kalender-Sync). Ein zweites, paralleles „Liga"-Konzept wäre Doppelstruktur ohne diese
+Integration. nuLiga liefert exakt dieselbe Datenform wie der CSV-Import → derselbe Merge-Pfad.
+
+### Vorrang-Modell (Herkunft je Begegnung)
+
+Neues optionales Feld an `Fixture`: **`resultSource: 'counter' | 'manual' | 'nuliga' | 'csv'`**
+(fehlt = alt/unbekannt). Gesetzt beim Ergebnis-Schreiben:
+- Counter-Aggregation (`saveResult`) → `counter`
+- manuelles Speichern im Fixture-Modal (`saveFixtureModal`) → `manual`
+- CSV-Merge (`mergeSchedule`) → `csv`
+- nuLiga-Merge → `nuliga`
+
+**Autoritativ für eigene Heimspiele = `counter` | `manual`.** „Import" = `nuliga` | `csv`.
+
+Regeln beim nuLiga-Merge je Begegnung mit Ergebnis R (Rolle über `LeagueTeam.own`):
+
+| Rolle | Vorrang | Bei Abweichung nuLiga ↔ App |
+|---|---|---|
+| **Eigenes Heimspiel** | Counter/manuell **first** | lokal behalten → **Konflikt** (Review + Badge) |
+| **Eigenes Auswärtsspiel** | **nuLiga** | nuLiga übernimmt (Quelle → `nuliga`) |
+| **Fremde Begegnung** | **nuLiga** | nuLiga übernimmt (still, gezählt) |
+
+- Offene nuLiga-Begegnung (leeres Ergebnis): nur **anlegen** falls fehlt (Datum/Teams/Zeit/Ort);
+  ein vorhandenes App-Ergebnis wird **nie gelöscht**.
+- Konflikt = eigenes Heimspiel, dessen autoritatives (counter/manual) Ergebnis von nuLiga abweicht.
+  Anzeige: Review-Liste beim Import **und** persistenter Badge an der Begegnung bis aufgelöst
+  („lokal behalten" / „nuLiga übernehmen"). Klärt Ergebnismelder-/Tippfehler.
+- Der bestehende **CSV-Import bleibt** unverändert; **manuelle Eingabe fremder Begegnungen bleibt**.
+
+### Verknüpfung & Abruf (entschieden 2026-07-12)
+
+- **Verknüpfung: URL pro Liga.** Neues Feld `League.nuligaUrl` (Migration: Spalte in `leagues`).
+  Im „Liga bearbeiten"-Modal fügt der Admin die nuLiga-Gruppen-URL ein → Button „Aus nuLiga aktualisieren"
+  erscheint an der Liga. Mehrere Ligen/Gruppen dadurch sauber unterstützt.
+- **Abruf v1: nur manueller Button** mit Konflikt-Review. Täglicher Cron ist **Phase 2**
+  (übernimmt Fremd-/Auswärtsergebnisse automatisch, markiert Heim-Konflikte zur Klärung).
+- **Fetch bleibt server-seitig** (CORS): PocketBase-Hook `pb_hooks/nuliga.pb.js`, Route
+  `POST /api/nuliga/fetch` (Admin-only), holt die **Meetings-Seite** (`displayTyp=gesamt&displayDetail=meetings`),
+  parst den `result-set`-Block in Goja und gibt `{ championship, group, sourceUrl, fixtures[] }` zurück.
+  **Merge + Konfliktlogik laufen im Frontend** (TS, `app/src/lib/nuligaImport.ts`) — der Hook ist ein
+  dünner Fetch-/Parse-Proxy. Standings-Seite v1 nicht nötig (Tabelle wird gerechnet).
+
+### Umsetzungsschritte (Revision)
+
+1. **Parser-Spike** gegen echtes nuLiga-Markup härten (braucht reale Gruppen-URL des Vereins).
+2. Migration `leagues.nuligaUrl` + Typen (`Fixture.resultSource`, `League.nuligaUrl`).
+3. Hook `pb_hooks/nuliga.pb.js` (`POST /api/nuliga/fetch`, Admin, `$http.send` + Parser).
+4. `lib/nuligaImport.ts` (Merge + Vorrang + Konflikte); Herkunft an den 3 Setz-Stellen verdrahten.
+5. UI: URL-Feld im Liga-Modal, Button + Import-/Konflikt-Review, Konflikt-Badge an Begegnung.
+6. Test gegen reale Gruppe; Fehlerfälle (nuLiga down, HTML geändert) durchspielen. Danach Cron (Phase 2).
+
+---
+
 ## 1. Ziel & Geltungsbereich
 
 Die eigene Liga-Gruppe bei nuLiga (z. B. `<Verband> 2025/26`, Gruppe `123456`) liefert öffentlich Tabelle und

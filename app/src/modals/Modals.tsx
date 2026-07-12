@@ -9,6 +9,7 @@ import { FixtureModal } from './FixtureModal';
 import { FriendlyModal } from './FriendlyModal';
 import { EventModal } from './EventModal';
 import { ImportModal } from './ImportModal';
+import { NuligaSyncModal } from './NuligaSyncModal';
 import { RulesModal } from '../screens/Training';
 
 export function Modals() {
@@ -25,6 +26,7 @@ export function Modals() {
       {s.friendlyModal && <FriendlyModal />}
       {s.eventModal && <EventModal />}
       {s.importOpen && <ImportModal />}
+      {s.nuligaSync && <NuligaSyncModal />}
       {s.rulesMode && <RulesModal />}
     </>
   );

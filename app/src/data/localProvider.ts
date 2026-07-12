@@ -93,5 +93,6 @@ export class LocalProvider implements DataProvider {
   async logout(): Promise<void> { /* noop */ }
   currentUser(): AuthUser | null { return null; }
   async setPassword(): Promise<void> { /* lokaler Modus hat keine Anmeldung/Passwörter */ }
+  async fetchNuliga(): Promise<never> { throw new Error('Der nuLiga-Abruf ist nur im Vereinsmodus verfügbar.'); }
   subscribe(): () => void { return () => {}; }
 }
