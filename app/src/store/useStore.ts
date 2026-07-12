@@ -23,6 +23,7 @@ import {
 import { createProvider, type DataProvider } from '../data/dataProvider';
 import type { ProviderRecord } from '../data/provider';
 import { mergeSchedule, deriveOwnTeams, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
+import { mergeNuliga, type NuligaCounts, type NuligaConflict } from '../lib/nuligaImport';
 import { applyPwaUpdate, checkForUpdate as checkPwaUpdate } from '../lib/pwaUpdate';
 
 const LS = {
@@ -91,7 +92,7 @@ function writeSetupDefaults(setup: SetupState) {
 export interface PlayerModalState { mode: 'add' | 'edit'; id: string | null; first: string; last: string; short: string; avi: number; }
 export interface TeamModalState { mode: 'add' | 'edit'; id: string | null; name: string; league: string; memberIds: string[]; captainId: string | null; viceCaptainIds: string[]; kind: TeamKind; }
 export interface UserModalState { mode: 'add' | 'edit'; id: string | null; first: string; last: string; email: string; role: Role; playerId: string | null; active: boolean; avi: number; position: string; password: string; isBoard: boolean; boardNumber: number | null; teamIds: string[]; }
-export interface LeagueModalState { mode: 'add' | 'edit'; id: string | null; name: string; season: string; teams: { id: string; name: string; own: boolean }[]; singlesCount: number; doublesCount: number; format: LineupSegment[] | null; kind: TeamKind; }
+export interface LeagueModalState { mode: 'add' | 'edit'; id: string | null; name: string; season: string; teams: { id: string; name: string; own: boolean }[]; singlesCount: number; doublesCount: number; format: LineupSegment[] | null; kind: TeamKind; nuligaUrl: string; }
 export interface LineupModalState {
   leagueId: string; fixtureId: string;
   ownTeamName: string; oppName: string; ownIsHome: boolean;
@@ -118,6 +119,18 @@ export function leagueSegments(lg: Pick<League, 'format' | 'singlesCount' | 'dou
 const segTotal = (segs: LineupSegment[], kind: LineupSegment['kind']) =>
   segs.filter((s) => s.kind === kind).reduce((a, b) => a + b.count, 0);
 export interface FixtureModalState { mode: 'add' | 'edit'; id: string | null; leagueId: string; homeId: string | null; awayId: string | null; date: string; time: string; loc: string; played: boolean; hs: string; as: string; }
+// nuLiga-Abruf/-Review einer Liga: Ladephase → Ergebnis (Zähler + Konfliktliste) oder Fehler.
+export interface NuligaSyncState {
+  leagueId: string;
+  leagueName: string;
+  phase: 'loading' | 'done' | 'error';
+  error?: string;
+  championship?: string;
+  fetchedAt?: string;
+  total?: number;                        // von nuLiga gelieferte Begegnungen
+  counts?: NuligaCounts;
+  conflicts?: NuligaConflict[];          // offene Heimspiel-Abweichungen zur Klärung
+}
 // Freundschaftsspiel anlegen: eigene Mannschaft vs. frei wählbarer Gegner (aus allen Saisons/Ligen suchbar).
 export interface FriendlyModalState { ownTeam: string; opponent: string; homeIsOwn: boolean; date: string; time: string; loc: string; }
 export interface EventModalState { mode: 'add' | 'edit'; id: string | null; scope: 'local' | 'verein'; title: string; date: string; time: string; type: string; loc: string; }
@@ -182,6 +195,7 @@ export interface AppState {
   friendlyModal: FriendlyModalState | null;
   eventModal: EventModalState | null;
   importOpen: boolean;
+  nuligaSync: NuligaSyncState | null;
 
   // counter (game) state
   gamePlayers: GamePlayer[];
@@ -315,7 +329,7 @@ export interface AppState {
   openAddLeague: () => void;
   openEditLeague: () => void;
   closeLeagueModal: () => void;
-  setLeagueField: (key: 'name' | 'season' | 'kind', val: string) => void;
+  setLeagueField: (key: 'name' | 'season' | 'kind' | 'nuligaUrl', val: string) => void;
   setLeagueCount: (key: 'singlesCount' | 'doublesCount', val: number) => void;
   setLeagueFormatPreset: (key: 'BZ' | 'BL' | 'LL' | 'custom') => void;
   addLeagueTeam: () => void;
@@ -351,6 +365,11 @@ export interface AppState {
   openImport: () => void;
   closeImport: () => void;
   importSchedule: (parsed: ParsedSchedule) => ImportCounts;
+
+  // nuLiga-Import (Vereinsmodus, Admin) — server-seitiger Abruf + Merge in die Liga
+  importNuliga: (leagueId: string) => Promise<void>;
+  closeNuligaSync: () => void;
+  resolveNuligaConflict: (leagueId: string, fixtureId: string, accept: boolean) => void;
 
   // fixture modal
   openAddFixture: () => void;
@@ -465,6 +484,7 @@ export const useStore = create<AppState>((set, get) => ({
   friendlyModal: null,
   eventModal: null,
   importOpen: false,
+  nuligaSync: null,
 
   gamePlayers: [
     { id: 1, name: 'Lukas Brandt', short: 'LB', av: 0 },
@@ -1221,10 +1241,10 @@ export const useStore = create<AppState>((set, get) => ({
 
   // ── league modal ──
   selectLeague(i) { set({ selectedLeague: i }); },
-  openAddLeague() { set({ leagueModal: { mode: 'add', id: null, name: '', season: '2025/26', teams: [], singlesCount: 4, doublesCount: 2, format: null, kind: 'league' } }); },
+  openAddLeague() { set({ leagueModal: { mode: 'add', id: null, name: '', season: '2025/26', teams: [], singlesCount: 4, doublesCount: 2, format: null, kind: 'league', nuligaUrl: '' } }); },
   openEditLeague() {
     const st = get(); const lg = st.leagues[Math.max(0, Math.min(st.leagues.length - 1, st.selectedLeague))]; if (!lg) return;
-    set({ leagueModal: { mode: 'edit', id: lg.id, name: lg.name, season: lg.season || '', teams: lg.teams.map((t) => ({ ...t })), singlesCount: lg.singlesCount ?? 4, doublesCount: lg.doublesCount ?? 2, format: lg.format ? lg.format.map((s) => ({ ...s })) : null, kind: lg.kind === 'cup' ? 'cup' : 'league' } });
+    set({ leagueModal: { mode: 'edit', id: lg.id, name: lg.name, season: lg.season || '', teams: lg.teams.map((t) => ({ ...t })), singlesCount: lg.singlesCount ?? 4, doublesCount: lg.doublesCount ?? 2, format: lg.format ? lg.format.map((s) => ({ ...s })) : null, kind: lg.kind === 'cup' ? 'cup' : 'league', nuligaUrl: lg.nuligaUrl || '' } });
   },
   closeLeagueModal() { set({ leagueModal: null }); },
   setLeagueField(key, val) { set((st) => st.leagueModal ? { leagueModal: { ...st.leagueModal, [key]: val } } : {}); },
@@ -1249,7 +1269,7 @@ export const useStore = create<AppState>((set, get) => ({
       const existing = st.leagues.find((l) => l.id === m.id);
       // Format: bevorzugt geordnete Segmente (Preset); sonst einfache Einzel/Doppel-Zähler.
       const segs = m.format && m.format.length ? m.format : [{ kind: 'singles' as const, count: m.singlesCount }, { kind: 'doubles' as const, count: m.doublesCount }];
-      const rec: League = { id: m.id || uid(), name, season: m.season.trim(), seasonId: existing?.seasonId ?? st.activeSeasonId ?? undefined, teams, fixtures: existing ? existing.fixtures : [], format: m.format && m.format.length ? m.format : undefined, singlesCount: segTotal(segs, 'singles'), doublesCount: segTotal(segs, 'doubles'), kind: m.kind };
+      const rec: League = { id: m.id || uid(), name, season: m.season.trim(), seasonId: existing?.seasonId ?? st.activeSeasonId ?? undefined, teams, fixtures: existing ? existing.fixtures : [], format: m.format && m.format.length ? m.format : undefined, singlesCount: segTotal(segs, 'singles'), doublesCount: segTotal(segs, 'doubles'), kind: m.kind, nuligaUrl: m.nuligaUrl.trim() || undefined };
       let leagues: League[]; let selectedLeague = st.selectedLeague;
       if (m.mode === 'add') { leagues = [...st.leagues, rec]; selectedLeague = leagues.length - 1; }
       else leagues = st.leagues.map((l) => l.id === m.id ? rec : l);
@@ -1515,7 +1535,11 @@ export const useStore = create<AppState>((set, get) => ({
             if (!row || !row.won) { const { result: _omit, ...rest } = p; void _omit; return rest; }
             return { ...p, result: { won: row.won } };
           });
-          return { ...f, lineup: { ...f.lineup, positions }, played, hs: played ? hsVal : ('' as const), as: played ? asVal : ('' as const) };
+          // Ergebnis stammt vom Board-Counter → autoritativ ('counter'). Eine evtl. offene nuLiga-Abweichung
+          // gilt damit als (neu) entschieden und wird entfernt; ein späterer nuLiga-Abruf erkennt sie ggf. neu.
+          const nf: Fixture = { ...f, lineup: { ...f.lineup, positions }, played, hs: played ? hsVal : ('' as const), as: played ? asVal : ('' as const), resultSource: played ? 'counter' : undefined };
+          if (nf.nuligaConflict) delete nf.nuligaConflict;
+          return nf;
         });
         changed = { ...l, fixtures };
         return changed;
@@ -1599,6 +1623,96 @@ export const useStore = create<AppState>((set, get) => ({
     return counts;
   },
 
+  // ── nuLiga-Import ──
+  async importNuliga(leagueId) {
+    const st0 = get();
+    const lg0 = st0.leagues.find((l) => l.id === leagueId);
+    if (!lg0) return;
+    if (st0.provider.mode !== 'verein') {
+      set({ nuligaSync: { leagueId, leagueName: lg0.name, phase: 'error', error: 'Der nuLiga-Abruf ist nur im Vereinsmodus verfügbar.' } });
+      return;
+    }
+    const url = (lg0.nuligaUrl || '').trim();
+    if (!url) {
+      set({ nuligaSync: { leagueId, leagueName: lg0.name, phase: 'error', error: 'Für diese Liga ist keine nuLiga-URL hinterlegt.' } });
+      return;
+    }
+    set({ nuligaSync: { leagueId, leagueName: lg0.name, phase: 'loading' } });
+    let resp;
+    try {
+      resp = await st0.provider.fetchNuliga(url);
+    } catch (e) {
+      const msg = (e && typeof e === 'object' && 'message' in e && (e as { message?: unknown }).message)
+        ? String((e as { message: unknown }).message) : 'nuLiga-Abruf fehlgeschlagen.';
+      set({ nuligaSync: { leagueId, leagueName: lg0.name, phase: 'error', error: msg } });
+      return;
+    }
+    const nowIso = new Date().toISOString();
+    const st = get();
+    const res = mergeNuliga(st.leagues, leagueId, resp.fixtures || [], nowIso);
+    if (!res.league) { set({ nuligaSync: { leagueId, leagueName: lg0.name, phase: 'error', error: 'Liga nicht gefunden.' } }); return; }
+    const leagues = st.leagues.map((l) => l.id === leagueId ? res.league : l);
+    // Kalender-Termine der eigenen Begegnungen dieser Liga idempotent nachziehen (neu/aktualisiert).
+    const evByFixture = new Map(st.events.filter((e) => e.fixtureId).map((e) => [e.fixtureId as string, e]));
+    const newEvents: EventItem[] = []; const updatedEvents: EventItem[] = [];
+    for (const fx of res.league.fixtures) {
+      if (!isOwnFixture(res.league, fx)) continue;
+      const prev = evByFixture.get(fx.id);
+      const ev = fixtureEvent(res.league, fx, prev);
+      if (!prev) newEvents.push(ev);
+      else if (prev.date !== ev.date || prev.title !== ev.title) updatedEvents.push(ev);
+    }
+    const updById = new Map(updatedEvents.map((e) => [e.id, e]));
+    const events = (newEvents.length || updatedEvents.length)
+      ? [...st.events.map((e) => updById.get(e.id) || e), ...newEvents]
+      : st.events;
+    if (res.changed) {
+      void st.provider.updateRecord('leagues', leagueId, res.league as unknown as ProviderRecord)
+        .catch((err) => { console.error('[sync]', err); set({ syncError: 'nuLiga-Import konnte nicht gespeichert werden.' }); });
+      newEvents.forEach((e) => void st.provider.createRecord('events', e as unknown as ProviderRecord)
+        .catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht angelegt werden.' }); }));
+      updatedEvents.forEach((e) => void st.provider.updateRecord('events', e.id, e as unknown as ProviderRecord)
+        .catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht aktualisiert werden.' }); }));
+    }
+    set({
+      leagues, events,
+      nuligaSync: {
+        leagueId, leagueName: lg0.name, phase: 'done',
+        championship: resp.championship, fetchedAt: nowIso,
+        total: (resp.fixtures || []).length, counts: res.counts, conflicts: res.conflicts,
+      },
+    });
+  },
+  closeNuligaSync() { set({ nuligaSync: null }); },
+  resolveNuligaConflict(leagueId, fixtureId, accept) {
+    set((st) => {
+      const leagues = st.leagues.map((l) => {
+        if (l.id !== leagueId) return l;
+        const fixtures = l.fixtures.map((f) => {
+          if (f.id !== fixtureId || !f.nuligaConflict) return f;
+          const nf: Fixture = { ...f };
+          if (accept) { nf.hs = f.nuligaConflict.hs; nf.as = f.nuligaConflict.as; nf.played = true; nf.resultSource = 'nuliga'; }
+          delete nf.nuligaConflict;
+          return nf;
+        });
+        return { ...l, fixtures };
+      });
+      const updated = leagues.find((l) => l.id === leagueId);
+      if (!updated) return {};
+      if (st.provider.mode === 'verein') {
+        void st.provider.updateRecord('leagues', updated.id, updated as unknown as ProviderRecord)
+          .catch((e) => { console.error('[sync]', e); set({ syncError: 'Konflikt konnte nicht gespeichert werden.' }); });
+      } else {
+        write(LS.leagues, leagues);
+      }
+      // Aufgelösten Konflikt aus der offenen Review-Liste entfernen.
+      const sync = st.nuligaSync && st.nuligaSync.conflicts
+        ? { ...st.nuligaSync, conflicts: st.nuligaSync.conflicts.filter((c) => c.fixtureId !== fixtureId) }
+        : st.nuligaSync;
+      return { leagues, nuligaSync: sync };
+    });
+  },
+
   // ── fixture modal ──
   openAddFixture() {
     const st = get(); const lg = st.leagues[Math.max(0, Math.min(st.leagues.length - 1, st.selectedLeague))]; if (!lg) return;
@@ -1625,6 +1739,9 @@ export const useStore = create<AppState>((set, get) => ({
         if (l.id !== m.leagueId) return l;
         const prev = l.fixtures.find((f) => f.id === m.id);
         rec = { id: m.id || uid(), homeId: m.homeId!, awayId: m.awayId!, date: m.date, time: m.time.trim() || undefined, loc: m.loc.trim() || undefined, played: m.played, hs: m.played ? (parseInt(m.hs, 10) || 0) : '', as: m.played ? (parseInt(m.as, 10) || 0) : '' };
+        // Manuelle Eingabe/Überschreibung → autoritativ ('manual'). Ein evtl. nuLiga-Konflikt gilt als
+        // aufgelöst (rec ist frisch, kopiert nuligaConflict nicht).
+        if (m.played) rec.resultSource = 'manual';
         if (prev?.lineup) rec.lineup = prev.lineup; // Aufstellung beim Bearbeiten erhalten
         const fixtures = m.mode === 'add' ? [...l.fixtures, rec] : l.fixtures.map((f) => f.id === m.id ? rec! : f);
         changed = { ...l, fixtures };

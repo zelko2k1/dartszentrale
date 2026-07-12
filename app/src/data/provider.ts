@@ -2,6 +2,7 @@
 // Zwei Implementierungen: LocalProvider (localStorage, synchron) und PocketBaseProvider (API, async).
 // Noch NICHT in den Store eingebunden — rein additiv, ändert das bestehende Verhalten nicht.
 import type { Player, Team, Account, League, EventItem, Match, Season, SeasonSnapshot, Settings, Role } from './types';
+import type { NuligaResponse } from '../lib/nuligaImport';
 
 export type CollectionName = 'players' | 'teams' | 'accounts' | 'leagues' | 'events' | 'matches' | 'seasons' | 'season_snapshots';
 
@@ -104,6 +105,11 @@ export interface DataProvider {
   kioskExitAuth(email: string, password: string, allowedRoles: Role[]): Promise<AuthUser | null>;
   // Passwort setzen (privilegierter Endpunkt /api/set-password): Admin → jedes Konto, Nutzer → sein eigenes.
   setPassword(userId: string, newPassword: string): Promise<void>;
+
+  // ── nuLiga-Import (Verein, nur Admin); Lokal: nicht verfügbar ──
+  /** Ruft die nuLiga-Gruppenseite server-seitig ab (/api/nuliga/fetch) und liefert die geparsten
+   *  Begegnungen. Merge/Vorrang/Konflikte macht der Aufrufer (lib/nuligaImport.ts). */
+  fetchNuliga(url: string): Promise<NuligaResponse>;
 
   // ── Realtime (Verein optional); Lokal: gibt eine leere Unsubscribe-Funktion zurück ──
   subscribe(onChange: () => void): () => void;

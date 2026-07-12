@@ -101,6 +101,16 @@ export function LeagueModal() {
         Mannschaft hinzufügen
       </button>
 
+      <div style={{ borderTop: '1px solid var(--hairline)', paddingTop: 16, marginBottom: 20 }}>
+        <FieldLabel note="optional">nuLiga-Gruppen-URL</FieldLabel>
+        <input className="dh-input" value={m.nuligaUrl} onChange={(e) => s.setLeagueField('nuligaUrl', e.target.value)} placeholder="https://…liga.nu/…/groupPage?championship=…&group=…" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit' }} />
+        <div style={{ fontSize: 11.5, color: 'var(--text-4)', marginTop: 7, lineHeight: 1.5 }}>
+          Öffne bei nuLiga die Gruppen-/Spielplanseite deiner Liga und füge die Adresse ein. Dann kannst du an der Liga
+          <b> „Aus nuLiga aktualisieren"</b> nutzen: fremde Begegnungen und Auswärtsergebnisse kommen automatisch,
+          deine Heim-Ergebnisse (Counter/manuell) behalten Vorrang.
+        </div>
+      </div>
+
       <ModalFooter
         onDelete={m.mode === 'edit' ? () => { if (window.confirm(`Liga „${m.name}" mit komplettem Spielplan und allen zugehörigen Spieltag-Terminen wirklich löschen? Das lässt sich nicht rückgängig machen.`)) s.deleteLeague(m.id!); } : undefined}
         onCancel={() => s.closeLeagueModal()}

@@ -120,6 +120,12 @@ export interface Fixture {
   as: number | '';     // Punkte Gast
   lineup?: FixtureLineup; // Aufstellung der eigenen Mannschaft (nur bei eigenen Begegnungen)
   boardLive?: boolean;    // manuell an die Boards „gesendet" → zeigt die Begegnung sofort, unabhängig vom Datumsfenster
+  // Herkunft des aktuellen Ergebnisses. 'counter'/'manual' gelten als autoritativ (eigene Heimspiele),
+  // 'nuliga'/'csv' als Import. Fehlt = alt/unbekannt (wie Import behandelt). Steuert den nuLiga-Vorrang.
+  resultSource?: 'counter' | 'manual' | 'nuliga' | 'csv';
+  // Offener Konflikt: nuLiga meldet für ein autoritatives eigenes Heimspiel ein abweichendes Ergebnis.
+  // Bleibt am Fixture (Badge) bis der Admin auflöst (lokal behalten → löschen; nuLiga übernehmen → anwenden+löschen).
+  nuligaConflict?: { hs: number; as: number; at: string };
 }
 
 // Ein Block des Spielformats, z. B. 8 Einzel oder 4 Doppel. Die REIHENFOLGE der Segmente bildet
@@ -142,6 +148,8 @@ export interface League {
   format?: LineupSegment[];
   singlesCount?: number;
   doublesCount?: number;
+  // nuLiga-Gruppen-URL (Meetings-/Gruppenseite). Gesetzt = „Aus nuLiga aktualisieren" für diese Liga verfügbar.
+  nuligaUrl?: string;
 }
 
 export interface EventItem {

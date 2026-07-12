@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { computeStandings, perm, inSeason } from '../store/selectors';
 import { initials } from '../lib/format';
@@ -15,8 +16,11 @@ function fmtDate(iso: string): { day: string; mon: string } {
   return { day: parts[0] || '', mon: parts[1] || '' };
 }
 
+const FX_LIMIT = 6; // Begegnungsliste eingeklappt: Fenster rund um „jetzt" (letzte + nächste Spiele).
+
 export function Leagues() {
   const s = useStore();
+  const [fxExpandedFor, setFxExpandedFor] = useState<string | null>(null); // aufgeklappte Liga-ID (sonst Fenster)
   const accent = s.settings.accent;
   const p = perm(s.settings, s.accounts, s.session);
   // Archivierte Saison (betrachtet ≠ aktiv) → nur Lesezugriff: Bearbeiten-Aktionen ausblenden.
@@ -30,6 +34,18 @@ export function Leagues() {
   const standings = sel && !isFriendly ? computeStandings(sel) : [];
   const teamNameById = (id: string) => { const t = sel?.teams.find((x) => x.id === id); return t ? t.name : '?'; };
   const fxSorted = sel ? sel.fixtures.slice().sort((a, b) => a.date.localeCompare(b.date)) : [];
+  // Eingeklappte Ansicht: Fenster um die erste noch offene Begegnung (2 gespielte davor + Rest nach vorn);
+  // ist alles gespielt → die letzten FX_LIMIT; ist nichts gespielt → die ersten FX_LIMIT.
+  const fxExpanded = !!sel && fxExpandedFor === sel.id;
+  const fxHidden = Math.max(0, fxSorted.length - FX_LIMIT);
+  let fxVisible = fxSorted;
+  if (!fxExpanded && fxHidden > 0) {
+    const firstOpen = fxSorted.findIndex((f) => !f.played);
+    const start = firstOpen === -1
+      ? fxSorted.length - FX_LIMIT
+      : Math.max(0, Math.min(firstOpen - 2, fxSorted.length - FX_LIMIT));
+    fxVisible = fxSorted.slice(start, start + FX_LIMIT);
+  }
 
   // Liga-Highlights je Begegnung: 180er + Short Legs (≤19) + High Finish (≥100) der EIGENEN Spieler aus den
   // verknüpften Board-Spielen. Match.perPlayer[0] ist stets die eigene Seite (Auto-Eintrag); nach Spielername.
@@ -97,6 +113,16 @@ export function Leagues() {
             <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>{sel.name} · Saison {sel.season || '—'}</div>
             {canEdit && (
               <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+                {sel.nuligaUrl && (() => {
+                  const loading = s.nuligaSync?.phase === 'loading' && s.nuligaSync.leagueId === sel.id;
+                  return (
+                    <button className="dh-btn" onClick={() => { if (!loading) s.importNuliga(sel.id); }} disabled={loading} title="Fremde Begegnungen & Auswärtsergebnisse aus nuLiga übernehmen"
+                      style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.6 : 1, fontFamily: 'inherit' }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={loading ? { animation: 'dh-spin 0.9s linear infinite' } : undefined}><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" /></svg>
+                      {loading ? 'Lädt…' : 'Aus nuLiga aktualisieren'}
+                    </button>
+                  );
+                })()}
                 <button className="dh-btn" onClick={() => s.openEditLeague()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
                   Liga bearbeiten
@@ -117,15 +143,15 @@ export function Leagues() {
             {/* standings – bei Freundschaften ausgeblendet (keine Tabellenwertung) */}
             {!isFriendly && (
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '28px minmax(120px,1fr) 30px 30px 30px 30px 44px 40px', gap: 5, padding: '13px 18px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', minWidth: 440 }}>
-                <span>#</span><span>Mannschaft</span><span style={{ textAlign: 'center' }}>Sp</span><span style={{ textAlign: 'center' }}>S</span><span style={{ textAlign: 'center' }}>U</span><span style={{ textAlign: 'center' }}>N</span><span style={{ textAlign: 'center' }}>Diff</span><span style={{ textAlign: 'right' }}>Pkt</span>
+              <div style={{ display: 'grid', gridTemplateColumns: '28px minmax(104px,1fr) 26px 24px 24px 24px 58px 42px 52px', gap: 5, padding: '13px 18px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', minWidth: 508 }}>
+                <span>#</span><span>Mannschaft</span><span style={{ textAlign: 'center' }}>Sp</span><span style={{ textAlign: 'center' }}>S</span><span style={{ textAlign: 'center' }}>U</span><span style={{ textAlign: 'center' }}>N</span><span style={{ textAlign: 'center' }}>Legs</span><span style={{ textAlign: 'center' }}>+/−</span><span style={{ textAlign: 'right' }}>Pkt</span>
               </div>
               {standings.length === 0 && <div style={{ padding: '30px 18px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>Noch keine Ergebnisse — trage eine Begegnung ein.</div>}
               {standings.map((t, i) => {
                 const diff = t.lf - t.la;
                 const posColor = i < 2 ? 'var(--success)' : (standings.length > 4 && i >= standings.length - 1) ? 'var(--danger-soft)' : 'var(--text-3)';
                 return (
-                  <div key={t.id} style={{ display: 'grid', gridTemplateColumns: '28px minmax(120px,1fr) 30px 30px 30px 30px 44px 40px', gap: 5, padding: '12px 18px', borderBottom: '1px solid var(--hairline)', alignItems: 'center', background: t.own ? 'rgba(25,164,99,.08)' : 'transparent', minWidth: 440 }}>
+                  <div key={t.id} style={{ display: 'grid', gridTemplateColumns: '28px minmax(104px,1fr) 26px 24px 24px 24px 58px 42px 52px', gap: 5, padding: '12px 18px', borderBottom: '1px solid var(--hairline)', alignItems: 'center', background: t.own ? 'rgba(25,164,99,.08)' : 'transparent', minWidth: 508 }}>
                     <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: posColor }}>{i + 1}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
                       <div style={{ width: 28, height: 28, borderRadius: 8, background: t.own ? 'linear-gradient(135deg,#19A463,#0f6b40)' : 'var(--btn)', color: t.own ? '#fff' : 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 10, flexShrink: 0 }}>{initials(t.name).slice(0, 3)}</div>
@@ -135,8 +161,9 @@ export function Leagues() {
                     <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--success)' }}>{t.s}</span>
                     <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-4)' }}>{t.u}</span>
                     <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--danger-soft)' }}>{t.n}</span>
+                    <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{t.lf}:{t.la}</span>
                     <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{diff > 0 ? '+' : ''}{diff}</span>
-                    <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>{t.pts}</span>
+                    <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>{t.pts}:{t.n * 2 + t.u}</span>
                   </div>
                 );
               })}
@@ -150,7 +177,7 @@ export function Leagues() {
               </div>
               {fxSorted.length === 0 && <div style={{ padding: '24px 4px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>Noch keine Begegnungen angelegt.</div>}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {fxSorted.map((f) => {
+                {fxVisible.map((f) => {
                   const played = !!f.played;
                   const { day, mon } = fmtDate(f.date);
                   const score = played ? `${f.hs}:${f.as}` : '–';
@@ -168,22 +195,24 @@ export function Leagues() {
                         <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{teamNameById(f.homeId)} — {teamNameById(f.awayId)}</div>
                         <div style={{ fontSize: 11, color: played ? 'var(--text-4)' : 'var(--success)', fontWeight: 600, marginTop: 2 }}>{[played ? 'Beendet' : 'Geplant', f.time, f.loc].filter(Boolean).join(' · ')}</div>
                       </div>
-                      {isOwn && canEdit && (
-                        <button onClick={(e) => { e.stopPropagation(); s.openLineup(f.id); }} title="Aufstellung"
-                          style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, background: hasLineup ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--btn)', border: `1px solid ${hasLineup ? 'var(--accent)' : 'var(--border-2)'}`, color: hasLineup ? 'var(--accent)' : 'var(--text-3)', padding: '6px 10px', borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: played ? 'var(--text)' : 'var(--text-4)' }}>{score}</span>
+                    </div>
+                    {isOwn && canEdit && (
+                      <div style={{ display: 'flex', gap: 8, padding: '10px 14px', borderTop: '1px solid var(--hairline)' }}>
+                        <button onClick={() => s.openLineup(f.id)} title="Aufstellung"
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flex: 1, background: hasLineup ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--btn)', border: `1px solid ${hasLineup ? 'var(--accent)' : 'var(--border-2)'}`, color: hasLineup ? 'var(--accent)' : 'var(--text-3)', padding: '8px 10px', borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                           <IconUsersSmall size={14} />
                           {hasLineup ? 'Aufstellung' : 'Aufstellen'}
                         </button>
-                      )}
-                      {isOwn && canEdit && hasLineup && (
-                        <button onClick={(e) => { e.stopPropagation(); s.openResult(f.id); }} title="Ergebnis erfassen"
-                          style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 10px', borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
-                          Ergebnis
-                        </button>
-                      )}
-                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: played ? 'var(--text)' : 'var(--text-4)' }}>{score}</span>
-                    </div>
+                        {hasLineup && (
+                          <button onClick={() => s.openResult(f.id)} title="Ergebnis erfassen"
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 10px', borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+                            Ergebnis
+                          </button>
+                        )}
+                      </div>
+                    )}
                     {hl.length > 0 && (
                       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 7, padding: '8px 14px 10px', borderTop: '1px solid var(--hairline)', background: 'color-mix(in srgb, var(--accent) 4%, transparent)' }}>
                         <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em', textTransform: 'uppercase' }}>Highlights</span>
@@ -197,10 +226,34 @@ export function Leagues() {
                         ))}
                       </div>
                     )}
+                    {f.nuligaConflict && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, padding: '9px 14px 11px', borderTop: '1px solid var(--hairline)', background: 'rgba(242,184,41,.10)' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 800, color: '#B8860B', letterSpacing: '.04em', textTransform: 'uppercase' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><path d="M12 9v4M12 17h.01" /></svg>
+                          nuLiga weicht ab
+                        </span>
+                        <span style={{ fontSize: 12.5, color: 'var(--text-2)' }}>
+                          Eigenes Ergebnis <b style={{ fontFamily: 'var(--font-num)' }}>{f.hs}:{f.as}</b> ({f.resultSource === 'counter' ? 'Counter' : 'manuell'}) · nuLiga <b style={{ fontFamily: 'var(--font-num)' }}>{f.nuligaConflict.hs}:{f.nuligaConflict.as}</b>
+                        </span>
+                        {canEdit && (
+                          <div style={{ display: 'flex', gap: 7, marginLeft: 'auto' }}>
+                            <button onClick={() => s.resolveNuligaConflict(sel.id, f.id, false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '5px 11px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Eigenes behalten</button>
+                            <button onClick={() => s.resolveNuligaConflict(sel.id, f.id, true)} style={{ background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '5px 11px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>nuLiga übernehmen</button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                     </div>
                   );
                 })}
               </div>
+              {fxHidden > 0 && (
+                <button onClick={() => setFxExpandedFor(fxExpanded ? null : sel.id)}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, width: '100%', marginTop: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '10px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  {fxExpanded ? 'Weniger anzeigen' : `Alle ${fxSorted.length} Begegnungen anzeigen`}
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: fxExpanded ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}><path d="M6 9l6 6 6-6" /></svg>
+                </button>
+              )}
             </div>
           </div>
         </>

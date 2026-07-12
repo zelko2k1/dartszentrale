@@ -278,7 +278,7 @@ export function mergeSchedule(existing: League[], parsed: ParsedSchedule): Merge
       const fx = fixtureByKey.get(key);
       if (fx) {
         if (pf.played && (!fx.played || fx.hs !== pf.hs || fx.as !== pf.as)) {
-          fx.played = true; fx.hs = pf.hs; fx.as = pf.as;
+          fx.played = true; fx.hs = pf.hs; fx.as = pf.as; fx.resultSource = 'csv';
           counts.resultsSet++;
           dirty.add(league.id);
         }
@@ -290,6 +290,7 @@ export function mergeSchedule(existing: League[], parsed: ParsedSchedule): Merge
           id: uid(), homeId: home.id, awayId: away.id, date: pf.date,
           time: pf.time || undefined, loc: pf.loc || undefined,
           played: pf.played, hs: pf.played ? pf.hs : '', as: pf.played ? pf.as : '',
+          ...(pf.played ? { resultSource: 'csv' as const } : {}),
         };
         league.fixtures.push(rec);
         fixtureByKey.set(key, rec);
