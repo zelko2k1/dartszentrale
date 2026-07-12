@@ -48,6 +48,8 @@ export function Leagues() {
       : Math.max(0, Math.min(firstOpen - 2, fxSorted.length - FX_LIMIT));
     fxVisible = fxSorted.slice(start, start + FX_LIMIT);
   }
+  // Anzeige generell neu → alt (die Fenster-Auswahl oben bleibt chronologisch, nur die Darstellung ist absteigend).
+  const fxRender = fxVisible.slice().reverse();
 
   // Liga-Highlights je Begegnung: 180er + Short Legs (≤19) + High Finish (≥100) der EIGENEN Spieler aus den
   // verknüpften Board-Spielen. Match.perPlayer[0] ist stets die eigene Seite (Auto-Eintrag); nach Spielername.
@@ -179,7 +181,7 @@ export function Leagues() {
               </div>
               {fxSorted.length === 0 && <div style={{ padding: '24px 4px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>Noch keine Begegnungen angelegt.</div>}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {fxVisible.map((f) => {
+                {fxRender.map((f) => {
                   const played = !!f.played;
                   const { day, mon } = fmtDate(f.date);
                   const score = played ? `${f.hs}:${f.as}` : '–';
