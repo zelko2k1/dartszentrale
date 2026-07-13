@@ -45,3 +45,11 @@ pb_data/
 # pocketbase/-Verzeichnis (sonst würden neue pb_migrations/pb_hooks stillschweigend ignoriert).
 /pocketbase/pocketbase
 /pocketbase/pocketbase.exe
+
+# PocketBase-Automigrate-Artefakte: entstehen lokal, wenn provision.mjs Collections ändert und der
+# Server Automigrate an hat. Das Schema kommt hier aus den HANDGESCHRIEBENEN Migrationen (…_baseline_
+# schema, …_leagues_order …) + provision.mjs; die Auto-Snapshots (…_created_/_updated_/_deleted_…)
+# sind redundant und würden den Migrations-Pfad brechen (Duplikat-Felder). Nie committen.
+/pocketbase/pb_migrations/*_created_*.js
+/pocketbase/pb_migrations/*_updated_*.js
+/pocketbase/pb_migrations/*_deleted_*.js
