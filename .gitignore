@@ -41,6 +41,7 @@ app/dist.old/
 # Vom Einfach-Start (start-einfach.*) im Projekt-Root erzeugt – nie committen
 # pb_data/ ist die PocketBase-DB mit Nutzerdaten
 pb_data/
-# heruntergeladenes Binary (Linux/Mac bzw. Windows)
-/pocketbase
-/pocketbase.exe
+# heruntergeladenes Binary (Linux/Mac bzw. Windows) – nur das Binary, NICHT das ganze
+# pocketbase/-Verzeichnis (sonst würden neue pb_migrations/pb_hooks stillschweigend ignoriert).
+/pocketbase/pocketbase
+/pocketbase/pocketbase.exe
