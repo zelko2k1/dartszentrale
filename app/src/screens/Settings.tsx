@@ -6,6 +6,7 @@ import type { Settings as SettingsType } from '../data/types';
 import { IconUsers, IconChevronRight } from '../lib/icons';
 import { comboFromEvent, isValidCombo, formatCombo } from '../lib/shortcut';
 import { suggestBoardScale } from '../lib/displayScale';
+import { useReorder } from '../lib/useReorder';
 import { qrSvg } from '../lib/qrcode';
 import type { TwoFactorStatus, TwoFactorSetup } from '../data/provider';
 
@@ -377,6 +378,11 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const [offloadConfirm, setOffloadConfirm] = useState<string | null>(null);
   const [seasonMsg, setSeasonMsg] = useState('');
   const [activeKey, setActiveKey] = useState<string>('eingabe');
+  // Manuelle Reihenfolge der Rubrik-Pills (per Drag & Drop). Gerätelokal — es ist eine persönliche
+  // Navigations-Vorliebe, und welche Rubriken sichtbar sind, hängt ohnehin von Rolle/Modus ab.
+  const [tabOrder, setTabOrder] = useState<string[]>(() => {
+    try { const v = JSON.parse(localStorage.getItem('darts_settings_taborder') || '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
+  });
 
   const savePbUrl = () => {
     const v = pbUrlDraft.trim().replace(/\/+$/, ''); // trailing slash entfernen
@@ -887,7 +893,19 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   // 'app' ist dabei, damit der Board-Betreuer Version prüfen & Updates anstoßen kann.
   const KIOSK_KEYS = ['eingabe', 'darstellung', 'hilfen', 'listen', 'app'];
   const shown = categories.filter((c) => c.show && (!kiosk || KIOSK_KEYS.includes(c.key)));
-  const active = shown.find((c) => c.key === activeKey) || shown[0];
+  // Nach gespeicherter Reihenfolge sortieren; unbekannte Keys (Altstand/neue Rubriken) ans Ende (stabil).
+  const tabRank = (k: string) => { const i = tabOrder.indexOf(k); return i === -1 ? 1e9 : i; };
+  const shownOrdered = [...shown].sort((a, b) => tabRank(a.key) - tabRank(b.key));
+  const active = shownOrdered.find((c) => c.key === activeKey) || shownOrdered[0];
+  const tabDnd = useReorder(true, (from, to) => {
+    const keys = shownOrdered.map((c) => c.key);
+    const [moved] = keys.splice(from, 1);
+    keys.splice(to, 0, moved);
+    // aktuell nicht sichtbare, aber früher sortierte Keys hinten anhängen, damit sie nicht verloren gehen.
+    const next = [...keys, ...tabOrder.filter((k) => !keys.includes(k))];
+    setTabOrder(next);
+    try { localStorage.setItem('darts_settings_taborder', JSON.stringify(next)); } catch { /* ignore */ }
+  });
 
   return (
     <div style={{ padding: '28px 32px', maxWidth: 920, margin: '0 auto' }}>
@@ -902,12 +920,24 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         </div>
       )}
 
-      {/* Rubrik-Navigation */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-        {shown.map((c) => {
+      {/* Rubrik-Navigation — per Drag & Drop umsortierbar (Reihenfolge gerätelokal gespeichert) */}
+      <div ref={tabDnd.containerRef} style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+        {/* eslint-disable-next-line react-hooks/refs -- useReorder greift seine Refs nur in Event-Handlern ab, nicht beim Rendern. */}
+        {shownOrdered.map((c, i) => {
           const on = active?.key === c.key;
+          const ip = tabDnd.itemProps(i);
+          const dragging = tabDnd.dragIndex === i;
+          const isTarget = tabDnd.dragIndex !== null && tabDnd.overIndex === i && !dragging;
           return (
-            <button key={c.key} onClick={() => setActiveKey(c.key)} style={{ background: on ? accent : 'var(--surface)', color: on ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${on ? accent : 'var(--border-2)'}`, fontWeight: on ? 800 : 600, padding: '9px 16px', borderRadius: 999, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{c.label}</button>
+            <button key={c.key} {...ip} onClick={() => setActiveKey(c.key)} title="Ziehen zum Umsortieren" style={{
+              display: 'flex', alignItems: 'center', gap: 6, background: on ? accent : 'var(--surface)', color: on ? 'var(--accent-fg)' : 'var(--text-2)',
+              border: `1px solid ${isTarget ? accent : (on ? accent : 'var(--border-2)')}`, fontWeight: on ? 800 : 600, padding: '9px 14px', borderRadius: 999, fontSize: 13,
+              cursor: dragging ? 'grabbing' : 'grab', fontFamily: 'inherit', whiteSpace: 'nowrap', opacity: dragging ? 0.55 : 1,
+              boxShadow: isTarget ? `0 0 0 3px color-mix(in srgb, ${accent} 22%, transparent)` : 'none', transition: 'box-shadow .12s, opacity .12s', ...ip.style,
+            }}>
+              <svg width="9" height="13" viewBox="0 0 11 16" fill={on ? 'var(--accent-fg)' : 'var(--text-5)'} style={{ flexShrink: 0, opacity: on ? 0.7 : 0.9 }} aria-hidden="true"><circle cx="2.5" cy="3" r="1.3"/><circle cx="8.5" cy="3" r="1.3"/><circle cx="2.5" cy="8" r="1.3"/><circle cx="8.5" cy="8" r="1.3"/><circle cx="2.5" cy="13" r="1.3"/><circle cx="8.5" cy="13" r="1.3"/></svg>
+              {c.label}
+            </button>
           );
         })}
       </div>

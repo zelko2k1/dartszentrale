@@ -47,6 +47,14 @@ const LS = {
   lastBackup: 'darts_last_backup', // Zeitstempel des letzten automatischen Backups (für Nachhol-Logik + Statusanzeige)
 };
 
+// Ligen nach manueller Reihenfolge (`order`) sortieren; ohne `order` (Altdaten) ans Ende, in
+// ursprünglicher Reihenfolge (stabiler Sort). Wird beim Laden aus Storage und aus dem Server-Snapshot
+// angewandt, damit die per Drag & Drop gesetzte Anordnung überall gleich erscheint.
+function sortLeaguesByOrder(leagues: League[]): League[] {
+  if (!Array.isArray(leagues)) return leagues;
+  return leagues.slice().sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER));
+}
+
 // Spieltyp-Felder, die als Voreinstellung gerätelokal erhalten bleiben (Spieler/Gäste/Liga NICHT).
 const SETUP_DEFAULT_KEYS = ['startScore', 'unit', 'bestOf', 'bestOfSets', 'outMode', 'doubleIn', 'doubleOut'] as const;
 
@@ -326,6 +334,7 @@ export interface AppState {
 
   // league modal
   selectLeague: (i: number) => void;
+  reorderLeagues: (orderedVisibleIds: string[]) => void;
   openAddLeague: () => void;
   openEditLeague: () => void;
   closeLeagueModal: () => void;
@@ -614,7 +623,7 @@ export const useStore = create<AppState>((set, get) => ({
     let accounts = read<Account[]>(LS.users, []);
     if (!Array.isArray(accounts) || accounts.length === 0) { accounts = seedAccounts(players); write(LS.users, accounts); }
 
-    let leagues = read<League[]>(LS.leagues, []);
+    let leagues = sortLeaguesByOrder(read<League[]>(LS.leagues, []));
     if (!Array.isArray(leagues) || leagues.length === 0) { leagues = seedLeagues(); write(LS.leagues, leagues); }
 
     let events = read<EventItem[]>(LS.events, []);
@@ -1241,6 +1250,32 @@ export const useStore = create<AppState>((set, get) => ({
 
   // ── league modal ──
   selectLeague(i) { set({ selectedLeague: i }); },
+  // Ligen per Drag & Drop umsortieren. `orderedVisibleIds` = neue Reihenfolge der aktuell sichtbaren
+  // (Saison-gefilterten) Ligen. Die sichtbaren Ligen werden in dieser Reihenfolge an ihre bisherigen
+  // Plätze in st.leagues gesetzt (nicht sichtbare bleiben unberührt); anschließend bekommt jede Liga
+  // ihren globalen Index als `order` → nach Reload/Snapshot reproduziert das Sortieren dieselbe Anordnung.
+  // Vereinsweit persistiert (nur geänderte Datensätze), damit alle Geräte dieselbe Reihenfolge sehen.
+  reorderLeagues(orderedVisibleIds) {
+    const st = get();
+    const visible = new Set(orderedVisibleIds);
+    const ordered = orderedVisibleIds.map((id) => st.leagues.find((l) => l.id === id)).filter(Boolean) as League[];
+    if (ordered.length !== orderedVisibleIds.length) return; // unbekannte id → Abbruch
+    let vi = 0;
+    const rebuilt = st.leagues.map((l) => (visible.has(l.id) ? ordered[vi++] : l));
+    const changed: League[] = [];
+    const leagues = rebuilt.map((l, i) => {
+      if (l.order === i) return l;
+      const nl: League = { ...l, order: i };
+      changed.push(nl);
+      return nl;
+    });
+    if (!changed.length) return;
+    // Auswahl an die aktuell markierte Liga heften (Index bezieht sich auf die sichtbare Liste).
+    const selId = st.leagues[st.selectedLeague]?.id;
+    const selectedLeague = selId ? Math.max(0, orderedVisibleIds.indexOf(selId)) : st.selectedLeague;
+    set({ leagues, selectedLeague });
+    persist(st, set, LS.leagues, leagues, (p) => Promise.all(changed.map((l) => p.updateRecord('leagues', l.id, l as unknown as ProviderRecord))));
+  },
   openAddLeague() { set({ leagueModal: { mode: 'add', id: null, name: '', season: '2025/26', teams: [], singlesCount: 4, doublesCount: 2, format: null, kind: 'league', nuligaUrl: '' } }); },
   openEditLeague() {
     const st = get(); const lg = st.leagues[Math.max(0, Math.min(st.leagues.length - 1, st.selectedLeague))]; if (!lg) return;
@@ -2238,7 +2273,7 @@ async function applySnapshot(get: () => AppState, set: SetFn) {
     set({
       settings: merged,
       players: withDefaultPlayers(snap.players), teams: snap.teams, accounts: snap.accounts,
-      leagues: snap.leagues, events: snap.events, matches: snap.matches,
+      leagues: sortLeaguesByOrder(snap.leagues), events: snap.events, matches: snap.matches,
       seasons, seasonSnapshots: snap.seasonSnapshots || [], activeSeasonId, viewSeasonId,
       trainingPlays: snap.trainingPlays, syncError: null,
     });

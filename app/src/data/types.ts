@@ -151,6 +151,9 @@ export interface League {
   doublesCount?: number;
   // nuLiga-Gruppen-URL (Meetings-/Gruppenseite). Gesetzt = „Aus nuLiga aktualisieren" für diese Liga verfügbar.
   nuligaUrl?: string;
+  // Manuelle Sortierreihenfolge (per Drag & Drop). Kleiner = weiter vorn; fehlt = ans Ende (Altdaten).
+  // Wird vereinsweit persistiert, damit alle Geräte dieselbe Anordnung sehen.
+  order?: number;
 }
 
 export interface EventItem {

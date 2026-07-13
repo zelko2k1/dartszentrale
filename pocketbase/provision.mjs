@@ -88,7 +88,7 @@ const BASE_COLLECTIONS = [
     // kind = 'league' (Standard) | 'cup' (Pokal-Wettbewerb) – trennt Liga- von Pokal-Begegnungen.
     // singlesCount/doublesCount/format: Match-Format der Liga (die App liest sie, z. B. useStore).
     // nuligaUrl: nuLiga-Gruppen-URL zur Verknüpfung einer Liga mit ihrer nuLiga-Gruppe (Merge-Import).
-    fields: [text('name'), text('season'), text('seasonId'), json('teams'), json('fixtures'), text('kind'), num('singlesCount'), num('doublesCount'), json('format'), text('nuligaUrl')],
+    fields: [text('name'), text('season'), text('seasonId'), json('teams'), json('fixtures'), text('kind'), num('singlesCount'), num('doublesCount'), json('format'), text('nuligaUrl'), num('order')],
   },
   {
     name: 'events', type: 'base', ...editorRules,

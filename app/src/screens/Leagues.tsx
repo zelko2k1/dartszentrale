@@ -4,6 +4,7 @@ import { computeStandings, perm, inSeason } from '../store/selectors';
 import { initials } from '../lib/format';
 import { IconPlus, IconUsersSmall } from '../lib/icons';
 import { useIsPhone } from '../lib/useIsPhone';
+import { useReorder } from '../lib/useReorder';
 
 const HF_MIN = 100; // High Finish gilt erst ab 100 als Liga-Highlight
 
@@ -27,6 +28,13 @@ export function Leagues() {
   const readOnly = s.viewSeasonId != null && s.viewSeasonId !== s.activeSeasonId;
   const canEdit = p.manageLeagues && !readOnly;
   const leagues = inSeason(s.leagues, s.viewSeasonId);
+  // Ligen-Pucks per Drag & Drop umsortieren (nur mit Bearbeitungsrecht; vereinsweit persistiert).
+  const dnd = useReorder(canEdit, (from, to) => {
+    const ids = leagues.map((l) => l.id);
+    const [moved] = ids.splice(from, 1);
+    ids.splice(to, 0, moved);
+    s.reorderLeagues(ids);
+  });
   const isPhone = useIsPhone();
   const selIdx = Math.max(0, Math.min(leagues.length - 1, s.selectedLeague));
   const sel = leagues[selIdx] || null;
@@ -101,13 +109,28 @@ export function Leagues() {
 
       {leagues.length > 0 && sel && (
         <>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 18 }}>
+          <div ref={dnd.containerRef} style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 18 }}>
+            {/* eslint-disable-next-line react-hooks/refs -- useReorder greift seine Refs nur in Event-Handlern ab, nicht beim Rendern; itemProps liefert nur stabile Handler. */}
             {leagues.map((l, i) => {
               const active = i === selIdx;
+              const ip = dnd.itemProps(i);
+              const dragging = dnd.dragIndex === i;
+              const isTarget = dnd.dragIndex !== null && dnd.overIndex === i && !dragging;
               return (
-                <button key={l.id} onClick={() => s.selectLeague(i)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, background: active ? 'var(--btn)' : 'transparent', border: `1.5px solid ${active ? accent : 'var(--border)'}`, borderRadius: 12, padding: '10px 16px', cursor: 'pointer', fontFamily: 'inherit', minWidth: 130 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: active ? 'var(--text)' : 'var(--text-3)' }}>{l.name}</span>
-                  <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600 }}>{l.season}</span>
+                <button key={l.id} {...ip} onClick={() => s.selectLeague(i)} title={canEdit ? 'Zum Umsortieren ziehen' : undefined} style={{
+                  display: 'flex', alignItems: 'center', gap: 8, background: active ? 'var(--btn)' : 'transparent',
+                  border: `1.5px solid ${isTarget ? accent : (active ? accent : 'var(--border)')}`, borderRadius: 12, padding: '10px 16px',
+                  cursor: canEdit ? (dragging ? 'grabbing' : 'grab') : 'pointer', fontFamily: 'inherit', minWidth: 130,
+                  opacity: dragging ? 0.55 : 1, boxShadow: isTarget ? `0 0 0 3px color-mix(in srgb, ${accent} 22%, transparent)` : 'none',
+                  transition: 'box-shadow .12s, opacity .12s', ...ip.style,
+                }}>
+                  {canEdit && (
+                    <svg width="11" height="16" viewBox="0 0 11 16" fill="var(--text-5)" style={{ flexShrink: 0 }} aria-hidden="true"><circle cx="2.5" cy="3" r="1.3"/><circle cx="8.5" cy="3" r="1.3"/><circle cx="2.5" cy="8" r="1.3"/><circle cx="8.5" cy="8" r="1.3"/><circle cx="2.5" cy="13" r="1.3"/><circle cx="8.5" cy="13" r="1.3"/></svg>
+                  )}
+                  <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, minWidth: 0 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: active ? 'var(--text)' : 'var(--text-3)' }}>{l.name}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600 }}>{l.season}</span>
+                  </span>
                 </button>
               );
             })}
