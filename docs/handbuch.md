@@ -182,6 +182,51 @@ Konto braucht ein Spielerprofil (z. B. Vorstand ohne Spielbetrieb).
 - **Aufstellung** je eigener Begegnung frei zusammenstellen (Einzel/Doppel in realer
   Reihenfolge, plus geordnete Ersatzliste).
 
+### Spielplan importieren (CSV)
+
+Statt jede Begegnung von Hand anzulegen, lässt sich ein **Verbands-Spielplan als CSV**
+einlesen (Ligen → **„Spielplan importieren"**). Aus jeder **Staffel** wird eine Liga, eure
+Mannschaften werden markiert und eure Begegnungen zusätzlich als **Kalender-Termine** angelegt.
+Erneuter Import aktualisiert nur Ergebnisse — nichts wird doppelt angelegt. Über **„Vorlage
+herunterladen"** gibt es eine ausgefüllte Beispieldatei zum Nachbauen (reiner Handbetrieb).
+
+**Eure Mannschaften werden automatisch erkannt** — auf zwei Wegen:
+
+- **BDV-/nuLiga-Export** (mit Vereinsnummer-Spalten): der am häufigsten vorkommende Verein gilt
+  als eurer — das greift auch bei **Fantasienamen** (z. B. „Manuka" im Pokal).
+- **Einfache/manuelle CSV** (ohne Vereinsnummern): Abgleich über den **Vereinsnamen aus den
+  Einstellungen** (§12). Darum den Vereinsnamen dort korrekt pflegen und die Teamnamen so
+  wählen, dass sie ihn enthalten (z. B. „DC Beispiel", „DC Beispiel II").
+
+**Pokal:** Enthält der **Staffel-** oder **Saisonname** „Pokal" oder „Cup", wird der Wettbewerb
+als **K.-o.** angelegt (keine Tabelle, nur Begegnungen). **Mannschaftsnamen:** die 1. Mannschaft
+**ohne Zusatz**, ab der 2. mit „II"/„III" … — genau wie bei nuLiga.
+
+**Spaltennamen** (Groß-/Kleinschreibung, Leer- und Sonderzeichen egal; je Zweck zählt der
+**erste** gefundene Treffer):
+
+| Zweck | Pflicht | Erlaubte Spaltennamen |
+|---|:---:|---|
+| Datum (+ Uhrzeit) | ✓ | `Termin`, `Datum`, `Date`, `Spieltermin` |
+| Heimmannschaft | ✓ | `HeimMannschaftName`, `HeimMannschaft`, `Heim`, `Home`, `Heimteam` |
+| Gastmannschaft | ✓ | `GastMannschaftName`, `GastMannschaft`, `Gast`, `Away`, `Gegner`, `Gastteam` |
+| Liga / Staffel | – | `Staffel` (sonst `Liga` / `League` / `Gruppe`, sonst `Meisterschaft`) |
+| Saison | – | `Saison`, `Season` |
+| Ergebnis Heim | – | `ToreHeim`, `HeimLegs`, `HeimTore`, `HeimPunkte`, `HS`, `HeimScore` |
+| Ergebnis Gast | – | `ToreGast`, `GastLegs`, `GastTore`, `GastPunkte`, `AS`, `GastScore` |
+| Uhrzeit | – | `Uhrzeit`, `Zeit`, `Time`, `Anwurf`, `Beginn` (sonst aus `Termin`) |
+| Spielort | – | `Ort`, `Spielort`, `Location`, `Halle`, `Spielstätte`, `SpiellokalName`, `Spiellokal` |
+| Eigenen Verein erkennen (BDV) | – | `HeimVereinNr` / `GastVereinNr` (+ `…VereinName`, `…MannschaftNr`) |
+
+> **Ergebnis leer = geplant.** Leere Tore-Felder (oder `0:0`) gelten als noch nicht gespielt;
+> Zeilen mit `spielfrei` / `Freilos` werden übersprungen. Trennzeichen `;`, `,` oder Tab; Umlaute
+> (ANSI/Windows-1252 **oder** UTF-8) erkennt der Import automatisch.
+
+**Aus nuLiga aktualisieren:** Nutzt euer Verband nuLiga, könnt ihr an einer Liga die
+**nuLiga-Gruppen-URL** hinterlegen (Liga bearbeiten). Der Button **„Aus nuLiga aktualisieren"**
+holt dann fremde Begegnungen und Auswärtsergebnisse automatisch — **eure Heim-Ergebnisse aus
+Counter/manuell behalten Vorrang** (Abweichungen zeigt die App als Konflikt zum Auflösen).
+
 ---
 
 ## 9. Kalender & Termine
@@ -240,7 +285,9 @@ Die Einstellungen sind in Reiter gegliedert (u. a. **Nutzungsart · Eingabe & Ta
 Darstellung · Hilfen & Anzeige · Listen · Daten**):
 
 - **Nutzungsart:** zwischen **Lokal** und **Vereinsmodus** umschalten (gerätelokal; dieselbe
-  Wahl wie beim Erst-Start, §1). **Vereinsname** und **Logo** pflegt hier der Admin.
+  Wahl wie beim Erst-Start, §1). **Vereinsname** und **Logo** pflegt hier der Admin. Der
+  **Vereinsname** dient zugleich der **Erkennung eurer Mannschaften beim CSV-Import** (§8) —
+  darum von Anfang an korrekt setzen.
 - **Darstellung:** Akzentfarbe, Theme (Midnight/Charcoal/Slate), Schrift (Inter,
   Archivo, Rubik, Oswald, Space Grotesk), Hell/Dunkel und **Größen** — Score-Schrift sowie
   **Statistik-, Spielername- und Leg-Anzeige-Größe** (wirken direkt im Counter, pro Gerät).

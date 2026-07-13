@@ -4,7 +4,7 @@
 // Gruppiert nach Staffel → eine Liga je Staffel; ermittelt die eigenen
 // Mannschaften über die häufigste Vereinsnummer (Export ist vereinsgefiltert).
 
-import type { League, LeagueTeam, Fixture, Team, EventItem } from '../data/types';
+import type { League, LeagueTeam, Fixture, Team, EventItem, TeamKind } from '../data/types';
 import { uid } from './format';
 import { parseCsv } from './csv';
 
@@ -24,6 +24,7 @@ export interface ParsedFixture {
 export interface ImportGroup {
   name: string;        // Liganame (= Staffel)
   season: string;
+  kind: TeamKind;      // 'cup' bei Pokal-/K.-o.-Wettbewerben (keine Tabellenwertung), sonst 'league'
   fixtures: ParsedFixture[];
 }
 export interface ParsedSchedule {
@@ -103,16 +104,20 @@ function toRoman(n: number): string {
   for (const [v, sym] of map) while (r >= v) { out += sym; r -= v; }
   return out;
 }
-// Anzeigename einer Mannschaft. Hängt die römische Mannschaftsnr an, wenn eine Nr vorliegt und der
-// Mannschaftsname die Mannschaft noch nicht unterscheidet (BDV-Export: MannschaftName == VereinName,
-// bzw. MannschaftName leer). Selbst gebaute CSVs mit vollem Namen ("… I") bleiben unverändert.
+// Anzeigename einer Mannschaft. Hängt die römische Mannschaftsnr NUR ab der 2. Mannschaft an, und nur
+// wenn der Mannschaftsname die Mannschaft noch nicht unterscheidet (BDV-Export: MannschaftName ==
+// VereinName bzw. MannschaftName leer). Die 1. Mannschaft bleibt bewusst OHNE Zusatz — so heißt sie auch
+// bei nuLiga (z. B. „DSV Nürnberg", nicht „DSV Nürnberg I"). Grund: der Export schreibt den Vereinsnamen
+// uneinheitlich (mal „DSV Nürnberg '93 e.V.", mal kurz „DSV Nürnberg"); mit nr>=1 erschiene dieselbe
+// 1. Mannschaft mal als „DSV Nürnberg", mal als „DSV Nürnberg I" → gespaltene Tabellenzeilen + Fehl-Match
+// beim nuLiga-Abgleich. Selbst gebaute CSVs mit vollem Namen ("… I") bleiben unverändert.
 function teamDisplayName(mannschaftName: string, vereinName: string, nrRaw: string): string {
   const mn = clean(mannschaftName); const vn = clean(vereinName);
   const base = mn || vn;
   if (!base) return '';
   const nr = parseInt((nrRaw || '').trim(), 10);
   const undifferentiated = !mn || (!!vn && mn.toLowerCase() === vn.toLowerCase());
-  return (!isNaN(nr) && nr >= 1 && undifferentiated) ? `${base} ${toRoman(nr)}` : base;
+  return (!isNaN(nr) && nr >= 2 && undifferentiated) ? `${base} ${toRoman(nr)}` : base;
 }
 
 /**
@@ -186,7 +191,11 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
     // Uhrzeit: eigene Spalte bevorzugen, sonst aus dem Datums-/Termin-Feld ableiten.
     const time = (idx.time >= 0 ? parseTime(cell(r, idx.time)) : '') || parseTime(cell(r, idx.date));
     const loc = idx.loc >= 0 ? clean(cell(r, idx.loc)) : '';
-    if (!homeName || !awayName || BYE.has(norm(homeName)) || BYE.has(norm(awayName)) || !date) {
+    // Freilos/spielfrei erkennen — auch an den Rohfeldern (Mannschaft + Verein), unabhängig vom Anzeigenamen.
+    const bye = (dn: string, m: string, v: string) => BYE.has(norm(dn)) || BYE.has(norm(m)) || BYE.has(norm(v));
+    if (!homeName || !awayName || !date
+      || bye(homeName, cell(r, idx.home), cell(r, idx.homeVereinName))
+      || bye(awayName, cell(r, idx.away), cell(r, idx.awayVereinName))) {
       skipped++;
       continue;
     }
@@ -202,7 +211,12 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
 
     const key = `${season}|||${leagueName}`;
     let g = groups.get(key);
-    if (!g) { g = { name: leagueName, season, fixtures: [] }; groups.set(key, g); }
+    if (!g) {
+      // Pokal/K.-o. erkennen (Saison „Pokal …" oder Staffelname enthält „Pokal"/„Cup") → kind='cup', keine Tabelle.
+      const isCup = /pokal|cup/i.test(season) || /pokal|cup/i.test(leagueName);
+      g = { name: leagueName, season, kind: isCup ? 'cup' : 'league', fixtures: [] };
+      groups.set(key, g);
+    }
     g.fixtures.push({ date, time, loc, homeName, awayName, homeOwn, awayOwn, played, hs: hs ?? 0, as: as ?? 0 });
     total++;
   }
@@ -240,7 +254,8 @@ export function mergeSchedule(existing: League[], parsed: ParsedSchedule): Merge
   for (const group of parsed.groups) {
     let league = leagues.find((l) => norm(l.name) === norm(group.name) && norm(l.season) === norm(group.season));
     if (!league) {
-      league = { id: uid(), name: group.name, season: group.season, teams: [], fixtures: [] };
+      // Pokale als kind='cup' anlegen (K.-o. → keine Tabellenwertung). Ligen bleiben ohne kind (= 'league').
+      league = { id: uid(), name: group.name, season: group.season, teams: [], fixtures: [], ...(group.kind === 'cup' ? { kind: 'cup' as const } : {}) };
       leagues.push(league);
       counts.leaguesNew++;
       newIds.add(league.id);
@@ -358,11 +373,27 @@ export function deriveLeagueEvents(parsed: ParsedSchedule, existingEvents: Event
   return out;
 }
 
-/** CSV-Vorlage (generisches Format) zum Befüllen von Hand. */
+/**
+ * CSV-Vorlage (generisches Format) zum Befüllen von Hand — wenn kein nuLiga-/BDV-Export vorliegt und
+ * der Verein nuLiga nicht nutzt. Eine Zeile je Begegnung. Trennzeichen „;". Spalten:
+ *   • Termin         Datum + optional Uhrzeit (TT.MM.JJJJ [HH:MM]); ohne Uhrzeit → Kalender 19:30.
+ *   • Saison         z. B. 2025/26. Zusammen mit Staffel die Gruppierung: je Saison+Staffel eine Liga.
+ *   • Staffel        Liganame. Enthält er „Pokal" oder „Cup", wird der Wettbewerb als K.-o. angelegt
+ *                    (kind='cup' → keine Tabelle, nur Begegnungen).
+ *   • SpiellokalName Spielort (optional).
+ *   • Heim-/GastMannschaftName  Anzeigename der Mannschaft. 1. Mannschaft OHNE Zusatz, ab der 2. mit
+ *                    „II", „III" … (wie bei nuLiga). Eure Mannschaften erkennt der Import am Vereinsnamen
+ *                    aus den Einstellungen — der Name sollte ihn enthalten (z. B. „DC Beispiel II").
+ *   • ToreHeim/ToreGast  gewonnene Spiele/Legs. Beide leer = Begegnung noch nicht gespielt (geplant).
+ * Die Beispielzeilen zeigen: Heim- & Auswärtsspiel, gespielt & offen, 1. & 2. Mannschaft, Liga & Pokal.
+ * „DC Beispiel" durch euren Vereinsnamen (Einstellungen) ersetzen, damit die eigenen Teams erkannt werden.
+ */
 export function scheduleTemplate(): string {
   return [
     'Termin;Saison;Staffel;SpiellokalName;HeimMannschaftName;GastMannschaftName;ToreHeim;ToreGast',
-    '06.09.2025 19:30;2025/26;Bezirksoberliga;Vereinsheim;Dartverein Demo I;DC Falken;8;4',
-    '13.09.2025 19:30;2025/26;Bezirksoberliga;Sportheim Falken;DC Falken;Dartverein Demo I;;',
+    '06.09.2025 19:30;2025/26;Bezirksoberliga;Vereinsheim;DC Beispiel;DC Falken;8;4',
+    '04.10.2025 19:30;2025/26;Bezirksoberliga;Sportheim Falken;DC Falken;DC Beispiel;;',
+    '20.09.2025 19:30;2025/26;Kreisliga;Vereinsheim;DC Beispiel II;SG Adler;6;6',
+    '27.09.2025 14:00;2025/26;Vereinspokal;Vereinsheim;DC Beispiel;DC Löwen;;',
   ].join('\r\n');
 }
