@@ -4,7 +4,7 @@
 // Gruppiert nach Staffel → eine Liga je Staffel; ermittelt die eigenen
 // Mannschaften über die häufigste Vereinsnummer (Export ist vereinsgefiltert).
 
-import type { League, LeagueTeam, Fixture, Team, EventItem, TeamKind } from '../data/types';
+import type { League, LeagueTeam, Fixture, Team, EventItem, TeamKind, Season } from '../data/types';
 import { uid } from './format';
 import { parseCsv } from './csv';
 
@@ -385,6 +385,39 @@ export function deriveLeagueEvents(parsed: ParsedSchedule, existingEvents: Event
     }
   }
   return out;
+}
+
+// Beschreibt (ohne etwas zu ändern), in welche Saison der Import laufen würde — für die Vorschau/Warnung
+// im Import-Dialog. Muss dieselbe Regel wie importSchedule verwenden: Primär-Saison = die CSV-Saison mit
+// den meisten Wettbewerben; ohne echte Saison-Spalte („—") bleibt die aktive Saison.
+export interface ImportSeasonInfo {
+  targetName: string;           // Saison, in die importiert wird
+  targetExists: boolean;        // false = würde neu angelegt
+  willSwitchActive: boolean;    // true = die AKTUELL aktive Saison wird gewechselt und archiviert
+  archivedName: string | null;  // Name der bisher aktiven Saison, die archiviert würde (sonst null)
+}
+export function describeImportSeason(
+  groups: { season: string }[],
+  seasons: Pick<Season, 'id' | 'name'>[],
+  activeSeasonId: string | null,
+): ImportSeasonInfo {
+  const real = [...new Set(groups.map((g) => g.season))].filter((n) => n && n !== '—');
+  const activeSeason = seasons.find((s) => s.id === activeSeasonId) || null;
+  if (real.length === 0) {
+    // keine (echte) Saison-Spalte → aktive Saison bleibt maßgeblich, kein Wechsel.
+    return { targetName: activeSeason?.name || '—', targetExists: true, willSwitchActive: false, archivedName: null };
+  }
+  const cnt = new Map<string, number>();
+  groups.forEach((g) => cnt.set(norm(g.season), (cnt.get(norm(g.season)) || 0) + 1));
+  const primaryName = real.slice().sort((a, b) => (cnt.get(norm(b)) || 0) - (cnt.get(norm(a)) || 0))[0];
+  const existing = seasons.find((s) => norm(s.name) === norm(primaryName)) || null;
+  const willSwitch = !!activeSeason && (!existing || existing.id !== activeSeason.id);
+  return {
+    targetName: existing ? existing.name : primaryName,
+    targetExists: !!existing,
+    willSwitchActive: willSwitch,
+    archivedName: willSwitch ? (activeSeason?.name ?? null) : null,
+  };
 }
 
 /**

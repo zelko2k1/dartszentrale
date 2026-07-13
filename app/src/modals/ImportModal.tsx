@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { Modal, ModalTitle } from '../components/Modal';
 import { decodeBytes, countReplacementChars } from '../lib/csv';
-import { parseSchedule, scheduleTemplate, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
+import { parseSchedule, scheduleTemplate, describeImportSeason, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
 
 function teamCount(g: ParsedSchedule['groups'][number]): number {
   const set = new Set<string>();
@@ -141,6 +141,29 @@ export function ImportModal() {
                 {parsed.skipped > 0 && <span style={{ color: 'var(--text-4)' }}>{parsed.skipped} übersprungen</span>}
                 {parsed.ownClubName && <span style={{ color: 'var(--success)', fontWeight: 700 }}>Eigener Verein: {parsed.ownClubName}</span>}
               </div>
+
+              {(() => {
+                const si = describeImportSeason(parsed.groups, s.seasons, s.activeSeasonId);
+                if (si.willSwitchActive) {
+                  // Achtung: Import wechselt die aktive Saison → alte wird archiviert.
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: 'rgba(242,184,41,.12)', border: '1px solid rgba(242,184,41,.45)', borderRadius: 12, padding: '12px 14px', marginBottom: 16, fontSize: 13, lineHeight: 1.5, color: 'var(--text-2)' }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9882E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><path d="M12 9v4M12 17h.01" /></svg>
+                      <span>
+                        Import läuft in die Saison <strong style={{ color: 'var(--text)' }}>{si.targetName}</strong>{si.targetExists ? '' : ' (wird neu angelegt)'}.
+                        {' '}<strong style={{ color: '#C9882E' }}>Achtung:</strong> die aktive Saison <strong style={{ color: 'var(--text)' }}>{si.archivedName}</strong> wird dabei <strong>archiviert</strong> (bleibt lesbar). Prüfe die Saison-Spalte der CSV, falls das nicht gewollt ist.
+                      </span>
+                    </div>
+                  );
+                }
+                // Unkritisch: gleiche/aktive Saison oder neue Saison ohne bestehende aktive.
+                return (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: 'var(--text-3)' }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M8 7V3m8 4V3M3 11h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" /></svg>
+                    <span>Import läuft in {si.targetExists ? 'die aktive Saison' : 'die neue Saison'} <strong style={{ color: 'var(--text)' }}>{si.targetName}</strong>{si.targetExists ? '' : ' (wird angelegt & aktiv)'}.</span>
+                  </div>
+                );
+              })()}
 
               <div style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, maxHeight: 240, overflow: 'auto', marginBottom: 18 }}>
                 {parsed.groups.map((g, i) => {
