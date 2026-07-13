@@ -8,7 +8,6 @@
 ---
 
 ## Offen
-
 <!-- Neue Funde hier oben eintragen. Vorlage darunter kopieren. -->
 
 ### [ ] #0 — Kurztitel
@@ -23,6 +22,22 @@
 ---
 
 ## Behoben
+
+_Behoben am 2026-07-13 — gegen PocketBase im Vereinsmodus reproduziert & live verifiziert (Import der echten Vereins-CSV + nuLiga-Abgleich)._
+
+### [x] #10 — CSV-Import: Pokalmannschaften werden als Ligamannschaften erkannt (nur eine Mannschaft pro Pokal)
+- **Prio:** 🟡 · **Bereich:** Mannschaften (nach CSV-Import) · **Gerät:** alle
+- **Symptom:** Nach dem Spielplan-Import fehlten die **Pokalmannschaften**. Eine Mannschaft, die in Liga **und** Pokal spielt (z. B. „DSV Nürnberg", „DSV Nürnberg II"), existierte nur **einmal** (als Ligamannschaft); reine Pokal-Teams (Manuka, 501 No Scope II, DSV Devils & Angels) wurden ohne Pokal-Kennung angelegt.
+- **Ursache:** `deriveOwnTeams` (`app/src/lib/scheduleImport.ts`) hat die eigenen Mannschaften **nur nach Namen** dedupliziert und **keine `kind`** gesetzt → gleiche Namen aus Liga & Pokal fielen zusammen, alles landete als Liga-Team.
+- **Fix:** Ableitung erhält jetzt die **Art** aus dem Wettbewerb (Pokal-Liga → `kind='cup'`, sonst `'league'`) und dedupliziert pro **(Art + Name)**. So entstehen für denselben Namen eine Liga- **und** eine Pokalmannschaft; ein Spieler darf je einer angehören.
+- **Verifiziert:** Import der echten Vereins-CSV → 15 eigene Mannschaften (10 Liga + 5 Pokal), „DSV Nürnberg"/„DSV Nürnberg II" in PocketBase als je Liga- **und** Pokal-Team.
+
+### [x] #9 — CSV-Import: Pokal-Saison „Pokal 2025/26" statt „2025/26" (Phantom-Saison)
+- **Prio:** 🟡 · **Bereich:** Ligen/Saison (nach CSV-Import) · **Gerät:** alle
+- **Symptom:** Pokal-Wettbewerbe erschienen unter der Saison **„Pokal 2025/26"** statt der eigentlichen Saison **„2025/26"** — die Saison wurde für Pokal-Zeilen nicht korrekt erkannt.
+- **Ursache:** BDV/nuLiga filet Pokale in der `Saison`-Spalte unter „Pokal 2025/26". Der Import übernahm den Wert **wörtlich** als Saison-Label → eigene Phantom-Saison neben „2025/26".
+- **Fix:** Saison-Label wird normalisiert (Jahr `\d{4}/\d{2,4}` extrahiert): „Pokal 2025/26" → „2025/26". Die **Cup-Erkennung** nutzt weiter den Rohwert (Staffelname „…Pokal"/„Cup" bzw. rohe Saison), bleibt also erhalten. `app/src/lib/scheduleImport.ts`.
+- **Verifiziert:** Import → nur noch **ein** Saison-Label „2025/26"; alle drei Pokale (Klaus Unterberg Pokal, 8er-Cup, Damenpokal) mit `kind='cup'` darunter.
 
 _Behoben am 2026-07-05 — gegen PocketBase reproduziert & verifiziert._
 

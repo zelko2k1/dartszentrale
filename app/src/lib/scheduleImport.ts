@@ -199,7 +199,12 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
       skipped++;
       continue;
     }
-    const season = clean(idx.season >= 0 ? cell(r, idx.season) : '') || '—';
+    const seasonRaw = clean(idx.season >= 0 ? cell(r, idx.season) : '') || '—';
+    // Saison-Label normalisieren: BDV/nuLiga filet Pokale unter „Pokal 2025/26" — die eigentliche Saison
+    // ist „2025/26". Das Jahr extrahieren, damit Pokal- und Ligawettbewerbe unter DERSELBEN Saison stehen
+    // (sonst entstünde eine Phantom-Saison „Pokal 2025/26"). Die Cup-Erkennung nutzt weiter den Rohwert.
+    const ym = seasonRaw.match(/\d{4}\s*\/\s*\d{2,4}/);
+    const season = ym ? ym[0].replace(/\s+/g, '') : seasonRaw;
     const leagueName = clean(leagueCol >= 0 ? cell(r, leagueCol) : '') || 'Liga';
 
     const hs = parseScore(cell(r, idx.hs));
@@ -212,8 +217,8 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
     const key = `${season}|||${leagueName}`;
     let g = groups.get(key);
     if (!g) {
-      // Pokal/K.-o. erkennen (Saison „Pokal …" oder Staffelname enthält „Pokal"/„Cup") → kind='cup', keine Tabelle.
-      const isCup = /pokal|cup/i.test(season) || /pokal|cup/i.test(leagueName);
+      // Pokal/K.-o. erkennen (rohe Saison „Pokal …" oder Staffelname enthält „Pokal"/„Cup") → kind='cup', keine Tabelle.
+      const isCup = /pokal|cup/i.test(seasonRaw) || /pokal|cup/i.test(leagueName);
       g = { name: leagueName, season, kind: isCup ? 'cup' : 'league', fixtures: [] };
       groups.set(key, g);
     }
@@ -324,19 +329,27 @@ export function mergeSchedule(existing: League[], parsed: ParsedSchedule): Merge
  * Leitet aus den (gemergten) Ligen die eigenen Vereins-Mannschaften ab, die im
  * "Mannschaften"-Screen noch fehlen. Nur als "eigen" markierte Liga-Teams werden
  * berücksichtigt (Gegnervereine bleiben außen vor). Kader bleibt leer — Spieler
- * werden später manuell zugeordnet. Abgleich über den Namen (kein Duplikat).
+ * werden später manuell zugeordnet.
+ *
+ * Wichtig: Die Mannschaft bekommt die ART ihres Wettbewerbs (Pokal-Liga → 'cup', sonst 'league'),
+ * und der Abgleich läuft pro (Art + Name) — so entsteht für denselben Namen sowohl eine Liga- als
+ * auch eine Pokalmannschaft (z. B. „DSV Nürnberg" spielt in Liga UND Pokal). Ein Spieler darf je einer
+ * Liga- und einer Pokalmannschaft angehören.
  */
 export function deriveOwnTeams(leagues: League[], existingTeams: Team[]): Team[] {
-  const have = new Set(existingTeams.map((t) => norm(t.name)));
+  const tkind = (k?: TeamKind): TeamKind => (k === 'cup' ? 'cup' : k === 'friendly' ? 'friendly' : 'league');
+  const keyOf = (kind: TeamKind | undefined, name: string) => `${tkind(kind)}|${norm(name)}`;
+  const have = new Set(existingTeams.map((t) => keyOf(t.kind, t.name)));
   const seen = new Set<string>();
   const out: Team[] = [];
   for (const lg of leagues) {
+    const kind: TeamKind = lg.kind === 'cup' ? 'cup' : 'league';
     for (const t of lg.teams) {
       if (!t.own) continue;
-      const n = norm(t.name);
-      if (have.has(n) || seen.has(n)) continue;
-      seen.add(n);
-      out.push({ id: uid(), name: t.name, league: lg.name, memberIds: [], captainId: null });
+      const k = keyOf(kind, t.name);
+      if (have.has(k) || seen.has(k)) continue;
+      seen.add(k);
+      out.push({ id: uid(), name: clean(t.name), league: lg.name, memberIds: [], captainId: null, kind });
     }
   }
   return out;
