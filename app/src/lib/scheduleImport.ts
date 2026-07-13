@@ -349,7 +349,8 @@ export function deriveOwnTeams(leagues: League[], existingTeams: Team[]): Team[]
       const k = keyOf(kind, t.name);
       if (have.has(k) || seen.has(k)) continue;
       seen.add(k);
-      out.push({ id: uid(), name: clean(t.name), league: lg.name, memberIds: [], captainId: null, kind });
+      // Saison der Quell-Liga erben, damit die Mannschaft in der richtigen Saison auftaucht.
+      out.push({ id: uid(), name: clean(t.name), league: lg.name, memberIds: [], captainId: null, kind, ...(lg.seasonId ? { seasonId: lg.seasonId } : {}) });
     }
   }
   return out;

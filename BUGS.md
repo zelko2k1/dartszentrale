@@ -23,6 +23,22 @@
 
 ## Behoben
 
+_Behoben am 2026-07-13 (Nachtrag) — Vereinsmodus gegen PocketBase, Mismatch-Szenario (aktive Saison ≠ CSV-Saison) live verifiziert._
+
+### [x] #0 — CSV-Import: Saison aus der Datei wird nicht erkannt (immer aktive Saison)
+- **Prio:** 🟡 · **Bereich:** Ligen/Saison (CSV-Import) · **Gerät:** alle
+- **Symptom:** Der Import ordnete alle Ligen **immer der aktuell aktiven Saison** zu und nutzte die `Saison`-Spalte der CSV nur als Text-Label. Hieß die aktive Saison anders als in der CSV (z. B. aktiv „2024/25", CSV „2025/26"), landete der Spielplan in der falschen Saison — die CSV-Saison wurde „nicht erkannt".
+- **Ursache:** `importSchedule` (`app/src/store/useStore.ts`) taggte Ligen/Teams/Termine fest mit `activeSeasonId`, ohne die CSV-Saison zu berücksichtigen.
+- **Fix:** Der Import **erkennt jetzt die Saison aus der CSV**: bestehende Saison per Name finden, sonst neu anlegen; die (Primär-)CSV-Saison wird **aktiv + angezeigt**, eine bisher andere aktive Saison wird **archiviert** (bleibt erhalten). Ligen/Mannschaften/Termine werden der erkannten Saison zugeordnet (Mannschaften erben die Saison der Liga via `deriveOwnTeams`).
+- **Verifiziert:** aktive Saison „2024/25" + Import einer „2025/26"-CSV → neue Saison „2025/26" aktiv, „2024/25" archiviert, alle 13 Ligen + 15 Mannschaften unter „2025/26"; erneuter Import legt nichts doppelt an.
+
+### [x] #11 — CSV-Import: Termine werden bei erneutem Import doppelt angelegt
+- **Prio:** 🟡 · **Bereich:** Kalender/Termine (CSV-Import, Vereinsmodus) · **Gerät:** alle
+- **Symptom:** Zweiter Import desselben Spielplans legte alle Spieltag-Termine **erneut** an (154 → 308 …).
+- **Ursache:** Die `events`-Collection in `pocketbase/provision.mjs` hatte **kein `fixtureId`-Feld** (die Baseline-Migration schon → nur der provision-basierte Betrieb war betroffen). PocketBase verwarf die `fixtureId` beim Speichern → nach dem Reload konnte der Import vorhandene Termine nicht mehr wiedererkennen (Idempotenz über `fixtureId`) und legte sie doppelt an.
+- **Fix:** `text('fixtureId')` in der `events`-Definition von `provision.mjs` ergänzt (deckungsgleich mit der Baseline-Migration). Bestehende provision-Installationen: einmal `provision.mjs` erneut ausführen.
+- **Verifiziert:** Feld vorhanden; 1. Import 154 Termine, 2. Import 0 neue (events bleiben 154).
+
 _Behoben am 2026-07-13 — gegen PocketBase im Vereinsmodus reproduziert & live verifiziert (Import der echten Vereins-CSV + nuLiga-Abgleich)._
 
 ### [x] #10 — CSV-Import: Pokalmannschaften werden als Ligamannschaften erkannt (nur eine Mannschaft pro Pokal)

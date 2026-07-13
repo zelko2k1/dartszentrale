@@ -92,7 +92,10 @@ const BASE_COLLECTIONS = [
   },
   {
     name: 'events', type: 'base', ...editorRules,
-    fields: [text('title'), text('date'), text('time'), text('type'), text('loc'), text('scope'), text('seasonId')],
+    // fixtureId: verknüpft einen automatisch angelegten Termin mit seiner Begegnung (Fixture.id). Ohne dieses
+    // Feld verliert PocketBase die Verknüpfung → der erneute Spielplan-Import kann Termine nicht wiedererkennen
+    // und legt sie doppelt an. Deckungsgleich mit der Baseline-Migration (Docker-/Migrations-Pfad).
+    fields: [text('title'), text('date'), text('time'), text('type'), text('loc'), text('scope'), text('seasonId'), text('fixtureId')],
   },
   {
     name: 'matches', type: 'base',

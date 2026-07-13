@@ -1589,35 +1589,66 @@ export const useStore = create<AppState>((set, get) => ({
   closeImport() { set({ importOpen: false }); },
   importSchedule(parsed) {
     const st = get();
-    // Import wirkt IMMER auf die aktive Saison: nur deren Ligen/Teams/Termine mergen, Fremdsaisons unberührt
-    // lassen (sonst würden neue Spielpläne in archivierte Ligen wandern). Neue Datensätze werden getaggt.
-    const asid = st.activeSeasonId ?? undefined;
-    const inActive = <T extends { seasonId?: string }>(x: T) => (x.seasonId ?? asid) === asid;
-    const tagSeason = <T extends { seasonId?: string }>(x: T): T => (x.seasonId ? x : { ...x, seasonId: asid });
-    const otherLeagues = st.leagues.filter((l) => !inActive(l));
-    const otherTeams = st.teams.filter((t) => !inActive(t));
-    const otherEvents = st.events.filter((e) => !inActive(e));
-    const activeLeagues = st.leagues.filter(inActive);
-    const activeTeams = st.teams.filter(inActive);
-    const activeEvents = st.events.filter(inActive);
+    const nrm = (s: string) => (s || '').replace(/\s+/g, ' ').trim().toLowerCase();
 
-    const merged = mergeSchedule(activeLeagues, parsed);
+    // ── 1) Saison(en) aus der CSV erkennen: bestehende per Name finden, fehlende anlegen. ──
+    const seasons: Season[] = st.seasons.map((x) => ({ ...x }));
+    const seasonByName = new Map(seasons.map((se) => [nrm(se.name), se]));
+    const seasonNew = new Set<string>();      // neu angelegte Saisons → createRecord
+    const seasonChanged = new Set<string>();  // neue oder statusgeänderte Saisons → Persistenz
+    // Nur „echte" Saison-Werte („—" = keine Saison-Spalte in der CSV → ignorieren, keine Junk-Saison anlegen).
+    const realNames = [...new Set(parsed.groups.map((g) => g.season))].filter((n) => n && n !== '—');
+    for (const name of realNames) {
+      if (!seasonByName.has(nrm(name))) {
+        const se: Season = { id: uid(), name, status: 'archived' }; // finaler Status unten
+        seasons.push(se); seasonByName.set(nrm(name), se); seasonNew.add(se.id); seasonChanged.add(se.id);
+      }
+    }
+    // Primär-Saison: die CSV-Saison mit den meisten Wettbewerben; fehlt eine Saison-Spalte → aktive Saison beibehalten.
+    const cnt = new Map<string, number>();
+    parsed.groups.forEach((g) => cnt.set(nrm(g.season), (cnt.get(nrm(g.season)) || 0) + 1));
+    const primaryName = realNames.slice().sort((a, b) => (cnt.get(nrm(b)) || 0) - (cnt.get(nrm(a)) || 0))[0];
+    const primary = primaryName ? seasonByName.get(nrm(primaryName))! : (st.seasons.find((s) => s.id === st.activeSeasonId) || seasons[0]);
+    if (!primary) return { leaguesNew: 0, leaguesExisting: 0, teamsNew: 0, ownTeamsNew: 0, fixturesNew: 0, resultsSet: 0, eventsNew: 0, skipped: parsed.skipped };
+    // Aktive Saison auf die (Primär-)CSV-Saison umstellen (nur wenn eine echte CSV-Saison erkannt wurde);
+    // jede andere bisher aktive → archiviert (bleibt erhalten).
+    if (primaryName) {
+      for (const se of seasons) {
+        if (se.id === primary.id) { if (se.status !== 'active') { se.status = 'active'; seasonChanged.add(se.id); } }
+        else if (se.status === 'active') { se.status = 'archived'; seasonChanged.add(se.id); }
+      }
+    }
+    const activeSeasonId = primary.id;
+    const targetIds = new Set([primary.id, ...realNames.map((n) => seasonByName.get(nrm(n))!.id)]);
+    const seasonIdFor = (seasonText: string) => (seasonByName.get(nrm(seasonText)) || primary).id;
+
+    // ── 2) Merge: Basis = bestehende Ligen/Teams/Termine der Ziel-Saison(en); alles andere unberührt. ──
+    const inTarget = <T extends { seasonId?: string }>(x: T) => targetIds.has(x.seasonId ?? activeSeasonId);
+    const otherLeagues = st.leagues.filter((l) => !inTarget(l));
+    const otherTeams = st.teams.filter((t) => !inTarget(t));
+    const otherEvents = st.events.filter((e) => !inTarget(e));
+    const baseLeagues = st.leagues.filter(inTarget);
+    const baseTeams = st.teams.filter(inTarget);
+    const baseEvents = st.events.filter(inTarget);
+
+    const merged = mergeSchedule(baseLeagues, parsed);
     const touched = merged.touched; const counts = merged.counts;
-    const seasonLeagues = merged.leagues.map(tagSeason);
+    // Jede gemergte Liga der passenden CSV-Saison zuordnen (Liga-Saison-Text → aufgelöste seasonId).
+    const seasonLeagues = merged.leagues.map((l) => (l.seasonId && targetIds.has(l.seasonId)) ? l : { ...l, seasonId: seasonIdFor(l.season) });
     const leagues = [...otherLeagues, ...seasonLeagues];
-    // Eigene Mannschaften zusätzlich im Mannschaften-Screen anlegen (Kader leer) — Dedup nur gegen aktive Saison.
-    const newTeams = deriveOwnTeams(seasonLeagues, activeTeams).map(tagSeason);
+    // Eigene Mannschaften ableiten (Kader leer); deriveOwnTeams setzt Art + Saison der Quell-Liga. Dedup gegen Ziel-Saison.
+    const newTeams = deriveOwnTeams(seasonLeagues, baseTeams);
     counts.ownTeamsNew = newTeams.length;
-    const teams = newTeams.length ? [...otherTeams, ...activeTeams, ...newTeams] : st.teams;
-    // Kalender-Termine für eigene Begegnungen aus den gemergten Fixtures ableiten – verknüpft per fixtureId,
-    // idempotent: vorhandener Termin derselben Begegnung wird aktualisiert statt dupliziert.
-    const evByFixture = new Map(activeEvents.filter((e) => e.fixtureId).map((e) => [e.fixtureId as string, e]));
+    const teams = newTeams.length ? [...otherTeams, ...baseTeams, ...newTeams] : st.teams;
+    // Kalender-Termine für eigene Begegnungen ableiten – verknüpft per fixtureId, idempotent.
+    const evByFixture = new Map(baseEvents.filter((e) => e.fixtureId).map((e) => [e.fixtureId as string, e]));
     const newEvents: EventItem[] = []; const updatedEvents: EventItem[] = [];
     for (const lg of seasonLeagues) {
       for (const fx of lg.fixtures) {
         if (!isOwnFixture(lg, fx)) continue;
         const prev = evByFixture.get(fx.id);
-        const ev = tagSeason(fixtureEvent(lg, fx, prev));
+        const ev0 = fixtureEvent(lg, fx, prev);
+        const ev = ev0.seasonId ? ev0 : { ...ev0, seasonId: lg.seasonId };
         if (!prev) newEvents.push(ev);
         else if (prev.date !== ev.date || prev.title !== ev.title) updatedEvents.push(ev);
       }
@@ -1625,9 +1656,18 @@ export const useStore = create<AppState>((set, get) => ({
     counts.eventsNew = newEvents.length;
     const updById = new Map(updatedEvents.map((e) => [e.id, e]));
     const events = (newEvents.length || updatedEvents.length)
-      ? [...otherEvents, ...activeEvents.map((e) => updById.get(e.id) || e), ...newEvents]
+      ? [...otherEvents, ...baseEvents.map((e) => updById.get(e.id) || e), ...newEvents]
       : st.events;
+
+    const changedSeasonRecs = seasons.filter((se) => seasonChanged.has(se.id));
     if (st.provider.mode === 'verein') {
+      // Saisons zuerst (Status/Neuanlage), damit Ligen/Teams gültige seasonId-Referenzen haben.
+      changedSeasonRecs.forEach((se) => {
+        const op = seasonNew.has(se.id)
+          ? st.provider.createRecord('seasons', se as unknown as ProviderRecord)
+          : st.provider.updateRecord('seasons', se.id, se as unknown as ProviderRecord);
+        void op.catch((e) => { console.error('[sync]', e); set({ syncError: 'Saison konnte nicht gespeichert werden.' }); });
+      });
       // Pro betroffener Liga anlegen/aktualisieren (PocketBase speichert teams/fixtures als JSON).
       touched.forEach(({ id, isNew }) => {
         const rec = leagues.find((l) => l.id === id);
@@ -1650,11 +1690,13 @@ export const useStore = create<AppState>((set, get) => ({
           .catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht aktualisiert werden.' }); });
       });
     } else {
+      if (changedSeasonRecs.length) write(LS.seasons, seasons);
       write(LS.leagues, leagues);
       if (newTeams.length) write(LS.teams, teams);
       if (newEvents.length || updatedEvents.length) write(LS.events, events);
     }
-    set({ leagues, teams, events, selectedLeague: 0 });
+    // Auf die importierte Saison umschalten (aktiv + angezeigt), damit die Ligen direkt bearbeitbar sind.
+    set({ seasons, activeSeasonId, viewSeasonId: activeSeasonId, leagues, teams, events, selectedLeague: 0 });
     return counts;
   },
 
