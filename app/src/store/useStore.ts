@@ -22,7 +22,7 @@ import {
 } from './training';
 import { createProvider, type DataProvider } from '../data/dataProvider';
 import type { ProviderRecord } from '../data/provider';
-import { mergeSchedule, deriveOwnTeams, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
+import { mergeSchedule, deriveOwnTeams, seasonKey, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
 import { mergeNuliga, type NuligaCounts, type NuligaConflict } from '../lib/nuligaImport';
 import { applyPwaUpdate, checkForUpdate as checkPwaUpdate } from '../lib/pwaUpdate';
 
@@ -53,6 +53,16 @@ const LS = {
 function sortLeaguesByOrder(leagues: League[]): League[] {
   if (!Array.isArray(leagues)) return leagues;
   return leagues.slice().sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER));
+}
+
+// Die aktuell im Ligen-Screen ausgewählte Liga. WICHTIG: `selectedLeague` ist ein Index in die
+// SAISON-GEFILTERTE Anzeige (inSeason) — NICHT in st.leagues. Enthält st.leagues Ligen mehrerer Saisons
+// (z. B. eine archivierte Vorsaison mit eigenen Ligen), weichen beide Indizes ab. Deshalb hier immer über
+// dieselbe gefilterte Liste auflösen, die auch der Screen zeigt, statt direkt st.leagues[selectedLeague].
+function currentLeague(st: AppState): League | null {
+  const list = inSeason(st.leagues, st.viewSeasonId);
+  if (!list.length) return null;
+  return list[Math.max(0, Math.min(list.length - 1, st.selectedLeague))] || null;
 }
 
 // Spieltyp-Felder, die als Voreinstellung gerätelokal erhalten bleiben (Spieler/Gäste/Liga NICHT).
@@ -261,6 +271,8 @@ export interface AppState {
   exportSeason: (seasonId?: string) => void;
   // Saison abschließen: Snapshot einfrieren + Bundle herunterladen + archivieren + Nachfolge-Saison anlegen.
   closeSeason: () => void;
+  // Ligen & Mannschaften der aktiven Saison samt Daten löschen (für frischen Re-Import nach CSV-Fehler).
+  resetSeasonData: () => void;
   // Neue-Saison-Assistent: Mannschaften und/oder Liga-Strukturen (ohne Ergebnisse) aus einer früheren Saison
   // in die aktive Saison klonen.
   carryOverSeason: (opts: { fromSeasonId: string; teams: boolean; leagues: boolean }) => void;
@@ -684,6 +696,36 @@ export const useStore = create<AppState>((set, get) => ({
       p.createRecord('seasons', newSeason as unknown as ProviderRecord),
     ]));
     set({ seasons, seasonSnapshots, activeSeasonId: newSeason.id, viewSeasonId: newSeason.id, selectedLeague: 0, selectedTeam: 0 });
+  },
+
+  // Ligen & Mannschaften der AKTIVEN Saison samt Daten löschen (inkl. der automatisch angelegten
+  // Spieltag-Termine). Für den Fall, dass die importierte CSV einen Fehler hatte → löschen, CSV
+  // korrigieren, neu importieren. Gespielte Spiele/Statistiken, Spieler und andere Saisons bleiben unberührt.
+  resetSeasonData() {
+    const st = get();
+    const asid = st.activeSeasonId ?? undefined;
+    const inActive = <T extends { seasonId?: string }>(x: T) => (x.seasonId ?? asid) === asid;
+    const delLeagues = st.leagues.filter(inActive);
+    const delTeams = st.teams.filter(inActive);
+    const fixIds = new Set(delLeagues.flatMap((l) => l.fixtures.map((f) => f.id)));
+    const delEvents = st.events.filter((e) => e.fixtureId && fixIds.has(e.fixtureId));
+    if (!delLeagues.length && !delTeams.length && !delEvents.length) return;
+
+    const leagues = st.leagues.filter((l) => !inActive(l));
+    const teams = st.teams.filter((t) => !inActive(t));
+    const delEventIds = new Set(delEvents.map((e) => e.id));
+    const events = st.events.filter((e) => !delEventIds.has(e.id));
+
+    if (st.provider.mode === 'verein') {
+      delLeagues.forEach((l) => void st.provider.deleteRecord('leagues', l.id).catch((e) => { console.error('[sync]', e); set({ syncError: 'Liga konnte nicht gelöscht werden.' }); }));
+      delTeams.forEach((t) => void st.provider.deleteRecord('teams', t.id).catch((e) => { console.error('[sync]', e); set({ syncError: 'Mannschaft konnte nicht gelöscht werden.' }); }));
+      delEvents.forEach((e) => void st.provider.deleteRecord('events', e.id).catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht gelöscht werden.' }); }));
+    } else {
+      write(LS.leagues, leagues);
+      write(LS.teams, teams);
+      write(LS.events, events);
+    }
+    set({ leagues, teams, events, selectedLeague: 0, selectedTeam: 0 });
   },
 
   // Vorsaison in die aktive Saison übernehmen: Mannschaften (mit Kader/Kapitän) und/oder Liga-Strukturen
@@ -1271,14 +1313,14 @@ export const useStore = create<AppState>((set, get) => ({
     });
     if (!changed.length) return;
     // Auswahl an die aktuell markierte Liga heften (Index bezieht sich auf die sichtbare Liste).
-    const selId = st.leagues[st.selectedLeague]?.id;
+    const selId = currentLeague(st)?.id;
     const selectedLeague = selId ? Math.max(0, orderedVisibleIds.indexOf(selId)) : st.selectedLeague;
     set({ leagues, selectedLeague });
     persist(st, set, LS.leagues, leagues, (p) => Promise.all(changed.map((l) => p.updateRecord('leagues', l.id, l as unknown as ProviderRecord))));
   },
   openAddLeague() { set({ leagueModal: { mode: 'add', id: null, name: '', season: '2025/26', teams: [], singlesCount: 4, doublesCount: 2, format: null, kind: 'league', nuligaUrl: '' } }); },
   openEditLeague() {
-    const st = get(); const lg = st.leagues[Math.max(0, Math.min(st.leagues.length - 1, st.selectedLeague))]; if (!lg) return;
+    const st = get(); const lg = currentLeague(st); if (!lg) return;
     set({ leagueModal: { mode: 'edit', id: lg.id, name: lg.name, season: lg.season || '', teams: lg.teams.map((t) => ({ ...t })), singlesCount: lg.singlesCount ?? 4, doublesCount: lg.doublesCount ?? 2, format: lg.format ? lg.format.map((s) => ({ ...s })) : null, kind: lg.kind === 'cup' ? 'cup' : 'league', nuligaUrl: lg.nuligaUrl || '' } });
   },
   closeLeagueModal() { set({ leagueModal: null }); },
@@ -1306,7 +1348,8 @@ export const useStore = create<AppState>((set, get) => ({
       const segs = m.format && m.format.length ? m.format : [{ kind: 'singles' as const, count: m.singlesCount }, { kind: 'doubles' as const, count: m.doublesCount }];
       const rec: League = { id: m.id || uid(), name, season: m.season.trim(), seasonId: existing?.seasonId ?? st.activeSeasonId ?? undefined, teams, fixtures: existing ? existing.fixtures : [], format: m.format && m.format.length ? m.format : undefined, singlesCount: segTotal(segs, 'singles'), doublesCount: segTotal(segs, 'doubles'), kind: m.kind, nuligaUrl: m.nuligaUrl.trim() || undefined };
       let leagues: League[]; let selectedLeague = st.selectedLeague;
-      if (m.mode === 'add') { leagues = [...st.leagues, rec]; selectedLeague = leagues.length - 1; }
+      // Auswahl ist ein Index in die SAISON-GEFILTERTE Anzeige: die neue Liga über ihre id in dieser Liste finden.
+      if (m.mode === 'add') { leagues = [...st.leagues, rec]; selectedLeague = Math.max(0, inSeason(leagues, st.viewSeasonId).findIndex((l) => l.id === rec.id)); }
       else leagues = st.leagues.map((l) => l.id === m.id ? rec : l);
       persist(st, set, LS.leagues, leagues, (p) => m.mode === 'add'
         ? p.createRecord('leagues', rec as unknown as ProviderRecord)
@@ -1328,7 +1371,7 @@ export const useStore = create<AppState>((set, get) => ({
         events = st.events.filter((e) => !orphanIds.has(e.id));
         persist(st, set, LS.events, events, (p) => Promise.all(orphans.map((e) => p.deleteRecord('events', e.id))));
       }
-      return { leagues, events, leagueModal: null, selectedLeague: Math.max(0, Math.min(leagues.length - 1, st.selectedLeague)) };
+      return { leagues, events, leagueModal: null, selectedLeague: Math.max(0, Math.min(inSeason(leagues, st.viewSeasonId).length - 1, st.selectedLeague)) };
     });
   },
 
@@ -1390,7 +1433,7 @@ export const useStore = create<AppState>((set, get) => ({
   // ── Mannschaftsaufstellung (frei konfigurierbar pro Begegnung, nur eigene Mannschaft) ──
   openLineup(fixtureId) {
     const st = get();
-    const lg = st.leagues[Math.max(0, Math.min(st.leagues.length - 1, st.selectedLeague))]; if (!lg) return;
+    const lg = currentLeague(st); if (!lg) return;
     const fx = lg.fixtures.find((f) => f.id === fixtureId); if (!fx) return;
     const norm = (x: string) => (x || '').replace(/\s+/g, ' ').trim().toLowerCase();
     const home = lg.teams.find((t) => t.id === fx.homeId) || null;
@@ -1501,7 +1544,7 @@ export const useStore = create<AppState>((set, get) => ({
   // ── Brett-für-Brett-Ergebniserfassung (Spielbericht) ──
   openResult(fixtureId) {
     const st = get();
-    const lg = st.leagues[Math.max(0, Math.min(st.leagues.length - 1, st.selectedLeague))]; if (!lg) return;
+    const lg = currentLeague(st); if (!lg) return;
     const fx = lg.fixtures.find((f) => f.id === fixtureId); if (!fx || !fx.lineup?.positions?.length) return;
     const home = lg.teams.find((t) => t.id === fx.homeId) || null;
     const away = lg.teams.find((t) => t.id === fx.awayId) || null;
@@ -1589,7 +1632,10 @@ export const useStore = create<AppState>((set, get) => ({
   closeImport() { set({ importOpen: false }); },
   importSchedule(parsed) {
     const st = get();
-    const nrm = (s: string) => (s || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    // Saison-Abgleich tolerant: „2025/26", „2025/2026", „Saison 2025/26" gelten als dieselbe Saison →
+    // Re-Import trifft die bestehende Saison, statt eine zweite anzulegen (und dabei manuelle Termine zu
+    // archivieren). Siehe seasonKey in lib/scheduleImport.ts.
+    const nrm = seasonKey;
 
     // ── 1) Saison(en) aus der CSV erkennen: bestehende per Name finden, fehlende anlegen. ──
     const seasons: Season[] = st.seasons.map((x) => ({ ...x }));
@@ -1792,7 +1838,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   // ── fixture modal ──
   openAddFixture() {
-    const st = get(); const lg = st.leagues[Math.max(0, Math.min(st.leagues.length - 1, st.selectedLeague))]; if (!lg) return;
+    const st = get(); const lg = currentLeague(st); if (!lg) return;
     const ts = lg.teams || [];
     const own = ts.find((t) => t.own) || ts[0] || null;
     const other = ts.find((t) => own && t.id !== own.id) || null;
@@ -1800,7 +1846,7 @@ export const useStore = create<AppState>((set, get) => ({
     set({ fixtureModal: { mode: 'add', id: null, leagueId: lg.id, homeId: own ? own.id : null, awayId: other ? other.id : null, date: d.toISOString().slice(0, 10), time: '', loc: '', played: false, hs: '', as: '' } });
   },
   openEditFixture(id) {
-    const st = get(); const lg = st.leagues[Math.max(0, Math.min(st.leagues.length - 1, st.selectedLeague))]; if (!lg) return;
+    const st = get(); const lg = currentLeague(st); if (!lg) return;
     const f = lg.fixtures.find((x) => x.id === id); if (!f) return;
     set({ fixtureModal: { mode: 'edit', id: f.id, leagueId: lg.id, homeId: f.homeId, awayId: f.awayId, date: f.date || '', time: f.time || '', loc: f.loc || '', played: !!f.played, hs: f.hs === '' ? '' : String(f.hs), as: f.as === '' ? '' : String(f.as) } });
   },

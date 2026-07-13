@@ -56,6 +56,16 @@ const normHeader = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 const norm = (s: string) => (s || '').replace(/\s+/g, ' ').trim().toLowerCase();
 const clean = (s: string) => (s || '').replace(/\s+/g, ' ').trim();
 
+// Kanonischer Saison-Schlüssel für den Abgleich: extrahiert „JJJJ/JJ" aus Namen wie „2025/26",
+// „2025/2026" oder „Saison 2025/26" → alle ergeben „2025/26". So trifft ein Re-Import dieselbe Saison
+// auch bei abweichender Schreibweise, statt versehentlich eine zweite Saison anzulegen (und dabei die
+// bisherige samt ihrer manuellen Kalender-Termine zu archivieren). Ohne Jahresmuster → normaler Name.
+export function seasonKey(name: string): string {
+  const m = (name || '').match(/(\d{4})\s*[/-]\s*(\d{2,4})/);
+  if (m) { const b = m[2].length >= 4 ? m[2].slice(-2) : m[2].padStart(2, '0'); return `${m[1]}/${b}`; }
+  return norm(name);
+}
+
 function colIndex(headers: string[], aliases: string[]): number {
   const normed = headers.map(normHeader);
   for (const a of aliases) {
@@ -214,12 +224,15 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
     const homeOwn = (!!ownNr && cell(r, idx.homeVereinNr).trim() === ownNr) || matchesClub(homeName);
     const awayOwn = (!!ownNr && cell(r, idx.awayVereinNr).trim() === ownNr) || matchesClub(awayName);
 
-    const key = `${season}|||${leagueName}`;
+    // Pokal/K.-o. erkennen — die CSV unterscheidet Liga/Pokal über die Saison-Spalte („Pokal 2025/26"),
+    // zusätzlich über den Staffelnamen („…Pokal"/„Cup"). Der kind fließt in den Gruppierungs-Schlüssel ein,
+    // damit eine Liga- und eine Pokal-Staffel mit GLEICHEM Namen NIE verschmelzen (getrennte Wettbewerbe).
+    const isCup = /pokal|cup/i.test(seasonRaw) || /pokal|cup/i.test(leagueName);
+    const kind: TeamKind = isCup ? 'cup' : 'league';
+    const key = `${season}|||${kind}|||${leagueName}`;
     let g = groups.get(key);
     if (!g) {
-      // Pokal/K.-o. erkennen (rohe Saison „Pokal …" oder Staffelname enthält „Pokal"/„Cup") → kind='cup', keine Tabelle.
-      const isCup = /pokal|cup/i.test(seasonRaw) || /pokal|cup/i.test(leagueName);
-      g = { name: leagueName, season, kind: isCup ? 'cup' : 'league', fixtures: [] };
+      g = { name: leagueName, season, kind, fixtures: [] };
       groups.set(key, g);
     }
     g.fixtures.push({ date, time, loc, homeName, awayName, homeOwn, awayOwn, played, hs: hs ?? 0, as: as ?? 0 });
@@ -257,7 +270,9 @@ export function mergeSchedule(existing: League[], parsed: ParsedSchedule): Merge
   const dirty = new Set<string>();
 
   for (const group of parsed.groups) {
-    let league = leagues.find((l) => norm(l.name) === norm(group.name) && norm(l.season) === norm(group.season));
+    // Zuordnung über (Name + Saison + Art): eine Liga und ein Pokal mit gleichem Namen bleiben getrennt.
+    const gkind: TeamKind = group.kind === 'cup' ? 'cup' : 'league';
+    let league = leagues.find((l) => norm(l.name) === norm(group.name) && norm(l.season) === norm(group.season) && (l.kind === 'cup' ? 'cup' : 'league') === gkind);
     if (!league) {
       // Pokale als kind='cup' anlegen (K.-o. → keine Tabellenwertung). Ligen bleiben ohne kind (= 'league').
       league = { id: uid(), name: group.name, season: group.season, teams: [], fixtures: [], ...(group.kind === 'cup' ? { kind: 'cup' as const } : {}) };
@@ -410,7 +425,8 @@ export function describeImportSeason(
   const cnt = new Map<string, number>();
   groups.forEach((g) => cnt.set(norm(g.season), (cnt.get(norm(g.season)) || 0) + 1));
   const primaryName = real.slice().sort((a, b) => (cnt.get(norm(b)) || 0) - (cnt.get(norm(a)) || 0))[0];
-  const existing = seasons.find((s) => norm(s.name) === norm(primaryName)) || null;
+  // Toleranter Abgleich (seasonKey): „Saison 2025/2026" trifft „2025/26" → kein ungewollter Saison-Wechsel.
+  const existing = seasons.find((s) => seasonKey(s.name) === seasonKey(primaryName)) || null;
   const willSwitch = !!activeSeason && (!existing || existing.id !== activeSeason.id);
   return {
     targetName: existing ? existing.name : primaryName,

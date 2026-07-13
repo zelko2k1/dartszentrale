@@ -372,6 +372,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const [pbUrlDraft, setPbUrlDraft] = useState(cfg.pbUrl || '');
   const [pbMsg, setPbMsg] = useState('');
   const [closeConfirm, setCloseConfirm] = useState(false);
+  const [resetConfirm, setResetConfirm] = useState(false);
   const [carrySource, setCarrySource] = useState('');
   const [carryTeams, setCarryTeams] = useState(true);
   const [carryLeagues, setCarryLeagues] = useState(true);
@@ -826,6 +827,23 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
           </div>
         )}
       </Row>
+      {(activeSeasonLeagues.length > 0 || activeSeasonTeams.length > 0) && (
+        <Row label="Ligen & Mannschaften zurücksetzen" sub="Löscht alle Ligen und Mannschaften der aktiven Saison samt Spielplänen, Ergebnissen und den zugehörigen Spieltag-Terminen. Gedacht für den Fall eines Fehlers in der importierten CSV: zurücksetzen, CSV korrigieren, neu importieren. Gespielte Board-Spiele & Statistiken, Spieler und andere Saisons bleiben erhalten.">
+          {!resetConfirm ? (
+            <button onClick={() => setResetConfirm(true)} style={{ background: 'transparent', border: '1px solid rgba(224,89,75,.5)', color: '#E0594B', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Zurücksetzen …</button>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+              <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600, textAlign: 'right', maxWidth: 340, lineHeight: 1.5 }}>
+                <b style={{ color: '#E0594B' }}>Achtung:</b> {activeSeasonLeagues.length} Ligen und {activeSeasonTeams.length} Mannschaften der Saison „{activeSeasonObj ? activeSeasonObj.name : ''}" werden <b>unwiderruflich gelöscht</b> (inkl. Spielpläne, Ergebnisse &amp; Spieltag-Termine). Danach kannst du die korrigierte CSV neu importieren.
+              </span>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => setResetConfirm(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
+                <button onClick={() => { s.resetSeasonData(); setResetConfirm(false); }} style={{ background: '#E0594B', border: 'none', color: '#fff', padding: '9px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Jetzt löschen</button>
+              </div>
+            </div>
+          )}
+        </Row>
+      )}
       {activeIsEmpty && otherSeasons.length > 0 && (
         <Row label="Vorsaison übernehmen" sub="Übernimmt Mannschaften und/oder Liga-Strukturen (Teilnehmer & Format, OHNE Begegnungen/Ergebnisse) aus einer früheren Saison in die aktuelle. Den neuen Spielplan danach über Ligen → Import einlesen.">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>

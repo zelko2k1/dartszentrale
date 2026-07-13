@@ -23,7 +23,22 @@
 
 ## Behoben
 
-_Behoben am 2026-07-13 (Nachtrag) — Vereinsmodus gegen PocketBase, Mismatch-Szenario (aktive Saison ≠ CSV-Saison) live verifiziert._
+_Behoben am 2026-07-13 (Nachtrag 3) — im Vereinsmodus mit Saison-Namensabweichung reproduziert & live verifiziert._
+
+### [x] #13 — Nach Import: manuelle Kalender-Termine „gelöscht" + Termine fehlen im Dashboard
+- **Prio:** 🔴 · **Bereich:** Kalender/Dashboard (nach CSV-Import) · **Gerät:** alle (Vereinsmodus)
+- **Symptom:** Nach dem Import waren selbst eingetragene Termine verschwunden und importierte Termine tauchten im Dashboard nicht auf (im Kalender schon).
+- **Ursache:** Die Saison-Erkennung (#0) glich Saisonnamen **exakt** ab. Hieß die aktive Saison minimal anders als die CSV-Saison (z. B. „Saison 2025/2026" vs. CSV „2025/26"), legte der Import eine **zweite Saison** an, machte sie aktiv und **archivierte die bisherige** → Ligen/Termine der alten Saison (inkl. der manuellen) landeten in der archivierten Saison und fielen aus Dashboard/Kalender (die nach der aktiven Saison filtern).
+- **Fix:** Toleranter Saison-Abgleich `seasonKey` (`app/src/lib/scheduleImport.ts`): „2025/26", „2025/2026", „Saison 2025/26" ergeben denselben Schlüssel „2025/26". `importSchedule` (`useStore.ts`) und die Import-Vorschau nutzen ihn → ein Re-Import trifft die bestehende Saison, statt eine zweite anzulegen. Kein Saison-Wechsel → manuelle Termine bleiben, importierte Termine liegen in der aktiven Saison.
+- **Verifiziert:** aktive Saison „Saison 2025/2026" + manueller Termin + Import „2025/26"-CSV → nur EINE Saison, manueller Termin bleibt, Termin erscheint im Dashboard (Zeitraum „Alle").
+
+### [x] #12 — „Liga bearbeiten" öffnet die falsche Liga (bei Ligen in mehreren Saisons)
+- **Prio:** 🔴 · **Bereich:** Ligen · **Gerät:** alle (Vereinsmodus mit archivierter Vorsaison)
+- **Symptom:** Im Ligen-Screen die richtige Liga ausgewählt (z. B. 8er-Cup mit korrekter Tabelle/Begegnungen), aber „Liga bearbeiten" öffnete eine **andere** Liga (z. B. „4. Bezirksliga B"). Trat nur auf, wenn die Datenbank Ligen aus **mehreren Saisons** enthielt (z. B. archivierte Vorsaison mit eigenen Ligen) — auf einer frischen DB mit nur einer Saison unauffällig.
+- **Ursache:** `selectedLeague` ist ein Index in die **saison­gefilterte Anzeige** (`inSeason`), aber `openEditLeague`/`openAddFixture`/`openResult`/… lösten mit demselben Index direkt in die **ungefilterte** `st.leagues` (alle Saisons) auf → bei Ligen mehrerer Saisons verschoben sich die Indizes.
+- **Fix:** Zentraler Helfer `currentLeague(st)` löst die Auswahl immer über dieselbe gefilterte Liste auf wie der Screen; alle betroffenen Aktionen nutzen ihn. Zusätzlich setzen Anlegen/Löschen die Auswahl als Index in die gefilterte Liste. `app/src/store/useStore.ts`.
+- **Verifiziert:** Vorsaison mit eigenen Ligen angelegt → 8er-Cup, Klaus Unterberg Pokal, 4. Bezirksliga B, Bayernliga, Damenpokal: „Liga bearbeiten" öffnet jeweils die korrekte Liga.
+- **Zusatz-Härtung:** Der Liga/Pokal-Typ fließt jetzt in Gruppierung + Merge des CSV-Imports ein (`scheduleImport.ts`), sodass eine Liga- und eine Pokal-Staffel mit gleichem Namen nie verschmelzen.
 
 ### [x] #0 — CSV-Import: Saison aus der Datei wird nicht erkannt (immer aktive Saison)
 - **Prio:** 🟡 · **Bereich:** Ligen/Saison (CSV-Import) · **Gerät:** alle
