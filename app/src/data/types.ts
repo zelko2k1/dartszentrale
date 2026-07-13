@@ -166,6 +166,7 @@ export interface EventItem {
   loc: string;
   seasonId?: string;   // → Season.id; bei neuen Terminen = aktive Saison
   fixtureId?: string;  // → Fixture.id; gesetzt, wenn der Termin automatisch zu einer Begegnung gehört
+  seriesId?: string;   // verknüpft Serientermine (gleiche Wiederholung) → „ganze Serie löschen"
 }
 
 export interface MatchPlayerStat {

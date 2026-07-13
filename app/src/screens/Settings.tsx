@@ -373,6 +373,9 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const [pbMsg, setPbMsg] = useState('');
   const [closeConfirm, setCloseConfirm] = useState(false);
   const [resetConfirm, setResetConfirm] = useState(false);
+  const [pruneKeep, setPruneKeep] = useState<'1y' | '6m' | '3m' | '1m' | 'all'>('1y');
+  const [pruneConfirm, setPruneConfirm] = useState(false);
+  const [pruneMsg, setPruneMsg] = useState('');
   const [carrySource, setCarrySource] = useState('');
   const [carryTeams, setCarryTeams] = useState(true);
   const [carryLeagues, setCarryLeagues] = useState(true);
@@ -786,6 +789,17 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
 
   const activeSeasonObj = s.seasons.find((x) => x.id === s.activeSeasonId) || null;
   const archivedSeasons = s.seasons.filter((x) => x.status === 'archived');
+  // Batch-Löschen alter Termine: Stichtag = heute minus „behalten"-Zeitraum ('all' = alles Vergangene).
+  const pruneCutoff = (() => {
+    const d = new Date();
+    if (pruneKeep === '1m') d.setMonth(d.getMonth() - 1);
+    else if (pruneKeep === '3m') d.setMonth(d.getMonth() - 3);
+    else if (pruneKeep === '6m') d.setMonth(d.getMonth() - 6);
+    else if (pruneKeep === '1y') d.setFullYear(d.getFullYear() - 1);
+    const p = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  })();
+  const prunableCount = s.events.filter((e) => e.date && e.date < pruneCutoff).length;
   // Übernahme-Assistent: nur sinnvoll, wenn die aktive Saison noch leer ist und es eine Vorsaison zum Klonen gibt.
   const activeSeasonTeams = s.teams.filter((t) => (t.seasonId ?? s.activeSeasonId) === s.activeSeasonId);
   const activeSeasonLeagues = s.leagues.filter((l) => (l.seasonId ?? s.activeSeasonId) === s.activeSeasonId);
@@ -844,6 +858,31 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
           )}
         </Row>
       )}
+      <Row label="Alte Termine löschen" sub="Räumt vergangene Kalender-Einträge auf (alle Arten & Saisons). Wähle, wie viel behalten wird — alles Ältere wird unwiderruflich gelöscht.">
+        {!pruneConfirm ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            {pruneMsg && <span style={{ fontSize: 12, color: 'var(--success)', fontWeight: 600 }}>{pruneMsg}</span>}
+            <select value={pruneKeep} onChange={(e) => { setPruneKeep(e.target.value as typeof pruneKeep); setPruneMsg(''); }} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '9px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, fontWeight: 600 }}>
+              <option value="1y">1 Jahr behalten</option>
+              <option value="6m">6 Monate behalten</option>
+              <option value="3m">3 Monate behalten</option>
+              <option value="1m">1 Monat behalten</option>
+              <option value="all">Alles Vergangene löschen</option>
+            </select>
+            <button onClick={() => { setPruneMsg(''); setPruneConfirm(true); }} disabled={prunableCount === 0} style={{ background: 'transparent', border: '1px solid rgba(224,89,75,.5)', color: '#E0594B', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: prunableCount === 0 ? 'not-allowed' : 'pointer', opacity: prunableCount === 0 ? 0.5 : 1, fontFamily: 'inherit' }}>Löschen ({prunableCount})</button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+            <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600, textAlign: 'right', maxWidth: 340, lineHeight: 1.5 }}>
+              <b style={{ color: '#E0594B' }}>Achtung:</b> {prunableCount} Termine vor dem {pruneCutoff.split('-').reverse().join('.')} werden <b>unwiderruflich gelöscht</b> (auch eigene).
+            </span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setPruneConfirm(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
+              <button onClick={() => { const n = s.pruneEvents(pruneCutoff); setPruneConfirm(false); setPruneMsg(n > 0 ? `${n} alte Termine gelöscht.` : 'Keine gelöscht.'); }} style={{ background: '#E0594B', border: 'none', color: '#fff', padding: '9px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Jetzt löschen</button>
+            </div>
+          </div>
+        )}
+      </Row>
       {activeIsEmpty && otherSeasons.length > 0 && (
         <Row label="Vorsaison übernehmen" sub="Übernimmt Mannschaften und/oder Liga-Strukturen (Teilnehmer & Format, OHNE Begegnungen/Ergebnisse) aus einer früheren Saison in die aktuelle. Den neuen Spielplan danach über Ligen → Import einlesen.">
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>

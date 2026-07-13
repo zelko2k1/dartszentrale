@@ -65,6 +65,19 @@ function currentLeague(st: AppState): League | null {
   return list[Math.max(0, Math.min(list.length - 1, st.selectedLeague))] || null;
 }
 
+// Nächstes Datum einer Terminserie (wöchentlich / 14-tägig / monatlich). 'none' → unverändert.
+// Rechnet rein mit lokalen Datumsteilen (kein toISOString → keine UTC-Verschiebung um einen Tag).
+function addRepeat(iso: string, repeat: EventRepeat): string {
+  const [y, mo, dd] = iso.split('-').map(Number);
+  const d = new Date(y, mo - 1, dd);
+  if (repeat === 'weekly') d.setDate(d.getDate() + 7);
+  else if (repeat === 'biweekly') d.setDate(d.getDate() + 14);
+  else if (repeat === 'monthly') d.setMonth(d.getMonth() + 1);
+  else return iso;
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
 // Spieltyp-Felder, die als Voreinstellung gerätelokal erhalten bleiben (Spieler/Gäste/Liga NICHT).
 const SETUP_DEFAULT_KEYS = ['startScore', 'unit', 'bestOf', 'bestOfSets', 'outMode', 'doubleIn', 'doubleOut'] as const;
 
@@ -151,7 +164,8 @@ export interface NuligaSyncState {
 }
 // Freundschaftsspiel anlegen: eigene Mannschaft vs. frei wählbarer Gegner (aus allen Saisons/Ligen suchbar).
 export interface FriendlyModalState { ownTeam: string; opponent: string; homeIsOwn: boolean; date: string; time: string; loc: string; }
-export interface EventModalState { mode: 'add' | 'edit'; id: string | null; scope: 'local' | 'verein'; title: string; date: string; time: string; type: string; loc: string; }
+export type EventRepeat = 'none' | 'weekly' | 'biweekly' | 'monthly';
+export interface EventModalState { mode: 'add' | 'edit'; id: string | null; scope: 'local' | 'verein'; title: string; date: string; time: string; type: string; loc: string; repeat: EventRepeat; until: string; seriesId: string | null; }
 
 export interface SetupState {
   mode: 'single' | 'teams'; startScore: number; bestOf: number; bestOfSets: number;
@@ -413,6 +427,8 @@ export interface AppState {
   setEventField: (key: keyof EventModalState, val: string) => void;
   saveEventModal: () => void;
   deleteEvent: (id: string) => void;
+  deleteEventSeries: (seriesId: string) => void;
+  pruneEvents: (cutoffIso: string) => number;
 
   // training
   openRules: (modeId: string) => void;
@@ -695,7 +711,21 @@ export const useStore = create<AppState>((set, get) => ({
       p.updateRecord('seasons', archived.id, { status: 'archived', endDate: archived.endDate } as unknown as ProviderRecord),
       p.createRecord('seasons', newSeason as unknown as ProviderRecord),
     ]));
-    set({ seasons, seasonSnapshots, activeSeasonId: newSeason.id, viewSeasonId: newSeason.id, selectedLeague: 0, selectedTeam: 0 });
+    // Termine der abgeschlossenen Saison: automatische Liga/Pokal-Termine (fixtureId) löschen; eigene
+    // (manuelle) Termine in die neue Saison mitnehmen, damit sie sichtbar bleiben (bis manuell gelöscht).
+    const closing = st.events.filter((e) => (e.seasonId ?? active.id) === active.id);
+    const delEvents = closing.filter((e) => e.fixtureId);
+    const moveEvents = closing.filter((e) => !e.fixtureId).map((e) => ({ ...e, seasonId: newSeason.id }));
+    const delIds = new Set(delEvents.map((e) => e.id));
+    const moveById = new Map(moveEvents.map((e) => [e.id, e]));
+    const events = st.events.filter((e) => !delIds.has(e.id)).map((e) => moveById.get(e.id) || e);
+    if (st.provider.mode === 'verein') {
+      delEvents.forEach((e) => void st.provider.deleteRecord('events', e.id).catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht gelöscht werden.' }); }));
+      moveEvents.forEach((e) => void st.provider.updateRecord('events', e.id, e as unknown as ProviderRecord).catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht verschoben werden.' }); }));
+    } else if (delEvents.length || moveEvents.length) {
+      write(LS.events, events);
+    }
+    set({ seasons, seasonSnapshots, events, activeSeasonId: newSeason.id, viewSeasonId: newSeason.id, selectedLeague: 0, selectedTeam: 0 });
   },
 
   // Ligen & Mannschaften der AKTIVEN Saison samt Daten löschen (inkl. der automatisch angelegten
@@ -1914,11 +1944,11 @@ export const useStore = create<AppState>((set, get) => ({
   // ── event modal ──
   openAddEvent(isoDate) {
     const scope = get().settings.appMode === 'local' ? 'local' : 'verein';
-    set({ eventModal: { mode: 'add', id: null, scope, title: '', date: isoDate || new Date().toISOString().slice(0, 10), time: '19:00', type: 'training', loc: '' } });
+    set({ eventModal: { mode: 'add', id: null, scope, title: '', date: isoDate || new Date().toISOString().slice(0, 10), time: '19:00', type: 'training', loc: '', repeat: 'none', until: '', seriesId: null } });
   },
   openEditEvent(id) {
     const e = get().events.find((x) => x.id === id); if (!e) return;
-    set({ eventModal: { mode: 'edit', id: e.id, scope: e.scope, title: e.title, date: e.date, time: e.time, type: e.type, loc: e.loc } });
+    set({ eventModal: { mode: 'edit', id: e.id, scope: e.scope, title: e.title, date: e.date, time: e.time, type: e.type, loc: e.loc, repeat: 'none', until: '', seriesId: e.seriesId ?? null } });
   },
   closeEventModal() { set({ eventModal: null }); },
   setEventField(key, val) { set((st) => st.eventModal ? { eventModal: { ...st.eventModal, [key]: val } as EventModalState } : {}); },
@@ -1926,14 +1956,50 @@ export const useStore = create<AppState>((set, get) => ({
     const m = get().eventModal; if (!m) return;
     const title = m.title.trim(); if (!title) return;
     set((st) => {
-      const existingEvent = st.events.find((e) => e.id === m.id);
-      const rec: EventItem = { id: m.id || uid(), scope: m.scope, title, date: m.date, time: m.time, type: m.type, loc: m.loc.trim(), seasonId: existingEvent?.seasonId ?? st.activeSeasonId ?? undefined };
+      const seasonId = (st.events.find((e) => e.id === m.id)?.seasonId) ?? st.activeSeasonId ?? undefined;
+      // Serientermin: beim Anlegen mit Wiederholung + Enddatum eine ganze Serie erzeugen (verknüpft per seriesId).
+      if (m.mode === 'add' && m.repeat !== 'none' && m.until && m.until >= m.date) {
+        const seriesId = uid();
+        const recs: EventItem[] = [];
+        let cur = m.date; let guard = 0;
+        while (cur <= m.until && guard < 300) { // Deckel gegen Ausreißer (z. B. ~6 Jahre wöchentlich)
+          recs.push({ id: uid(), scope: m.scope, title, date: cur, time: m.time, type: m.type, loc: m.loc.trim(), seasonId, seriesId });
+          cur = addRepeat(cur, m.repeat); guard++;
+        }
+        const events = [...st.events, ...recs];
+        if (st.provider.mode === 'verein') recs.forEach((r) => void st.provider.createRecord('events', r as unknown as ProviderRecord).catch((e) => { console.error('[sync]', e); set({ syncError: 'Serientermin konnte nicht gespeichert werden.' }); }));
+        else write(LS.events, events);
+        return { events, eventModal: null };
+      }
+      const rec: EventItem = { id: m.id || uid(), scope: m.scope, title, date: m.date, time: m.time, type: m.type, loc: m.loc.trim(), seasonId, ...(m.seriesId ? { seriesId: m.seriesId } : {}) };
       const events = m.mode === 'add' ? [...st.events, rec] : st.events.map((e) => e.id === m.id ? rec : e);
       persist(st, set, LS.events, events, (p) => m.mode === 'add'
         ? p.createRecord('events', rec as unknown as ProviderRecord)
         : p.updateRecord('events', rec.id, rec as unknown as ProviderRecord));
       return { events, eventModal: null };
     });
+  },
+  // Ganze Terminserie löschen (alle Termine mit derselben seriesId).
+  deleteEventSeries(seriesId) {
+    set((st) => {
+      const del = st.events.filter((e) => e.seriesId === seriesId);
+      if (!del.length) return { eventModal: null };
+      const events = st.events.filter((e) => e.seriesId !== seriesId);
+      if (st.provider.mode === 'verein') del.forEach((e) => void st.provider.deleteRecord('events', e.id).catch((err) => { console.error('[sync]', err); set({ syncError: 'Serie konnte nicht gelöscht werden.' }); }));
+      else write(LS.events, events);
+      return { events, eventModal: null };
+    });
+  },
+  // Alte Termine im Batch löschen: alle mit Datum VOR cutoffIso (über alle Saisons). Gibt die Anzahl zurück.
+  pruneEvents(cutoffIso) {
+    const st = get();
+    const del = st.events.filter((e) => e.date && e.date < cutoffIso);
+    if (!del.length) return 0;
+    const events = st.events.filter((e) => !(e.date && e.date < cutoffIso));
+    if (st.provider.mode === 'verein') del.forEach((e) => void st.provider.deleteRecord('events', e.id).catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht gelöscht werden.' }); }));
+    else write(LS.events, events);
+    set({ events });
+    return del.length;
   },
   deleteEvent(id) {
     set((st) => {
