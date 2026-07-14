@@ -33,18 +33,21 @@ copy_pb(){ local d="$1/pocketbase"; mkdir -p "$d"
   if [ "${2:-0}" = "1" ]; then for f in Dockerfile docker-compose.yaml; do cpf "$REPO/pocketbase/$f" "$d/"; done; fi
 }
 
+# Verteil-Skripte liegen im Repo unter scripts/, werden aber bewusst FLACH ins Bundle-Root kopiert
+# (Endnutzer doppelklicken start-*.bat direkt neben app/). Bundle-Layout bleibt dadurch unverändert.
+
 # Nur 01 (lokal, ein Board): lokaler Start + Autostart + Update fürs Kiosk-Board — NUR Frontend, kein PocketBase
-copy_lokal(){ for f in start-lokal.sh start-lokal.bat autostart-lokal.sh autostart-lokal.bat update-lokal.sh update-lokal.bat; do cpf "$REPO/$f" "$1/"; done; }
+copy_lokal(){ for f in start-lokal.sh start-lokal.bat autostart-lokal.sh autostart-lokal.bat update-lokal.sh update-lokal.bat; do cpf "$REPO/scripts/$f" "$1/"; done; }
 
 # Nur 02 (Vereinsmodus LAN, Single-Binary): Start + Update + Autostart für den Einfach-Betrieb
 copy_verein_lan(){ for f in start-verein-lan.sh start-verein-lan.ps1 start-verein-lan.bat \
   update-verein-lan.sh update-verein-lan.ps1 update-verein-lan.bat \
-  autostart-verein-lan.sh autostart-verein-lan.bat; do cpf "$REPO/$f" "$1/"; done; }
+  autostart-verein-lan.sh autostart-verein-lan.bat; do cpf "$REPO/scripts/$f" "$1/"; done; }
 
 copy_docs(){ local d="$1/docs"; mkdir -p "$d"; shift; for f in "$@"; do cpf "$REPO/docs/$f" "$d/"; done; }
 
-# Schlanke Cloud-Variante (systemd + Caddy, ohne Docker): Installer + Caddy-Referenzkonfig — direkt ins Bundle-Root
-copy_cloud(){ for f in einrichten-cloud.sh Caddyfile.example; do cpf "$REPO/$f" "$1/"; done; }
+# Schlanke Cloud-Variante (systemd + Caddy, ohne Docker): Installer (scripts/) + Caddy-Referenzkonfig (Root) — direkt ins Bundle-Root
+copy_cloud(){ cpf "$REPO/scripts/einrichten-cloud.sh" "$1/"; cpf "$REPO/Caddyfile.example" "$1/"; }
 
 # Update-Paket: fertiges dist/ (inkl. version.json) als .tar.gz. Für alle Modi identisch (nur Frontend):
 #   01/03: in updates/ ablegen, in der App „Installieren" (serve-dist).  02: ./update-verein-lan.(sh|bat).
@@ -147,7 +150,7 @@ C="$TARGET/03-verein-cloud"; mkdir -p "$C"
 copy_app "$C" 0
 copy_pb "$C" 0
 copy_cloud "$C"
-cpf "$REPO/update-server.sh" "$C/"
+cpf "$REPO/scripts/update-server.sh" "$C/"
 copy_docs "$C" admin-anleitung-cloud.md go-live-checkliste-cloud.md handbuch.md
 cat > "$C/LIESMICH.txt" <<'TXT'
 DartsZentrale — Vereinsmodus in der Cloud (schlank: systemd + Caddy, ohne Docker)

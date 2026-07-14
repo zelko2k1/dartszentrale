@@ -172,6 +172,10 @@ Damit du nicht raten musst, welche Datei wofür ist. Das **Namensschema** verrä
 Pro Aufgabe gibt es meist eine **Linux-Version (`.sh`)** und eine **Windows-Version (`.bat`/`.ps1`)** —
 die `.bat` startet dabei oft nur die `.ps1`.
 
+> Im Quellcode liegen diese Skripte im Ordner [`scripts/`](scripts/). In den **heruntergeladenen
+> Paketen** liegen sie flach im Hauptordner — du startest sie also direkt per Doppelklick, ohne
+> in einen Unterordner zu wechseln.
+
 ### Einrichten (einmalig)
 | Datei | Zweck |
 |---|---|
@@ -235,7 +239,7 @@ dartszentrale/
 ├─ tools/          → Kleine Helfer (z. B. Spielplan aus PDF einlesen)
 ├─ spikes/         → Experimentierecke für neue Ideen (noch nicht im Einsatz)
 ├─ backup/ updates/→ Ablage für Sicherungen bzw. Update-Pakete
-└─ (Start-/Update-/Autostart-Skripte, siehe oben)
+└─ scripts/        → Start-/Update-/Autostart-/Einrichten-Skripte (siehe oben)
 ```
 
 **Wichtige Dateien im Hauptordner:**

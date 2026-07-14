@@ -110,7 +110,7 @@ Das Skript **fragt alles Nötige interaktiv ab** (Domains, optional Let's-Encryp
 erster App-Admin). Werte lassen sich auch vorab als Env setzen:
 `sudo APP_DOMAIN=app.deinedomain.de DB_DOMAIN=db.deinedomain.de ./einrichten-cloud.sh`.
 
-Das Skript ([`einrichten-cloud.sh`](../einrichten-cloud.sh)) ist idempotent und erledigt:
+Das Skript ([`einrichten-cloud.sh`](../scripts/einrichten-cloud.sh)) ist idempotent und erledigt:
 
 1. **Node.js + Caddy** installieren (falls nicht vorhanden), **PocketBase-Binary** passend zur
    CPU (amd64/arm64) herunterladen.
