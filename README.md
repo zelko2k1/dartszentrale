@@ -70,9 +70,9 @@ du entscheidest. Deine Mitglieder­daten bleiben bei dir.
 
 ### 🎯 Spielen & Zählen (Darts Counter)
 - **X01-Spiele** mit Startpunkten 301 / 501 / 701 / 1001
-- Auscheck-Modi **Single / Double / Master Out**, Double-In-Hinweis
+- Auscheck-Modi **Single / Double / Master Out**, optionaler **Double-In**
 - Wertung nach **Legs** (Best of 1–11) oder nach **Sätzen**
-- **Anwurf** per Ausbullen, Auslosen oder manueller Wahl
+- **Anwurf** per Ausbullen, Zufall oder manueller Wahl
 - **Gastspieler** (einfach Namen eintippen) und **freies Spiel** (zählt nicht in die Statistik)
 - Eingabe per **Tablet-Ziffernfeld oder Tastatur**, frei belegbare Schnell-Scores (F1–F8), Checkout mit 1/2/3 Darts
 - **Checkout-Vorschläge** (Finish-Wege bis 170), **Rückgängig**, Bust-Erkennung
@@ -82,7 +82,7 @@ du entscheidest. Deine Mitglieder­daten bleiben bei dir.
 
 ### 🏋️ Trainingsspiele (9 Modi, vollständig)
 - **Solo:** Doppel-Training, Around the Clock, Bob's 27, 121 Checkout
-- **Mehrspieler (bis 8):** Around the Clock, Cricket (mit MPR), Baseball, Halve It, Elimination, Killer
+- **Mehrspieler (bis 8):** Around the Clock, Cricket (mit MPR), Baseball, Halve It, Elimination, Killer — Cricket, Baseball & Halve It gehen auch **solo**
 - Jeder Modus mit Regel-Dialog, Rangliste, Rückgängig und Revanche; meistgespielte Modi als Schnellstart
 
 ### 👥 Vereinsverwaltung
@@ -101,6 +101,17 @@ du entscheidest. Deine Mitglieder­daten bleiben bei dir.
 - **Aufstellung pro Spieltag:** Einzel/Doppel frei anordnen, Spieler zuordnen, **Boards zuweisen**, Ersatzliste, „An die Boards senden"
 - **Spielbericht** Brett für Brett, mit **Highlights** (180er, Short Legs, High Finish)
 - **Spielplan-Import (CSV):** erkennt das BDV-Exportformat, legt Tabelle, Begegnungen und Kalender-Termine an — **wiederholbar ohne Duplikate**
+- **nuLiga-Import:** Tabelle & Spieltage direkt aus einer **nuLiga-Gruppen-URL** übernehmen (serverseitiger Abruf, nur Admin) und in die bestehende Liga einpflegen — eigene Heim-Ergebnisse bleiben maßgeblich (Abweichungen werden als **Konflikt** markiert, nie überschrieben), Auswärts-/Fremdergebnisse kommen aus nuLiga; die Tabelle rechnet die App selbst
+
+### 🖥️ Board-Betrieb & Kiosk-Modus (nur im Vereinsmodus)
+
+Macht aus einem PC am Board einen **selbstständigen Spiel-Rechner** — ideal für den Ligaabend:
+
+- **Board-Rechner als Kiosk:** Der Board-PC meldet sich mit einem eigenen, **nummerierten Board-Konto** an — die App läuft dann automatisch **gesperrt** im Kiosk-Modus: nur noch **Spiel · Training · Einstellungen**, kein Zugriff auf die Verwaltung. Entsperren nur per Admin-/Kapitän-Login; nach einem Neustart ist das Board wieder gesperrt.
+- **Nächstes Spiel erscheint automatisch:** Wird einem Board in der **Aufstellung** eine Begegnung zugeteilt, blendet es am Board ein **Vollbild-„Nächstes Spiel"** mit der Paarung ein — der Anwurf ist direkt wählbar (wer beginnt · Ausbullen · später). Die Einzel/Doppel laufen **nacheinander** ab, und jedes Ergebnis wird automatisch in den **Spielbericht der Begegnung** zurückgeschrieben.
+- **Wann es angezeigt wird:** in einem einstellbaren **Zeitfenster** um den Spieltag (nur Spieltag bis ±3 Tage) — oder sofort per **„Jetzt an die Boards senden"** (bzw. lokal „Jetzt anzeigen").
+- **Gut lesbar aus Distanz:** eigener **Board-Zoom** für große Leseabstände am Monitor.
+- **Geräte per QR hinzufügen:** Ein QR-Code zeigt die **Server-Adresse** — Tablet/Handy scannt ihn, der Board-PC legt sie als Kiosk-Lesezeichen an; danach meldet man sich am Gerät mit dem jeweiligen **Board-Konto** an.
 
 ### 📅 Kalender
 - Monatsansicht mit farbigen Termintypen (Training, Ligaspiel, Verein, Pokal, Freundschaft, Sonstiges)
@@ -121,7 +132,6 @@ du entscheidest. Deine Mitglieder­daten bleiben bei dir.
 - **Login** per E-Mail + Passwort (optional mit 2FA-Code); eigenes Passwort änderbar, inaktive Konten werden abgewiesen
 
 ### 💻 Betriebsmodi & Technik
-- **Board-/Kiosk-Betrieb:** Board-PC meldet sich mit Board-Konto an → gesperrter Kiosk mit reduzierter Bedienung; zugeordnete Begegnung wird automatisch angezeigt; **Geräte per QR-Code hinzufügen**
 - **Darstellung:** Hell/Dunkel, Akzentfarben, 5 Schriftarten, viele Größenregler, Befehls-Palette (Strg+K), konfigurierbare Tastenkürzel
 - **Progressive Web App (PWA):** installierbar und **offline lauffähig**, Update-Hinweis ohne Zwangs-Neustart
 - **Backup:** Voll-Export/-Import aller Daten als JSON; im lokalen Betrieb zusätzlich automatisches tägliches Backup
