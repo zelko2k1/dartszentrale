@@ -1,6 +1,9 @@
 # Plan: 2-Faktor-Authentifizierung (TOTP) — optional
 
-> Status: **Planung** (2026-06-28). Noch nichts umgesetzt. Gilt für **`dartszentrale`** (Liga/Verein).
+> Status: **Umgesetzt** — der Kern (Phasen A–C) ist fertig und im echten Browser E2E verifiziert
+> (2026-07-05); Teil von Version 1.0.0. Optionale Härtung/Policy (Phase D, „für Admins erzwingen")
+> ist bewusst noch offen → [`../ROADMAP.md`](../ROADMAP.md). Gilt für **`dartszentrale`** (Liga/Verein).
+> Dieses Dokument bleibt als Umsetzungs-/Design-Referenz erhalten.
 
 ---
 
