@@ -4,7 +4,7 @@
 // (§ 5 DDG) und `datenschutz` (Art. 13 DSGVO). Nötig, damit die Login-Seite die Texte
 // OHNE Anmeldung zeigen kann (öffentlicher Internet-Betrieb).
 //
-// Warum als Migration? Der Docker/Coolify-Weg nutzt KEIN provision.mjs — das Schema kommt
+// Warum als Migration? Der Docker/Arcane-Weg nutzt KEIN provision.mjs — das Schema kommt
 // ausschließlich aus pb_migrations/. Dieselbe Änderung ist in provision.mjs gespiegelt
 // (schlanke Cloud + LAN). `club_config` enthält nur Anzeige-/Konfig-Werte, nichts
 // Personenbezogenes; Schreiben bleibt admin-only. Siehe docs/security-audit.md.

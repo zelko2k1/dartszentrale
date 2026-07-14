@@ -4,7 +4,7 @@
 // die pb_hooks, die mit App-/Superuser-Kontext laufen) dürfen lesen/schreiben. Das Secret
 // verlässt somit NIE über die REST-API den Server (Plan docs/plan-2fa.md §3).
 // 1:1 zu users via unique-Index auf `user`; cascadeDelete → Konto weg = 2FA-Datensatz weg.
-// Spiegelbild in provision.mjs (Cloud/LAN-Weg). Docker/Coolify nutzt NUR diese Migration.
+// Spiegelbild in provision.mjs (Cloud/LAN-Weg). Docker/Arcane nutzt NUR diese Migration.
 migrate((app) => {
   const snapshot = [
     {

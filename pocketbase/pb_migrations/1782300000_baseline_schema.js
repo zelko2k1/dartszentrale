@@ -3,7 +3,7 @@
 // Ersetzt die früheren, sich überlappenden Auto-Migrationen (mehrere Vollschnappschüsse +
 // Inkremente), die auf einer LEEREN DB nicht anwendbar waren. Enthält ALLE Collections inkl.
 // seasons/season_snapshots und die gehärteten API-Rules — so liefert auch der reine Migrations-
-// Weg (Docker/Coolify, OHNE provision.mjs) das komplette Schema. Erzeugt via 'migrate collections'.
+// Weg (Docker/Arcane, OHNE provision.mjs) das komplette Schema. Erzeugt via 'migrate collections'.
 // WICHTIG: serve muss mit --automigrate=0 laufen (sonst werden bei Schema-Edits neue,
 // widersprüchliche Migrationen erzeugt). Spätere Änderungen als NEUE Dateien NACH dieser Baseline.
 migrate((app) => {

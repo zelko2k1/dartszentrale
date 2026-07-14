@@ -1,6 +1,7 @@
 # Lokale PocketBase-Laufzeit – nicht versionieren.
-# pb_migrations/ ist jetzt VERSIONIERT: Coolify wendet das Schema beim Deploy
-# automatisch an (siehe docker-compose.yml + COOLIFY-SETUP.md).
+# pb_migrations/ ist jetzt VERSIONIERT: beim Docker-/Arcane-Deploy wird das Schema
+# automatisch angewendet (siehe Dockerfile + docker-compose.yaml, Anleitung
+# docs/arcane-homelab-anleitung.md).
 
 # Heruntergeladenes Binary (plattformspezifisch, ~31 MB) – im Container kommt das Image-Binary
 /pocketbase

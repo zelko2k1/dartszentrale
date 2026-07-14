@@ -26,6 +26,10 @@ Jedes Skript trägt dieselbe Markierung auch im Kopf (`[ PRODUKTIV / OPS ]` / `[
 PB_URL=https://db.deinverein.de PB_SU_EMAIL=… PB_SU_PASS='<stark>' node provision.mjs
 ```
 
+> **Docker-/Arcane-Betrieb:** Dort wird das Schema **automatisch aus `pb_migrations/`** angewendet
+> (fest ins Image gebacken) — `provision.mjs` ist dann **nicht nötig**; es ist der Weg für den
+> **Cloud-/LAN-Betrieb ohne Container**. Details: [`../docs/arcane-homelab-anleitung.md`](../docs/arcane-homelab-anleitung.md).
+
 ## 🧪 Nur Test / Demo — NICHT gegen die Produktiv-DB
 
 | Skript | Zweck |

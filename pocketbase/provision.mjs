@@ -198,7 +198,7 @@ async function main() {
 
   // 3.5) user_mfa (2FA/TOTP) — ABGESCHOTTET: alle Rules null → nur Superuser/pb_hooks.
   //      Secret verlässt nie über die REST-API den Server (Plan docs/plan-2fa.md §3).
-  //      Spiegelbild der Migration pb_migrations/1782300002_user_mfa.js (Docker/Coolify-Weg).
+  //      Spiegelbild der Migration pb_migrations/1782300002_user_mfa.js (Docker/Arcane-Weg).
   const mfaDef = {
     name: 'user_mfa', type: 'base',
     listRule: null, viewRule: null, createRule: null, updateRule: null, deleteRule: null,

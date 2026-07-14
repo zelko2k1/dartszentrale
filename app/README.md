@@ -49,6 +49,7 @@ Für den **Verein**-Modus braucht es ein laufendes PocketBase-Backend (siehe `..
 
 ## Auslieferung / Container
 - `serve-dist.mjs` — abhängigkeitsfreier Node-Server für `dist/` (SPA-Fallback, Auto-Backup-Endpunkt,
-  Datei-Update); wird von den Start-/Autostart-Skripten im Wurzelverzeichnis genutzt
+  Datei-Update); wird von den Start-/Autostart-Skripten aus [`../scripts/`](../scripts/) genutzt
+  (im Verteil-Paket liegen diese flach neben `app/`)
 - `Dockerfile` · `docker-compose.yaml` · `nginx.conf` — Container-Betrieb (Node baut das Bundle,
   nginx liefert es aus). `VITE_PB_URL` ist ein **Build-Arg** (Adresse des PocketBase-Servers).
