@@ -56,13 +56,22 @@ du entscheidest. Deine Mitglieder­daten bleiben bei dir.
 
 | Anmeldung | Dashboard | Darts Counter |
 |:--:|:--:|:--:|
-| ![Anmeldung](screenshots/01-login.png) | ![Dashboard](screenshots/02-dashboard.png) | ![Darts Counter](screenshots/07-counter.png) |
+| ![Anmeldung](screenshots/01-login.png) | ![Dashboard](screenshots/02-dashboard.png) | _Screenshot folgt_<br>`screenshots/07-counter.png` |
 | **Ligen** | **Mannschaften** | **Spieler** |
 | ![Ligen](screenshots/03-ligen.png) | ![Mannschaften](screenshots/04-mannschaften.png) | ![Spieler](screenshots/05-spieler.png) |
-| **Benutzer & Rechte** | **Einstellungen** | |
-| ![Benutzer](screenshots/06-benutzer.png) | ![Einstellungen](screenshots/08-einstellungen.png) | |
+| **Benutzer & Rechte** | **Einstellungen** | **Board: „Nächstes Spiel"** |
+| ![Benutzer](screenshots/06-benutzer.png) | _Screenshot folgt_<br>`screenshots/08-einstellungen.png` | _Screenshot folgt_<br>`screenshots/09-board-nextgame.png` |
 
 *(Bildschirmfotos aus dem Vereinsmodus, als Administrator angemeldet.)*
+
+<!--
+  Screenshots ergänzen: passende PNG unter dem angegebenen Pfad in screenshots/ ablegen und dann
+  die jeweilige „Screenshot folgt"-Zelle durch die Bild-Einbindung ersetzen, z. B.:
+    ![Darts Counter](screenshots/07-counter.png)
+    ![Einstellungen](screenshots/08-einstellungen.png)
+    ![Board: Nächstes Spiel](screenshots/09-board-nextgame.png)   ← das „Nächstes Spiel"-Overlay am Board
+-->
+
 
 ---
 
