@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 🔒 Sicherheitslücke melden
+    url: https://github.com/zelko2k1/dartszentrale/security/policy
+    about: Sicherheitsprobleme bitte vertraulich melden — nicht als öffentliches Issue.
+  - name: 📖 Anleitungen & Handbuch
+    url: https://github.com/zelko2k1/dartszentrale/tree/main/docs
+    about: Vielleicht beantwortet die Doku deine Frage schon.

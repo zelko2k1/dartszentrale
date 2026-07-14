@@ -1,0 +1,55 @@
+name: 🐞 Fehler melden
+description: Etwas funktioniert nicht wie erwartet
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke für die Meldung! Bitte **keine echten Mitgliederdaten** einfügen.
+        Sicherheitslücken bitte **nicht hier**, sondern vertraulich melden (siehe SECURITY.md).
+  - type: dropdown
+    id: modus
+    attributes:
+      label: Betriebsmodus
+      description: In welchem Modus tritt der Fehler auf?
+      options:
+        - Lokal (ein Board, kein Login)
+        - Verein im LAN (App + Datenbank)
+        - Cloud (eigener Internet-Server)
+        - Weiß ich nicht
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Steht im README-Kopf bzw. auf der Releases-Seite (z. B. 1.0.0).
+      placeholder: "1.0.0"
+    validations:
+      required: false
+  - type: textarea
+    id: was-passiert
+    attributes:
+      label: Was passiert?
+      description: Beschreibe den Fehler und was du stattdessen erwartet hättest.
+    validations:
+      required: true
+  - type: textarea
+    id: schritte
+    attributes:
+      label: Schritte zum Nachstellen
+      description: Wie kommt man zu dem Fehler?
+      placeholder: |
+        1. …
+        2. …
+        3. Fehler tritt auf
+    validations:
+      required: true
+  - type: textarea
+    id: umgebung
+    attributes:
+      label: Umgebung (optional)
+      description: Betriebssystem, Browser, Gerät — soweit bekannt.
+      placeholder: "z. B. Windows 11, Chrome, Tablet"
+    validations:
+      required: false
