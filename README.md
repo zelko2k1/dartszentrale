@@ -6,6 +6,20 @@ alles an einem Ort, auf deinem eigenen Gerät oder Server.
 
 Quelloffen ([MIT](LICENSE)) · deutschsprachig · läuft im echten Vereins­betrieb · Version **1.0.0**
 
+## ⬇️ Herunterladen & loslegen
+
+### 👉 **[Fertiges Paket herunterladen (neueste Version)](https://github.com/zelko2k1/dartszentrale/releases/latest)**
+
+Kein Fachwissen nötig: Paket laden, entpacken, Start-Datei doppelklicken. Welches passt zu mir?
+
+| Paket | Für wen? |
+|---|---|
+| **`01-lokal-ein-board.zip`** | Ein PC/Tablet am Board — nur zählen & trainieren, ohne Server, ohne Anmeldung. **← einfachster Einstieg** |
+| **`02-verein-lan.zip`** | Ganzer Verein im eigenen Netzwerk — ein Programm liefert App **und** Datenbank aus. |
+| **`03-verein-cloud.zip`** | Betrieb auf einem eigenen Internet-Server mit Domain & HTTPS. |
+
+Die passende Schritt-für-Schritt-Anleitung liegt **im Paket** und weiter unten unter [„Loslegen"](#loslegen--welche-anleitung-passt-zu-mir).
+
 ---
 
 ## Was ist das hier — in einfachen Worten?
