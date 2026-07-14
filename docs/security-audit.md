@@ -208,13 +208,11 @@ Docker-/Arcane-Stack.
 
 ### Secrets im Cloud-Modus (systemd)
 
-Ohne einen Docker-Secrets-Store liegen Geheimnisse (z. B. der geplante **autodarts-Token**,
-[`autodarts-api.md`](autodarts-api.md)) als **`EnvironmentFile`** einer systemd-Unit:
+Ohne einen Docker-Secrets-Store liegen Geheimnisse (z. B. API-Tokens oder Zugangsdaten für
+externe Dienste) als **`EnvironmentFile`** einer systemd-Unit:
 `/etc/dartszentrale/*.env`, **`chmod 600`, `root`-only**, **nicht** im Git-Repo. So verlässt der Token
 nie den Server und landet in keinem Browser-Bundle.
 
 ## Optional / später
 
 - **2FA für Admins** — siehe [`plan-2fa.md`](plan-2fa.md).
-- **autodarts-Autoscore** — falls angebunden: Token-Handling wie oben (systemd `EnvironmentFile`),
-  Listener schreibt mit eng berechtigtem Service-Account, siehe [`autodarts-api.md`](autodarts-api.md).

@@ -239,7 +239,7 @@ dartszentrale/
 | `admin-anleitung-cloud.md` · `go-live-checkliste-cloud.md` | Betrieb im Internet + Start-Checkliste |
 | `arcane-homelab-anleitung.md` | Betrieb im Homelab mit Docker/Arcane |
 | `security-audit.md` | Sicherheits­stand und Härtungs­maßnahmen |
-| `plan-*.md` · `verein-pocketbase-plan.md` · `autodarts-api.md` | Konzepte & Pläne (umgesetzt bzw. geplant) |
+| `plan-*.md` · `verein-pocketbase-plan.md` | Konzepte & Pläne (umgesetzt bzw. geplant) |
 | [`pocketbase/SCHEMA.md`](pocketbase/SCHEMA.md) | **Maßgebliche** Beschreibung der Datenstruktur & Rechte |
 
 ---

@@ -23,6 +23,12 @@ pocketbase/seed-remote.sh
 # Lokale Import-Arbeitsdateien (Spielplan-CSVs o. Ä.) – enthalten evtl. Vereinsdaten, bleiben lokal
 /import/
 
+# Autodarts-Connector bleibt bewusst LOKAL, nicht im öffentlichen Repo (rechtl. Gründe:
+# autodarts → Nodor → Winmau). Nur die ROADMAP-Erwähnung ist ok.
+/docs/autodarts-api.md
+/docs/plan-autodarts-autoscore.md
+/spikes/autodarts/
+
 # Claude Code local settings
 .claude/settings.local.json
 
