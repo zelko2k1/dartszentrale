@@ -177,12 +177,6 @@ Such dir das Szenario aus, das zu deinem Verein passt:
 
 ---
 
-## ☕ Unterstützen
-
-DartsZentrale ist kostenlos und quelloffen ([MIT](LICENSE)) — und bleibt es. Die Entwicklung läuft
-KI-gestützt und verursacht laufende Kosten (KI-Nutzung, Hosting). Wer mag, spendiert einen Kaffee:
-**[buymeacoffee.com/zelko2k1](https://buymeacoffee.com/zelko2k1)**. Kein Muss — alles bleibt frei nutzbar.
-
 ## Mitmachen
 
 Rückmeldungen, Fehlerberichte, Verbesserungs­ideen und Pull Requests sind herzlich willkommen —
