@@ -1,7 +1,8 @@
 # Konzept: nuLiga-Import (Tabelle & Ligaspieltage)
 
-> Stand: 2026-07-07. Konzept, noch nicht umgesetzt. Ziel: die **Tabelle** und die **Spieltage** aus
-> nuLiga (BDV, `bdv-dart.liga.nu`) automatisch in DartsZentrale anzeigen — **max. einmal täglich** abgerufen.
+> Stand: 2026-07-12. **Umgesetzt (v1, manueller Abruf)** — Details in der Revision unten; **offen**
+> bleibt nur der Phase-2-Cron (täglicher Auto-Abruf, geplant „max. einmal täglich"). Ziel: die
+> **Tabelle** und die **Spieltage** aus nuLiga (BDV, `bdv-dart.liga.nu`) in DartsZentrale übernehmen.
 
 ---
 
