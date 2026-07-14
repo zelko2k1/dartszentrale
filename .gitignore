@@ -28,6 +28,10 @@ pocketbase/seed-remote.sh
 /docs/autodarts-api.md
 /docs/plan-autodarts-autoscore.md
 /spikes/autodarts/
+# Fang-Regel: jede Datei/jeder Ordner mit "autodarts" im Namen – egal wo im Projekt.
+# Greift auf DATEINAMEN, nicht auf Inhalte → ROADMAP.md (nennt autodarts nur im Text) ist NICHT betroffen.
+*autodarts*
+*Autodarts*
 
 # Claude Code local settings
 .claude/settings.local.json
