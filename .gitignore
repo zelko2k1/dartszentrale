@@ -20,6 +20,9 @@ npm-debug.log*
 # Lokaler Seed-Runner mit Zugangsdaten – bleibt lokal
 pocketbase/seed-remote.sh
 
+# Lokale Import-Arbeitsdateien (Spielplan-CSVs o. Ä.) – enthalten evtl. Vereinsdaten, bleiben lokal
+/import/
+
 # Claude Code local settings
 .claude/settings.local.json
 

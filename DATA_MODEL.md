@@ -1,7 +1,7 @@
 # DartsZentrale — Datenmodell & Entwickler-Übergabe
 
 Stand: Juni 2026. Dieses Dokument beschreibt die Datenstrukturen, Beziehungen und
-offenen Punkte des Prototyps `DartsZentrale.dc.html`, damit die Umsetzung in eine echte
+offenen Punkte des ursprünglichen HTML-Prototyps, damit die Umsetzung in eine echte
 (server-gehostete) Anwendung sauber aufsetzen kann.
 
 > **Wichtig:** Der Prototyp speichert alles in `localStorage` (rein clientseitig).

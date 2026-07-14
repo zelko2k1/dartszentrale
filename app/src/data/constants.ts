@@ -1,4 +1,4 @@
-// Konstanten — 1:1 aus DartsZentrale.dc.html
+// Konstanten — 1:1 aus dem ursprünglichen HTML-Prototyp
 import type { Role, Settings, LineupSegment, TeamKind } from './types';
 
 // Mannschafts-Arten: Liga vs. Pokal. Icon wird in der UI über die Art gewählt (IconShield / IconTrophy).

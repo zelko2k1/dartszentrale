@@ -235,7 +235,6 @@ dartszentrale/
 | [`BUGS.md`](BUGS.md) | Sammelstelle für bekannte Fehler und Testfunde. |
 | [`DATA_MODEL.md`](DATA_MODEL.md) | Beschreibung des Datenmodells (historisch; maßgeblich ist heute `pocketbase/SCHEMA.md`). |
 | [`Caddyfile.example`](Caddyfile.example) | Beispiel-Konfiguration für HTTPS im Cloud-Betrieb. |
-| `DartsZentrale.dc.html` · `support.js` | Der **ursprüngliche HTML-Prototyp**, aus dem die App entstand — nur noch als Design-Referenz. |
 
 **Dokumentation im Ordner [`docs/`](docs/):**
 

@@ -1,8 +1,7 @@
 # DartsZentrale — App (Frontend)
 
 Die eigentliche DartsZentrale-Web-App: **Vite + React + TypeScript**. Das ist der Produktivstand
-(Version 1.0.0), nicht mehr der ursprüngliche HTML-Prototyp — der liegt nur noch als historische
-Design-Referenz unter `../DartsZentrale.dc.html`.
+(Version 1.0.0), nicht mehr der ursprüngliche HTML-Prototyp, aus dem die App einst hervorging.
 
 > **Was die App fachlich alles kann** (Counter, Training, Ligen, Saisons, Rollen, 2FA, Board-Modus …)
 > steht ausführlich im **[Haupt-README](../README.md)**. Dieses Dokument ist die technische
