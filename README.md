@@ -156,118 +156,6 @@ Such dir das Szenario aus, das zu deinem Verein passt:
 | Im **Homelab mit Docker/Arcane** laufen lassen | [`docs/arcane-homelab-anleitung.md`](docs/arcane-homelab-anleitung.md) |
 | Die App im Alltag **bedienen** (als Vereins-Admin) | [`docs/handbuch.md`](docs/handbuch.md) |
 
-> **Für Entwickler:** App lokal starten mit `cd app && npm install && npm run dev` (öffnet
-> `http://localhost:5173`). Details in [`app/README.md`](app/README.md).
-
----
-
-## Die Skripte — was macht welches?
-
-Damit du nicht raten musst, welche Datei wofür ist. Das **Namensschema** verrät den Einsatzzweck:
-
-- **`…-lokal…`** → ein einzelnes Board auf einem PC (nur die App, keine Anmeldung)
-- **`…-verein-lan…`** → Vereinsmodus im eigenen Netzwerk, als „alles-in-einem"-Paket (ein Programm liefert App **und** Datenbank aus)
-- **`…-cloud` / `…-server`** → Vereinsmodus auf einem Internet-Server
-
-Pro Aufgabe gibt es meist eine **Linux-Version (`.sh`)** und eine **Windows-Version (`.bat`/`.ps1`)** —
-die `.bat` startet dabei oft nur die `.ps1`.
-
-> Im Quellcode liegen diese Skripte im Ordner [`scripts/`](scripts/). In den **heruntergeladenen
-> Paketen** liegen sie flach im Hauptordner — du startest sie also direkt per Doppelklick, ohne
-> in einen Unterordner zu wechseln.
-
-### Einrichten (einmalig)
-| Datei | Zweck |
-|---|---|
-| `einrichten-cloud.sh` | Richtet einen **Internet-Server** komplett ein (Datenbank + App als Hintergrund­dienste + Caddy für HTTPS). Linux, als root. |
-| `pocketbase/provision.mjs` | Legt die **Datenbank-Struktur** des Vereinsmodus an. Beliebig oft wiederholbar. |
-
-### Starten
-| Datei | Zweck |
-|---|---|
-| `start-lokal.sh` / `.bat` | Startet **ein Board** unter `http://127.0.0.1:4173` — ohne Server, ohne Anmeldung. |
-| `start-verein-lan.sh` / `.ps1` / `.bat` | Startet den **Vereinsmodus im LAN** (ein Programm für App + Datenbank), legt beim Erststart die Admin-Konten an. |
-
-### Aktualisieren
-| Datei | Zweck |
-|---|---|
-| `update-lokal.sh` / `.bat` | Spielt eine **neue App-Version** für ein Board ein (von USB-Stick/Ordner). |
-| `update-verein-lan.sh` / `.ps1` / `.bat` | Tauscht im LAN-Betrieb **nur die App** aus; die Daten bleiben, die alte Version wird gesichert. |
-| `update-server.sh` | Aktualisiert einen **Internet-/Pi-Server** (App + Datenbank) von Stick/Ordner. |
-
-### Automatisch beim Hochfahren starten (Autostart)
-| Datei | Zweck |
-|---|---|
-| `autostart-lokal.sh` / `.bat` | Board startet **beim Einschalten** automatisch (ideal für einen Kiosk-PC). |
-| `autostart-verein-lan.sh` / `.bat` | LAN-Server startet **beim Einschalten** automatisch. |
-
-### Wartung & Notfälle (Datenbank-Werkzeuge, brauchen Node.js)
-| Datei | Zweck |
-|---|---|
-| `pocketbase/reset-password.mjs` | **Passwort zurücksetzen**, wenn ein Admin ausgesperrt ist. |
-| `pocketbase/reset-2fa.mjs` | **2-Faktor entfernen**, wenn Authenticator *und* Backup-Codes weg sind. |
-| `pocketbase/add-board-account.mjs` | Legt ein **Board-Rechner-Konto** (Kiosk-PC) an. |
-| `pocketbase/season-export.mjs` | **Saison sichern** (als JSON-Datei). |
-| `pocketbase/season-import.mjs` | Eine gesicherte **Saison zurückspielen**. |
-| `pocketbase/season-offload.mjs` | Eine archivierte **Saison auslagern** (Platz sparen) — vorher sichern! |
-| `tools/pdf2schedule.mjs` | Wandelt einen **Spielplan aus einer PDF** in importierbare Daten um. |
-
-### Nur zum Testen (nicht gegen echte Daten laufen lassen!)
-| Datei | Zweck |
-|---|---|
-| `pocketbase/demo-seed.mjs` | Erzeugt eine **komplette Demo-Datenbank** („Dartverein Demo") zum Ausprobieren. |
-| `pocketbase/seed-remote.sh` | Spielt Testdaten gegen eine entfernte Test-Datenbank ein. |
-| `pocketbase/_security-guard.mjs` | Interner Schutz: verhindert, dass Standard-Passwörter versehentlich gegen einen echten Server laufen. |
-
-### Für den Docker-Betrieb
-| Datei | Zweck |
-|---|---|
-| `pocketbase/Dockerfile` · `pocketbase/docker-compose.yaml` | Baut & startet die **Datenbank** als Container. |
-| `app/Dockerfile` · `app/docker-compose.yaml` · `app/nginx.conf` | Baut & startet die **App** als Container. |
-| `app/serve-dist.mjs` | Kleiner, mitgelieferter Server, der die fertige App ausliefert (nutzen die Start-Skripte intern). |
-
----
-
-## Projektstruktur — was liegt wo?
-
-```
-dartszentrale/
-├─ app/            → Die App selbst (Benutzeroberfläche). Quellcode in app/src/
-├─ pocketbase/     → Das Backend: Datenbank, Login/Rollen, Server-Logik, Wartungs-Skripte
-├─ docs/           → Alle Anleitungen und Pläne (siehe Tabelle unten)
-├─ screenshots/    → Bildschirmfotos für dieses README
-├─ tools/          → Kleine Helfer (z. B. Spielplan aus PDF einlesen)
-├─ spikes/         → Experimentierecke für neue Ideen (noch nicht im Einsatz)
-├─ backup/ updates/→ Ablage für Sicherungen bzw. Update-Pakete
-└─ scripts/        → Start-/Update-/Autostart-/Einrichten-Skripte (siehe oben)
-```
-
-**Wichtige Dateien im Hauptordner:**
-
-| Datei | Zweck |
-|---|---|
-| [`README.md`](README.md) | Dieses Dokument. |
-| [`LICENSE`](LICENSE) | Die MIT-Lizenz (frei nutzbar). |
-| [`WORKFLOWS.md`](WORKFLOWS.md) | Praktische Abläufe der beiden Betriebsmodi (Lokal vs. Verein). |
-| [`ROADMAP.md`](ROADMAP.md) | Überblick über offene Punkte und geplante Verbesserungen. |
-| [`BUGS.md`](BUGS.md) | Sammelstelle für bekannte Fehler und Testfunde. |
-| [`DATA_MODEL.md`](DATA_MODEL.md) | Beschreibung des Datenmodells (historisch; maßgeblich ist heute `pocketbase/SCHEMA.md`). |
-| [`Caddyfile.example`](Caddyfile.example) | Beispiel-Konfiguration für HTTPS im Cloud-Betrieb. |
-
-**Dokumentation im Ordner [`docs/`](docs/):**
-
-| Datei | Inhalt |
-|---|---|
-| `handbuch.md` | Benutzerhandbuch für den Alltag |
-| `anleitung-lokal-linux.md` · `anleitung-lokal-windows.md` | Ein-Board-Betrieb einrichten |
-| `lokaler-betrieb.md` (+ `.pdf`) | Ausführliche Doku zum lokalen Betrieb |
-| `admin-anleitung-lan-linux.md` · `admin-anleitung-lan-windows.md` | Vereinsmodus im Netzwerk einrichten |
-| `admin-anleitung-cloud.md` · `go-live-checkliste-cloud.md` | Betrieb im Internet + Start-Checkliste |
-| `arcane-homelab-anleitung.md` | Betrieb im Homelab mit Docker/Arcane |
-| `security-audit.md` | Sicherheits­stand und Härtungs­maßnahmen |
-| `verein-pocketbase-plan.md` · `plan-saison.md` · `plan-2fa.md` · `plan-nuliga-import.md` · `plan-autodarts-autoscore.md` · `autodarts-api.md` | Konzepte & Pläne (umgesetzt bzw. geplant) |
-| [`pocketbase/SCHEMA.md`](pocketbase/SCHEMA.md) | **Maßgebliche** Beschreibung der Datenstruktur & Rechte |
-
 ---
 
 ## ☕ Unterstützen
@@ -281,6 +169,67 @@ KI-gestützt und verursacht laufende Kosten (KI-Nutzung, Hosting). Wer mag, spen
 Rückmeldungen, Fehlerberichte, Verbesserungs­ideen und Pull Requests sind herzlich willkommen —
 gerade weil das Projekt aus dem Verein und nicht aus dem Entwicklerbüro kommt. Bitte hab Verständnis,
 dass ich bei sehr tiefgehenden Code-Themen nur begrenzt reagieren kann.
+
+Details zum Mitmachen (Entwicklungsumgebung, Ablauf, Commit-Stil) stehen in
+[`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+---
+
+## Für Entwickler & Mitwirkende
+
+> Dieser Abschnitt richtet sich an alle, die in den Code oder die Projektablage schauen möchten.
+> **Für den reinen Vereinsbetrieb brauchst du ihn nicht** — dafür genügen der Download oben und die
+> Anleitung unter [„Loslegen"](#loslegen--welche-anleitung-passt-zu-mir).
+
+**App lokal starten:** `cd app && npm install && npm run dev` (öffnet `http://localhost:5173`).
+Technische Details zum Frontend stehen in [`app/README.md`](app/README.md).
+
+**Skripte & Werkzeuge:** Die Start-/Update-/Autostart-/Einrichten-Skripte liegen im Ordner
+[`scripts/`](scripts/) — dort ist jedes einzeln erklärt (in den heruntergeladenen Paketen liegen sie
+flach im Hauptordner). Datenbank- und Wartungswerkzeuge (Passwort-/2FA-Reset, Saison-Export/-Import,
+Board-Konto anlegen, Demo-Daten) sowie Schema, Hooks und die Docker-Dateien liegen unter
+[`pocketbase/`](pocketbase/).
+
+### Projektstruktur — was liegt wo?
+
+```
+dartszentrale/
+├─ app/            → Die App selbst (Benutzeroberfläche). Quellcode in app/src/
+├─ pocketbase/     → Backend: Datenbank, Login/Rollen, Server-Logik, Wartungs-Skripte, Docker
+├─ scripts/        → Start-/Update-/Autostart-/Einrichten-Skripte (im Paket flach im Hauptordner)
+├─ docs/           → Alle Anleitungen und Pläne (siehe Tabelle unten)
+├─ tools/          → Kleine Helfer (z. B. Spielplan aus PDF einlesen)
+├─ screenshots/    → Bildschirmfotos für dieses README
+├─ spikes/         → Experimentierecke für neue Ideen (noch nicht im Einsatz)
+└─ backup/ updates/→ Ablage für Sicherungen bzw. Update-Pakete
+```
+
+**Wichtige Dateien im Hauptordner:**
+
+| Datei | Zweck |
+|---|---|
+| [`LICENSE`](LICENSE) | Die MIT-Lizenz (frei nutzbar). |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) · [`CHANGELOG.md`](CHANGELOG.md) | Mitmachen, Verhaltensregeln, Änderungsverlauf. |
+| [`SECURITY.md`](SECURITY.md) | Sicherheitslücken vertraulich melden. |
+| [`WORKFLOWS.md`](WORKFLOWS.md) | Praktische Abläufe der beiden Betriebsmodi (Lokal vs. Verein). |
+| [`ROADMAP.md`](ROADMAP.md) · [`BUGS.md`](BUGS.md) | Geplante Verbesserungen bzw. bekannte Fehler. |
+| [`DATA_MODEL.md`](DATA_MODEL.md) | Datenmodell (historisch; maßgeblich ist heute `pocketbase/SCHEMA.md`). |
+| [`Caddyfile.example`](Caddyfile.example) | Beispiel-Konfiguration für HTTPS im Cloud-Betrieb. |
+
+**Dokumentation im Ordner [`docs/`](docs/):**
+
+| Datei | Inhalt |
+|---|---|
+| `handbuch.md` | Benutzerhandbuch für den Alltag |
+| `anleitung-lokal-linux.md` · `-windows.md` · `lokaler-betrieb.md` | Ein-Board-Betrieb einrichten |
+| `admin-anleitung-lan-linux.md` · `-windows.md` | Vereinsmodus im Netzwerk einrichten |
+| `admin-anleitung-cloud.md` · `go-live-checkliste-cloud.md` | Betrieb im Internet + Start-Checkliste |
+| `arcane-homelab-anleitung.md` | Betrieb im Homelab mit Docker/Arcane |
+| `security-audit.md` | Sicherheits­stand und Härtungs­maßnahmen |
+| `plan-*.md` · `verein-pocketbase-plan.md` · `autodarts-api.md` | Konzepte & Pläne (umgesetzt bzw. geplant) |
+| [`pocketbase/SCHEMA.md`](pocketbase/SCHEMA.md) | **Maßgebliche** Beschreibung der Datenstruktur & Rechte |
+
+---
 
 ## Lizenz
 
