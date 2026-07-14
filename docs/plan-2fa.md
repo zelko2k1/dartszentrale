@@ -1,7 +1,6 @@
-# Plan: 2-Faktor-Authentifizierung (TOTP) — optional, für beide Apps
+# Plan: 2-Faktor-Authentifizierung (TOTP) — optional
 
-> Status: **Planung** (2026-06-28). Noch nichts umgesetzt. Gilt für **`dartszentrale`** (Liga/Verein)
-> **und** die geplante **`dartszentrale-turniere`**-App (gemeinsames Auth-Fundament).
+> Status: **Planung** (2026-06-28). Noch nichts umgesetzt. Gilt für **`dartszentrale`** (Liga/Verein).
 
 ---
 
@@ -14,7 +13,6 @@
 - **Serverseitig verifiziert** über PocketBase `pb_hooks` → **nur Vereins-/Server-Modus**. Lokalmodus
   (kein Server, keine echte Anmeldung) bleibt ohne 2FA.
 - **Mit Recovery von Anfang an:** Backup-Codes + Superuser-Rettungsskript.
-- **Für beide Apps:** im gemeinsamen Auth-Fundament bauen → Turnier-App erbt es über den Fork.
 
 ---
 
@@ -135,16 +133,7 @@ Frontend (`store.loginEmail` / `Login.tsx`): nach Schritt 4 ein **6-stelliges Co
 
 ---
 
-## 9. Beide Apps
-
-Implementierung **einmal** im gemeinsamen Auth-Fundament (`pocketbaseProvider.ts`, `Login.tsx`,
-`Settings.tsx`, `pb_hooks/`, `user_mfa`-Migration). Die **Turnier-App erbt es über den Fork** (Phase 0/1
-der Turnier-App). Timing: entweder 2FA zuerst in `dartszentrale` bauen → Turnier-Fork zieht es mit; oder
-nach dem Turnier-Scaffold in beide portieren. Empfehlung: **zuerst in `dartszentrale`**, dann erbt der Fork.
-
----
-
-## 10. Phasenplan (für das 2FA-Feature)
+## 9. Phasenplan (für das 2FA-Feature)
 
 | Phase | Inhalt |
 |---|---|
@@ -152,14 +141,12 @@ nach dem Turnier-Scaffold in beide portieren. Empfehlung: **zuerst in `dartszent
 | **B — Backend** | ✅ **fast fertig** (2026-07-05): `user_mfa` (Migration `1782300002_user_mfa.js` + provision.mjs, abgeschottet) · Hooks `setup` + `enable` + `/api/login`-Challenge (TOTP/Backup, Lockout 5/5min) + **`disable` + `backup/regenerate`** (Re-Auth via Code ODER Passwort) — alle in `pb_hooks/2fa_hooks.pb.js`, plus **`reset-2fa.mjs`** (Superuser-Rettung), E2E gegen frische PB grün (setup/enable 17/17, login 13/13, disable/regenerate 14/14, reset 3/3 + Rand-Fälle). **✅ Phase B abgeschlossen** — nächster Schritt Phase C (Frontend). **⚠ Zwei JSVM-Fallen (verifiziert):** (1) `record.get('<json>')` liefert ROHE UTF-8-Bytes (byte-Array), nicht geparst → per `String.fromCharCode`+`JSON.parse` dekodieren. (2) Route-Handler laufen in **isolierter VM ohne Modul-Scope** → geteilte Helfer (z. B. Re-Auth) MÜSSEN handler-lokal sein, ein Top-Level-`function` wirft `ReferenceError` (= generischer 400). |
 | **C — Frontend** | ✅ **umgesetzt** (2026-07-05). Login auf **`POST /api/login`** umgestellt (`pocketbaseProvider.login` → `LoginResult`, Store `loginEmail` behandelt `mfaRequired`, `Login.tsx` blendet Code-Feld ein). Settings-Assistent „2-Faktor-Authentifizierung" unter *Mein Konto* (`TwoFactorSettings` in `Settings.tsx`): QR (eigener vendored Pure-JS-Encoder `app/src/lib/qrcode.ts`, gegen node-qrcode + jsQR verifiziert) + Secret-Fallback → Bestätigung → Backup-Codes (kopieren/herunterladen) · Deaktivieren · Neu-Erzeugen (Re-Auth). Neuer Backend-Endpunkt `GET /api/2fa/status`. **End-to-End im echten Browser (Playwright) verifiziert: 9/9.** |
 | **D — Härtung+Doku** | HTTPS/Exposition-Guidance, Admin-Nudge, Policy-Schalter, Docs (`admin-anleitung-cloud.md`/`lokaler-betrieb.md`). |
-| **E — Turnier-App** | über Fork erben bzw. portieren + verifizieren. |
 
 ---
 
-## 11. Offene Detailfragen
+## 10. Offene Detailfragen
 
 1. **Secret-Speicherung:** nur abgeschottete Collection (Empf.) vs. zusätzlich verschlüsselt.
 2. **Lockout-Werte:** Fehlversuche/Sperrdauer (Vorschlag 5 / 5 min).
 3. **Backup-Codes:** Anzahl/Format (Vorschlag 10× 8-stellig).
 4. **QR-Lib:** konkrete kleine Pure-JS-Variante wählen.
-5. **Reihenfolge zu Turnier-App:** 2FA vor oder nach dem Turnier-Scaffold (Empf.: vorher in dartszentrale).

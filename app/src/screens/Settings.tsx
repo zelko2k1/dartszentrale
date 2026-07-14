@@ -520,7 +520,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
 
   const modusNode = (
     <Section title="App-Modus">
-      <Row label="Nutzungsart" sub="Lokal: Dashboard, Counter, Training, Spieler, Statistiken. Verein: zusätzlich Ligen, Mannschaften & Turniere.">
+      <Row label="Nutzungsart" sub="Lokal: Dashboard, Counter, Training, Spieler, Statistiken. Verein: zusätzlich Ligen, Mannschaften, Kalender, Benutzer & Saisons.">
         {seg('appMode', [{ label: 'Lokal', val: 'local' }, { label: 'Verein', val: 'verein' }], '10px 18px')}
       </Row>
     </Section>
