@@ -32,7 +32,7 @@ Damit ich ein Problem nachstellen kann:
 
 ### Entwicklungsumgebung
 
-Voraussetzungen: **Node.js** (v20+; getestet mit v24) und **git**. Die Web-App liegt im
+Voraussetzungen: **Node.js 24 (LTS)** und **git**. Die Web-App liegt im
 Ordner [`app/`](app/):
 
 ```bash

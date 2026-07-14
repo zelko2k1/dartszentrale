@@ -107,8 +107,8 @@ command -v curl >/dev/null || apt-get install -y curl >/dev/null
 command -v unzip >/dev/null || apt-get install -y unzip >/dev/null
 
 if ! command -v node >/dev/null; then
-  echo "  – Node.js fehlt → NodeSource (22.x) einrichten …"
-  curl -fsSL https://deb.nodesource.com/setup_22.x | bash - >/dev/null
+  echo "  – Node.js fehlt → NodeSource (24.x) einrichten …"
+  curl -fsSL https://deb.nodesource.com/setup_24.x | bash - >/dev/null
   apt-get install -y nodejs >/dev/null
 fi
 NODE_BIN="$(command -v node)"; NODE_DIR="$(dirname "$NODE_BIN")"

@@ -13,7 +13,7 @@ Anmeldung**. Die Daten liegen lokal im Browser dieses Geräts.
 ## 1. Einmal: Node.js installieren (Pflicht)
 
 ```bash
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 sudo apt install -y nodejs
 ```
 

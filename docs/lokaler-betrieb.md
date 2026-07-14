@@ -194,7 +194,7 @@ git branch -d feature/xyz   # erledigten Zweig löschen
 
 | Programm | Wofür | Linux | Windows |
 |---|---|---|---|
-| **Node.js 20+ (LTS)** (mit `npm`) | App bauen/starten + `.mjs`-Skripte | Paketmanager / nodejs.org / nvm | Installer von nodejs.org |
+| **Node.js 24 (LTS)** (mit `npm`) | App bauen/starten + `.mjs`-Skripte | Paketmanager / nodejs.org / nvm | Installer von nodejs.org |
 | **Browser** (Edge/Chrome empf.) | App nutzen (PWA-Installation) | vorhanden | vorhanden |
 | **PocketBase 0.39.x** (eine Binärdatei) | Backend – **nur Vereinsmodus** | `pocketbase` + `chmod +x` | `pocketbase.exe` |
 | **Git** | Code holen/aktualisieren | `apt install git` | git-scm.com (bringt **Git Bash** mit) |
@@ -208,8 +208,8 @@ git branch -d feature/xyz   # erledigten Zweig löschen
 
 ### Ubuntu
 ```bash
-# Node.js 20+ (LTS) via NodeSource (Ubuntus apt-Node ist oft zu alt)
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+# Node.js 24 (LTS) via NodeSource (Ubuntus apt-Node ist oft zu alt)
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 sudo apt install -y nodejs git unzip
 
 # PocketBase 0.39.5 in den pocketbase-Ordner (bei ARM: linux_arm64)
@@ -381,7 +381,7 @@ Cloud `PB_URL`, `PB_SU_EMAIL`, `PB_SU_PASS` als Umgebungsvariablen voranstellen.
 
 `.mjs` = JavaScript-Datei, die mit **Node.js** läuft. Voraussetzungen:
 
-1. **Node.js v20+** installiert (`node -v` zum Prüfen).
+1. **Node.js 24 (LTS)** installiert (`node -v` zum Prüfen).
 2. **`npm install` in `app/` ausgeführt** — die Skripte nutzen die PocketBase-Bibliothek
    aus `app/node_modules` (per relativem Import). Ohne `node_modules` schlagen sie fehl.
 3. **PocketBase läuft** (`./pocketbase serve …` in einem anderen Terminal) — die Skripte

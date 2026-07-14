@@ -137,8 +137,8 @@ Für alle, die jeden Schritt selbst setzen wollen.
 
 ### 1. Pakete + Binärdateien
 ```bash
-# Node.js 22 (LTS)
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+# Node.js 24 (LTS)
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
 sudo apt install -y nodejs unzip
 
 # Caddy (offizielles apt-Repo)
