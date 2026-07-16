@@ -81,11 +81,11 @@ export function Leagues() {
   };
 
   return (
-    <div style={{ padding: '28px 32px', maxWidth: 1180, margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, marginBottom: 22 }}>
+    <div style={{ padding: isPhone ? '18px 14px' : '28px 32px', maxWidth: 1180, margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, marginBottom: 22, flexWrap: 'wrap' }}>
         <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{tr.nav.leagues}</h1>
         {canEdit && (
-          <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
             <button className="dh-btn" onClick={() => s.openImport()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 16px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
               {tr.leagues.importBtn}
@@ -170,34 +170,39 @@ export function Leagues() {
 
           <div style={{ display: 'grid', gridTemplateColumns: (noTable || isPhone) ? 'minmax(0, 1fr)' : '1.5fr 1fr', gap: 18, alignItems: 'start' }}>
             {/* standings – bei Freundschaften & Pokal ausgeblendet (keine Tabellenwertung) */}
-            {!noTable && (
+            {!noTable && (() => {
+              // Handy: schmale Spalten ohne Legs & Differenz → passt ohne horizontales Scrollen auf 375 px.
+              const tblCols = isPhone ? '24px minmax(0,1fr) 24px 22px 22px 22px 50px' : '28px minmax(104px,1fr) 26px 24px 24px 24px 58px 42px 52px';
+              const tblMinW = isPhone ? undefined : 508;
+              return (
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '28px minmax(104px,1fr) 26px 24px 24px 24px 58px 42px 52px', gap: 5, padding: '13px 18px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', minWidth: 508 }}>
-                <span>#</span><span>{tr.leagues.thTeam}</span><span style={{ textAlign: 'center' }}>{tr.leagues.thPlayed}</span><span style={{ textAlign: 'center' }}>{tr.leagues.thWin}</span><span style={{ textAlign: 'center' }}>{tr.leagues.thDraw}</span><span style={{ textAlign: 'center' }}>{tr.leagues.thLoss}</span><span style={{ textAlign: 'center' }}>{tr.leagues.thLegs}</span><span style={{ textAlign: 'center' }}>+/−</span><span style={{ textAlign: 'right' }}>{tr.leagues.thPts}</span>
+              <div style={{ display: 'grid', gridTemplateColumns: tblCols, gap: 5, padding: isPhone ? '12px 12px' : '13px 18px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', minWidth: tblMinW }}>
+                <span>#</span><span>{tr.leagues.thTeam}</span><span style={{ textAlign: 'center' }}>{tr.leagues.thPlayed}</span><span style={{ textAlign: 'center' }}>{tr.leagues.thWin}</span><span style={{ textAlign: 'center' }}>{tr.leagues.thDraw}</span><span style={{ textAlign: 'center' }}>{tr.leagues.thLoss}</span>{!isPhone && <span style={{ textAlign: 'center' }}>{tr.leagues.thLegs}</span>}{!isPhone && <span style={{ textAlign: 'center' }}>+/−</span>}<span style={{ textAlign: 'right' }}>{tr.leagues.thPts}</span>
               </div>
               {standings.length === 0 && <div style={{ padding: '30px 18px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.leagues.noResultsYet}</div>}
               {standings.map((t, i) => {
                 const diff = t.lf - t.la;
                 const posColor = i < 2 ? 'var(--success)' : (standings.length > 4 && i >= standings.length - 1) ? 'var(--danger-soft)' : 'var(--text-3)';
                 return (
-                  <div key={t.id} style={{ display: 'grid', gridTemplateColumns: '28px minmax(104px,1fr) 26px 24px 24px 24px 58px 42px 52px', gap: 5, padding: '12px 18px', borderBottom: '1px solid var(--hairline)', alignItems: 'center', background: t.own ? 'rgba(25,164,99,.08)' : 'transparent', minWidth: 508 }}>
+                  <div key={t.id} style={{ display: 'grid', gridTemplateColumns: tblCols, gap: 5, padding: isPhone ? '11px 12px' : '12px 18px', borderBottom: '1px solid var(--hairline)', alignItems: 'center', background: t.own ? 'rgba(25,164,99,.08)' : 'transparent', minWidth: tblMinW }}>
                     <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: posColor }}>{i + 1}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-                      <div style={{ width: 28, height: 28, borderRadius: 8, background: t.own ? 'linear-gradient(135deg,#19A463,#0f6b40)' : 'var(--btn)', color: t.own ? '#fff' : 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 10, flexShrink: 0 }}>{initials(t.name).slice(0, 3)}</div>
-                      <span style={{ fontSize: 14, fontWeight: t.own ? 700 : 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: isPhone ? 7 : 10, minWidth: 0 }}>
+                      {!isPhone && <div style={{ width: 28, height: 28, borderRadius: 8, background: t.own ? 'linear-gradient(135deg,#19A463,#0f6b40)' : 'var(--btn)', color: t.own ? '#fff' : 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 10, flexShrink: 0 }}>{initials(t.name).slice(0, 3)}</div>}
+                      <span style={{ fontSize: isPhone ? 13 : 14, fontWeight: t.own ? 700 : 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</span>
                     </div>
                     <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{t.sp}</span>
                     <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--success)' }}>{t.s}</span>
                     <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-4)' }}>{t.u}</span>
                     <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--danger-soft)' }}>{t.n}</span>
-                    <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{t.lf}:{t.la}</span>
-                    <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{diff > 0 ? '+' : ''}{diff}</span>
+                    {!isPhone && <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{t.lf}:{t.la}</span>}
+                    {!isPhone && <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{diff > 0 ? '+' : ''}{diff}</span>}
                     <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>{t.pts}:{t.n * 2 + t.u}</span>
                   </div>
                 );
               })}
             </div>
-            )}
+              );
+            })()}
 
             {/* fixtures */}
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 22px', minWidth: 0 }}>

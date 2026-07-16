@@ -426,6 +426,7 @@ export const de = {
     nextMonth: 'Nächster Monat',
     addEvent: 'Termin',
     moreCount: (n: number) => `+${n} weitere`,
+    noEventsMonth: 'Keine Termine in diesem Monat.',
   },
 
   // ── Texte der zentralen Konstanten (data/constants.ts liest sie per Getter live) ──
@@ -440,7 +441,7 @@ export const de = {
     training: 'Training',
     ligaspiel: 'Ligaspiel',
     verein: 'Verein',
-    competition: 'Competition',
+    competition: 'Wettbewerb',
     pokal: 'Pokal',
     sonstiges: 'Sonstiges',
     freundschaft: 'Freundschaft',

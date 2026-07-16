@@ -7,7 +7,14 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
-_Noch nichts._
+### Geändert
+- **Mobile-Layout:** Kein horizontales Scrollen mehr am Smartphone —
+  Statistik-Bestenliste als Karten je Spieler, Kalender als Agenda-Liste,
+  Ligatabelle mit kompakten Spalten (ohne Legs/Differenz). Verwaltungs-Tabellen
+  (z. B. Benutzer) bleiben am Handy bewusst scrollbare Tabellen.
+
+### Behoben
+- Terminart „Competition" hieß im deutschen UI englisch — jetzt „Wettbewerb".
 
 ## [1.0.1] – 2026-07-16
 

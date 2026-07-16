@@ -401,6 +401,7 @@ export const en: Dict = {
     nextMonth: 'Next month',
     addEvent: 'Event',
     moreCount: (n: number) => `+${n} more`,
+    noEventsMonth: 'No events this month.',
   },
 
   roles: {

@@ -1,6 +1,7 @@
 import { useStore } from '../store/useStore';
 import { aggregateFor, inSeason } from '../store/selectors';
 import { Avatar } from '../components/Avatar';
+import { useIsPhone } from '../lib/useIsPhone';
 import { useT } from '../i18n';
 
 const COLS = '26px 1fr 54px 48px 34px 30px 30px 44px 46px 46px 40px 40px 46px 44px';
@@ -10,6 +11,7 @@ type Stat = { id: string; name: string; short: string; photo?: string; avi: numb
 export function Statistics() {
   const s = useStore();
   const tr = useT();
+  const isPhone = useIsPhone();
   // Bestenliste je betrachteter Saison (Soft-Archiv): nur Matches dieser Saison aggregieren.
   // Ausgelagerte Saison (Phase 4): Spiele sind weg → Werte aus dem eingefrorenen Snapshot.
   const seasonMatches = inSeason(s.matches, s.viewSeasonId);
@@ -49,7 +51,7 @@ export function Statistics() {
   };
 
   return (
-    <div style={{ padding: '28px 32px', maxWidth: 1180, margin: '0 auto' }}>
+    <div style={{ padding: isPhone ? '18px 14px' : '28px 32px', maxWidth: 1180, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
         <div>
           <h1 style={{ margin: '0 0 6px', fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{tr.stats.title}</h1>
@@ -65,6 +67,40 @@ export function Statistics() {
           {tr.stats.offloadedInfo}
         </div>
       )}
+      {isPhone ? (
+        /* Handy: Karten statt 14-Spalten-Tabelle — kein horizontales Scrollen; alle Details im Spieler-Profil (Tap). */
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+          {rows.map((l) => (
+            <div key={l.id} className="dh-row" onClick={() => s.openPlayer(l.id)} style={{ padding: '13px 14px', borderBottom: '1px solid var(--hairline)', cursor: 'pointer', background: l.rowBg }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ width: 22, flexShrink: 0, fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: l.rankColor }}>{l.rank}</span>
+                <Avatar photo={l.photo} short={l.short} avi={l.avi} size={34} />
+                <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.name}</span>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <div style={{ fontFamily: 'var(--font-num)', fontSize: 19, fontWeight: 800, color: '#2BD377', lineHeight: 1.1 }}>{l.avg}</div>
+                  <div style={{ fontSize: 9, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.03em', textTransform: 'uppercase' }}>{tr.stats.thAvg}</div>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 4, marginTop: 10 }}>
+                {[
+                  { v: l.sp, label: tr.stats.thPlayed, color: 'var(--text-3)' },
+                  { v: l.sw, label: tr.stats.thWin, color: '#19A463' },
+                  { v: l.sn, label: tr.stats.thLoss, color: '#E0594B' },
+                  { v: l.s180, label: '180', color: '#E0594B' },
+                  { v: l.checkout, label: 'CO', color: 'var(--text)' },
+                  { v: l.highFinish, label: 'HF', color: 'var(--text)' },
+                ].map((c) => (
+                  <div key={c.label} style={{ textAlign: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '5px 2px' }}>
+                    <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: c.color }}>{c.v}</div>
+                    <div style={{ fontSize: 8.5, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden' }}>{c.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+          {rows.length === 0 && <div style={{ padding: '30px 18px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>–</div>}
+        </div>
+      ) : (
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
         <div style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4, padding: '14px 18px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', minWidth: 730 }}>
           <span>#</span><span>{tr.stats.thPlayer}</span><span style={{ textAlign: 'right' }}>{tr.stats.thAvg}</span><span style={{ textAlign: 'right' }} title={tr.stats.f9Title}>F9</span><span style={{ textAlign: 'right' }}>{tr.stats.thPlayed}</span><span style={{ textAlign: 'right' }}>{tr.stats.thWin}</span><span style={{ textAlign: 'right' }}>{tr.stats.thLoss}</span><span style={{ textAlign: 'right' }}>60+</span><span style={{ textAlign: 'right' }}>100+</span><span style={{ textAlign: 'right' }}>140+</span><span style={{ textAlign: 'right' }}>180</span><span style={{ textAlign: 'right' }} title={tr.stats.slTitle}>SL</span><span style={{ textAlign: 'right' }}>CO</span><span style={{ textAlign: 'right' }}>HF</span>
@@ -91,6 +127,7 @@ export function Statistics() {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }

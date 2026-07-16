@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { EVENT_TYPES, EVENT_TYPE_ALL } from '../data/constants';
 import { perm, inSeason } from '../store/selectors';
 import { IconChevronLeft, IconChevronRight, IconPlus } from '../lib/icons';
+import { useIsPhone } from '../lib/useIsPhone';
 import { useT } from '../i18n';
 
 const pad2 = (n: number) => (n < 10 ? '0' + n : '' + n);
@@ -12,6 +13,7 @@ const MON_FIRST = [1, 2, 3, 4, 5, 6, 0];
 export function Calendar() {
   const s = useStore();
   const tr = useT();
+  const isPhone = useIsPhone();
   const MON = tr.format.monLong;
   const accent = s.settings.accent;
   const p = perm(s.settings, s.accounts, s.session);
@@ -49,11 +51,15 @@ export function Calendar() {
   for (let w = 0; w < 6; w++) weeks.push(cells.slice(w * 7, w * 7 + 7));
   while (weeks.length > 4 && weeks[weeks.length - 1].every((c) => c.outMonth && c.chips.length === 0)) weeks.pop();
 
-  const monthEvents = events.filter((e) => e.scope === scope && e.date.slice(0, 7) === `${ref.y}-${pad2(ref.m + 1)}`).length;
+  // Agenda-Liste (Handy): alle Termine des Monats chronologisch — das 7-Spalten-Grid ist auf 375 px unlesbar.
+  const monthList = events
+    .filter((e) => e.scope === scope && e.date.slice(0, 7) === `${ref.y}-${pad2(ref.m + 1)}`)
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || ''));
+  const monthEvents = monthList.length;
   const shift = (dir: number) => setRef((r) => { const d = new Date(r.y, r.m + dir, 1); return { y: d.getFullYear(), m: d.getMonth() }; });
 
   return (
-    <div style={{ padding: '28px 32px', maxWidth: 1240, margin: '0 auto' }}>
+    <div style={{ padding: isPhone ? '18px 14px' : '28px 32px', maxWidth: 1240, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 22, flexWrap: 'wrap' }}>
         <div>
           <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 6 }}>{tr.calendar.title}</div>
@@ -70,6 +76,31 @@ export function Calendar() {
         </div>
       </div>
 
+      {isPhone ? (
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+          {monthList.length === 0 && <div style={{ padding: '30px 16px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.calendar.noEventsMonth}</div>}
+          {monthList.map((e) => {
+            const t = EVENT_TYPES[e.type] || { label: e.type, color: 'var(--text-3)', icon: '' };
+            const d = new Date(e.date + 'T00:00:00');
+            const isToday = e.date === todayIso;
+            return (
+              <div key={e.id} className="dh-row" onClick={() => canManageEvents && s.openEditEvent(e.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderBottom: '1px solid var(--hairline)', cursor: canManageEvents ? 'pointer' : 'default', background: isToday ? `color-mix(in srgb, ${accent} 8%, transparent)` : 'transparent' }}>
+                <div style={{ textAlign: 'center', width: 40, flexShrink: 0 }}>
+                  <div style={{ fontSize: 10, color: isToday ? accent : 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>{tr.format.wdShort[d.getDay()]}</div>
+                  <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800, color: isToday ? accent : 'var(--text)' }}>{d.getDate()}</div>
+                </div>
+                <span style={{ width: 28, height: 28, borderRadius: 8, background: `color-mix(in srgb, ${t.color} 16%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={t.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={t.icon} /></svg>
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</div>
+                  <div style={{ fontSize: 11.5, color: 'var(--text-4)', fontWeight: 600, marginTop: 1 }}>{[t.label, e.time, e.loc].filter(Boolean).join(' · ')}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,minmax(64px,1fr))', borderBottom: '1px solid var(--border)', minWidth: 462 }}>
           {MON_FIRST.map((i) => tr.format.wdShort[i]).map((wd) => (
@@ -95,6 +126,7 @@ export function Calendar() {
           </div>
         ))}
       </div>
+      )}
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px 20px', marginTop: 16, padding: '0 2px' }}>
         {EVENT_TYPE_ALL.map((key) => {
