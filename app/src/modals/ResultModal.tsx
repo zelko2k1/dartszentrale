@@ -1,10 +1,12 @@
 import { useStore } from '../store/useStore';
 import { Modal, ModalTitle, ModalFooter } from '../components/Modal';
+import { useT } from '../i18n';
 
 // Brett-für-Brett-Ergebniserfassung (Spielbericht): pro Aufstellungs-Position Sieg/Niederlage (eigene
 // Sicht) + optionale Legs. Das Gesamtergebnis (gewonnene Spiele) wird in die Begegnung übernommen.
 export function ResultModal() {
   const s = useStore();
+  const tr = useT();
   const m = s.resultModal;
   if (!m) return null;
 
@@ -18,12 +20,12 @@ export function ResultModal() {
 
   return (
     <Modal onClose={() => s.closeResult()} width={620} z={64} style={{ maxHeight: '88vh', overflow: 'auto' }}>
-      <ModalTitle>Spielbericht / Ergebnis</ModalTitle>
+      <ModalTitle>{tr.modals.resultTitle}</ModalTitle>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
         <strong style={{ color: 'var(--text)' }}>{m.ownTeamName}</strong>
-        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '2px 8px', borderRadius: 6 }}>{m.ownIsHome ? 'Heim' : 'Auswärts'}</span>
-        <span style={{ color: 'var(--text-5)' }}>gegen</span>
+        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '2px 8px', borderRadius: 6 }}>{m.ownIsHome ? tr.teams.home : tr.teams.away}</span>
+        <span style={{ color: 'var(--text-5)' }}>{tr.teams.versus}</span>
         <strong style={{ color: 'var(--text-2)' }}>{m.oppName}</strong>
       </div>
 
@@ -38,7 +40,7 @@ export function ResultModal() {
           <div style={{ fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, color: oppWins > ownWins ? 'var(--danger-soft)' : 'var(--text)' }}>{oppWins}</div>
           <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.oppName}</div>
         </div>
-        {open > 0 && <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--text-5)' }}>· {open} offen</span>}
+        {open > 0 && <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--text-5)' }}>{tr.modals.openCount(open)}</span>}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
@@ -47,21 +49,21 @@ export function ResultModal() {
             <span style={{ width: 60, flexShrink: 0, fontSize: 11, fontWeight: 800, color: r.kind === 'single' ? 'var(--text-3)' : 'var(--accent)', textTransform: 'uppercase', letterSpacing: '.03em' }}>{r.label}</span>
             <span style={{ flex: 1, minWidth: 120, fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 7 }}>
               {r.playerNames.join(' / ') || <span style={{ color: 'var(--text-5)' }}>—</span>}
-              {r.auto && <span title="Automatisch vom Board übernommen – bitte bestätigen" style={{ fontSize: 9, fontWeight: 800, color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '1px 6px', borderRadius: 5, letterSpacing: '.04em' }}>AUTO</span>}
+              {r.auto && <span title={tr.modals.autoTitle} style={{ fontSize: 9, fontWeight: 800, color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '1px 6px', borderRadius: 5, letterSpacing: '.04em' }}>AUTO</span>}
             </span>
             <div style={{ display: 'flex', gap: 6 }}>
-              {resBtn(r.won === 'own', 'var(--success)', 'Sieg', () => s.setResultWon(r.id, 'own'))}
-              {resBtn(r.won === 'opp', '#E0594B', 'Niederlage', () => s.setResultWon(r.id, 'opp'))}
+              {resBtn(r.won === 'own', 'var(--success)', tr.modals.win, () => s.setResultWon(r.id, 'own'))}
+              {resBtn(r.won === 'opp', '#E0594B', tr.modals.loss, () => s.setResultWon(r.id, 'opp'))}
             </div>
           </div>
         ))}
       </div>
 
       <div style={{ fontSize: 11, color: 'var(--text-5)', lineHeight: 1.5, marginBottom: 16 }}>
-        Pro Brett Sieg oder Niederlage wählen. Das Gesamtergebnis ({ownWins}:{oppWins}) wird als Spiele-Ergebnis der Begegnung übernommen; daraus folgen Mannschaftspunkte (Sieg 2, Unentschieden 1) und Differenz.
+        {tr.modals.resultFootnote(ownWins, oppWins)}
       </div>
 
-      <ModalFooter onCancel={() => s.closeResult()} onSave={() => s.saveResult()} saveLabel="Ergebnis speichern" />
+      <ModalFooter onCancel={() => s.closeResult()} onSave={() => s.saveResult()} saveLabel={tr.modals.saveResult} />
     </Modal>
   );
 }

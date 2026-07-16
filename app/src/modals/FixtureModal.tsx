@@ -1,8 +1,10 @@
 import { useStore } from '../store/useStore';
 import { Modal, ModalTitle, FieldLabel, ModalFooter } from '../components/Modal';
+import { useT } from '../i18n';
 
 export function FixtureModal() {
   const s = useStore();
+  const tr = useT();
   const m = s.fixtureModal;
   if (!m) return null;
   const league = s.leagues.find((l) => l.id === m.leagueId);
@@ -21,36 +23,36 @@ export function FixtureModal() {
 
   return (
     <Modal onClose={() => s.closeFixtureModal()} width={500} z={63} style={{ maxHeight: '88vh', overflow: 'auto' }}>
-      <ModalTitle>{m.mode === 'edit' ? 'Begegnung bearbeiten' : 'Neue Begegnung'}</ModalTitle>
+      <ModalTitle>{m.mode === 'edit' ? tr.modals.fixtureEdit : tr.modals.fixtureNew}</ModalTitle>
 
-      <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 8 }}>Heim</label>
+      <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 8 }}>{tr.teams.home}</label>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
         {teams.map((t) => chip(t.id, t.name, m.homeId === t.id, m.awayId === t.id, () => s.setFixtureField('homeId', t.id)))}
       </div>
 
-      <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 8 }}>Gast</label>
+      <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 8 }}>{tr.modals.guest}</label>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
         {teams.map((t) => chip(t.id, t.name, m.awayId === t.id, m.homeId === t.id, () => s.setFixtureField('awayId', t.id)))}
       </div>
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
         <div style={{ flex: 1 }}>
-          <FieldLabel>Datum</FieldLabel>
+          <FieldLabel>{tr.modals.date}</FieldLabel>
           <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setFixtureField('date', e.target.value)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
         </div>
         <div style={{ width: 130 }}>
-          <FieldLabel>Uhrzeit</FieldLabel>
+          <FieldLabel>{tr.modals.time}</FieldLabel>
           <input className="dh-input" type="time" value={m.time} onChange={(e) => s.setFixtureField('time', e.target.value)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
         </div>
       </div>
 
-      <FieldLabel>Ort</FieldLabel>
-      <input className="dh-input" value={m.loc} onChange={(e) => s.setFixtureField('loc', e.target.value)} placeholder="z. B. Vereinsheim, Gaststätte …" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 18 }} />
+      <FieldLabel>{tr.modals.place}</FieldLabel>
+      <input className="dh-input" value={m.loc} onChange={(e) => s.setFixtureField('loc', e.target.value)} placeholder={tr.modals.placePh2} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 18 }} />
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 16px', background: 'var(--btn)', borderRadius: 12, marginBottom: 16 }}>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 600 }}>{m.played ? 'Ergebnis eingetragen' : 'Noch nicht gespielt'}</div>
-          <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>Ergebnis manuell eintragen &amp; in der Tabelle werten.</div>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>{m.played ? tr.modals.resultEntered : tr.modals.notPlayedYet}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>{tr.modals.resultManualHint}</div>
         </div>
         <button onClick={() => s.setFixtureField('played', !m.played)} style={{ position: 'relative', width: 44, height: 24, borderRadius: 999, background: m.played ? 'var(--accent)' : 'var(--border-2)', border: 'none', cursor: 'pointer', flexShrink: 0, padding: 0 }}>
           <span style={{ position: 'absolute', top: 2, left: 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'transform .15s', transform: m.played ? 'translateX(20px)' : 'translateX(0)' }} />
@@ -59,15 +61,15 @@ export function FixtureModal() {
 
       {m.played && (
         <>
-          <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 2 }}>Ergebnis (Spiele)</label>
-          <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 8 }}>Gewonnene Spiele je Mannschaft (Heim : Gast). Daraus ergeben sich Mannschaftspunkte (Sieg 2 / Remis 1) und die Differenz.</div>
+          <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 2 }}>{tr.modals.resultGames}</label>
+          <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 8 }}>{tr.modals.resultGamesHint}</div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 6 }}>
             <input className="dh-input" value={m.hs} onChange={(e) => s.setFixtureField('hs', e.target.value)} inputMode="numeric" placeholder="0" style={numInput} />
             <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-4)' }}>:</span>
             <input className="dh-input" value={m.as} onChange={(e) => s.setFixtureField('as', e.target.value)} inputMode="numeric" placeholder="0" style={numInput} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 22, fontSize: 11, color: 'var(--text-5)', fontWeight: 600 }}>
-            <span style={{ width: 80, textAlign: 'center' }}>Heim</span><span style={{ width: 8 }} /><span style={{ width: 80, textAlign: 'center' }}>Gast</span>
+            <span style={{ width: 80, textAlign: 'center' }}>{tr.teams.home}</span><span style={{ width: 8 }} /><span style={{ width: 80, textAlign: 'center' }}>{tr.modals.guest}</span>
           </div>
         </>
       )}

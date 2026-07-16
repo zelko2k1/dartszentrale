@@ -1,10 +1,12 @@
 import { useStore } from '../store/useStore';
 import { Modal, ModalTitle, FieldLabel, ModalFooter } from '../components/Modal';
+import { useT } from '../i18n';
 
 // Freundschaftsspiel anlegen: eigene Mannschaft + frei wählbarer Gegner (suchbar über alle Saisons/Ligen),
 // Datum/Uhrzeit/Ort. Aufstellung & Ergebnis laufen danach über den „Freundschaftsspiele"-Wettbewerb.
 export function FriendlyModal() {
   const s = useStore();
+  const tr = useT();
   const m = s.friendlyModal;
   if (!m) return null;
 
@@ -26,9 +28,9 @@ export function FriendlyModal() {
 
   return (
     <Modal onClose={() => s.closeFriendly()} width={520} z={63} style={{ maxHeight: '88vh', overflow: 'auto' }}>
-      <ModalTitle>Freundschaftsspiel</ModalTitle>
+      <ModalTitle>{tr.modals.friendlyTitle}</ModalTitle>
 
-      <FieldLabel>Eigene Mannschaft</FieldLabel>
+      <FieldLabel>{tr.modals.ownTeam}</FieldLabel>
       {ownNames.length > 1 ? (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
           {ownNames.map((n) => {
@@ -37,18 +39,18 @@ export function FriendlyModal() {
           })}
         </div>
       ) : (
-        <input className="dh-input" value={m.ownTeam} onChange={(e) => s.setFriendlyField('ownTeam', e.target.value)} placeholder="Name eurer Mannschaft" style={{ ...inputStyle, marginBottom: 16 }} />
+        <input className="dh-input" value={m.ownTeam} onChange={(e) => s.setFriendlyField('ownTeam', e.target.value)} placeholder={tr.modals.ownTeamPh} style={{ ...inputStyle, marginBottom: 16 }} />
       )}
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '12px 16px', background: 'var(--btn)', borderRadius: 12, marginBottom: 16 }}>
-        <div style={{ fontSize: 14, fontWeight: 600 }}>{m.homeIsOwn ? 'Heimspiel' : 'Auswärtsspiel'}</div>
+        <div style={{ fontSize: 14, fontWeight: 600 }}>{m.homeIsOwn ? tr.modals.homeGame : tr.modals.awayGame}</div>
         <button onClick={() => s.setFriendlyField('homeIsOwn', !m.homeIsOwn)} style={{ position: 'relative', width: 44, height: 24, borderRadius: 999, background: m.homeIsOwn ? 'var(--accent)' : 'var(--border-2)', border: 'none', cursor: 'pointer', flexShrink: 0, padding: 0 }}>
           <span style={{ position: 'absolute', top: 2, left: 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'transform .15s', transform: m.homeIsOwn ? 'translateX(20px)' : 'translateX(0)' }} />
         </button>
       </div>
 
-      <FieldLabel>Gegner</FieldLabel>
-      <input className="dh-input" value={m.opponent} onChange={(e) => s.setFriendlyField('opponent', e.target.value)} placeholder="Gegner eingeben oder unten auswählen …" style={{ ...inputStyle, marginBottom: 8 }} />
+      <FieldLabel>{tr.modals.opponent}</FieldLabel>
+      <input className="dh-input" value={m.opponent} onChange={(e) => s.setFriendlyField('opponent', e.target.value)} placeholder={tr.modals.opponentPh} style={{ ...inputStyle, marginBottom: 8 }} />
       {matches.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 180, overflowY: 'auto', marginBottom: 16 }}>
           {matches.map((n) => {
@@ -57,25 +59,25 @@ export function FriendlyModal() {
           })}
         </div>
       ) : (
-        <div style={{ fontSize: 12, color: 'var(--text-5)', marginBottom: 16 }}>Kein bekannter Gegner — der eingegebene Name wird neu übernommen.</div>
+        <div style={{ fontSize: 12, color: 'var(--text-5)', marginBottom: 16 }}>{tr.modals.noKnownOpp}</div>
       )}
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
         <div style={{ flex: 1 }}>
-          <FieldLabel>Datum</FieldLabel>
+          <FieldLabel>{tr.modals.date}</FieldLabel>
           <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setFriendlyField('date', e.target.value)} style={inputStyle} />
         </div>
         <div style={{ width: 130 }}>
-          <FieldLabel>Uhrzeit</FieldLabel>
+          <FieldLabel>{tr.modals.time}</FieldLabel>
           <input className="dh-input" type="time" value={m.time} onChange={(e) => s.setFriendlyField('time', e.target.value)} style={inputStyle} />
         </div>
       </div>
-      <FieldLabel>Ort</FieldLabel>
-      <input className="dh-input" value={m.loc} onChange={(e) => s.setFriendlyField('loc', e.target.value)} placeholder="z. B. Vereinsheim …" style={{ ...inputStyle, marginBottom: 18 }} />
+      <FieldLabel>{tr.modals.place}</FieldLabel>
+      <input className="dh-input" value={m.loc} onChange={(e) => s.setFriendlyField('loc', e.target.value)} placeholder={tr.modals.placePh} style={{ ...inputStyle, marginBottom: 18 }} />
 
-      <ModalFooter onCancel={() => s.closeFriendly()} onSave={() => s.saveFriendly()} saveDisabled={!canSave} saveLabel="Anlegen" />
+      <ModalFooter onCancel={() => s.closeFriendly()} onSave={() => s.saveFriendly()} saveDisabled={!canSave} saveLabel={tr.modals.create} />
       <div style={{ fontSize: 11, color: 'var(--text-5)', marginTop: 10, lineHeight: 1.5 }}>
-        Aufstellung &amp; Ergebnis trägst du danach wie bei Ligaspielen über die Begegnung unter „Ligen → Freundschaftsspiele" ein. Der Termin landet automatisch im Kalender.
+        {tr.modals.friendlyNote}
       </div>
     </Modal>
   );
