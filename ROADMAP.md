@@ -54,12 +54,11 @@ Aus [`DATA_MODEL.md §5`](DATA_MODEL.md):
       „drittes Scoreboard" lohnt es nicht — nur wegen der Liga-Ergebnis-Kopplung.
 - [ ] 🧑‍💻 **2FA für Admins erzwingbar machen** (Policy-Schalter) — 2FA/TOTP selbst ist bereits umgesetzt.
 - [ ] 🧑‍💻 **#12 Kaderliste einschränken (auf Wunsch)** — aktuell ist der Kader für jeden eingeloggten Nutzer lesbar (E-Mails bleiben geschützt); als Vereins-Verzeichnis vertretbar. **Entscheidung 2026-07-05: keine Einschränkung nötig.** Nur umsetzen, **falls ein Verein es wünscht** (z. B. wegen Minderjähriger). Rationale: [`docs/security-audit.md`](docs/security-audit.md) #12.
-- [ ] 🧑‍💻 **Englische Übersetzung (i18n / Sprachpakete)** — alle Oberflächen-Texte aus den
-      Komponenten in Sprachdateien auslagern (z. B. `de.json`/`en.json`); **Deutsch bleibt Standard**,
-      Englisch folgt als erstes Sprachpaket, Umschalter in den Einstellungen. Der Hauptaufwand ist das
-      **einmalige Herauslösen der fest verdrahteten deutschen Texte** aus allen Screens/Modals — danach
-      sind weitere Sprachen nur noch eine zusätzliche Datei (auch aus der Community beisteuerbar).
-      Ebenfalls zu bedenken: README/Anleitungen (`README.en.md`) und Datums-/Zahlenformate.
+- [ ] 🧑‍💻 **Anleitungen/Doku auf Englisch** — die App-Oberfläche ist seit 16.07.2026 komplett
+      zweisprachig (DE/EN, `app/src/i18n/`, Umschalter in Einstellungen → Darstellung) und
+      `README.en.md` existiert. Offen sind die Schritt-für-Schritt-Anleitungen unter `docs/`
+      (bisher nur deutsch) — gut geeignet für Community-Beiträge. Weitere UI-Sprachen sind
+      nur noch eine zusätzliche Datei neben `en.ts`.
 - [ ] Mobile-Layout für die Verwaltung (der Counter ist bereits tablettauglich)
 - [ ] Backup-Retention + Größen-Monitoring von `pb_data` (größerer Hebel als Saison-Auslagern)
 - [ ] Optional: Grafana/Postgres-Export aus dem Saison-Bundle für freie Auswertung
