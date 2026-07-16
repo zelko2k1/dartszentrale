@@ -117,4 +117,31 @@ export const en: Dict = {
     language: 'Language / Sprache',
     languageSub: 'Language of the interface · applies to this device only',
   },
+
+  calendar: {
+    title: 'Calendar',
+    eventsThisMonth: (n: number) => (n === 1 ? '1 event this month' : `${n} events this month`),
+    prevMonth: 'Previous month',
+    nextMonth: 'Next month',
+    addEvent: 'Event',
+    moreCount: (n: number) => `+${n} more`,
+  },
+
+  login: {
+    management: 'Club management',
+    signIn: 'Sign in',
+    signInSub: 'Sign in with your club account',
+    email: 'Email',
+    password: 'Password',
+    code: 'Verification code',
+    codeHint: 'Code from your authenticator app. No access? Enter one of your 8-digit backup codes instead.',
+    confirm: 'Confirm',
+    demoAccounts: 'Demo accounts',
+    demoHint: 'Demo mode — any password, or pick a demo account.',
+    impressum: 'Legal notice',
+    impressumTitle: 'Legal notice',
+    datenschutz: 'Privacy',
+    datenschutzTitle: 'Privacy policy',
+    close: 'Close',
+  },
 };

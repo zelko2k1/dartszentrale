@@ -3,12 +3,16 @@ import { useStore } from '../store/useStore';
 import { EVENT_TYPES, EVENT_TYPE_ALL } from '../data/constants';
 import { perm, inSeason } from '../store/selectors';
 import { IconChevronLeft, IconChevronRight, IconPlus } from '../lib/icons';
+import { useT } from '../i18n';
 
-const MON = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 const pad2 = (n: number) => (n < 10 ? '0' + n : '' + n);
+// Kalenderwochen beginnen montags → Reihenfolge Mo…So aus dem So-basierten wdShort ableiten.
+const MON_FIRST = [1, 2, 3, 4, 5, 6, 0];
 
 export function Calendar() {
   const s = useStore();
+  const tr = useT();
+  const MON = tr.format.monLong;
   const accent = s.settings.accent;
   const p = perm(s.settings, s.accounts, s.session);
   const readOnly = s.viewSeasonId != null && s.viewSeasonId !== s.activeSeasonId;
@@ -52,23 +56,23 @@ export function Calendar() {
     <div style={{ padding: '28px 32px', maxWidth: 1240, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 22, flexWrap: 'wrap' }}>
         <div>
-          <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 6 }}>Kalender</div>
+          <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 6 }}>{tr.calendar.title}</div>
           <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{MON[ref.m]} {ref.y}</h1>
-          <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>{monthEvents === 1 ? '1 Termin diesen Monat' : `${monthEvents} Termine diesen Monat`}</div>
+          <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>{tr.calendar.eventsThisMonth(monthEvents)}</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button className="dh-hover-border" onClick={() => shift(-1)} title="Voriger Monat" style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IconChevronLeft size={18} /></button>
-          <button className="dh-hover-border" onClick={() => setRef({ y: now.getFullYear(), m: now.getMonth() })} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '0 16px', height: 38, borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Heute</button>
-          <button className="dh-hover-border" onClick={() => shift(1)} title="Nächster Monat" style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IconChevronRight size={18} /></button>
+          <button className="dh-hover-border" onClick={() => shift(-1)} title={tr.calendar.prevMonth} style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IconChevronLeft size={18} /></button>
+          <button className="dh-hover-border" onClick={() => setRef({ y: now.getFullYear(), m: now.getMonth() })} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '0 16px', height: 38, borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.today}</button>
+          <button className="dh-hover-border" onClick={() => shift(1)} title={tr.calendar.nextMonth} style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IconChevronRight size={18} /></button>
           {canManageEvents && (
-            <button className="dh-primary" onClick={() => s.openAddEvent()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', height: 38, padding: '0 16px', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', marginLeft: 6 }}><IconPlus size={16} />Termin</button>
+            <button className="dh-primary" onClick={() => s.openAddEvent()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', height: 38, padding: '0 16px', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', marginLeft: 6 }}><IconPlus size={16} />{tr.calendar.addEvent}</button>
           )}
         </div>
       </div>
 
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,minmax(64px,1fr))', borderBottom: '1px solid var(--border)', minWidth: 462 }}>
-          {['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map((wd) => (
+          {MON_FIRST.map((i) => tr.format.wdShort[i]).map((wd) => (
             <div key={wd} style={{ padding: '11px 12px', fontSize: 11, fontWeight: 700, color: 'var(--text-4)', letterSpacing: '.06em', textTransform: 'uppercase' }}>{wd}</div>
           ))}
         </div>
@@ -84,7 +88,7 @@ export function Calendar() {
                       <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ch.title}</span>
                     </div>
                   ))}
-                  {c.more > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-4)', paddingLeft: 6 }}>+{c.more} weitere</span>}
+                  {c.more > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-4)', paddingLeft: 6 }}>{tr.calendar.moreCount(c.more)}</span>}
                 </div>
               </div>
             ))}

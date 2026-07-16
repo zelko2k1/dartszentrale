@@ -130,4 +130,32 @@ export const de = {
     language: 'Sprache / Language',
     languageSub: 'Sprache der Oberfläche · gilt nur für dieses Gerät',
   },
+
+  calendar: {
+    title: 'Kalender',
+    /** Plural regelt jede Sprache selbst — deshalb eine Funktion. */
+    eventsThisMonth: (n: number) => (n === 1 ? '1 Termin diesen Monat' : `${n} Termine diesen Monat`),
+    prevMonth: 'Voriger Monat',
+    nextMonth: 'Nächster Monat',
+    addEvent: 'Termin',
+    moreCount: (n: number) => `+${n} weitere`,
+  },
+
+  login: {
+    management: 'Vereinsverwaltung',
+    signIn: 'Anmelden',
+    signInSub: 'Mit deinem Vereinskonto anmelden',
+    email: 'E-Mail',
+    password: 'Passwort',
+    code: 'Bestätigungscode',
+    codeHint: 'Code aus deiner Authenticator-App. Kein Zugriff? Gib stattdessen einen deiner 8-stelligen Backup-Codes ein.',
+    confirm: 'Bestätigen',
+    demoAccounts: 'Demo-Konten',
+    demoHint: 'Demo-Modus — Passwort beliebig, oder Demo-Konto wählen.',
+    impressum: 'Impressum',
+    impressumTitle: 'Impressum',
+    datenschutz: 'Datenschutz',
+    datenschutzTitle: 'Datenschutzerklärung',
+    close: 'Schließen',
+  },
 };
