@@ -10,9 +10,11 @@ import {
 } from '../store/training';
 import { IconBack, IconUndo, IconX } from '../lib/icons';
 import { BoardScale } from '../components/BoardScale';
+import { useT, dict } from '../i18n';
 
 export function TrainingGame() {
   const s = useStore();
+  const tr = useT();
   const g = s.trainGame;
   if (!g) return null;
   const accent = s.settings.accent;
@@ -23,25 +25,25 @@ export function TrainingGame() {
 
   const headBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 13px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' };
 
-  const roundLabel = g.modeId === 'baseball' ? `Inning ${Math.min(g.round, 9)} / 9`
-    : g.modeId === 'halveit' ? `Runde ${g.round} / 9`
-    : g.modeId === 'doubles' || g.modeId === 'bobs27' ? `Ziel ${g.round} / 21`
-    : g.modeId === 'checkout121' ? `Finish ${g.round}`
-    : `Runde ${g.round}`;
+  const roundLabel = g.modeId === 'baseball' ? tr.trainingScr.inningOf(g.round)
+    : g.modeId === 'halveit' ? tr.trainingScr.roundOf9(g.round)
+    : g.modeId === 'doubles' || g.modeId === 'bobs27' ? tr.trainingScr.targetOf21(g.round)
+    : g.modeId === 'checkout121' ? tr.trainingScr.finishN(g.round)
+    : tr.trainingScr.roundN(g.round);
 
   return (
     <BoardScale>
     <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: s.settings.mode === 'light' ? 'var(--bg)' : '#0c0e11', fontFamily: 'inherit' }}>
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)', flexShrink: 0 }}>
-        <button onClick={() => s.trainExit()} style={headBtn}><IconBack size={15} sw={2} />Beenden</button>
+        <button onClick={() => s.trainExit()} style={headBtn}><IconBack size={15} sw={2} />{tr.trainingScr.quit}</button>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '.02em' }}>{trainModeName(g.modeId)}</div>
           <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>{roundLabel}</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => s.trainUndoTurn()} disabled={!canUndo} style={{ ...headBtn, opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default' }}><IconUndo size={15} />Undo</button>
-          <button onClick={() => s.trainExit()} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />Abbrechen</button>
+          <button onClick={() => s.trainExit()} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />{tr.trainingScr.cancel}</button>
         </div>
       </div>
 
@@ -63,10 +65,10 @@ export function TrainingGame() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
               <span style={{ width: 9, height: 9, borderRadius: '50%', background: accent, boxShadow: `0 0 10px ${accent}`, flexShrink: 0 }} />
               <span style={{ fontSize: 15, fontWeight: 700 }}>{cur.name}</span>
-              <span style={{ fontSize: 13, color: 'var(--text-4)' }}>ist am Wurf</span>
+              <span style={{ fontSize: 13, color: 'var(--text-4)' }}>{tr.trainingScr.isThrowing}</span>
               {tgt && (
                 <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>Ziel</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>{tr.trainingScr.target}</span>
                   <span style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800, color: accent, background: `color-mix(in srgb, ${accent} 14%, transparent)`, padding: '3px 12px', borderRadius: 9 }}>{tgt.label}</span>
                   {tgt.hint && <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-3)' }}>{tgt.hint}</span>}
                 </span>
@@ -84,13 +86,14 @@ export function TrainingGame() {
 }
 
 function PlayerCard({ row, active, accent }: { row: StandRow; active: boolean; accent: string }) {
+  const tr = useT();
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, borderRadius: 16, padding: '14px 16px', background: active ? `color-mix(in srgb, ${accent} 9%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${active ? accent : 'var(--border-2)'}`, boxShadow: active ? `0 0 0 1px ${accent}` : 'none', opacity: row.eliminated ? 0.5 : 1 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
         <Avatar photo={row.player.photo} short={row.player.short} avi={row.player.av} size={36} />
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.player.name}</div>
-          {active && <div style={{ fontSize: 10, color: accent, fontWeight: 800, letterSpacing: '.06em' }}>AM WURF</div>}
+          {active && <div style={{ fontSize: 10, color: accent, fontWeight: 800, letterSpacing: '.06em' }}>{tr.trainingScr.atThrow}</div>}
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
@@ -200,8 +203,8 @@ function GameBoard({ game, accent, activeId }: { game: TrainGame; accent: string
         const color = m >= 3 ? accent : (isActive(p) ? 'var(--text)' : 'var(--text-3)');
         return <MarkCell n={m} color={color} dim="var(--text-5)" />;
       };
-      const footer = { label: 'Zu', values: players.map((p) => `${CRICKET_TARGETS.filter((num) => marks[p.id][num] >= 3).length}/${CRICKET_TARGETS.length}`) };
-      return <MatrixBoard headLabel="Feld" cols={cols} rows={rows} accent={accent} renderCell={renderCell} footer={footer} />;
+      const footer = { label: dict().trainingScr.footClosed, values: players.map((p) => `${CRICKET_TARGETS.filter((num) => marks[p.id][num] >= 3).length}/${CRICKET_TARGETS.length}`) };
+      return <MatrixBoard headLabel={dict().trainingScr.headField} cols={cols} rows={rows} accent={accent} renderCell={renderCell} footer={footer} />;
     }
     case 'baseball': {
       const innings = game.data.innings!; const runs = game.data.runs!;
@@ -213,7 +216,7 @@ function GameBoard({ game, accent, activeId }: { game: TrainGame; accent: string
         const v = arr[ri];
         return <span style={{ fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 700, color: v > 0 ? 'var(--text)' : 'var(--text-5)' }}>{v}</span>;
       };
-      return <MatrixBoard headLabel="Inn." cols={cols} rows={rows} accent={accent} renderCell={renderCell} />;
+      return <MatrixBoard headLabel={dict().trainingScr.headInning} cols={cols} rows={rows} accent={accent} renderCell={renderCell} />;
     }
     case 'atc': {
       const pos = game.data.pos!; const darts = game.data.darts!;
@@ -225,7 +228,7 @@ function GameBoard({ game, accent, activeId }: { game: TrainGame; accent: string
         if (current) return <span style={{ width: 10, height: 10, borderRadius: '50%', boxSizing: 'border-box', border: `2px solid ${isActive(p) ? accent : 'var(--text-4)'}`, background: isActive(p) ? accent : 'transparent', display: 'block' }} />;
         return dotCell();
       };
-      return <MatrixBoard headLabel="Ziel" cols={cols} rows={rows} accent={accent} renderCell={renderCell} />;
+      return <MatrixBoard headLabel={dict().trainingScr.headTarget} cols={cols} rows={rows} accent={accent} renderCell={renderCell} />;
     }
     case 'halveit': {
       const rounds = game.data.rounds!; const score = game.data.score!;
@@ -237,7 +240,7 @@ function GameBoard({ game, accent, activeId }: { game: TrainGame; accent: string
         const e = arr[ri];
         return <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, color: e.hit ? 'var(--text)' : '#E0594B' }}>{e.val}</span>;
       };
-      return <MatrixBoard headLabel="Runde" cols={cols} rows={rows} accent={accent} renderCell={renderCell} />;
+      return <MatrixBoard headLabel={dict().trainingScr.headRound} cols={cols} rows={rows} accent={accent} renderCell={renderCell} />;
     }
     default: return null;
   }
@@ -280,10 +283,11 @@ const primaryBtn = (accent: string): React.CSSProperties => ({ background: accen
 
 function HitsPanel() {
   const apply = useStore((s) => s.trainApply);
+  const tr = useT();
   useTrainKeys((k) => { if (k >= '0' && k <= '3') { apply({ kind: 'hits', hits: +k }); return true; } return false; });
   return (
     <div>
-      <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>Wie viele der 3 Darts haben getroffen? <span style={{ opacity: 0.7 }}>(Tasten 0–3)</span></div>
+      <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>{tr.trainingScr.hitsQuestion} <span style={{ opacity: 0.7 }}>{tr.trainingScr.keys03}</span></div>
       <div style={{ display: 'flex', gap: 10 }}>
         {[0, 1, 2, 3].map((h) => (
           <button key={h} onClick={() => apply({ kind: 'hits', hits: h })} style={bigBtn()}>{h}</button>
@@ -295,10 +299,11 @@ function HitsPanel() {
 
 function AdvancePanel() {
   const apply = useStore((s) => s.trainApply);
+  const tr = useT();
   useTrainKeys((k) => { if (k >= '0' && k <= '3') { apply({ kind: 'advance', advance: +k }); return true; } return false; });
   return (
     <div>
-      <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>Wie viele Ziele in dieser Aufnahme geschafft? <span style={{ opacity: 0.7 }}>(Tasten 0–3)</span></div>
+      <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>{tr.trainingScr.advanceQuestion} <span style={{ opacity: 0.7 }}>{tr.trainingScr.keys03}</span></div>
       <div style={{ display: 'flex', gap: 10 }}>
         {[0, 1, 2, 3].map((h) => (
           <button key={h} onClick={() => apply({ kind: 'advance', advance: h })} style={bigBtn()}>+{h}</button>
@@ -310,6 +315,7 @@ function AdvancePanel() {
 
 function CheckoutPanel({ accent }: { accent: string }) {
   const apply = useStore((s) => s.trainApply);
+  const tr = useT();
   useTrainKeys((k) => {
     if (k >= '1' && k <= '3') { apply({ kind: 'made', made: true, darts: +k }); return true; }
     if (k === '0') { apply({ kind: 'made', made: false, darts: 3 }); return true; }
@@ -320,17 +326,18 @@ function CheckoutPanel({ accent }: { accent: string }) {
       {[1, 2, 3].map((d) => (
         <button key={d} onClick={() => apply({ kind: 'made', made: true, darts: d })} style={{ ...bigBtn(), background: `color-mix(in srgb, ${accent} 16%, var(--btn))`, border: `1px solid ${accent}`, color: 'var(--text)', fontSize: 15 }}>✓ {d} Dart{d > 1 ? 's' : ''}</button>
       ))}
-      <button onClick={() => apply({ kind: 'made', made: false, darts: 3 })} style={{ ...bigBtn(), background: 'rgba(224,89,75,.12)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', fontSize: 15 }}>✗ Verfehlt <span style={{ opacity: 0.6, fontSize: 12 }}>(0)</span></button>
+      <button onClick={() => apply({ kind: 'made', made: false, darts: 3 })} style={{ ...bigBtn(), background: 'rgba(224,89,75,.12)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', fontSize: 15 }}>{tr.trainingScr.missed} <span style={{ opacity: 0.6, fontSize: 12 }}>(0)</span></button>
     </div>
   );
 }
 
 function RunsPanel() {
   const apply = useStore((s) => s.trainApply);
+  const tr = useT();
   useTrainKeys((k) => { if (k >= '0' && k <= '9') { apply({ kind: 'runs', runs: +k }); return true; } return false; });
   return (
     <div>
-      <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>Runs dieses Inning (Single=1 · Double=2 · Triple=3 je Treffer) <span style={{ opacity: 0.7 }}>· Tasten 0–9</span></div>
+      <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>{tr.trainingScr.runsHint} <span style={{ opacity: 0.7 }}>{tr.trainingScr.keys09}</span></div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
         {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((r) => (
           <button key={r} onClick={() => apply({ kind: 'runs', runs: r })} style={{ ...bigBtn(), padding: '14px 0', fontSize: 20 }}>{r}</button>
@@ -342,24 +349,26 @@ function RunsPanel() {
 
 function HalvePanel({ accent }: { accent: string }) {
   const apply = useStore((s) => s.trainApply);
+  const tr = useT();
   const [val, setVal] = useState('');
   const v = parseInt(val, 10);
   const valid = !isNaN(v) && v > 0 && v <= 180;
   const submit = () => { if (valid) { apply({ kind: 'halve', scored: v }); setVal(''); } };
   return (
     <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-      <input autoFocus type="text" inputMode="numeric" value={val} placeholder="Punkte"
+      <input autoFocus type="text" inputMode="numeric" value={val} placeholder={tr.trainingScr.pointsPlaceholder}
         onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
         onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
         style={{ flex: 1, minWidth: 120, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '13px 16px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
-      <button onClick={submit} disabled={!valid} style={{ ...primaryBtn(accent), opacity: valid ? 1 : 0.4, cursor: valid ? 'pointer' : 'default', padding: '15px 24px' }}>Eintragen</button>
-      <button onClick={() => { apply({ kind: 'halve', scored: 0 }); setVal(''); }} style={{ background: 'rgba(224,89,75,.12)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', borderRadius: 12, padding: '15px 22px', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Verfehlt → halbieren</button>
+      <button onClick={submit} disabled={!valid} style={{ ...primaryBtn(accent), opacity: valid ? 1 : 0.4, cursor: valid ? 'pointer' : 'default', padding: '15px 24px' }}>{tr.trainingScr.enter}</button>
+      <button onClick={() => { apply({ kind: 'halve', scored: 0 }); setVal(''); }} style={{ background: 'rgba(224,89,75,.12)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', borderRadius: 12, padding: '15px 22px', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.missHalve}</button>
     </div>
   );
 }
 
 function ScorePanel({ accent }: { accent: string }) {
   const apply = useStore((s) => s.trainApply);
+  const tr = useT();
   const [val, setVal] = useState('');
   const v = val === '' ? 0 : parseInt(val, 10);
   const valid = !isNaN(v) && v >= 0 && v <= 180;
@@ -367,11 +376,11 @@ function ScorePanel({ accent }: { accent: string }) {
   return (
     <div>
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
-        <input autoFocus type="text" inputMode="numeric" value={val} placeholder="Aufnahme"
+        <input autoFocus type="text" inputMode="numeric" value={val} placeholder={tr.trainingScr.turnPlaceholder}
           onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
           style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '13px 16px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
-        <button onClick={submit} disabled={!valid} style={{ ...primaryBtn(accent), opacity: valid ? 1 : 0.4, cursor: valid ? 'pointer' : 'default', padding: '15px 24px' }}>Eintragen</button>
+        <button onClick={submit} disabled={!valid} style={{ ...primaryBtn(accent), opacity: valid ? 1 : 0.4, cursor: valid ? 'pointer' : 'default', padding: '15px 24px' }}>{tr.trainingScr.enter}</button>
       </div>
       <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
         {[26, 40, 41, 45, 60, 81, 100, 140, 180].map((q) => (
@@ -384,6 +393,7 @@ function ScorePanel({ accent }: { accent: string }) {
 
 function CricketPanel({ game, accent }: { game: TrainGame; accent: string }) {
   const apply = useStore((s) => s.trainApply);
+  const tr = useT();
   const [mult, setMult] = useState(1);
   const [marks, setMarks] = useState<Record<number, number>>({});
   const [darts, setDarts] = useState(0);
@@ -401,7 +411,7 @@ function CricketPanel({ game, accent }: { game: TrainGame; accent: string }) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600 }}>Feldwert:</span>
+        <span style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600 }}>{tr.trainingScr.fieldValue}</span>
         {[['Single', 1], ['Double', 2], ['Triple', 3]].map(([lbl, m]) => (
           <button key={m as number} onClick={() => setMult(m as number)} style={{ background: mult === m ? accent : 'var(--btn)', color: mult === m ? accentFg(accent) : 'var(--text-2)', border: `1px solid ${mult === m ? accent : 'var(--border-2)'}`, borderRadius: 9, padding: '7px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{lbl}</button>
         ))}
@@ -420,8 +430,8 @@ function CricketPanel({ game, accent }: { game: TrainGame; accent: string }) {
         })}
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
-        <button onClick={reset} disabled={darts === 0} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 12, padding: '13px 22px', fontSize: 14, fontWeight: 700, cursor: darts ? 'pointer' : 'default', opacity: darts ? 1 : 0.5, fontFamily: 'inherit' }}>Zurücksetzen</button>
-        <button onClick={submit} style={{ ...primaryBtn(accent), flex: 1 }}>Aufnahme eintragen</button>
+        <button onClick={reset} disabled={darts === 0} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 12, padding: '13px 22px', fontSize: 14, fontWeight: 700, cursor: darts ? 'pointer' : 'default', opacity: darts ? 1 : 0.5, fontFamily: 'inherit' }}>{tr.trainingScr.resetBtn}</button>
+        <button onClick={submit} style={{ ...primaryBtn(accent), flex: 1 }}>{tr.trainingScr.submitTurn}</button>
       </div>
     </div>
   );
@@ -430,6 +440,7 @@ function marksGlyph(n: number) { return n >= 3 ? 'Ⓧ' : n === 2 ? '⊘' : n ===
 
 function KillerPanel({ game, accent }: { game: TrainGame; accent: string }) {
   const apply = useStore((s) => s.trainApply);
+  const tr = useT();
   const [darts, setDarts] = useState<(string | null)[]>([]);
   const cur = game.players[game.turnIdx];
   const isKiller = game.data.isKiller![cur.id];
@@ -444,7 +455,7 @@ function KillerPanel({ game, accent }: { game: TrainGame; accent: string }) {
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
         <span style={{ fontSize: 13, color: 'var(--text-3)' }}>
-          {isKiller ? <b style={{ color: accent }}>Killer aktiv</b> : <>Triff deine Zahl <b style={{ color: 'var(--text)' }}>{num[cur.id]}</b>, um Killer zu werden</>}
+          {isKiller ? <b style={{ color: accent }}>{tr.trainingScr.killerActive}</b> : <>{tr.trainingScr.hitYourNumber1}<b style={{ color: 'var(--text)' }}>{num[cur.id]}</b>{tr.trainingScr.hitYourNumber2}</>}
         </span>
         <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>Darts: {darts.length}/3</span>
       </div>
@@ -456,15 +467,15 @@ function KillerPanel({ game, accent }: { game: TrainGame; accent: string }) {
           return (
             <button key={p.id} onClick={() => addDart(p.id)} disabled={dead || darts.length >= 3} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: hitCount ? `color-mix(in srgb, ${accent} 16%, var(--btn))` : 'var(--btn)', border: `1px solid ${self ? accent : 'var(--border-2)'}`, borderRadius: 11, padding: '10px 6px', cursor: (dead || darts.length >= 3) ? 'default' : 'pointer', opacity: dead ? 0.4 : 1, fontFamily: 'inherit' }}>
               <span style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>{num[p.id]}</span>
-              <span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{self ? 'Eigene' : p.short} · {'♥'.repeat(Math.max(0, lives[p.id])) || '✗'}{hitCount ? ` (${hitCount})` : ''}</span>
+              <span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{self ? tr.trainingScr.ownNumber : p.short} · {'♥'.repeat(Math.max(0, lives[p.id])) || '✗'}{hitCount ? ` (${hitCount})` : ''}</span>
             </button>
           );
         })}
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
-        <button onClick={() => addDart(null)} disabled={darts.length >= 3} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 12, padding: '13px 20px', fontSize: 14, fontWeight: 700, cursor: darts.length >= 3 ? 'default' : 'pointer', opacity: darts.length >= 3 ? 0.5 : 1, fontFamily: 'inherit' }}>Daneben</button>
-        <button onClick={reset} disabled={!darts.length} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 12, padding: '13px 20px', fontSize: 14, fontWeight: 700, cursor: darts.length ? 'pointer' : 'default', opacity: darts.length ? 1 : 0.5, fontFamily: 'inherit' }}>Zurück</button>
-        <button onClick={submit} style={{ ...primaryBtn(accent), flex: 1 }}>Aufnahme eintragen</button>
+        <button onClick={() => addDart(null)} disabled={darts.length >= 3} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 12, padding: '13px 20px', fontSize: 14, fontWeight: 700, cursor: darts.length >= 3 ? 'default' : 'pointer', opacity: darts.length >= 3 ? 0.5 : 1, fontFamily: 'inherit' }}>{tr.trainingScr.missBtn}</button>
+        <button onClick={reset} disabled={!darts.length} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 12, padding: '13px 20px', fontSize: 14, fontWeight: 700, cursor: darts.length ? 'pointer' : 'default', opacity: darts.length ? 1 : 0.5, fontFamily: 'inherit' }}>{tr.trainingScr.back}</button>
+        <button onClick={submit} style={{ ...primaryBtn(accent), flex: 1 }}>{tr.trainingScr.submitTurn}</button>
       </div>
     </div>
   );
@@ -472,10 +483,11 @@ function KillerPanel({ game, accent }: { game: TrainGame; accent: string }) {
 
 function TrainWinOverlay({ game, accent }: { game: TrainGame; accent: string }) {
   const s = useStore();
+  const tr = useT();
   const board = leaderboard(game);
   const solo = game.players.length === 1;
   const winners = game.winnerIds.map((id) => game.players.find((p) => p.id === id)?.name).filter(Boolean);
-  const title = solo ? 'Training beendet' : winners.length > 1 ? 'Unentschieden' : 'Gewonnen';
+  const title = solo ? tr.trainingScr.trainingDone : winners.length > 1 ? tr.trainingScr.draw : tr.trainingScr.won;
   return (
     <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,10,12,.86)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 40, padding: 24 }}>
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 20, padding: 28, width: 460, maxWidth: '94vw', boxShadow: '0 30px 70px rgba(0,0,0,.55)' }}>
@@ -500,8 +512,8 @@ function TrainWinOverlay({ game, accent }: { game: TrainGame; accent: string }) 
           })}
         </div>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button onClick={() => s.trainExit()} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Beenden</button>
-          <button onClick={() => s.trainRematch()} style={{ background: accent, border: 'none', color: accentFg(accent), padding: '13px 28px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Nochmal</button>
+          <button onClick={() => s.trainExit()} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.quit}</button>
+          <button onClick={() => s.trainRematch()} style={{ background: accent, border: 'none', color: accentFg(accent), padding: '13px 28px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.again}</button>
         </div>
       </div>
     </div>

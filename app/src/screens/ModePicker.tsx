@@ -1,11 +1,12 @@
 import { useStore } from '../store/useStore';
 import { Logo } from '../lib/icons';
+import { useT } from '../i18n';
 
 // Erst-Start-Auswahl: einmalig Lokal- oder Vereinsmodus wählen. Die Wahl wird festgeschrieben
 // (appModeManual=true) und beim nächsten Start respektiert. Erscheint nur auf einem frischen Gerät.
 
-function Card({ title, sub, points, onClick, primary }: {
-  title: string; sub: string; points: string[]; onClick: () => void; primary?: boolean;
+function Card({ title, sub, points, select, onClick, primary }: {
+  title: string; sub: string; points: string[]; select: string; onClick: () => void; primary?: boolean;
 }) {
   return (
     <button
@@ -28,7 +29,7 @@ function Card({ title, sub, points, onClick, primary }: {
           background: primary ? 'var(--accent)' : 'var(--btn)', color: primary ? 'var(--accent-fg)' : 'var(--text)',
           border: primary ? 'none' : '1px solid var(--border-2)', padding: '9px 16px', borderRadius: 11,
           fontSize: 13.5, fontWeight: 800,
-        }}>Auswählen →</span>
+        }}>{select}</span>
       </div>
     </button>
   );
@@ -36,6 +37,7 @@ function Card({ title, sub, points, onClick, primary }: {
 
 export function ModePicker() {
   const choose = useStore((s) => s.chooseMode);
+  const tr = useT();
   return (
     <div style={{
       flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -46,23 +48,25 @@ export function ModePicker() {
         <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>DartsZentrale</div>
       </div>
       <div style={{ textAlign: 'center', maxWidth: 540 }}>
-        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>Wie möchtest du DartsZentrale nutzen?</div>
+        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>{tr.modePicker.question}</div>
         <div style={{ fontSize: 13.5, color: 'var(--text-3)', lineHeight: 1.55 }}>
-          Du kannst die Wahl später in den Einstellungen unter „Nutzungsart" jederzeit ändern.
+          {tr.modePicker.changeHint}
         </div>
       </div>
       <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', justifyContent: 'center', width: '100%', maxWidth: 740 }}>
         <Card
-          title="Lokal"
-          sub="Alles auf diesem Gerät — ohne Server, ohne Anmeldung. Ideal für ein einzelnes Board."
-          points={['Sofort startklar', 'Daten bleiben im Browser', 'Keine Datenbank nötig']}
+          title={tr.modePicker.localTitle}
+          sub={tr.modePicker.localSub}
+          points={tr.modePicker.localPoints}
+          select={tr.modePicker.select}
           primary
           onClick={() => choose('local')}
         />
         <Card
-          title="Vereinsmodus"
-          sub="Mit eigenem Datenbank-Server: echte Konten, mehrere Boards, geteilte Daten."
-          points={['Anmeldung mit Vereinskonto', 'Mehrere Geräte synchron', 'Server (LAN oder Cloud) nötig']}
+          title={tr.modePicker.vereinTitle}
+          sub={tr.modePicker.vereinSub}
+          points={tr.modePicker.vereinPoints}
+          select={tr.modePicker.select}
           onClick={() => choose('verein')}
         />
       </div>

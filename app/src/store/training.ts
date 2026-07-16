@@ -2,6 +2,7 @@
 // Jeder Modus teilt sich ein gemeinsames TrainGame-Modell; die Spiel-spezifische
 // Logik liegt in initData() / applyTurn() / standings() (Switch nach modeId).
 import { TRAIN_MODES, CRICKET_TARGETS, CHECKOUTS } from '../data/constants';
+import { dict } from '../i18n';
 
 export interface TrainPlayer { id: string; name: string; short: string; av: number; photo?: string; }
 
@@ -59,16 +60,18 @@ export const BOBS27_SEQ = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,25
 export const BASEBALL_INNINGS = 9;
 export const KILLER_LIVES = 3;
 export interface HalveTarget { label: string; hint: string; }
+// Label/Hint als Getter aus dem Sprachpaket (wie die Konstanten in data/constants.ts).
+const halveNum = (n: number): HalveTarget => ({ label: String(n), get hint() { return dict().trainingScr.hintNumber(n); } });
 export const HALVEIT_TARGETS: HalveTarget[] = [
-  { label: '15', hint: 'Alle Treffer auf die 15' },
-  { label: '16', hint: 'Alle Treffer auf die 16' },
-  { label: 'Doppel', hint: 'Nur Doppelfelder zählen' },
-  { label: '17', hint: 'Alle Treffer auf die 17' },
-  { label: '18', hint: 'Alle Treffer auf die 18' },
-  { label: 'Triple', hint: 'Nur Triplefelder zählen' },
-  { label: '19', hint: 'Alle Treffer auf die 19' },
-  { label: '20', hint: 'Alle Treffer auf die 20' },
-  { label: 'Bull', hint: 'Nur Bull / Bullseye zählt' },
+  halveNum(15),
+  halveNum(16),
+  { get label() { return dict().trainingScr.doublesLabel; }, get hint() { return dict().trainingScr.doublesHint; } },
+  halveNum(17),
+  halveNum(18),
+  { get label() { return dict().trainingScr.tripleLabel; }, get hint() { return dict().trainingScr.tripleHint; } },
+  halveNum(19),
+  halveNum(20),
+  { label: 'Bull', get hint() { return dict().trainingScr.bullHint; } },
 ];
 export const HALVEIT_START = 40;
 export const ELIM_TARGET = 301;
@@ -151,7 +154,7 @@ export function applyTurn(g: TrainGame, input: TurnInput): TrainGame {
       const v = DOUBLES_SEQ[g.round - 1];
       data.hits = (data.hits || 0) + hits;
       data.throws = (data.throws || 0) + 3;
-      pushLog(`${v === 25 ? 'Bull' : 'D' + v} · ${hits}/3 Treffer`);
+      pushLog(`${v === 25 ? 'Bull' : 'D' + v} · ${dict().trainingScr.logHitsOf3(hits)}`);
       break;
     }
     case 'bobs27': {
@@ -161,7 +164,7 @@ export function applyTurn(g: TrainGame, input: TurnInput): TrainGame {
       const sc = data.score!;
       const delta = hits > 0 ? hits * 2 * v : -2 * v;
       sc[cur.id] = sc[cur.id] + delta;
-      pushLog(`${v === 25 ? 'Bull' : 'D' + v} · ${hits > 0 ? hits + ' Treffer ' : 'verfehlt '}${delta >= 0 ? '+' : ''}${delta} → ${sc[cur.id]}`);
+      pushLog(`${v === 25 ? 'Bull' : 'D' + v} · ${hits > 0 ? dict().trainingScr.logHits(hits) : dict().trainingScr.logMissed}${delta >= 0 ? '+' : ''}${delta} → ${sc[cur.id]}`);
       if (sc[cur.id] <= 0) { over = true; winnerIds = [cur.id]; }
       break;
     }
@@ -169,8 +172,8 @@ export function applyTurn(g: TrainGame, input: TurnInput): TrainGame {
       if (input.kind !== 'made') break;
       const v = CHECKOUT121_SEQ[g.round - 1];
       data.attempts = (data.attempts || 0) + 1;
-      if (input.made) { data.made = (data.made || 0) + 1; data.best = Math.max(data.best || 0, v); pushLog(`${v} · geschafft (${input.darts} Darts)`); }
-      else pushLog(`${v} · verfehlt`);
+      if (input.made) { data.made = (data.made || 0) + 1; data.best = Math.max(data.best || 0, v); pushLog(`${v} · ${dict().trainingScr.logMade(input.darts)}`); }
+      else pushLog(`${v} · ${dict().trainingScr.logMissedPlain}`);
       break;
     }
     case 'atc': {
@@ -179,7 +182,7 @@ export function applyTurn(g: TrainGame, input: TurnInput): TrainGame {
       const pos = data.pos!; const darts = data.darts!;
       pos[cur.id] = Math.min(ATC_SEQ.length, pos[cur.id] + adv);
       darts[cur.id] = (darts[cur.id] || 0) + 3;
-      pushLog(`+${adv} Ziel${adv === 1 ? '' : 'e'} → ${pos[cur.id]}/${ATC_SEQ.length}`);
+      pushLog(`+${adv} ${dict().trainingScr.logTargets(adv)} → ${pos[cur.id]}/${ATC_SEQ.length}`);
       if (pos[cur.id] >= ATC_SEQ.length) { over = true; winnerIds = [cur.id]; }
       break;
     }
@@ -195,7 +198,7 @@ export function applyTurn(g: TrainGame, input: TurnInput): TrainGame {
       if (input.kind !== 'halve') break;
       const sc = data.score!;
       if (input.scored > 0) { sc[cur.id] += input.scored; pushLog(`+${input.scored} → ${sc[cur.id]}`); }
-      else { const before = sc[cur.id]; sc[cur.id] = Math.floor(before / 2); pushLog(`verfehlt · ${before} halbiert → ${sc[cur.id]}`); }
+      else { const before = sc[cur.id]; sc[cur.id] = Math.floor(before / 2); pushLog(dict().trainingScr.logHalved(before, sc[cur.id])); }
       data.rounds![cur.id].push({ val: sc[cur.id], hit: input.scored > 0 });
       break;
     }
@@ -219,7 +222,7 @@ export function applyTurn(g: TrainGame, input: TurnInput): TrainGame {
         myMarks[num] = mk;
         parts.push(`${num === 25 ? 'Bull' : num}×${m}`);
       }
-      pushLog(`${parts.join(' ') || 'keine Treffer'}${added ? '' : ''}`);
+      pushLog(`${parts.join(' ') || dict().trainingScr.logNoHits}${added ? '' : ''}`);
       // Sieg-/Ende-Prüfung
       const allClosed = (pid: string) => CRICKET_TARGETS.every((num) => data.marks![pid][num] >= 3);
       if (n === 1) { if (allClosed(cur.id)) { over = true; winnerIds = [cur.id]; } }
@@ -230,7 +233,7 @@ export function applyTurn(g: TrainGame, input: TurnInput): TrainGame {
       if (input.kind !== 'score') break;
       const sc = data.score!;
       const next = sc[cur.id] + input.score;
-      if (next > ELIM_TARGET) { pushLog(`${input.score} · überworfen (${next}) → bleibt ${sc[cur.id]}`); }
+      if (next > ELIM_TARGET) { pushLog(`${input.score} · ${dict().trainingScr.logBust(next, sc[cur.id])}`); }
       else {
         sc[cur.id] = next;
         let knocked = '';
@@ -240,7 +243,7 @@ export function applyTurn(g: TrainGame, input: TurnInput): TrainGame {
             if (p.id !== cur.id && sc[p.id] === next && next > 0) { sc[p.id] = 0; knocked += ` ${p.short}↩`; }
           }
         }
-        pushLog(`+${input.score} → ${next}${knocked ? ' · wirft zurück:' + knocked : ''}`);
+        pushLog(`+${input.score} → ${next}${knocked ? dict().trainingScr.logKnocksBack + knocked : ''}`);
       }
       break;
     }
@@ -250,16 +253,16 @@ export function applyTurn(g: TrainGame, input: TurnInput): TrainGame {
       const events: string[] = [];
       for (const target of input.darts) {
         if (target == null) continue;
-        if (target === cur.id) { if (!isK[cur.id]) { isK[cur.id] = true; events.push('wird Killer'); } }
+        if (target === cur.id) { if (!isK[cur.id]) { isK[cur.id] = true; events.push(dict().trainingScr.logBecomesKiller); } }
         else {
           const opp = g.players.find((p) => p.id === target);
           if (opp && isK[cur.id] && lives[opp.id] > 0) {
-            lives[opp.id]--; events.push(`−1 Leben ${opp.short}`);
-            if (lives[opp.id] <= 0) events.push(`${opp.short} ausgeschieden`);
+            lives[opp.id]--; events.push(dict().trainingScr.logLifeLost(opp.short));
+            if (lives[opp.id] <= 0) events.push(dict().trainingScr.logOut(opp.short));
           }
         }
       }
-      pushLog(events.length ? events.join(' · ') : 'kein Treffer');
+      pushLog(events.length ? events.join(' · ') : dict().trainingScr.logNoHit);
       const alive = g.players.filter((p) => lives[p.id] > 0);
       if (alive.length <= 1) { over = true; winnerIds = alive.map((p) => p.id); }
       break;
@@ -306,24 +309,24 @@ export function standings(g: TrainGame): StandRow[] {
     switch (g.modeId) {
       case 'doubles': {
         const q = d.throws ? Math.round(((d.hits || 0) / d.throws) * 100) : 0;
-        return { player: p, primary: `${q}%`, secondary: `${d.hits || 0}/${d.throws || 0}`, sub: 'Doppelquote', done: g.over, eliminated: false };
+        return { player: p, primary: `${q}%`, secondary: `${d.hits || 0}/${d.throws || 0}`, sub: dict().trainingScr.subDoubleRate, done: g.over, eliminated: false };
       }
-      case 'bobs27': { const s = d.score![p.id]; return { player: p, primary: String(s), sub: s <= 0 ? 'ausgeschieden' : 'Punkte', done: g.over, eliminated: s <= 0 }; }
+      case 'bobs27': { const s = d.score![p.id]; return { player: p, primary: String(s), sub: s <= 0 ? dict().trainingScr.subOut : dict().trainingScr.subPoints, done: g.over, eliminated: s <= 0 }; }
       case 'checkout121': {
         const q = d.attempts ? Math.round(((d.made || 0) / d.attempts) * 100) : 0;
-        return { player: p, primary: `${q}%`, secondary: `HF ${d.best || 0}`, sub: `${d.made || 0}/${d.attempts || 0} Finishes`, done: g.over, eliminated: false };
+        return { player: p, primary: `${q}%`, secondary: `HF ${d.best || 0}`, sub: dict().trainingScr.subFinishes(d.made || 0, d.attempts || 0), done: g.over, eliminated: false };
       }
-      case 'atc': { const pos = d.pos![p.id]; return { player: p, primary: `${pos}/${ATC_SEQ.length}`, secondary: `${d.darts![p.id]} Darts`, sub: pos >= ATC_SEQ.length ? 'fertig' : `Ziel ${ATC_SEQ[Math.min(pos, ATC_SEQ.length - 1)] === 25 ? 'Bull' : ATC_SEQ[Math.min(pos, ATC_SEQ.length - 1)]}`, done: pos >= ATC_SEQ.length, eliminated: false }; }
-      case 'baseball': return { player: p, primary: String(d.runs![p.id]), sub: 'Runs', done: g.over, eliminated: false };
-      case 'halveit': return { player: p, primary: String(d.score![p.id]), sub: 'Punkte', done: g.over, eliminated: false };
+      case 'atc': { const pos = d.pos![p.id]; return { player: p, primary: `${pos}/${ATC_SEQ.length}`, secondary: `${d.darts![p.id]} Darts`, sub: pos >= ATC_SEQ.length ? dict().trainingScr.subDone : dict().trainingScr.subTarget(ATC_SEQ[Math.min(pos, ATC_SEQ.length - 1)] === 25 ? 'Bull' : ATC_SEQ[Math.min(pos, ATC_SEQ.length - 1)]), done: pos >= ATC_SEQ.length, eliminated: false }; }
+      case 'baseball': return { player: p, primary: String(d.runs![p.id]), sub: dict().trainingScr.subRuns, done: g.over, eliminated: false };
+      case 'halveit': return { player: p, primary: String(d.score![p.id]), sub: dict().trainingScr.subPoints, done: g.over, eliminated: false };
       case 'cricket': {
         const closed = CRICKET_TARGETS.filter((num) => d.marks![p.id][num] >= 3).length;
-        return { player: p, primary: String(d.points![p.id]), secondary: `${closed}/${CRICKET_TARGETS.length} zu`, sub: 'Punkte', done: g.over, eliminated: false };
+        return { player: p, primary: String(d.points![p.id]), secondary: dict().trainingScr.subClosed(closed, CRICKET_TARGETS.length), sub: dict().trainingScr.subPoints, done: g.over, eliminated: false };
       }
-      case 'elimination': return { player: p, primary: String(d.score![p.id]), sub: `Ziel ${ELIM_TARGET}`, done: g.over, eliminated: false };
+      case 'elimination': return { player: p, primary: String(d.score![p.id]), sub: dict().trainingScr.subTarget(ELIM_TARGET), done: g.over, eliminated: false };
       case 'killer': {
         const lv = d.lives![p.id];
-        return { player: p, primary: '♥'.repeat(lv) || '—', secondary: `Zahl ${d.num![p.id]}`, sub: lv <= 0 ? 'ausgeschieden' : (d.isKiller![p.id] ? 'Killer' : 'nicht scharf'), done: false, eliminated: lv <= 0 };
+        return { player: p, primary: '♥'.repeat(lv) || '—', secondary: dict().trainingScr.subNumber(d.num![p.id]), sub: lv <= 0 ? dict().trainingScr.subOut : (d.isKiller![p.id] ? dict().trainingScr.subKiller : dict().trainingScr.subNotArmed), done: false, eliminated: lv <= 0 };
       }
       default: return { player: p, primary: '—', done: false, eliminated: false };
     }
