@@ -68,15 +68,9 @@ du entscheidest. Deine Mitglieder­daten bleiben bei dir.
 | **Spieler** | **Statistiken** | **Benutzer & Rechte** |
 | ![Spieler](screenshots/07-spieler.png) | ![Statistiken](screenshots/08-statistiken.png) | ![Benutzer & Rechte](screenshots/09-benutzer.png) |
 | **Einstellungen** | **Board: „Nächstes Spiel"** | |
-| ![Einstellungen](screenshots/10-einstellungen.png) | _Screenshot folgt_<br>`screenshots/11-board-nextgame.png` | |
+| ![Einstellungen](screenshots/10-einstellungen.png) | ![Board: „Nächstes Spiel"](screenshots/11-board-overlay.png) | |
 
-*(Bildschirmfotos aus dem Vereinsmodus mit Demo-Daten, als Administrator angemeldet.)*
-
-<!--
-  Screenshots ergänzen: passende PNG unter dem angegebenen Pfad in screenshots/ ablegen und dann
-  die jeweilige „Screenshot folgt"-Zelle durch die Bild-Einbindung ersetzen, z. B.:
-    ![Board: Nächstes Spiel](screenshots/11-board-nextgame.png)   ← das „Nächstes Spiel"-Overlay am Board
--->
+*(Bildschirmfotos aus dem Vereinsmodus mit Demo-Daten; Board-Overlay aus der Kiosk-Ansicht eines Board-Kontos.)*
 
 
 ---
