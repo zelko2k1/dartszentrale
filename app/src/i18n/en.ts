@@ -12,6 +12,10 @@ export const en: Dict = {
     archive: 'Archive',
     training: 'Training',
     edit: 'Edit',
+    save: 'Save',
+    cancel: 'Cancel',
+    delete: 'Delete',
+    close: 'Close',
     avg3: '3-dart avg',
     wins: 'Wins',
     losses: 'Losses',
@@ -519,6 +523,41 @@ export const en: Dict = {
     matchWon: 'Match won',
     toDashboard: 'To dashboard',
     rematch: 'Rematch',
+  },
+
+  boardPanel: {
+    noGame: 'No game assigned to this board.',
+    nextMatch: 'Next match',
+    onDate: (d: string) => ` on ${d}`,
+    against: ' against ',
+    outsideWindow: ' — outside the display window.',
+    showNow: 'Show now',
+    startTitle: 'Play this game at the board now – the result is recorded automatically',
+  },
+
+  palette: {
+    game: 'Game',
+    runningGame: 'Current game',
+    quickBo5: 'Quick start 501 · Bo5',
+    quickBo3: 'Quick start 501 · Bo3',
+    placeholder: 'Jump to … (↑/↓ · Enter)',
+    noMatch: 'No match.',
+    selectHint: '↑↓ select',
+    openHint: '↵ open',
+    escHint: 'Esc close',
+  },
+
+  search: {
+    placeholder: 'Search …',
+    clear: 'Clear search',
+  },
+
+  nextGame: {
+    title: 'Next game',
+    ofCount: (i: number, n: number) => ` · ${i} of ${n}`,
+    vsWord: 'vs',
+    later: 'Later',
+    wasCloser: 'was closer',
   },
 
   login: {

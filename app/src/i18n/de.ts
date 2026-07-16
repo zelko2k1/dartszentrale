@@ -13,6 +13,10 @@ export const de = {
     archive: 'Archiv',
     training: 'Training',
     edit: 'Bearbeiten',
+    save: 'Speichern',
+    cancel: 'Abbrechen',
+    delete: 'Löschen',
+    close: 'Schließen',
     avg3: 'Ø 3-Dart',
     wins: 'Siege',
     losses: 'Niederlagen',
@@ -547,6 +551,41 @@ export const de = {
     matchWon: 'Match gewonnen',
     toDashboard: 'Zum Dashboard',
     rematch: 'Revanche',
+  },
+
+  boardPanel: {
+    noGame: 'Kein Spiel für dieses Board eingetragen.',
+    nextMatch: 'Nächste Begegnung',
+    onDate: (d: string) => ` am ${d}`,
+    against: ' gegen ',
+    outsideWindow: ' — außerhalb des Anzeige-Zeitfensters.',
+    showNow: 'Jetzt anzeigen',
+    startTitle: 'Dieses Spiel jetzt am Board spielen – Ergebnis wird automatisch erfasst',
+  },
+
+  palette: {
+    game: 'Spiel',
+    runningGame: 'Laufendes Spiel',
+    quickBo5: 'Schnellstart 501 · Bo5',
+    quickBo3: 'Schnellstart 501 · Bo3',
+    placeholder: 'Springen zu … (↑/↓ · Enter)',
+    noMatch: 'Kein Treffer.',
+    selectHint: '↑↓ wählen',
+    openHint: '↵ öffnen',
+    escHint: 'Esc schließen',
+  },
+
+  search: {
+    placeholder: 'Suchen …',
+    clear: 'Suche leeren',
+  },
+
+  nextGame: {
+    title: 'Nächstes Spiel',
+    ofCount: (i: number, n: number) => ` · ${i} von ${n}`,
+    vsWord: 'gegen',
+    later: 'Später',
+    wasCloser: 'war näher',
   },
 
   login: {

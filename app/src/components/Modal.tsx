@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { useT } from '../i18n';
 
 export function Modal({ children, onClose, width = 440, z = 60, style }: {
   children: ReactNode; onClose?: () => void; width?: number; z?: number; style?: CSSProperties;
@@ -31,27 +32,28 @@ export function FieldLabel({ children, note }: { children: ReactNode; note?: Rea
   );
 }
 
-export function ModalFooter({ onDelete, onCancel, onSave, saveDisabled, saveLabel = 'Speichern' }: {
+export function ModalFooter({ onDelete, onCancel, onSave, saveDisabled, saveLabel }: {
   onDelete?: () => void; onCancel?: () => void; onSave?: () => void; saveDisabled?: boolean; saveLabel?: string;
 }) {
+  const tr = useT();
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }}>
       {onDelete && (
         <button className="dh-btn" onClick={onDelete} style={{
           background: 'rgba(224,89,75,.1)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B',
           padding: '12px 16px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-        }}>Löschen</button>
+        }}>{tr.common.delete}</button>
       )}
       <div style={{ flex: 1 }} />
       <button className="dh-btn" onClick={onCancel} style={{
         background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)',
         padding: '12px 20px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-      }}>Abbrechen</button>
+      }}>{tr.common.cancel}</button>
       <button onClick={saveDisabled ? undefined : onSave} disabled={saveDisabled} style={{
         background: saveDisabled ? 'var(--btn)' : 'var(--accent)', border: 'none',
         color: saveDisabled ? 'var(--text-5)' : 'var(--accent-fg)', padding: '12px 22px', borderRadius: 11,
         fontSize: 14, fontWeight: 800, cursor: saveDisabled ? 'default' : 'pointer', fontFamily: 'inherit',
-      }}>{saveLabel}</button>
+      }}>{saveLabel ?? tr.common.save}</button>
     </div>
   );
 }

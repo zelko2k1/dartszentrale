@@ -2,11 +2,13 @@ import { useStore } from '../store/useStore';
 import { Avatar } from './Avatar';
 import { boardAssignment } from '../store/selectors';
 import { todayIso, shortLong } from '../lib/format';
+import { useT } from '../i18n';
 
 // Zeigt im Board-/Kiosk-Modus, welches Ligaspiel diesem Board (settings.boardName) zugeordnet ist:
 // eigener Spieler / eigenes Doppel gegen die Gastmannschaft.
 export function BoardPanel() {
   const s = useStore();
+  const tr = useT();
   const me = s.accounts.find((a) => a.id === s.session) || null;
   const boardNumber = me?.isBoard ? (me.boardNumber ?? null) : null;
   const boardName = boardNumber != null ? `Board ${boardNumber}` : '';
@@ -25,7 +27,7 @@ export function BoardPanel() {
     return wrap(
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 10, color: 'var(--text-4)', fontSize: 13 }}>
         {boardBadge}
-        Kein Spiel für dieses Board eingetragen.
+        {tr.boardPanel.noGame}
       </div>,
     );
   }
@@ -35,10 +37,10 @@ export function BoardPanel() {
     return wrap(
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', color: 'var(--text-4)', fontSize: 13 }}>
         {boardBadge}
-        <span>Nächste Begegnung{assignment.date ? ` am ${shortLong(assignment.date)}` : ''} gegen {assignment.oppName} — außerhalb des Anzeige-Zeitfensters.</span>
+        <span>{tr.boardPanel.nextMatch}{assignment.date ? tr.boardPanel.onDate(shortLong(assignment.date)) : ''}{tr.boardPanel.against}{assignment.oppName}{tr.boardPanel.outsideWindow}</span>
         <button onClick={() => s.showBoardNow()} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 7, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '7px 13px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
-          Jetzt anzeigen
+          {tr.boardPanel.showNow}
         </button>
       </div>,
     );
@@ -50,8 +52,8 @@ export function BoardPanel() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
         <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--accent-fg)', background: 'var(--accent)', padding: '4px 11px', borderRadius: 8 }}>{boardName}</span>
         <span style={{ fontSize: 14, fontWeight: 700 }}>{a.ownTeamName}</span>
-        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', background: 'var(--btn)', border: '1px solid var(--border-2)', padding: '2px 8px', borderRadius: 6 }}>{a.ownIsHome ? 'Heim' : 'Auswärts'}</span>
-        <span style={{ color: 'var(--text-5)', fontSize: 13 }}>gegen</span>
+        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', background: 'var(--btn)', border: '1px solid var(--border-2)', padding: '2px 8px', borderRadius: 6 }}>{a.ownIsHome ? tr.teams.home : tr.teams.away}</span>
+        <span style={{ color: 'var(--text-5)', fontSize: 13 }}>{tr.teams.versus}</span>
         <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-2)' }}>{a.oppName}</span>
         {a.date && <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--text-4)', fontWeight: 600 }}>{shortLong(a.date)}</span>}
       </div>
@@ -73,10 +75,10 @@ export function BoardPanel() {
                 <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-3)' }}>{a.oppName}</span>
               </div>
               {ownPlayerId && (
-                <button onClick={() => s.startBoardGame(a.leagueId, a.fixtureId, g.positionId, ownPlayerId, a.oppName)} title="Dieses Spiel jetzt am Board spielen – Ergebnis wird automatisch erfasst"
+                <button onClick={() => s.startBoardGame(a.leagueId, a.fixtureId, g.positionId, ownPlayerId, a.oppName)} title={tr.boardPanel.startTitle}
                   style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 7, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '8px 14px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
-                  Spiel starten
+                  {tr.counter.startGame}
                 </button>
               )}
             </div>

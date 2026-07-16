@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { Avatar } from './Avatar';
 import { boardAssignment } from '../store/selectors';
 import { todayIso, shortLong } from '../lib/format';
+import { useT } from '../i18n';
 
 // Kiosk-Präsentation vor einem Ligaspiel: erscheint automatisch (Vollbild, modal), sobald diesem Board
 // das NÄCHSTE noch nicht gespielte Spiel zugeordnet ist. Die Spiele laufen nacheinander — eins beendet,
@@ -10,6 +11,7 @@ import { todayIso, shortLong } from '../lib/format';
 // Anwurf (Spieler/Ausbullen) in EINEM Overlay. Kein Zufall (im Ligaspiel nicht üblich), kein Rematch.
 export function NextGameOverlay() {
   const s = useStore();
+  const tr = useT();
   const rootRef = useRef<HTMLDivElement>(null);
   const me = s.accounts.find((a) => a.id === s.session) || null;
   const boardNumber = me?.isBoard ? (me.boardNumber ?? null) : null;
@@ -76,12 +78,12 @@ export function NextGameOverlay() {
     >
       <div style={{ width: 560, maxWidth: '94vw', textAlign: 'center' }}>
         <div style={{ fontSize: 13, color: '#F2B829', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 8 }}>
-          Nächstes Spiel{games.length > 1 ? ` · ${gi + 1} von ${games.length}` : ''}
+          {tr.nextGame.title}{games.length > 1 ? tr.nextGame.ofCount(gi + 1, games.length) : ''}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
           <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--accent-fg)', background: 'var(--accent)', padding: '3px 10px', borderRadius: 7 }}>{boardName}</span>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>{a.ownTeamName}</span>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,.45)' }}>gegen</span>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,.45)' }}>{tr.nextGame.vsWord}</span>
           <span style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,.85)' }}>{a.oppName}</span>
           {a.date && <span style={{ fontSize: 12, color: 'rgba(255,255,255,.4)', fontWeight: 600 }}>· {shortLong(a.date)}</span>}
         </div>
@@ -106,7 +108,7 @@ export function NextGameOverlay() {
 
         {!bull ? (
           <>
-            <div style={{ fontSize: 14, color: 'rgba(255,255,255,.6)', margin: '20px 0 14px' }}>Wer beginnt?</div>
+            <div style={{ fontSize: 14, color: 'rgba(255,255,255,.6)', margin: '20px 0 14px' }}>{tr.counter.whoStarts}</div>
             <div style={{ display: 'flex', gap: 12 }}>
               <button className="dh-hover-border" onClick={() => start(0)} style={starterBtn}>
                 <span style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{ownFirst}</span>
@@ -120,32 +122,32 @@ export function NextGameOverlay() {
             <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
               <button className="dh-hover-border" onClick={() => setBullFor(game.positionId)} style={{ ...starterBtn, flexDirection: 'row', justifyContent: 'center', gap: 10 }}>
                 <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#E0594B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#19A463' }} /></span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Ausbullen</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>{tr.counter.bullOff}</span>
                 <kbd style={kbd}>B</kbd>
               </button>
               <button className="dh-hover-border" onClick={() => s.dismissNextGame(game.positionId)} style={{ ...starterBtn, flexDirection: 'row', justifyContent: 'center', gap: 10 }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: 'rgba(255,255,255,.7)' }}>Später</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: 'rgba(255,255,255,.7)' }}>{tr.nextGame.later}</span>
                 <kbd style={kbd}>Esc</kbd>
               </button>
             </div>
           </>
         ) : (
           <>
-            <div style={{ fontSize: 22, fontWeight: 800, color: '#fff', margin: '20px 0 4px' }}>Ausbullen</div>
-            <div style={{ fontSize: 14, color: 'rgba(255,255,255,.6)', lineHeight: 1.5, marginBottom: 18 }}>Beide werfen einen Dart auf das Bull. Wer näher liegt, beginnt.</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: '#fff', margin: '20px 0 4px' }}>{tr.counter.bullOff}</div>
+            <div style={{ fontSize: 14, color: 'rgba(255,255,255,.6)', lineHeight: 1.5, marginBottom: 18 }}>{tr.counter.bullOffSub}</div>
             <div style={{ display: 'flex', gap: 12 }}>
               <button className="dh-hover-border" onClick={() => start(0)} style={starterBtn}>
                 <span style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{ownFirst}</span>
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,.5)' }}>war näher</span>
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,.5)' }}>{tr.nextGame.wasCloser}</span>
                 <kbd style={kbd}>1</kbd>
               </button>
               <button className="dh-hover-border" onClick={() => start(1)} style={starterBtn}>
                 <span style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{a.oppName}</span>
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,.5)' }}>war näher</span>
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,.5)' }}>{tr.nextGame.wasCloser}</span>
                 <kbd style={kbd}>2</kbd>
               </button>
             </div>
-            <button onClick={() => setBullFor(null)} style={{ marginTop: 16, background: 'transparent', border: 'none', color: 'rgba(255,255,255,.55)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: 8 }}>← Zurück <kbd style={{ ...kbd, marginLeft: 6 }}>Esc</kbd></button>
+            <button onClick={() => setBullFor(null)} style={{ marginTop: 16, background: 'transparent', border: 'none', color: 'rgba(255,255,255,.55)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: 8 }}>{tr.counter.backArrow} <kbd style={{ ...kbd, marginLeft: 6 }}>Esc</kbd></button>
           </>
         )}
       </div>

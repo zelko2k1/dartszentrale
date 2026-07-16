@@ -3,12 +3,14 @@ import { useStore } from '../store/useStore';
 import { perm } from '../store/selectors';
 import { formatCombo } from '../lib/shortcut';
 import { SearchInput } from './SearchInput';
+import { useT } from '../i18n';
 
 interface Cmd { label: string; hint?: string; run: () => void; }
 
 // Befehls-Palette (Strg+K): tippen → springen. Im Kiosk auf die erlaubten Ziele beschränkt.
 export function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void }) {
   const s = useStore();
+  const tr = useT();
   const accent = s.settings.accent;
   const p = perm(s.settings, s.accounts, s.session);
   const isVerein = s.settings.appMode === 'verein';
@@ -23,28 +25,28 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
     const go = (screen: Parameters<typeof s.go>[0]) => () => { s.go(screen); onClose(); };
     if (kiosk) {
       return [
-        { label: 'Spiel', hint: 'Alt+S', run: () => { s.go('setup'); onClose(); } },
-        { label: 'Training', hint: 'Alt+T', run: go('training') },
-        { label: 'Einstellungen', hint: 'Alt+E', run: go('settings') },
+        { label: tr.palette.game, hint: 'Alt+S', run: () => { s.go('setup'); onClose(); } },
+        { label: tr.common.training, hint: 'Alt+T', run: go('training') },
+        { label: tr.nav.settings, hint: 'Alt+E', run: go('settings') },
       ];
     }
     const list: (Cmd | false)[] = [
-      { label: 'Dashboard', run: go('dashboard') },
-      p.play && { label: 'Neues Spiel', hint: formatCombo(s.settings.newGameKey || 'alt+n'), run: () => { s.requestNew({ kind: 'setup' }); onClose(); } },
-      p.play && gameActive && { label: 'Laufendes Spiel', run: go('counter') },
-      p.play && { label: 'Schnellstart 501 · Bo5', hint: formatCombo(s.settings.quickBo5Key || 'alt+5'), run: () => { s.requestNew({ kind: 'preset', preset: { startScore: 501, unit: 'legs', bestOf: 5, outMode: 'double', doubleOut: true, doubleIn: false } }); onClose(); } },
-      p.play && { label: 'Schnellstart 501 · Bo3', hint: formatCombo(s.settings.quickBo3Key || 'alt+3'), run: () => { s.requestNew({ kind: 'preset', preset: { startScore: 501, unit: 'legs', bestOf: 3, outMode: 'double', doubleOut: true, doubleIn: false } }); onClose(); } },
-      p.play && { label: 'Trainingsspiele', run: go('training') },
-      { label: 'Kalender', run: go('calendar') },
-      isVerein && { label: 'Ligen', run: go('leagues') },
-      isVerein && { label: 'Mannschaften', run: go('teams') },
-      { label: 'Spieler', run: go('players') },
-      { label: 'Statistiken', run: go('stats') },
-      isVerein && p.manageUsers && { label: 'Benutzer', run: go('users') },
-      { label: 'Einstellungen', run: go('settings') },
+      { label: tr.nav.dashboard, run: go('dashboard') },
+      p.play && { label: tr.counter.newGame, hint: formatCombo(s.settings.newGameKey || 'alt+n'), run: () => { s.requestNew({ kind: 'setup' }); onClose(); } },
+      p.play && gameActive && { label: tr.palette.runningGame, run: go('counter') },
+      p.play && { label: tr.palette.quickBo5, hint: formatCombo(s.settings.quickBo5Key || 'alt+5'), run: () => { s.requestNew({ kind: 'preset', preset: { startScore: 501, unit: 'legs', bestOf: 5, outMode: 'double', doubleOut: true, doubleIn: false } }); onClose(); } },
+      p.play && { label: tr.palette.quickBo3, hint: formatCombo(s.settings.quickBo3Key || 'alt+3'), run: () => { s.requestNew({ kind: 'preset', preset: { startScore: 501, unit: 'legs', bestOf: 3, outMode: 'double', doubleOut: true, doubleIn: false } }); onClose(); } },
+      p.play && { label: tr.nav.training, run: go('training') },
+      { label: tr.nav.calendar, run: go('calendar') },
+      isVerein && { label: tr.nav.leagues, run: go('leagues') },
+      isVerein && { label: tr.nav.teams, run: go('teams') },
+      { label: tr.nav.players, run: go('players') },
+      { label: tr.nav.stats, run: go('stats') },
+      isVerein && p.manageUsers && { label: tr.nav.users, run: go('users') },
+      { label: tr.nav.settings, run: go('settings') },
     ];
     return list.filter(Boolean) as Cmd[];
-  }, [kiosk, isVerein, p.play, p.manageUsers, gameActive, s, onClose]);
+  }, [kiosk, isVerein, p.play, p.manageUsers, gameActive, s, onClose, tr]);
 
   const items = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -68,7 +70,7 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.72)', backdropFilter: 'blur(4px)', zIndex: 120, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: '14vh' }}>
       <div onClick={(e) => e.stopPropagation()} onKeyDown={onKey} style={{ width: 'min(560px, 92vw)', background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 16, boxShadow: '0 24px 60px rgba(0,0,0,.5)', overflow: 'hidden' }}>
         <div style={{ padding: 12, borderBottom: '1px solid var(--hairline)' }}>
-          <SearchInput value={q} onChange={(v) => { setQ(v); setHi(0); }} placeholder="Springen zu … (↑/↓ · Enter)" width="100%" inputRef={inputRef} />
+          <SearchInput value={q} onChange={(v) => { setQ(v); setHi(0); }} placeholder={tr.palette.placeholder} width="100%" inputRef={inputRef} />
         </div>
         <div style={{ maxHeight: 320, overflowY: 'auto', padding: 6 }}>
           {items.map((c, i) => {
@@ -82,10 +84,10 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
               </button>
             );
           })}
-          {!items.length && <div style={{ padding: '14px 12px', fontSize: 13, color: 'var(--text-4)' }}>Kein Treffer.</div>}
+          {!items.length && <div style={{ padding: '14px 12px', fontSize: 13, color: 'var(--text-4)' }}>{tr.palette.noMatch}</div>}
         </div>
         <div style={{ padding: '8px 12px', borderTop: '1px solid var(--hairline)', fontSize: 11, color: 'var(--text-4)', display: 'flex', gap: 14, fontFamily: 'var(--font-num)' }}>
-          <span>↑↓ wählen</span><span>↵ öffnen</span><span>Esc schließen</span>
+          <span>{tr.palette.selectHint}</span><span>{tr.palette.openHint}</span><span>{tr.palette.escHint}</span>
         </div>
       </div>
     </div>
