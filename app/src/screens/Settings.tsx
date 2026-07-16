@@ -9,6 +9,7 @@ import { suggestBoardScale } from '../lib/displayScale';
 import { useReorder } from '../lib/useReorder';
 import { qrSvg } from '../lib/qrcode';
 import type { TwoFactorStatus, TwoFactorSetup } from '../data/provider';
+import { useT, useLang, setLang, LANG_LABELS, type Lang } from '../i18n';
 
 const ACCENTS = ['#FFFFFF', '#000000', '#2BD377', '#19A463', '#3B9EFF', '#F2B829', '#E0594B', '#9b6dff', '#2bd3c0', '#FF8A3D'];
 const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'];
@@ -364,6 +365,8 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const set = s.setSetting;
   const p = perm(cfg, s.accounts, s.session);
   const accent = cfg.accent;
+  const tr = useT();
+  const lang = useLang();
   const isVerein = cfg.appMode === 'verein';
   // Im Vereinsmodus legt der Admin die Einstellungen zentral fest; alle anderen sehen sie nur (read-only).
   const canEdit = !isVerein || p.admin;
@@ -652,6 +655,17 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
 
   const darstellungNode = (
     <Section title="Darstellung">
+      {/* Sprache ist GERÄTELOKAL (i18n, kein Settings-Key, kein Server-Sync) — deshalb eigener Umschalter statt seg(). */}
+      <Row label={tr.settings.language} sub={tr.settings.languageSub}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          {(Object.keys(LANG_LABELS) as Lang[]).map((l) => {
+            const on = lang === l;
+            return (
+              <button key={l} onClick={() => setLang(l)} style={{ background: on ? accent : 'var(--btn)', color: on ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${on ? accent : 'var(--border-2)'}`, fontWeight: on ? 800 : 600, padding: '10px 16px', borderRadius: 10, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{LANG_LABELS[l]}</button>
+            );
+          })}
+        </div>
+      </Row>
       <Row label="Modus" sub="Dunkles oder helles Erscheinungsbild · gilt nur für dieses Gerät">
         {ed('mode', seg('mode', [{ label: 'Dunkel', val: 'dark' }, { label: 'Hell', val: 'light' }]))}
       </Row>

@@ -1,4 +1,5 @@
 // Hilfsfunktionen für Datum/Zeit/IDs
+import { dict } from '../i18n';
 
 // 15-stellige Kleinbuchstaben-/Ziffern-ID — kompatibel mit dem PocketBase-Standard-ID-Format,
 // damit clientseitig erzeugte IDs direkt an PocketBase übergeben werden können (Relationen bleiben gültig).
@@ -26,19 +27,21 @@ export function todayIso(): string {
   return ymdLocal(new Date());
 }
 
-const WD_LONG = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
-const WD_SHORT = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-const MON_LONG = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
-const MON_SHORT = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+// Sprachabhängige Namen kommen aus dem AKTIVEN Sprachpaket (i18n) — bei jedem Aufruf frisch gelesen,
+// damit die Ausgaben dem Sprachwechsel folgen, sobald die nutzende Komponente neu rendert.
+const fmt = () => dict().format;
 
 export function parseIso(d: string): Date {
   const [y, m, day] = d.split('-').map(Number);
   return new Date(y, (m || 1) - 1, day || 1);
 }
 
-/** "MONTAG, 22. JUNI" (Dashboard-Kopf) */
+/** "MONTAG, 22. JUNI" bzw. "MONDAY, 22 JUNE" (Dashboard-Kopf) */
 export function longDate(date: Date = new Date()): string {
-  return `${WD_LONG[date.getDay()]}, ${date.getDate()}. ${MON_LONG[date.getMonth()]}`;
+  const f = fmt();
+  return f.dateLocale === 'de-DE'
+    ? `${f.wdLong[date.getDay()]}, ${date.getDate()}. ${f.monLong[date.getMonth()]}`
+    : `${f.wdLong[date.getDay()]}, ${date.getDate()} ${f.monLong[date.getMonth()]}`;
 }
 
 export function timeNow(date: Date = new Date()): string {
@@ -46,21 +49,23 @@ export function timeNow(date: Date = new Date()): string {
 }
 
 export function greeting(date: Date = new Date()): string {
+  const f = fmt();
   const h = date.getHours();
-  if (h < 5) return 'Gute Nacht';
-  if (h < 11) return 'Guten Morgen';
-  if (h < 17) return 'Guten Tag';
-  if (h < 22) return 'Guten Abend';
-  return 'Gute Nacht';
+  if (h < 5) return f.night;
+  if (h < 11) return f.morning;
+  if (h < 17) return f.day;
+  if (h < 22) return f.evening;
+  return f.night;
 }
 
-/** "Sa., 27. Juni" */
+/** "Sa., 27. Juni" bzw. "Sat, 27 June" */
 export function shortLong(isoStr: string): string {
+  const f = fmt();
   const d = parseIso(isoStr);
-  return `${WD_SHORT[d.getDay()]}., ${d.getDate()}. ${MON_LONG[d.getMonth()]}`;
+  return f.dateLocale === 'de-DE'
+    ? `${f.wdShort[d.getDay()]}., ${d.getDate()}. ${f.monLong[d.getMonth()]}`
+    : `${f.wdShort[d.getDay()]}, ${d.getDate()} ${f.monLong[d.getMonth()]}`;
 }
-
-export { WD_SHORT, WD_LONG, MON_SHORT, MON_LONG };
 
 export function firstName(name: string): string {
   return (name || '').trim().split(/\s+/)[0] || name;
