@@ -26,9 +26,9 @@ No expertise needed: download, unzip, double-click the start file. Which one fit
 
 | Package | Who is it for? |
 |---|---|
-| **`01-lokal-ein-board.zip`** | One PC/tablet at the board — just scoring & training, no server, no sign-in. **← easiest start** |
-| **`02-verein-lan.zip`** | The whole club on your own network — one program serves the app **and** the database. |
-| **`03-verein-cloud.zip`** | Running on your own internet server with domain & HTTPS. |
+| **`01-single-board.zip`** | One PC/tablet at the board — just scoring & training, no server, no sign-in. **← easiest start** |
+| **`02-club-lan.zip`** | The whole club on your own network — one program serves the app **and** the database. |
+| **`03-club-cloud.zip`** | Running on your own internet server with domain & HTTPS. |
 
 The matching step-by-step guide is **inside the package** (German) and under
 [“Getting started”](#getting-started--which-guide-fits-me) below.

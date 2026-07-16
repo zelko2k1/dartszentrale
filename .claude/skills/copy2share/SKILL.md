@@ -10,15 +10,15 @@ einen USB-Stick, einen Netzwerkshare oder in die Cloud kopieren kann:
 
 | Ordner | Für |
 |---|---|
-| `01-lokal-ein-board` | Ein Board lokal: starten & loslegen, **kein Server, kein Login** (Daten im Browser, mit Auto-Backup nach `backup/`). Node/serve-dist. |
-| `02-verein-lan` | Vereinsmodus im eigenen Netz — **EINFACH**: ein Binary (PocketBase liefert die App aus `pb_public/` selbst aus), **kein Node, kein Build** (`start-club-lan.*`, `update-club-lan.*`, `autostart-club-lan.*`) |
-| `03-verein-cloud` | Vereinsmodus in der Cloud (schlank per Caddy, `setup-cloud.sh`) |
+| `01-single-board` | Ein Board lokal: starten & loslegen, **kein Server, kein Login** (Daten im Browser, mit Auto-Backup nach `backup/`). Node/serve-dist. |
+| `02-club-lan` | Vereinsmodus im eigenen Netz — **EINFACH**: ein Binary (PocketBase liefert die App aus `pb_public/` selbst aus), **kein Node, kein Build** (`start-club-lan.*`, `update-club-lan.*`, `autostart-club-lan.*`) |
+| `03-club-cloud` | Vereinsmodus in der Cloud (schlank per Caddy, `setup-cloud.sh`) |
 
 Jeder Ordner enthält **nur die nötigen** Dateien + eine `LIESMICH.txt`. Bewusst ausgeschlossen:
 `node_modules`, `dist`, `.env.local`, `pb_data`, das PocketBase-Binary, die `demo-*.mjs` (Testdaten)
 und `seed-remote.sh` (Secrets).
 
-> **`02-verein-lan`** enthält bewusst das **vorgebaute Frontend als `pb_public/`** (Same-Origin,
+> **`02-club-lan`** enthält bewusst das **vorgebaute Frontend als `pb_public/`** (Same-Origin,
 > ohne `VITE_PB_URL`), damit der Verein weder Node noch Build braucht. Das PocketBase-Binary lädt
 > `start-club-lan.*` beim ersten Start selbst. Baut nur, wenn `app/node_modules` vorhanden sind
 > (`build_pubdir` in `build.sh`); sonst wird das Bundle mit Hinweis übersprungen.

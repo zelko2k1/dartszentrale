@@ -22,9 +22,9 @@ Kein Fachwissen nötig: Paket laden, entpacken, Start-Datei doppelklicken. Welch
 
 | Paket | Für wen? |
 |---|---|
-| **`01-lokal-ein-board.zip`** | Ein PC/Tablet am Board — nur zählen & trainieren, ohne Server, ohne Anmeldung. **← einfachster Einstieg** |
-| **`02-verein-lan.zip`** | Ganzer Verein im eigenen Netzwerk — ein Programm liefert App **und** Datenbank aus. |
-| **`03-verein-cloud.zip`** | Betrieb auf einem eigenen Internet-Server mit Domain & HTTPS. |
+| **`01-single-board.zip`** | Ein PC/Tablet am Board — nur zählen & trainieren, ohne Server, ohne Anmeldung. **← einfachster Einstieg** |
+| **`02-club-lan.zip`** | Ganzer Verein im eigenen Netzwerk — ein Programm liefert App **und** Datenbank aus. |
+| **`03-club-cloud.zip`** | Betrieb auf einem eigenen Internet-Server mit Domain & HTTPS. |
 
 Die passende Schritt-für-Schritt-Anleitung liegt **im Paket** und weiter unten unter [„Loslegen"](#loslegen--welche-anleitung-passt-zu-mir).
 

@@ -9,8 +9,8 @@ app **and** the data — **no Node, no build step.** Ideal for a club network wi
 
 > **Other modes of operation:**
 > - **Just one device, no login** (start and go, data stored in the browser) → package
->   `01-lokal-ein-board` ([guide-local-windows.md](guide-local-windows.md)).
-> - **Server on the internet/cloud** (reachable from anywhere) → package `03-verein-cloud`
+>   `01-single-board` ([guide-local-windows.md](guide-local-windows.md)).
+> - **Server on the internet/cloud** (reachable from anywhere) → package `03-club-cloud`
 >   ([admin-guide-cloud.md](admin-guide-cloud.md)).
 >
 > Day-to-day use: [`manual.md`](manual.md) · Security: [`security-audit.md`](security-audit.md).
@@ -20,7 +20,7 @@ app **and** the data — **no Node, no build step.** Ideal for a club network wi
 ## 0. Before you start
 
 ### 0a. Getting the app onto the machine — the "folder"
-You receive the package **`02-verein-lan`** as a folder (USB stick/share from the person who set it up). It contains,
+You receive the package **`02-club-lan`** as a folder (USB stick/share from the person who set it up). It contains,
 among other things, `start-club-lan.bat`, `pb_public\`, `pb_migrations\`, `pb_hooks\`. **Everything belongs in this folder.**
 
 > **Node.js is NOT required.** The program is a single binary that is downloaded automatically

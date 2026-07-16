@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Baut unter copy2share/ drei Verteil-Bundles (Ordner + ZIP) mit NUR den nötigen Dateien:
-#   01-lokal-ein-board  → Ein Board lokal: starten & loslegen, kein Server, kein Login (mit Auto-Backup)
-#   02-verein-lan       → Vereinsmodus im eigenen Netz: EIN Binary (PocketBase liefert App+API), kein Node/Build
-#   03-verein-cloud     → Vereinsmodus in der Cloud (schlank per Caddy: setup-cloud.sh)
+#   01-single-board  → Ein Board lokal: starten & loslegen, kein Server, kein Login (mit Auto-Backup)
+#   02-club-lan       → Vereinsmodus im eigenen Netz: EIN Binary (PocketBase liefert App+API), kein Node/Build
+#   03-club-cloud     → Vereinsmodus in der Cloud (schlank per Caddy: setup-cloud.sh)
 # Jeder Verein bekommt die passende ZIP. Aufruf:  bash build.sh [ZIEL]   (Standard: <repo>/copy2share)
 # Bewusst NICHT kopiert: node_modules, dist, .env.local, pb_data, das PocketBase-Binary,
 # die demo-*.mjs (Testdaten) und seed-remote.sh (Secrets).
@@ -80,7 +80,7 @@ echo "▶ Ziel: $TARGET"
 rm -rf "$TARGET"; mkdir -p "$TARGET"
 
 # ── 01 — Ein Board lokal (kein Server, kein Login; Daten im Browser, mit Auto-Backup) ───────
-A="$TARGET/01-lokal-ein-board"; mkdir -p "$A"
+A="$TARGET/01-single-board"; mkdir -p "$A"
 copy_app "$A" 0
 copy_lokal "$A"
 copy_docs "$A" guide-local-windows.md guide-local-linux.md manual.md \
@@ -107,7 +107,7 @@ TXT
 # ── 02 — Vereinsmodus im eigenen Netz (LAN), EINFACH: ein Binary (PocketBase = App + API) ────
 # Kein Node, kein Build beim Verein: das fertige Frontend liegt in pb_public/, PocketBase liefert es
 # selbst aus. start-club-lan laedt beim ersten Mal nur das PB-Binary + legt die Admin-Konten an.
-B="$TARGET/02-verein-lan"; mkdir -p "$B"
+B="$TARGET/02-club-lan"; mkdir -p "$B"
 if build_pubdir "$B"; then
   cp -r "$REPO/pocketbase/pb_migrations" "$REPO/pocketbase/pb_hooks" "$B/"
   copy_verein_lan "$B"
@@ -152,7 +152,7 @@ else
 fi
 
 # ── 03 — Vereinsmodus in der Cloud (schlank: systemd + Caddy, ohne Docker) ──
-C="$TARGET/03-verein-cloud"; mkdir -p "$C"
+C="$TARGET/03-club-cloud"; mkdir -p "$C"
 copy_app "$C" 0
 copy_pb "$C" 0
 copy_cloud "$C"
@@ -199,7 +199,7 @@ make_zip(){ local base="$1"
 }
 echo
 echo "── ZIPs erstellen ──"
-for b in 01-lokal-ein-board 02-verein-lan 03-verein-cloud; do [ -d "$TARGET/$b" ] && make_zip "$b"; done
+for b in 01-single-board 02-club-lan 03-club-cloud; do [ -d "$TARGET/$b" ] && make_zip "$b"; done
 
 echo
 echo "── Update-Paket erstellen (für spätere Updates) ──"
@@ -214,6 +214,6 @@ echo "  dartszentrale-update-${VERSION}.tar.gz  → 01/03: in updates/ legen, in
 echo "                                          → 02:    ./update-club-lan.(sh|bat)"
 echo
 echo "Jeder Verein bekommt die passende ZIP:"
-echo "  01-lokal-ein-board = ein Board lokal (kein Server, kein Login)"
-echo "  02-verein-lan      = Verein im eigenen Netz  → start-club-lan.(sh|bat)"
-echo "  03-verein-cloud    = Verein in der Cloud     → sudo ./setup-cloud.sh"
+echo "  01-single-board = ein Board lokal (kein Server, kein Login)"
+echo "  02-club-lan      = Verein im eigenen Netz  → start-club-lan.(sh|bat)"
+echo "  03-club-cloud    = Verein in der Cloud     → sudo ./setup-cloud.sh"

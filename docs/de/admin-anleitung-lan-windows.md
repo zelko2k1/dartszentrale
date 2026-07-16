@@ -9,8 +9,8 @@ App **und** die Daten — **kein Node, kein Build.** Ideal fürs Vereinsnetz mit
 
 > **Andere Betriebsarten:**
 > - **Nur ein Gerät, ohne Anmeldung** (starten & loslegen, Daten im Browser) → Paket
->   `01-lokal-ein-board` ([anleitung-lokal-windows.md](anleitung-lokal-windows.md)).
-> - **Server im Internet/Cloud** (von überall erreichbar) → Paket `03-verein-cloud`
+>   `01-single-board` ([anleitung-lokal-windows.md](anleitung-lokal-windows.md)).
+> - **Server im Internet/Cloud** (von überall erreichbar) → Paket `03-club-cloud`
 >   ([admin-anleitung-cloud.md](admin-anleitung-cloud.md)).
 >
 > Tägliche Bedienung: [`handbuch.md`](handbuch.md) · Sicherheit: [`security-audit.md`](../security-audit.md).
@@ -20,7 +20,7 @@ App **und** die Daten — **kein Node, kein Build.** Ideal fürs Vereinsnetz mit
 ## 0. Einmal vorweg
 
 ### 0a. Die App auf den Rechner holen — der „Ordner"
-Du bekommst das Paket **`02-verein-lan`** als Ordner (USB-Stick/Share vom Einrichter). Darin liegen u. a.
+Du bekommst das Paket **`02-club-lan`** als Ordner (USB-Stick/Share vom Einrichter). Darin liegen u. a.
 `start-club-lan.bat`, `pb_public\`, `pb_migrations\`, `pb_hooks\`. **Alles gehört in diesen Ordner.**
 
 > **Node.js ist NICHT nötig.** Das Programm ist ein einziges Binary, das beim ersten Start automatisch
