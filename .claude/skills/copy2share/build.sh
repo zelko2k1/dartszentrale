@@ -13,6 +13,9 @@ set -euo pipefail
 SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$SKILL_DIR/../../.." && pwd)"
 TARGET="${1:-$REPO/copy2share}"
+# Ziel absolut auflösen — Unterschritte wechseln das Verzeichnis (tar/zip), ein relativer
+# Pfad würde dort ins Leere zeigen (so geschehen im Release-Workflow).
+mkdir -p "$TARGET"; TARGET="$(cd "$TARGET" && pwd)"
 [ -d "$REPO/app" ] && [ -d "$REPO/pocketbase" ] || { echo "✗ $REPO sieht nicht nach dem Projektordner aus (app/ + pocketbase/ fehlen)."; exit 1; }
 # Version relativ lesen (cd), damit node auch unter Git-Bash/Windows nicht über MSYS-Pfade (/d/…) stolpert.
 VERSION="$(cd "$REPO/app" && node -p "require('./package.json').version" 2>/dev/null || echo 0.0.0)"
