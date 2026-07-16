@@ -10,9 +10,11 @@ import { SearchInput } from '../components/SearchInput';
 import { compareName, matchesQuery, nameParts } from '../lib/people';
 import { useIsPhone } from '../lib/useIsPhone';
 import type { Player } from '../data/types';
+import { useT } from '../i18n';
 
 export function Teams() {
   const s = useStore();
+  const tr = useT();
   const accent = s.settings.accent;
   const isPhone = useIsPhone();
   const p = perm(s.settings, s.accounts, s.session);
@@ -34,7 +36,7 @@ export function Teams() {
     return sorted.filter((m) => matchesQuery(query, m.name, m.short));
   }, [members, order, query]);
 
-  const teamMeta = sel ? ((sel.league ? sel.league + ' · ' : '') + members.length + ' Spieler' + (captain ? ' · Kapitän: ' + captain.name : '') + (viceCaptains.length ? ' · Vertretung: ' + viceCaptains.map((v) => v.name).join(', ') : '')) : 'Lege eine Mannschaft an';
+  const teamMeta = sel ? ((sel.league ? sel.league + ' · ' : '') + tr.teams.playersCount(members.length) + (captain ? ' · ' + tr.teams.captainPrefix + captain.name : '') + (viceCaptains.length ? ' · ' + tr.teams.vicePrefix + viceCaptains.map((v) => v.name).join(', ') : '')) : tr.teams.emptySelHint;
 
   // Kurzer Weg: nächster offener Spieltag dieser Mannschaft (über alle Ligen), zum direkten Aufstellen.
   const nextFx = useMemo(() => (sel ? nextOwnFixture(inSeason(s.leagues, s.viewSeasonId), todayIso(), sel.name, teamKind(sel)) : null), [sel, s.leagues, s.viewSeasonId]);
@@ -42,19 +44,19 @@ export function Teams() {
   return (
     <div style={{ padding: '28px 32px', maxWidth: 1100, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, marginBottom: 24, flexWrap: 'wrap' }}>
-        <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>Mannschaften</h1>
+        <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{tr.nav.teams}</h1>
         {canManage && (
           <button className="dh-primary" onClick={() => s.openAddTeam()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
             <IconPlus size={17} />
-            Mannschaft
+            {tr.teams.addTeam}
           </button>
         )}
       </div>
 
       {teams.length === 0 && (
         <div style={{ background: 'var(--surface)', border: '1px dashed var(--border-strong)', borderRadius: 16, padding: 48, textAlign: 'center', color: 'var(--text-3)' }}>
-          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>Noch keine Mannschaft</div>
-          <div style={{ fontSize: 13, color: 'var(--text-4)' }}>Lege oben deine erste Mannschaft an — der Kader wird aus deiner Spielerliste gebildet.</div>
+          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>{tr.teams.emptyTitle}</div>
+          <div style={{ fontSize: 13, color: 'var(--text-4)' }}>{tr.teams.emptyHint}</div>
         </div>
       )}
 
@@ -69,7 +71,7 @@ export function Teams() {
                     <span style={{ color: TEAM_KINDS[teamKind(t)].color, display: 'inline-flex' }} title={TEAM_KINDS[teamKind(t)].label}><TeamKindIcon kind={teamKind(t)} size={14} /></span>
                     {t.name}
                   </span>
-                  <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600 }}>{t.memberIds.length} Spieler</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600 }}>{tr.teams.playersCount(t.memberIds.length)}</span>
                 </button>
               );
             })}
@@ -89,7 +91,7 @@ export function Teams() {
             {canManage && (
               <button className="dh-btn" onClick={() => s.openEditTeam()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 15px', borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                 <IconEdit size={15} />
-                Bearbeiten
+                {tr.common.edit}
               </button>
             )}
           </div>
@@ -98,11 +100,11 @@ export function Teams() {
             {/* roster */}
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden', minWidth: 0 }}>
               <div style={{ padding: '12px 16px 12px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>Kader</span>
-                {members.length > 0 && <SearchInput value={query} onChange={setQuery} placeholder="Im Kader suchen …" width={200} />}
+                <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>{tr.teams.squad}</span>
+                {members.length > 0 && <SearchInput value={query} onChange={setQuery} placeholder={tr.teams.searchSquad} width={200} />}
               </div>
-              {members.length === 0 && <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--text-4)' }}>Kein Spieler im Kader.</div>}
-              {members.length > 0 && roster.length === 0 && <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--text-4)' }}>Kein Spieler passt zu „{query}".</div>}
+              {members.length === 0 && <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--text-4)' }}>{tr.teams.noneInSquad}</div>}
+              {members.length > 0 && roster.length === 0 && <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--text-4)' }}>{tr.players.noMatch(query)}</div>}
               {roster.map((m) => {
                 const agg = aggregateFor(m, s.matches);
                 const isCaptain = sel.captainId === m.id;
@@ -114,13 +116,13 @@ export function Teams() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap' }}>{m.name}</span>
                         {isCaptain && <span style={{ fontSize: 10, fontWeight: 800, color: '#F2B829', background: 'rgba(242,184,41,.12)', padding: '2px 6px', borderRadius: 5, letterSpacing: '.04em' }}>C</span>}
-                        {isVice && <span title="Ersatzkapitän" style={{ fontSize: 10, fontWeight: 800, color: '#3B9EFF', background: 'rgba(59,158,255,.12)', padding: '2px 6px', borderRadius: 5, letterSpacing: '.04em' }}>EK</span>}
+                        {isVice && <span title={tr.teams.viceCaptain} style={{ fontSize: 10, fontWeight: 800, color: '#3B9EFF', background: 'rgba(59,158,255,.12)', padding: '2px 6px', borderRadius: 5, letterSpacing: '.04em' }}>EK</span>}
                       </div>
-                      <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{agg.games ? `${agg.games} ${agg.games === 1 ? 'Spiel' : 'Spiele'}` : 'Kaderspieler'}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{agg.games ? tr.common.gamesCount(agg.games) : tr.teams.squadPlayer}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 800 }}>{agg.avg ? agg.avg.toFixed(1) : '–'}</div>
-                      <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>Ø 3-Dart</div>
+                      <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>{tr.common.avg3}</div>
                     </div>
                   </div>
                 );
@@ -129,27 +131,27 @@ export function Teams() {
 
             {/* Aufstellung-Hinweis: Aufstellungen werden je Ligaspiel unter „Ligen" gesetzt, nicht hier. */}
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 22px', minWidth: 0 }}>
-              <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 12 }}>Aufstellung</div>
+              <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 12 }}>{tr.teams.lineup}</div>
 
               {canManage && nextFx && (
                 // Kurzer Weg: direkt den nächsten Spieltag aufstellen, ohne Umweg über die Ligen.
                 <div style={{ background: 'var(--btn)', border: '1px solid color-mix(in srgb, var(--accent) 35%, var(--border-2))', borderRadius: 12, padding: 14, marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: 6 }}>Nächster Spieltag</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2 }}>{nextFx.ownIsHome ? 'gegen' : 'bei'} {nextFx.oppName}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 12 }}>{nextFx.date ? shortLong(nextFx.date) : 'Datum offen'} · {nextFx.ownIsHome ? 'Heim' : 'Auswärts'}</div>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: 6 }}>{tr.teams.nextMatchday}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2 }}>{nextFx.ownIsHome ? tr.teams.versus : tr.teams.at} {nextFx.oppName}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 12 }}>{nextFx.date ? shortLong(nextFx.date) : tr.teams.dateOpen} · {nextFx.ownIsHome ? tr.teams.home : tr.teams.away}</div>
                   <button onClick={() => s.openLineupAt(nextFx.leagueIndex, nextFx.fixtureId)} className="dh-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '10px 16px', borderRadius: 11, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
-                    {nextFx.hasLineup ? 'Aufstellung bearbeiten' : 'Jetzt aufstellen'}
+                    {nextFx.hasLineup ? tr.teams.editLineup : tr.teams.lineupNow}
                   </button>
                 </div>
               )}
 
               <div style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.6, marginBottom: 16 }}>
-                Aufstellungen werden <strong style={{ color: 'var(--text)' }}>pro Ligaspiel</strong> festgelegt — mit freier Reihenfolge der Einzel/Doppel, Board-Zuordnung und Ersatzspielern (E1, E2 …).
-                {nextFx ? ' Alle Begegnungen findest du unter ' : ' Du findest sie unter '}<strong style={{ color: 'var(--text)' }}>Ligen → Begegnung → „Aufstellen"</strong>.
+                {tr.teams.lineupInfo1}<strong style={{ color: 'var(--text)' }}>{tr.teams.lineupInfoStrong1}</strong>{tr.teams.lineupInfo2}
+                {nextFx ? tr.teams.lineupFindAll : tr.teams.lineupFind}<strong style={{ color: 'var(--text)' }}>{tr.teams.lineupPath}</strong>.
               </div>
               {canManage && (
                 <button onClick={() => s.go('leagues')} className="dh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-                  Zu den Ligen →
+                  {tr.dashboard.toLeagues}
                 </button>
               )}
             </div>
