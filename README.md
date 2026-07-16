@@ -4,7 +4,13 @@
 Ligen mit automatischer Tabelle, Mannschaften, Termine, Statistiken und Benutzer­verwaltung —
 alles an einem Ort, auf deinem eigenen Gerät oder Server.
 
-Quelloffen ([MIT](LICENSE)) · deutschsprachig · läuft im echten Vereins­betrieb · Version **1.0.0**
+[![Version](https://img.shields.io/github/v/release/zelko2k1/dartszentrale?label=Version&color=blue)](https://github.com/zelko2k1/dartszentrale/releases/latest)
+[![Lizenz: MIT](https://img.shields.io/github/license/zelko2k1/dartszentrale?label=Lizenz&color=green)](LICENSE)
+![Deutsch](https://img.shields.io/badge/Sprache-Deutsch-informational)
+![React](https://img.shields.io/badge/React-19-61dafb)
+![PocketBase](https://img.shields.io/badge/Backend-PocketBase-b8dbe4)
+![PWA](https://img.shields.io/badge/PWA-offline--f%C3%A4hig-5a0fc8)
+![Vereinsbetrieb](https://img.shields.io/badge/l%C3%A4uft%20im%20echten-Vereinsbetrieb-success)
 
 ## ⬇️ Herunterladen & loslegen
 
