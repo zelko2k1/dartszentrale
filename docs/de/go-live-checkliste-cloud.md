@@ -1,8 +1,10 @@
 # ✅ Go-live-Checkliste — Cloud-Betrieb (Caddy + systemd)
 
+**🇩🇪 Deutsch | [🇬🇧 English](../go-live-checklist-cloud.md)**
+
 > Abhakbare Schritt-für-Schritt-Liste für den **sicheren Produktivstart** im Cloud-Modus
 > (`app.<domain>` / `db.<domain>` hinter Caddy, PocketBase + Frontend nur auf Loopback).
-> Begründungen zu jedem Punkt: [`security-audit.md`](security-audit.md). Deploy-Details:
+> Begründungen zu jedem Punkt: [`security-audit.md`](../security-audit.md). Deploy-Details:
 > [`admin-anleitung-cloud.md`](admin-anleitung-cloud.md).
 >
 > **Legende:** ✅ = vom Setup-Skript automatisch (nur **verifizieren**) · 🔧 = echte Handarbeit · 🔴 = zwingend.
@@ -42,7 +44,7 @@ Damit die neuen Funktionen (2FA, E-Mail-Änderung durch Admins) live sind:
   sudo systemctl start darts-pocketbase
   ```
   Falls `seed-remote.sh` je ein PW-Literal enthielt: entfernen (die Datei ist gitignored, war aber im Review sichtbar).
-- [ ] 🔴 **#2 Produktiv-Admin** existiert mit **starkem** Passwort (legt `einrichten-cloud.sh` an). Keine `demo-*.mjs`
+- [ ] 🔴 **#2 Produktiv-Admin** existiert mit **starkem** Passwort (legt `setup-cloud.sh` an). Keine `demo-*.mjs`
   gegen die Prod-DB laufen lassen (der Guard blockt das gegen nicht-lokale Ziele, trotzdem: nicht tun).
 - [ ] 🔧 **Superuser-MFA aktivieren:** `https://db.<domain>/_/` → **Settings** → Superuser-2FA (TOTP) einschalten.
 - [ ] 🔧 **PB-Rate-Limit aktivieren:** `/_/` → **Settings** → Rate limiting einschalten. **Regel für `POST /api/login`**
@@ -76,7 +78,7 @@ Damit die neuen Funktionen (2FA, E-Mail-Änderung durch Admins) live sind:
 
 ## Phase 3 — Caddy-Härtung 🔧
 
-- [ ] 🔧 **#5 Admin-Konsole `/_/` abschirmen.** Im `/etc/caddy/Caddyfile` (bzw. [`Caddyfile.example`](../Caddyfile.example))
+- [ ] 🔧 **#5 Admin-Konsole `/_/` abschirmen.** Im `/etc/caddy/Caddyfile` (bzw. [`Caddyfile.example`](../../Caddyfile.example))
   den auskommentierten `@admin path /_/*`-Block einkommentieren und deine IP eintragen
   (`curl ifconfig.me`). Ohne feste IP: `basic_auth` davor oder VPN/Tailscale. Die API (`/api/...`) bleibt offen.
   ```bash
@@ -145,5 +147,4 @@ Alle in `~/dartszentrale/pocketbase/`, laufen als Superuser gegen `127.0.0.1:809
 
 - **#12** Kaderliste ist für jeden eingeloggten Nutzer lesbar (E-Mails geschützt). **Entscheidung 2026-07-05:
   aktuell keine Einschränkung nötig** — nur auf Vereinswunsch umsetzen (z. B. wegen Minderjähriger). Steht als
-  optionales Feature in der [ROADMAP](../ROADMAP.md) §4. Rationale: [`security-audit.md`](security-audit.md) #12.
-</content>
+  optionales Feature in der [ROADMAP](../../ROADMAP.md) §4. Rationale: [`security-audit.md`](../security-audit.md) #12.

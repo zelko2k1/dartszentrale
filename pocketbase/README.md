@@ -28,7 +28,7 @@ PB_URL=https://db.deinverein.de PB_SU_EMAIL=… PB_SU_PASS='<stark>' node provis
 
 > **Docker-/Arcane-Betrieb:** Dort wird das Schema **automatisch aus `pb_migrations/`** angewendet
 > (fest ins Image gebacken) — `provision.mjs` ist dann **nicht nötig**; es ist der Weg für den
-> **Cloud-/LAN-Betrieb ohne Container**. Details: [`../docs/arcane-homelab-anleitung.md`](../docs/arcane-homelab-anleitung.md).
+> **Cloud-/LAN-Betrieb ohne Container**. Details: [`../docs/de/arcane-homelab-anleitung.md`](../docs/de/arcane-homelab-anleitung.md).
 
 ## 🧪 Nur Test / Demo — NICHT gegen die Produktiv-DB
 
@@ -53,5 +53,5 @@ Entwicklung/Demos. Der Guard verhindert sie gegen Nicht-localhost-Ziele.
 
 ---
 
-Mehr zum lokalen Betrieb: `../docs/lokaler-betrieb.md` · Deploy: `../docs/arcane-homelab-anleitung.md`
-(Homelab) bzw. `../docs/admin-anleitung-cloud.md` (Cloud) · Sicherheit: `../docs/security-audit.md`.
+Mehr zum lokalen Betrieb: `../docs/de/lokaler-betrieb.md` · Deploy: `../docs/de/arcane-homelab-anleitung.md`
+(Homelab) bzw. `../docs/de/admin-anleitung-cloud.md` (Cloud) · Sicherheit: `../docs/security-audit.md`.

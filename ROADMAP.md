@@ -14,7 +14,7 @@
 
 > Die **Code-Härtung ist erledigt** (Details: [`docs/security-audit.md`](docs/security-audit.md)).
 > Offen bleiben nur die Schritte, die **jeder Betreiber selbst** beim Internet-Betrieb macht —
-> abhakbar in [`docs/go-live-checkliste-cloud.md`](docs/go-live-checkliste-cloud.md):
+> abhakbar in [`docs/de/go-live-checkliste-cloud.md`](docs/de/go-live-checkliste-cloud.md):
 
 - [ ] ⚙️ #1 PB-Superuser-Passwort rotiert, Literal aus `seed-remote.sh` entfernt
 - [ ] ⚙️ #2 Produktiv-Admin manuell mit starkem Passwort; keine Seeds gegen Prod
@@ -54,10 +54,10 @@ Aus [`DATA_MODEL.md §5`](DATA_MODEL.md):
       „drittes Scoreboard" lohnt es nicht — nur wegen der Liga-Ergebnis-Kopplung.
 - [ ] 🧑‍💻 **2FA für Admins erzwingbar machen** (Policy-Schalter) — 2FA/TOTP selbst ist bereits umgesetzt.
 - [ ] 🧑‍💻 **#12 Kaderliste einschränken (auf Wunsch)** — aktuell ist der Kader für jeden eingeloggten Nutzer lesbar (E-Mails bleiben geschützt); als Vereins-Verzeichnis vertretbar. **Entscheidung 2026-07-05: keine Einschränkung nötig.** Nur umsetzen, **falls ein Verein es wünscht** (z. B. wegen Minderjähriger). Rationale: [`docs/security-audit.md`](docs/security-audit.md) #12.
-- [ ] 🧑‍💻 **Anleitungen/Doku auf Englisch** — die App-Oberfläche ist seit 16.07.2026 komplett
-      zweisprachig (DE/EN, `app/src/i18n/`, Umschalter in Einstellungen → Darstellung) und
-      `README.en.md` existiert. Offen sind die Schritt-für-Schritt-Anleitungen unter `docs/`
-      (bisher nur deutsch) — gut geeignet für Community-Beiträge. Weitere UI-Sprachen sind
+- [x] 🧑‍💻 **Anleitungen/Doku auf Englisch** — ✅ 16.07.2026 komplett: App-Oberfläche zweisprachig
+      (DE/EN, `app/src/i18n/`, Umschalter in Einstellungen → Darstellung), `README.en.md`,
+      alle Skripte in `scripts/` englisch (Namen + Inhalte), alle Anleitungen englisch als
+      Primärfassung in `docs/` mit deutschen Fassungen in `docs/de/`. Weitere UI-Sprachen sind
       nur noch eine zusätzliche Datei neben `en.ts`.
 - [ ] Mobile-Layout für die Verwaltung (der Counter ist bereits tablettauglich)
 - [ ] Backup-Retention + Größen-Monitoring von `pb_data` (größerer Hebel als Saison-Auslagern)

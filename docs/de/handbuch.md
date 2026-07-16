@@ -1,11 +1,13 @@
 # DartsZentrale — Handbuch für Vereins-Admins
 
+**🇩🇪 Deutsch | [🇬🇧 English](../manual.md)**
+
 Dieses Handbuch erklärt, **wie ihr DartsZentrale im Alltag nutzt** — von der Anmeldung
 über Spieler, Mannschaften, Ligen und den Darts Counter bis zu Board-Rechnern und
 Datensicherung. Es ist bewusst nicht-technisch gehalten.
 
 > **Du willst die App erst zum Laufen bringen?** Die **Inbetriebnahme-Anleitung** liegt im
-> `docs/`-Ordner deines Pakets — je nach Betriebsart:
+> `docs/de/`-Ordner deines Pakets — je nach Betriebsart:
 > - **lokal, ein Board** → `anleitung-lokal-windows.md` bzw. `anleitung-lokal-linux.md`
 > - **Vereinsmodus im LAN** → `admin-anleitung-lan-windows.md` bzw. `admin-anleitung-lan-linux.md`
 > - **Cloud** → `admin-anleitung-cloud.md` (ein Skript richtet den Server ein)
@@ -324,8 +326,8 @@ automatische Sicherungen aktivieren (ideal extern, z. B. Hetzner Storage Box / S
 > einziger Rückweg, wenn du dich aus der App aussperrst.
 
 **Updates.** Neue App-Version einspielen und das passende Update-Skript ausführen:
-`update-verein-lan.*` (LAN-Vereinspaket, tauscht `pb_public/`, kein Neustart), `update-server.sh`
-(Cloud, baut neu + startet die Dienste) oder `update-lokal.*` (lokal). PocketBase-Version
+`update-club-lan.*` (LAN-Vereinspaket, tauscht `pb_public/`, kein Neustart), `update-server.sh`
+(Cloud, baut neu + startet die Dienste) oder `update-local.*` (lokal). PocketBase-Version
 kontrolliert aktualisieren (feste Version statt `:latest`).
 
 ---

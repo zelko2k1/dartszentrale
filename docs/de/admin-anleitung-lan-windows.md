@@ -1,5 +1,7 @@
 # DartsZentrale im Vereinsnetz (LAN) – Inbetriebnahme & Updates (Windows)
 
+**🇩🇪 Deutsch | [🇬🇧 English](../admin-guide-lan-windows.md)**
+
 Schritt für Schritt, ohne Vorkenntnisse. (Linux/Raspberry Pi? → [admin-anleitung-lan-linux.md](admin-anleitung-lan-linux.md).)
 
 Dieser Weg ist die **einfache Vereinsvariante:** **ein einziges Programm** (PocketBase) liefert die
@@ -11,7 +13,7 @@ App **und** die Daten — **kein Node, kein Build.** Ideal fürs Vereinsnetz mit
 > - **Server im Internet/Cloud** (von überall erreichbar) → Paket `03-verein-cloud`
 >   ([admin-anleitung-cloud.md](admin-anleitung-cloud.md)).
 >
-> Tägliche Bedienung: [`handbuch.md`](handbuch.md) · Sicherheit: [`security-audit.md`](security-audit.md).
+> Tägliche Bedienung: [`handbuch.md`](handbuch.md) · Sicherheit: [`security-audit.md`](../security-audit.md).
 
 ---
 
@@ -19,7 +21,7 @@ App **und** die Daten — **kein Node, kein Build.** Ideal fürs Vereinsnetz mit
 
 ### 0a. Die App auf den Rechner holen — der „Ordner"
 Du bekommst das Paket **`02-verein-lan`** als Ordner (USB-Stick/Share vom Einrichter). Darin liegen u. a.
-`start-verein-lan.bat`, `pb_public\`, `pb_migrations\`, `pb_hooks\`. **Alles gehört in diesen Ordner.**
+`start-club-lan.bat`, `pb_public\`, `pb_migrations\`, `pb_hooks\`. **Alles gehört in diesen Ordner.**
 
 > **Node.js ist NICHT nötig.** Das Programm ist ein einziges Binary, das beim ersten Start automatisch
 > geladen wird. Du brauchst nur **einmal Internet** beim allerersten Start.
@@ -32,7 +34,7 @@ Eingabeaufforderung → `ipconfig` → „IPv4-Adresse" (z. B. `192.168.1.50`).
 
 ## 1. Starten & einrichten (Doppelklick)
 
-**Doppelklick auf `start-verein-lan.bat`** im Ordner.
+**Doppelklick auf `start-club-lan.bat`** im Ordner.
 
 Beim **allerersten Start** passiert automatisch:
 1. das **PocketBase-Binary** wird geladen (~15 MB, einmal Internet nötig),
@@ -42,7 +44,7 @@ Beim **allerersten Start** passiert automatisch:
    - **App-Administrator** (dein tägliches Login *in der App*)
 3. die App startet, der Browser öffnet **`http://127.0.0.1:8090`**.
 
-Jedes weitere Mal genügt wieder der Doppelklick auf `start-verein-lan.bat` — die Einrichtung läuft
+Jedes weitere Mal genügt wieder der Doppelklick auf `start-club-lan.bat` — die Einrichtung läuft
 **nur beim ersten Mal**. **Fenster offen lassen; zum Beenden das Fenster schließen.**
 
 > Bricht das Fenster sofort ab? Meist ist das Antivirus/SmartScreen im Weg — Ordner freigeben.
@@ -61,8 +63,8 @@ Mit dem jeweiligen Konto anmelden.
 
 ## 3. Autostart (Board startet beim Anmelden von selbst)
 
-**Doppelklick auf `autostart-verein-lan.bat`** — legt eine Startup-Verknüpfung an. Voraussetzung:
-einmal `start-verein-lan.bat` gelaufen (Binary + Konten vorhanden).
+**Doppelklick auf `autostart-club-lan.bat`** — legt eine Startup-Verknüpfung an. Voraussetzung:
+einmal `start-club-lan.bat` gelaufen (Binary + Konten vorhanden).
 
 > **Entfernen:** `Win+R` → `shell:startup` → dort `DartsZentrale.lnk` löschen.
 
@@ -91,8 +93,8 @@ Eine ganze Saison hängt an **`pb_data\`**. Richte Backups ein:
 Eine neue Version kommt als **`dartszentrale-update-<version>.tar.gz`**. **Deine Daten (`pb_data\`)
 bleiben unangetastet.**
 
-- Paket in den Ordner **`updates`** legen → **Doppelklick auf `update-verein-lan.bat`**.
-- Oder mit Pfad/Laufwerk: Eingabeaufforderung im Ordner → `update-verein-lan.bat E:\` (Stick).
+- Paket in den Ordner **`updates`** legen → **Doppelklick auf `update-club-lan.bat`**.
+- Oder mit Pfad/Laufwerk: Eingabeaufforderung im Ordner → `update-club-lan.bat E:\` (Stick).
 
 Tauscht das Frontend in `pb_public\` aus — **kein Neustart nötig**, an den Brettern nur die Seite neu
 laden (ggf. zweimal, wegen PWA-Cache). Die alte Version landet in `backup\`.
@@ -107,7 +109,7 @@ laden (ggf. zweimal, wegen PWA-Cache). Die alte Version landet in `backup\`.
 - **Port 8090 nur im LAN lassen — NIE ins Internet weiterleiten/portforwarden.** Wer von außen
   erreichbar sein will, nimmt das **Cloud-Paket** (TLS via Caddy).
 - Die PocketBase-Konsole `…:8090/_/` nur im vertrauenswürdigen Netz nutzen; in den Settings
-  **Rate-Limit** und **Superuser-2FA** aktivieren. Details: [`security-audit.md`](security-audit.md).
+  **Rate-Limit** und **Superuser-2FA** aktivieren. Details: [`security-audit.md`](../security-audit.md).
 
 ---
 
@@ -133,9 +135,9 @@ laden (ggf. zweimal, wegen PWA-Cache). Die alte Version landet in `backup\`.
 
 | Datei | Zweck |
 |---|---|
-| `start-verein-lan.bat` | **Starten** (Erststart lädt das Binary + legt die zwei Konten an) |
-| `autostart-verein-lan.bat` | **Autostart** beim Anmelden (Startup-Verknüpfung) |
-| `update-verein-lan.bat` | **Update** einspielen (tauscht `pb_public\`, `pb_data\` bleibt) |
+| `start-club-lan.bat` | **Starten** (Erststart lädt das Binary + legt die zwei Konten an) |
+| `autostart-club-lan.bat` | **Autostart** beim Anmelden (Startup-Verknüpfung) |
+| `update-club-lan.bat` | **Update** einspielen (tauscht `pb_public\`, `pb_data\` bleibt) |
 | `pb_public\` | das ausgelieferte Frontend (wird beim Update getauscht) |
 | `pb_migrations\` · `pb_hooks\` | Schema & Server-Funktionen |
 | `pb_data\` | **deine Datenbank** (entsteht beim ersten Start) — **sichern!** |

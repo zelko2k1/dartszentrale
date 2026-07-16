@@ -1,5 +1,7 @@
 # DartsZentrale lokal (Linux / Raspberry Pi) — ein Board, kein Server
 
+**🇩🇪 Deutsch | [🇬🇧 English](../guide-local-linux.md)**
+
 Der einfachste Weg: die App läuft nur im Browser auf **einem** Gerät — **ohne Server, ohne
 Anmeldung**. Die Daten liegen lokal im Browser dieses Geräts.
 
@@ -25,7 +27,7 @@ sudo apt install -y nodejs
 
 ## 2. Starten
 
-Im Projektordner **`./start-lokal.sh`**.
+Im Projektordner **`./start-local.sh`**.
 
 Der Browser öffnet die App → beim **ersten Start „Lokal"** wählen. Fertig.
 Das Terminal **offen lassen**, solange du die App nutzt (zum Beenden **Strg+C**).
@@ -36,7 +38,7 @@ Das Terminal **offen lassen**, solange du die App nutzt (zum Beenden **Strg+C**)
 
 ## 3. Autostart (Kiosk-Board)
 
-Damit das Brett nach dem Hochfahren von selbst die App zeigt: **`./autostart-lokal.sh`**.
+Damit das Brett nach dem Hochfahren von selbst die App zeigt: **`./autostart-local.sh`**.
 
 Entfernen: Das Skript zeigt am Ende den passenden Entfernen-Befehl an.
 
@@ -56,7 +58,7 @@ lokalen Board ist dafür kein Passwort/Token nötig (läuft nur auf diesem Gerä
 
 ### Alternativ — per Skript (USB-Stick/Ordner)
 
-Im Projektordner **`./update-lokal.sh <quelle>`** (z. B. `./update-lokal.sh /media/usb`).
+Im Projektordner **`./update-local.sh <quelle>`** (z. B. `./update-local.sh /media/usb`).
 
 Das übernimmt die neuen Dateien und baut die App neu. Im lokalen Modus liegen die Daten im
 Browser — es geht nichts verloren. Danach am Brett die Seite **neu laden**.

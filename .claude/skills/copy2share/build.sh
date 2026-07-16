@@ -2,12 +2,12 @@
 # Baut unter copy2share/ drei Verteil-Bundles (Ordner + ZIP) mit NUR den nötigen Dateien:
 #   01-lokal-ein-board  → Ein Board lokal: starten & loslegen, kein Server, kein Login (mit Auto-Backup)
 #   02-verein-lan       → Vereinsmodus im eigenen Netz: EIN Binary (PocketBase liefert App+API), kein Node/Build
-#   03-verein-cloud     → Vereinsmodus in der Cloud (schlank per Caddy: einrichten-cloud.sh)
+#   03-verein-cloud     → Vereinsmodus in der Cloud (schlank per Caddy: setup-cloud.sh)
 # Jeder Verein bekommt die passende ZIP. Aufruf:  bash build.sh [ZIEL]   (Standard: <repo>/copy2share)
 # Bewusst NICHT kopiert: node_modules, dist, .env.local, pb_data, das PocketBase-Binary,
 # die demo-*.mjs (Testdaten) und seed-remote.sh (Secrets).
 # Der Arcane-/Docker-Weg ist bewusst SEPARAT (für Fortgeschrittene) und nicht Teil dieser Bundles
-# — siehe docs/arcane-homelab-anleitung.md.
+# — siehe docs/arcane-homelab-guide.md (deutsch: docs/de/arcane-homelab-anleitung.md).
 set -euo pipefail
 
 SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -37,25 +37,28 @@ copy_pb(){ local d="$1/pocketbase"; mkdir -p "$d"
 # (Endnutzer doppelklicken start-*.bat direkt neben app/). Bundle-Layout bleibt dadurch unverändert.
 
 # Nur 01 (lokal, ein Board): lokaler Start + Autostart + Update fürs Kiosk-Board — NUR Frontend, kein PocketBase
-copy_lokal(){ for f in start-lokal.sh start-lokal.bat autostart-lokal.sh autostart-lokal.bat update-lokal.sh update-lokal.bat; do cpf "$REPO/scripts/$f" "$1/"; done; }
+copy_lokal(){ for f in start-local.sh start-local.bat autostart-local.sh autostart-local.bat update-local.sh update-local.bat; do cpf "$REPO/scripts/$f" "$1/"; done; }
 
 # Nur 02 (Vereinsmodus LAN, Single-Binary): Start + Update + Autostart für den Einfach-Betrieb
-copy_verein_lan(){ for f in start-verein-lan.sh start-verein-lan.ps1 start-verein-lan.bat \
-  update-verein-lan.sh update-verein-lan.ps1 update-verein-lan.bat \
-  autostart-verein-lan.sh autostart-verein-lan.bat; do cpf "$REPO/scripts/$f" "$1/"; done; }
+copy_verein_lan(){ for f in start-club-lan.sh start-club-lan.ps1 start-club-lan.bat \
+  update-club-lan.sh update-club-lan.ps1 update-club-lan.bat \
+  autostart-club-lan.sh autostart-club-lan.bat; do cpf "$REPO/scripts/$f" "$1/"; done; }
 
-copy_docs(){ local d="$1/docs"; mkdir -p "$d"; shift; for f in "$@"; do cpf "$REPO/docs/$f" "$d/"; done; }
+# Docs kopieren; Pfade mit de/-Präfix landen in docs/de/ (deutsche Fassungen neben den englischen).
+copy_docs(){ local d="$1/docs"; mkdir -p "$d" "$d/de"; shift; for f in "$@"; do
+  case "$f" in de/*) cpf "$REPO/docs/$f" "$d/de/" ;; *) cpf "$REPO/docs/$f" "$d/" ;; esac
+done; }
 
 # Schlanke Cloud-Variante (systemd + Caddy, ohne Docker): Installer (scripts/) + Caddy-Referenzkonfig (Root) — direkt ins Bundle-Root
-copy_cloud(){ cpf "$REPO/scripts/einrichten-cloud.sh" "$1/"; cpf "$REPO/Caddyfile.example" "$1/"; }
+copy_cloud(){ cpf "$REPO/scripts/setup-cloud.sh" "$1/"; cpf "$REPO/Caddyfile.example" "$1/"; }
 
 # Update-Paket: fertiges dist/ (inkl. version.json) als .tar.gz. Für alle Modi identisch (nur Frontend):
-#   01/03: in updates/ ablegen, in der App „Installieren" (serve-dist).  02: ./update-verein-lan.(sh|bat).
+#   01/03: in updates/ ablegen, in der App „Installieren" (serve-dist).  02: ./update-club-lan.(sh|bat).
 make_update_pkg(){
   echo "▶ Baue Frontend (dist/) für das Update-Paket …"
   ( cd "$REPO/app" && npm run build >/dev/null 2>&1 ) || { echo "  ⚠ 'npm run build' fehlgeschlagen (sind node_modules in app/ installiert?) — Update-Paket übersprungen."; return 0; }
   local out="$TARGET/dartszentrale-update-${VERSION}.tar.gz"
-  ( cd "$REPO/app/dist" && tar -czf "$out" * )   # Members auf Wurzelebene (kein ./-Prefix) → passt zu serve-dist + update-verein-lan
+  ( cd "$REPO/app/dist" && tar -czf "$out" * )   # Members auf Wurzelebene (kein ./-Prefix) → passt zu serve-dist + update-club-lan
   echo "  → $(basename "$out")"
 }
 
@@ -80,46 +83,49 @@ rm -rf "$TARGET"; mkdir -p "$TARGET"
 A="$TARGET/01-lokal-ein-board"; mkdir -p "$A"
 copy_app "$A" 0
 copy_lokal "$A"
-copy_docs "$A" anleitung-lokal-windows.md anleitung-lokal-linux.md handbuch.md
+copy_docs "$A" guide-local-windows.md guide-local-linux.md manual.md \
+  de/anleitung-lokal-windows.md de/anleitung-lokal-linux.md de/handbuch.md
 cat > "$A/LIESMICH.txt" <<'TXT'
 DartsZentrale — Ein Board lokal (kein Server, keine Anmeldung)
 -------------------------------------------------------------
-Starten:  Windows -> Doppelklick start-lokal.bat   |   Linux/Pi -> ./start-lokal.sh
+Starten:  Windows -> Doppelklick start-local.bat   |   Linux/Pi -> ./start-local.sh
 Beim ersten Start "Lokal" waehlen. Loslegen — kein Login, keine Einrichtung.
 
 Auto-Backup: In den Einstellungen aktivierbar. Sichert deine Daten taeglich als Datei nach 'backup/'
-neben der App (falls der Browser mal zurueckgesetzt wird). Laeuft nur ueber start-lokal (serve-dist).
+neben der App (falls der Browser mal zurueckgesetzt wird). Laeuft nur ueber start-local (serve-dist).
 
-Autostart (Kiosk):  Windows -> autostart-lokal.bat   |   Linux/Pi -> ./autostart-lokal.sh
+Autostart (Kiosk):  Windows -> autostart-local.bat   |   Linux/Pi -> ./autostart-local.sh
 Update (einfach): dartszentrale-update-*.tar.gz in den Ordner 'updates' legen, dann in der App
           Einstellungen -> "App & Updates" -> Installieren (kein Neustart noetig).
-Update (Skript):  Windows -> update-lokal.bat   |   Linux/Pi -> ./update-lokal.sh <stick>
+Update (Skript):  Windows -> update-local.bat   |   Linux/Pi -> ./update-local.sh <stick>
 Update (Notnagel): einfach den kompletten Ordner durch die neue Version ersetzen.
-Anleitung: docs/anleitung-lokal-windows.md bzw. -linux.md  (Bedienung: docs/handbuch.md, Abschnitte 10+11)
+Anleitung: docs/de/anleitung-lokal-windows.md bzw. -linux.md — English: docs/guide-local-*.md
+Bedienung: docs/de/handbuch.md, Abschnitte 10+11 (English: docs/manual.md)
 Hinweis: Nur Node.js noetig (nodejs.org). PocketBase wird NICHT gebraucht (kein Server).
 TXT
 
 # ── 02 — Vereinsmodus im eigenen Netz (LAN), EINFACH: ein Binary (PocketBase = App + API) ────
 # Kein Node, kein Build beim Verein: das fertige Frontend liegt in pb_public/, PocketBase liefert es
-# selbst aus. start-verein-lan laedt beim ersten Mal nur das PB-Binary + legt die Admin-Konten an.
+# selbst aus. start-club-lan laedt beim ersten Mal nur das PB-Binary + legt die Admin-Konten an.
 B="$TARGET/02-verein-lan"; mkdir -p "$B"
 if build_pubdir "$B"; then
   cp -r "$REPO/pocketbase/pb_migrations" "$REPO/pocketbase/pb_hooks" "$B/"
   copy_verein_lan "$B"
-  copy_docs "$B" admin-anleitung-lan-linux.md admin-anleitung-lan-windows.md handbuch.md security-audit.md
+  copy_docs "$B" admin-guide-lan-linux.md admin-guide-lan-windows.md manual.md security-audit.md \
+    de/admin-anleitung-lan-linux.md de/admin-anleitung-lan-windows.md de/handbuch.md
   cat > "$B/LIESMICH.txt" <<'TXT'
 DartsZentrale — Vereinsmodus im eigenen Netz (LAN, ein Programm, kein Node, kein Build)
 --------------------------------------------------------------------------------------
 EIN Programm (PocketBase) liefert die App UND die Daten — ueber einen Port.
 
 STARTEN:
-  Linux/Pi -> ./start-verein-lan.sh        Windows -> Doppelklick start-verein-lan.bat
+  Linux/Pi -> ./start-club-lan.sh        Windows -> Doppelklick start-club-lan.bat
 Beim ERSTEN Start werden zwei Admin-Konten angelegt (PocketBase-Konsole + App-Admin, je E-Mail +
 Passwort). Die Passwoerter werden NICHT gespeichert — sicher notieren (Passwortmanager)!
 Voraussetzung: einmal Internet beim ersten Start (laedt das ~15 MB PocketBase-Binary). Node NICHT noetig.
 
 AUTOSTART (Board startet beim Hochfahren von selbst):
-  Linux/Pi -> ./autostart-verein-lan.sh    Windows -> Doppelklick autostart-verein-lan.bat
+  Linux/Pi -> ./autostart-club-lan.sh    Windows -> Doppelklick autostart-club-lan.bat
 
 BEDIENUNG:
   Dieser Rechner : http://127.0.0.1:8090   (oeffnet sich automatisch im Browser)
@@ -130,7 +136,7 @@ BEDIENUNG:
 
 UPDATE (neue Version als dartszentrale-update-*.tar.gz):
   Paket in den Ordner 'updates' legen, dann:
-  Linux/Pi -> ./update-verein-lan.sh        Windows -> Doppelklick update-verein-lan.bat
+  Linux/Pi -> ./update-club-lan.sh        Windows -> Doppelklick update-club-lan.bat
   Tauscht das Frontend aus (kein Neustart noetig); pb_data (deine DB) bleibt, die alte Version
   landet in backup/. Aendern sich Migrationen/Hooks (Backend), stattdessen den kompletten Ordner
   ersetzen — pb_data behalten.
@@ -139,7 +145,7 @@ WICHTIG (Netz/Sicherheit): Port 8090 nur im LAN lassen, NIE ins Internet weiterl
 Recovery (Passwort/Superuser): PocketBase-Konsole http://127.0.0.1:8090/_/ — mit dem beim ersten
   Start selbst vergebenen Superuser-Konto anmelden (Passwort sicher aufbewahren, es wird nicht gespeichert!).
 
-Bedienung der App: docs/handbuch.md · Sicherheit: docs/security-audit.md
+Bedienung der App: docs/de/handbuch.md (English: docs/manual.md) · Sicherheit: docs/security-audit.md
 TXT
 else
   rmdir "$B" 2>/dev/null || true
@@ -151,23 +157,24 @@ copy_app "$C" 0
 copy_pb "$C" 0
 copy_cloud "$C"
 cpf "$REPO/scripts/update-server.sh" "$C/"
-copy_docs "$C" admin-anleitung-cloud.md go-live-checkliste-cloud.md handbuch.md
+copy_docs "$C" admin-guide-cloud.md go-live-checklist-cloud.md manual.md \
+  de/admin-anleitung-cloud.md de/go-live-checkliste-cloud.md de/handbuch.md
 cat > "$C/LIESMICH.txt" <<'TXT'
 DartsZentrale — Vereinsmodus in der Cloud (schlank: systemd + Caddy, ohne Docker)
 ------------------------------------------------------------------------
 EIN Befehl richtet alles ein — fragt Domains, Superuser und ersten App-Admin ab und
 laeuft bis alles steht (PocketBase laden, App bauen, systemd-Dienste, Caddy/HTTPS):
 
-  sudo ./einrichten-cloud.sh
+  sudo ./setup-cloud.sh
 
 Voraussetzung: ein Linux-Server (Ubuntu/Debian) und die DNS-A-Records app.* / db.*
-zeigen auf die Server-IP. Details + Sicherheit: docs/admin-anleitung-cloud.md,
-Go-live-Checkliste: docs/go-live-checkliste-cloud.md.
+zeigen auf die Server-IP. Details + Sicherheit: docs/de/admin-anleitung-cloud.md
+(English: docs/admin-guide-cloud.md), Go-live-Checkliste: docs/de/go-live-checkliste-cloud.md.
 
 UPDATE spaeter — einfachster Weg (In-App):
   dartszentrale-update-*.tar.gz in den Ordner 'updates' der Installation legen, dann in der App
   Einstellungen -> "App & Updates" -> Installieren. Von einem Board mit dem Token, das
-  einrichten-cloud am Ende anzeigt (steht in .update-token).
+  setup-cloud am Ende anzeigt (steht in .update-token).
 UPDATE spaeter — per Skript (auch PocketBase):  ./update-server.sh
 (erkennt die Dienste, baut neu, startet neu). pb_data (deine DB) bleibt erhalten.
 TXT
@@ -204,9 +211,9 @@ du -sh "$TARGET"/*.zip "$TARGET"/dartszentrale-update-*.tar.gz 2>/dev/null || tr
 echo
 echo "Update-Paket (später an bestehende Installationen schicken):"
 echo "  dartszentrale-update-${VERSION}.tar.gz  → 01/03: in updates/ legen, in der App installieren."
-echo "                                          → 02:    ./update-verein-lan.(sh|bat)"
+echo "                                          → 02:    ./update-club-lan.(sh|bat)"
 echo
 echo "Jeder Verein bekommt die passende ZIP:"
 echo "  01-lokal-ein-board = ein Board lokal (kein Server, kein Login)"
-echo "  02-verein-lan      = Verein im eigenen Netz  → start-verein-lan.(sh|bat)"
-echo "  03-verein-cloud    = Verein in der Cloud     → sudo ./einrichten-cloud.sh"
+echo "  02-verein-lan      = Verein im eigenen Netz  → start-club-lan.(sh|bat)"
+echo "  03-verein-cloud    = Verein in der Cloud     → sudo ./setup-cloud.sh"

@@ -1,49 +1,49 @@
-# scripts/ — Start-, Update- & Autostart-Skripte
+# scripts/ — Start, update & autostart scripts
 
-Hier liegen die **Betriebs-Skripte** von DartsZentrale: starten, aktualisieren, beim
-Hochfahren automatisch starten und den Cloud-Server einrichten.
+This folder holds the **operations scripts** for DartsZentrale: starting, updating,
+launching automatically at boot, and setting up the cloud server.
 
-> **Wichtig — im Download liegen sie flach:** In den [heruntergeladenen Paketen](https://github.com/zelko2k1/dartszentrale/releases/latest)
-> stecken diese Dateien **nicht** in einem `scripts/`-Unterordner, sondern direkt im Hauptordner
-> neben `app/`. Ein Verein doppelklickt also z. B. `start-lokal.bat` gleich oben im entpackten Ordner —
-> ohne in einen Unterordner zu wechseln. Der Ordner `scripts/` ist nur die **Ablage im Quellcode**;
-> der `copy2share`-Build kopiert die passenden Skripte pro Paket flach ins Bundle.
+> **Important — they sit flat in the download:** In the [downloaded bundles](https://github.com/zelko2k1/dartszentrale/releases/latest)
+> these files are **not** inside a `scripts/` subfolder — they sit directly in the main folder
+> next to `app/`. So a club double-clicks e.g. `start-local.bat` right at the top of the extracted
+> folder, without descending into a subfolder. The `scripts/` folder is just where they **live in
+> the source code**; the `copy2share` build copies the matching scripts flat into each bundle.
 
-Pro Aufgabe gibt es meist eine **Linux-Version (`.sh`)** und eine **Windows-Version (`.bat`/`.ps1`)** —
-die `.bat` ruft dabei oft nur die `.ps1` auf. Namensschema:
+For most tasks there is a **Linux version (`.sh`)** and a **Windows version (`.bat`/`.ps1`)** —
+the `.bat` often just calls the `.ps1`. Naming scheme:
 
-- **`…-lokal…`** → ein einzelnes Board auf einem PC (nur die App, keine Anmeldung)
-- **`…-verein-lan…`** → Vereinsmodus im eigenen Netzwerk (ein Programm liefert App **und** Datenbank aus)
-- **`…-cloud` / `…-server`** → Vereinsmodus auf einem Internet-Server
+- **`…-local…`** → a single board on one PC (app only, no login)
+- **`…-club-lan…`** → club mode on your own network (one program serves the app **and** the database)
+- **`…-cloud` / `…-server`** → club mode on an internet server
 
-## Starten
-| Datei | Zweck |
+## Starting
+| File | Purpose |
 |---|---|
-| `start-lokal.sh` / `.bat` | Startet **ein Board** unter `http://127.0.0.1:4173` — ohne Server, ohne Anmeldung. |
-| `start-verein-lan.sh` / `.ps1` / `.bat` | Startet den **Vereinsmodus im LAN** (ein Programm für App + Datenbank), legt beim Erststart die Admin-Konten an. |
+| `start-local.sh` / `.bat` | Starts **a single board** at `http://127.0.0.1:4173` — no server, no login. |
+| `start-club-lan.sh` / `.ps1` / `.bat` | Starts **club mode on the LAN** (one program for app + database); the first run creates the admin accounts. |
 
-## Aktualisieren
-| Datei | Zweck |
+## Updating
+| File | Purpose |
 |---|---|
-| `update-lokal.sh` / `.bat` | Spielt eine **neue App-Version** für ein Board ein (von USB-Stick/Ordner). |
-| `update-verein-lan.sh` / `.ps1` / `.bat` | Tauscht im LAN-Betrieb **nur die App** aus; die Daten bleiben, die alte Version wird gesichert. |
-| `update-server.sh` | Aktualisiert einen **Internet-/Pi-Server** (App + Datenbank) von Stick/Ordner. |
+| `update-local.sh` / `.bat` | Installs a **new app version** for a board (from a USB stick/folder). |
+| `update-club-lan.sh` / `.ps1` / `.bat` | Replaces **only the app** in LAN mode; your data stays, the old version is backed up. |
+| `update-server.sh` | Updates an **internet/Pi server** (app + database) from a stick/folder. |
 
-## Automatisch beim Hochfahren starten (Autostart)
-| Datei | Zweck |
+## Start automatically at boot (autostart)
+| File | Purpose |
 |---|---|
-| `autostart-lokal.sh` / `.bat` | Board startet **beim Einschalten** automatisch (ideal für einen Kiosk-PC). |
-| `autostart-verein-lan.sh` / `.bat` | LAN-Server startet **beim Einschalten** automatisch. |
+| `autostart-local.sh` / `.bat` | Board starts **automatically when powered on** (ideal for a kiosk PC). |
+| `autostart-club-lan.sh` / `.bat` | LAN server starts **automatically when powered on**. |
 
-## Einrichten (einmalig)
-| Datei | Zweck |
+## Setup (one-time)
+| File | Purpose |
 |---|---|
-| `einrichten-cloud.sh` | Richtet einen **Internet-Server** komplett ein (Datenbank + App als Hintergrunddienste + Caddy für HTTPS). Linux, als root. |
+| `setup-cloud.sh` | Sets up an **internet server** completely (database + app as background services + Caddy for HTTPS). Linux, as root. |
 
-## Wozu welches Paket?
+## Which bundle gets which script?
 
-Welches Skript in welchem Download-Bundle landet, steht im
-[Haupt-README](../README.md#loslegen--welche-anleitung-passt-zu-mir); die
-Schritt-für-Schritt-Anleitungen liegen unter [`docs/`](../docs/) und in jedem Paket.
-Datenbank- und Wartungswerkzeuge (Passwort-Reset, Saison-Export …) liegen nicht hier,
-sondern unter [`pocketbase/`](../pocketbase/).
+Which script ends up in which download bundle is documented in the
+[main README](../README.en.md#getting-started--which-guide-fits-me); the
+step-by-step guides live under [`docs/`](../docs/) and inside every bundle.
+Database and maintenance tools (password reset, season export …) are not here —
+they live under [`pocketbase/`](../pocketbase/).

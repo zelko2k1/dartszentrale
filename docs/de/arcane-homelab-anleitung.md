@@ -1,5 +1,7 @@
 # DartsZentrale mit Arcane — Homelab (per IP)
 
+**🇩🇪 Deutsch | [🇬🇧 English](../arcane-homelab-guide.md)**
+
 Praxis-Anleitung für **PocketBase + Frontend als Compose-Stacks in [Arcane](https://arcane.ofkm.dev/)**.
 Schwerpunkt ist der Betrieb im eigenen Netz über die **interne IP** (kein DNS, keine Domain, kein
 HTTPS) — festgehalten nach dem ersten Aufsetzen inkl. der Stolpersteine.
@@ -37,7 +39,7 @@ HTTPS) — festgehalten nach dem ersten Aufsetzen inkl. der Stolpersteine.
 
 ## 1. PocketBase-Stack deployen
 
-Die Compose-Datei [`pocketbase/docker-compose.yaml`](../pocketbase/docker-compose.yaml) ist fertig:
+Die Compose-Datei [`pocketbase/docker-compose.yaml`](../../pocketbase/docker-compose.yaml) ist fertig:
 Sie baut das eigene Image (Schema + Hooks eingebacken), legt das persistente Volume `pb_data` an,
 veröffentlicht Port **8090** und hat einen Healthcheck.
 
@@ -73,7 +75,7 @@ veröffentlicht Port **8090** und hat einen Healthcheck.
 
 ## 2. Frontend-Stack deployen
 
-Die Compose-Datei [`app/docker-compose.yaml`](../app/docker-compose.yaml) baut die SPA (nginx serviert
+Die Compose-Datei [`app/docker-compose.yaml`](../../app/docker-compose.yaml) baut die SPA (nginx serviert
 das statische Bundle) und trägt die PocketBase-URL als **Build-Arg** direkt im File:
 
 ```yaml
@@ -179,7 +181,7 @@ deshalb zwei Wege — je nachdem, ob du im Docker-/Arcane-Umfeld bleiben willst 
 ### Weg A (empfohlen, am schlanksten) — systemd + Caddy, ohne Docker
 
 Zwei native systemd-Dienste + **Caddy** als HTTPS-Reverse-Proxy (Auto-Let's-Encrypt). Spart ~1 GB
-Dauerlast und die ganze Docker-Schicht, geführt per `einrichten-cloud.sh`. Komplett beschrieben in
+Dauerlast und die ganze Docker-Schicht, geführt per `setup-cloud.sh`. Komplett beschrieben in
 [`admin-anleitung-cloud.md`](admin-anleitung-cloud.md).
 
 ### Weg B — bei Arcane bleiben: Caddy als zusätzlicher Container
@@ -194,7 +196,7 @@ Wenn du **ein Tool überall** willst (Arcane im Homelab **und** in der Cloud), p
 - **`VITE_PB_URL` = `https://db.<domain>`** (Build-Zeit!) statt der LAN-IP.
 - Caddy holt/erneuert die Let's-Encrypt-Zertifikate automatisch; Voraussetzung: Ports **80 + 443**
   aus dem Internet erreichbar, DNS zeigt auf die Server-IP.
-- Als Vorlage für die Caddy-Konfig dient [`../Caddyfile.example`](../Caddyfile.example) — nur zeigen die
+- Als Vorlage für die Caddy-Konfig dient [`Caddyfile.example`](../../Caddyfile.example) — nur zeigen die
   `reverse_proxy`-Ziele im Container-Stack auf die **Service-Namen** (`frontend:80`, `pocketbase:8090`)
   statt auf `127.0.0.1:4173/:8090`. Die Security-Header/CSP-Hinweise dort gelten unverändert.
 - **Rechtliches (Pflicht):** Öffentlich brauchst du ein **Impressum** (§ 5 DDG) und eine
@@ -228,7 +230,7 @@ Die echte Zugriffskontrolle sind die **PocketBase-API-Rules** (serverseitig) —
   ```
 - **Bei öffentlichem Betrieb** (Domain/Internet): HTTPS ist Pflicht, den PocketBase-Port **8090 nicht**
   offen ins Internet stellen, die Admin-Konsole **`/_/`** abschirmen (IP/VPN). Vollständige
-  Pre-Go-live-Liste: [`security-audit.md`](security-audit.md).
+  Pre-Go-live-Liste: [`security-audit.md`](../security-audit.md).
 - Self-Registration bleibt aus (`users` create = `admin`); unauthentifiziert ist nichts lesbar.
 
 ---

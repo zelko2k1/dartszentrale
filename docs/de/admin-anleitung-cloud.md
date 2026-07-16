@@ -1,10 +1,12 @@
 # DartsZentrale schlank in der Cloud — systemd + Caddy, ohne Docker
 
+**🇩🇪 Deutsch | [🇬🇧 English](../admin-guide-cloud.md)**
+
 Die **leichteste** Art, den Vereinsmodus online zu betreiben: zwei native systemd-Dienste
 plus **Caddy** als HTTPS-Proxy. Kein Docker, keine Container-Verwaltung (~1 GB Dauerlast gespart).
 Läuft auf einem **1–2-GB-Nano** ab ~3–4 €/Monat.
 
-> **Geführt per Skript:** `einrichten-cloud.sh` fragt alles Nötige ab (Domains, Superuser,
+> **Geführt per Skript:** `setup-cloud.sh` fragt alles Nötige ab (Domains, Superuser,
 > erster App-Admin) und richtet den Server komplett ein. Der **lokale Modus** der App braucht
 > von alldem nichts.
 
@@ -92,7 +94,7 @@ eintragen — die Domain hängt das System automatisch an:
 nslookup app.deinedomain.de
 nslookup db.deinedomain.de
 ```
-Beide müssen die Server-IP zurückgeben. **Erst dann** `einrichten-cloud.sh` laufen lassen bzw. Caddy
+Beide müssen die Server-IP zurückgeben. **Erst dann** `setup-cloud.sh` laufen lassen bzw. Caddy
 starten — sonst scheitert die HTTPS-Zertifikatsausstellung, weil Let's Encrypt die Domain
 nicht zur IP auflösen kann.
 
@@ -103,14 +105,14 @@ nicht zur IP auflösen kann.
 Die Dateien auf den Server holen (ZIP entpacken **oder** `git clone …`), in den Ordner wechseln, dann:
 
 ```bash
-sudo ./einrichten-cloud.sh
+sudo ./setup-cloud.sh
 ```
 
 Das Skript **fragt alles Nötige interaktiv ab** (Domains, optional Let's-Encrypt-Mail, Superuser,
 erster App-Admin). Werte lassen sich auch vorab als Env setzen:
-`sudo APP_DOMAIN=app.deinedomain.de DB_DOMAIN=db.deinedomain.de ./einrichten-cloud.sh`.
+`sudo APP_DOMAIN=app.deinedomain.de DB_DOMAIN=db.deinedomain.de ./setup-cloud.sh`.
 
-Das Skript ([`einrichten-cloud.sh`](../scripts/einrichten-cloud.sh)) ist idempotent und erledigt:
+Das Skript ([`setup-cloud.sh`](../../scripts/setup-cloud.sh)) ist idempotent und erledigt:
 
 1. **Node.js + Caddy** installieren (falls nicht vorhanden), **PocketBase-Binary** passend zur
    CPU (amd64/arm64) herunterladen.
@@ -209,7 +211,7 @@ sudo systemctl enable --now darts-pocketbase darts-web
 ```
 
 ### 4. Caddy konfigurieren
-[`Caddyfile.example`](../Caddyfile.example) nach
+[`Caddyfile.example`](../../Caddyfile.example) nach
 `/etc/caddy/Caddyfile` kopieren, Domains ersetzen, dann:
 ```bash
 sudo caddy validate --config /etc/caddy/Caddyfile
@@ -233,7 +235,7 @@ Dann in `https://db.deinedomain.de/_/` → **Application URL** = `https://db.dei
 |---|---|
 | **Status** | `systemctl status darts-web darts-pocketbase caddy` |
 | **Logs live** | `journalctl -u darts-pocketbase -f` |
-| **App-Update (In-App, nur Frontend)** | `dartszentrale-update-*.tar.gz` in **`updates/`** legen → in der App: Einstellungen → „App & Updates" → Installieren (mit dem Update-Token, den `einrichten-cloud.sh` am Ende zeigte / `.update-token`). Kein Dienst-Neustart nötig. |
+| **App-Update (In-App, nur Frontend)** | `dartszentrale-update-*.tar.gz` in **`updates/`** legen → in der App: Einstellungen → „App & Updates" → Installieren (mit dem Update-Token, den `setup-cloud.sh` am Ende zeigte / `.update-token`). Kein Dienst-Neustart nötig. |
 | **App-Update (Skript, auch PocketBase)** | neue Dateien einspielen (ZIP/`git pull`) → `./update-server.sh` (baut + startet die Dienste neu) |
 | **Schema-Update** | `update-server.sh` zieht es mit; Migrations laufen beim PB-Start ohnehin (bei Bedarf `cd pocketbase && node provision.mjs`) |
 | **Backups** | in PocketBase (`/_/` → Settings → Backups) aktivieren; Daten liegen in `pocketbase/pb_data/` |
@@ -271,15 +273,15 @@ lokal auf `127.0.0.1:8090`). `PB_SU_EMAIL`/`PB_SU_PASS` = das beim Setup gewähl
 ### Domain ändern
 
 Die Domain steckt technisch an mehreren Stellen (Frontend-Build `VITE_PB_URL`, PocketBase
-`--origins`, Caddyfile + CSP). **Nichts davon von Hand anfassen** — einfach `einrichten-cloud.sh` erneut mit
+`--origins`, Caddyfile + CSP). **Nichts davon von Hand anfassen** — einfach `setup-cloud.sh` erneut mit
 den neuen Domains laufen lassen; es schreibt alle Stellen konsistent neu und baut das Frontend neu:
 
 ```bash
-sudo APP_DOMAIN=neu.deinedomain.de DB_DOMAIN=db2.deinedomain.de ./einrichten-cloud.sh
+sudo APP_DOMAIN=neu.deinedomain.de DB_DOMAIN=db2.deinedomain.de ./setup-cloud.sh
 ```
 
 > `VITE_PB_URL` ist in den Build **gebacken** (Compile-Zeit) → ein Domain-Wechsel erfordert
-> ohnehin einen Neu-Build; das erledigt `einrichten-cloud.sh` mit.
+> ohnehin einen Neu-Build; das erledigt `setup-cloud.sh` mit.
 
 Separat (liegt außerhalb des Servers) bleiben nur zwei Schritte:
 1. **DNS** für die neue Domain anlegen (A-Records `app`/`db` auf dieselbe Server-IP).
@@ -321,15 +323,15 @@ Kein eigener Rechtstext zur Hand? Für Vereine gibt es kostenlose Impressum-/Dat
 - **Security-Header** (X-Frame-Options, nosniff, Referrer-/Permissions-Policy, **HSTS**) setzt
   Caddy bereits — das `security_headers`-Snippet steckt im erzeugten Caddyfile (Befund #9/#13).
 - **CORS** ist auf die App-Domain eingeschränkt — über `--origins=https://app.<domain>` in der
-  PocketBase-Unit (Default wäre `*` = jede Website). `einrichten-cloud.sh` setzt das automatisch.
+  PocketBase-Unit (Default wäre `*` = jede Website). `setup-cloud.sh` setzt das automatisch.
 - **CSP einkommentieren:** im Caddyfile die `Content-Security-Policy`-Zeile aktivieren (das Skript
   füllt `connect-src https://db.<domain>` schon korrekt vor) — **vorher testen**, dass
   Login/API/PWA funktionieren (DevTools-Konsole auf CSP-Fehler prüfen), dann `sudo systemctl reload caddy`.
 - **Admin-Konsole `/_/`** abschirmen: in Caddy auf deine IP sperren (`@admin path /_/*` +
-  `handle`-Blöcke, Snippet in [`Caddyfile.example`](../Caddyfile.example)) —
+  `handle`-Blöcke, Snippet in [`Caddyfile.example`](../../Caddyfile.example)) —
   IP via `curl ifconfig.me`. Ohne feste IP: `basic_auth` davor oder VPN/Tailscale. Wichtigster
   Schutz bleibt ein **starkes, einzigartiges Superuser-Passwort**.
-- **Keine `demo-*.mjs` gegen die Produktiv-DB** — den App-Admin legt `einrichten-cloud.sh` mit
+- **Keine `demo-*.mjs` gegen die Produktiv-DB** — den App-Admin legt `setup-cloud.sh` mit
   deinem starken Passwort an; die `demo-*.mjs` sind nur für lokale Tests.
 - **HTTPS ist Pflicht** — erledigt Caddy automatisch; nie Klartext-HTTP ausliefern.
 

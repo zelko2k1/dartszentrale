@@ -1,5 +1,7 @@
 # DartsZentrale im Vereinsnetz (LAN) – Inbetriebnahme & Updates (Linux / Raspberry Pi)
 
+**🇩🇪 Deutsch | [🇬🇧 English](../admin-guide-lan-linux.md)**
+
 Schritt für Schritt, ohne Vorkenntnisse. (Windows? → [admin-anleitung-lan-windows.md](admin-anleitung-lan-windows.md).)
 
 Dieser Weg ist die **einfache Vereinsvariante:** **ein einziges Programm** (PocketBase) liefert die
@@ -11,7 +13,7 @@ App **und** die Daten — **kein Node, kein Build.** Ideal fürs Vereinsnetz mit
 > - **Server im Internet/Cloud** (von überall erreichbar) → Paket `03-verein-cloud`
 >   ([admin-anleitung-cloud.md](admin-anleitung-cloud.md)).
 >
-> Tägliche Bedienung: [`handbuch.md`](handbuch.md) · Sicherheit: [`security-audit.md`](security-audit.md).
+> Tägliche Bedienung: [`handbuch.md`](handbuch.md) · Sicherheit: [`security-audit.md`](../security-audit.md).
 
 ---
 
@@ -19,7 +21,7 @@ App **und** die Daten — **kein Node, kein Build.** Ideal fürs Vereinsnetz mit
 
 ### 0a. Die App auf den Rechner holen — der „Ordner"
 Du bekommst das Paket **`02-verein-lan`** als Ordner (USB-Stick/Share vom Einrichter). Darin liegen u. a.
-`start-verein-lan.sh`, `pb_public/`, `pb_migrations/`, `pb_hooks/`. **Alle Befehle gehören in diesen Ordner.**
+`start-club-lan.sh`, `pb_public/`, `pb_migrations/`, `pb_hooks/`. **Alle Befehle gehören in diesen Ordner.**
 
 > **Node.js ist NICHT nötig.** Das Programm ist ein einziges Binary, das beim ersten Start automatisch
 > geladen wird. Du brauchst nur **einmal Internet** beim allerersten Start.
@@ -38,7 +40,7 @@ weiter (der Server), ist das **gewollt** — Fenster **offen lassen**.
 
 Im Terminal im Ordner:
 ```bash
-./start-verein-lan.sh
+./start-club-lan.sh
 ```
 Beim **allerersten Start** passiert automatisch:
 1. das **PocketBase-Binary** wird geladen (~15 MB, einmal Internet nötig),
@@ -48,10 +50,10 @@ Beim **allerersten Start** passiert automatisch:
    - **App-Administrator** (dein tägliches Login *in der App*)
 3. die App startet, der Browser öffnet **`http://127.0.0.1:8090`**.
 
-Jedes weitere Mal genügt derselbe Befehl `./start-verein-lan.sh` — die Einrichtung läuft **nur beim
+Jedes weitere Mal genügt derselbe Befehl `./start-club-lan.sh` — die Einrichtung läuft **nur beim
 ersten Mal**. **Fenster offen lassen; beenden mit Strg+C.**
 
-> Nur dieses eine Gerät (kein Netzzugriff)? `HOST=127.0.0.1 ./start-verein-lan.sh`.
+> Nur dieses eine Gerät (kein Netzzugriff)? `HOST=127.0.0.1 ./start-club-lan.sh`.
 
 ---
 
@@ -68,10 +70,10 @@ Mit dem jeweiligen Konto anmelden.
 ## 3. Autostart (Board startet beim Hochfahren von selbst)
 
 ```bash
-./autostart-verein-lan.sh
+./autostart-club-lan.sh
 ```
 Richtet **einen** systemd-User-Dienst ein (Autostart beim Boot, Neustart bei Absturz). Voraussetzung:
-einmal `./start-verein-lan.sh` gelaufen (Binary + Konten vorhanden).
+einmal `./start-club-lan.sh` gelaufen (Binary + Konten vorhanden).
 - Status: `systemctl --user status dartszentrale`
 - Logs: `journalctl --user -u dartszentrale -f`
 - Entfernen: `systemctl --user disable --now dartszentrale`
@@ -102,8 +104,8 @@ Eine neue Version kommt als **`dartszentrale-update-<version>.tar.gz`**. **Deine
 bleiben unangetastet.**
 
 ```bash
-./update-verein-lan.sh                 # nimmt das neueste Paket im Ordner updates/
-./update-verein-lan.sh /media/usb      # oder Pfad zum Stick/Paket angeben
+./update-club-lan.sh                 # nimmt das neueste Paket im Ordner updates/
+./update-club-lan.sh /media/usb      # oder Pfad zum Stick/Paket angeben
 ```
 Tauscht das Frontend in `pb_public/` aus — **kein Neustart nötig**, an den Brettern nur die Seite neu
 laden (ggf. zweimal, wegen PWA-Cache). Die alte Version landet in `backup/`.
@@ -118,13 +120,13 @@ laden (ggf. zweimal, wegen PWA-Cache). Die alte Version landet in `backup/`.
 - **Port 8090 nur im LAN lassen — NIE ins Internet weiterleiten/portforwarden.** Wer von außen
   erreichbar sein will, nimmt das **Cloud-Paket** (TLS via Caddy).
 - Die PocketBase-Konsole `…:8090/_/` nur im vertrauenswürdigen Netz nutzen; in den Settings
-  **Rate-Limit** und **Superuser-2FA** aktivieren. Details: [`security-audit.md`](security-audit.md).
+  **Rate-Limit** und **Superuser-2FA** aktivieren. Details: [`security-audit.md`](../security-audit.md).
 
 ---
 
 ## 8. Wenn etwas nicht klappt
 
-- **Bricht sofort ab / „command not found"** → im richtigen Ordner? (`start-verein-lan.sh` muss dort liegen; ausführbar: `chmod +x start-verein-lan.sh`.)
+- **Bricht sofort ab / „command not found"** → im richtigen Ordner? (`start-club-lan.sh` muss dort liegen; ausführbar: `chmod +x start-club-lan.sh`.)
 - **Andere Geräte erreichen den Server nicht** → mit LAN-Bind gestartet (Standard `0.0.0.0`)? Firewall
   (`ufw`) für Port 8090 im LAN offen? Richtige **`<server-ip>`**?
 - **„Port belegt"** → es läuft schon ein Server/der Autostart-Dienst: `systemctl --user status dartszentrale`.
@@ -145,9 +147,9 @@ laden (ggf. zweimal, wegen PWA-Cache). Die alte Version landet in `backup/`.
 
 | Datei | Zweck |
 |---|---|
-| `./start-verein-lan.sh` | **Starten** (Erststart lädt das Binary + legt die zwei Konten an) |
-| `./autostart-verein-lan.sh` | **Autostart** beim Hochfahren (systemd-User-Dienst) |
-| `./update-verein-lan.sh` | **Update** einspielen (tauscht `pb_public/`, `pb_data/` bleibt) |
+| `./start-club-lan.sh` | **Starten** (Erststart lädt das Binary + legt die zwei Konten an) |
+| `./autostart-club-lan.sh` | **Autostart** beim Hochfahren (systemd-User-Dienst) |
+| `./update-club-lan.sh` | **Update** einspielen (tauscht `pb_public/`, `pb_data/` bleibt) |
 | `pb_public/` | das ausgelieferte Frontend (wird beim Update getauscht) |
 | `pb_migrations/` · `pb_hooks/` | Schema & Server-Funktionen |
 | `pb_data/` | **deine Datenbank** (entsteht beim ersten Start) — **sichern!** |

@@ -1,5 +1,7 @@
 # DartsZentrale lokal (Windows) — ein Board, kein Server
 
+**🇩🇪 Deutsch | [🇬🇧 English](../guide-local-windows.md)**
+
 Der einfachste Weg: die App läuft nur im Browser auf **einem** Windows-PC — **ohne Server, ohne
 Anmeldung**. Die Daten liegen lokal im Browser dieses Geräts.
 
@@ -22,7 +24,7 @@ Anmeldung**. Die Daten liegen lokal im Browser dieses Geräts.
 
 ## 2. Starten
 
-Doppelklick auf **`start-lokal.bat`** im Projektordner.
+Doppelklick auf **`start-local.bat`** im Projektordner.
 
 Der Browser öffnet die App → beim **ersten Start „Lokal"** wählen. Fertig.
 Das schwarze Fenster **offen lassen**, solange du die App nutzt (zum Beenden das Fenster schließen).
@@ -33,7 +35,7 @@ Das schwarze Fenster **offen lassen**, solange du die App nutzt (zum Beenden das
 
 ## 3. Autostart (Kiosk-Board)
 
-Damit das Brett nach dem Hochfahren von selbst die App zeigt: Doppelklick auf **`autostart-lokal.bat`**.
+Damit das Brett nach dem Hochfahren von selbst die App zeigt: Doppelklick auf **`autostart-local.bat`**.
 
 Entfernen: `Win+R` → `shell:startup` → `DartsZentrale.lnk` löschen.
 
@@ -53,8 +55,8 @@ lokalen Board ist dafür kein Passwort/Token nötig (läuft nur auf diesem Gerä
 
 ### Alternativ — per Skript (USB-Stick/Ordner)
 
-Im Projektordner Doppelklick auf **`update-lokal.bat`** (nimmt Laufwerk `E:\`; anderer Buchstabe:
-im Terminal `update-lokal.bat F:\`).
+Im Projektordner Doppelklick auf **`update-local.bat`** (nimmt Laufwerk `E:\`; anderer Buchstabe:
+im Terminal `update-local.bat F:\`).
 
 Das übernimmt die neuen Dateien und baut die App neu. Im lokalen Modus liegen die Daten im
 Browser — es geht nichts verloren. Danach am Brett die Seite **neu laden**.

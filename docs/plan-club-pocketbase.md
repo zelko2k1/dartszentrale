@@ -181,9 +181,9 @@ Heute laufen alle Daten zentral über `read`/`write` im Zustand-Store → guter 
 ## 5. Deployment
 
 > **Aktueller Stand (statt dieses ursprünglichen Coolify-Plans):** Homelab läuft über **Arcane**
-> (Docker-Compose-Stacks) — siehe [`arcane-homelab-anleitung.md`](arcane-homelab-anleitung.md);
+> (Docker-Compose-Stacks) — siehe [`de/arcane-homelab-anleitung.md`](de/arcane-homelab-anleitung.md);
 > die Cloud über **systemd + Caddy** (schlank, ohne Docker) — siehe
-> [`admin-anleitung-cloud.md`](admin-anleitung-cloud.md). Die Skizze unten bleibt als Konzept erhalten.
+> [`de/admin-anleitung-cloud.md`](de/admin-anleitung-cloud.md). Die Skizze unten bleibt als Konzept erhalten.
 
 ### 5.1 PocketBase-Service
 - Docker-Image (z. B. `ghcr.io/muchobien/pocketbase`) **oder** eigenes Dockerfile mit dem PB-Binary.

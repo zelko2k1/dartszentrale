@@ -48,5 +48,5 @@ Bitte **keine echten Mitgliederdaten** in der Meldung mitschicken.
 Wer selbst hostet, trägt Verantwortung für die eigene Installation. Aktueller
 Sicherheitsstand, bekannte Punkte und eine Go-live-Checkliste stehen in
 [`docs/security-audit.md`](docs/security-audit.md) und
-[`docs/go-live-checkliste-cloud.md`](docs/go-live-checkliste-cloud.md).
+[`docs/de/go-live-checkliste-cloud.md`](docs/de/go-live-checkliste-cloud.md).
 Nutzung erfolgt **auf eigenes Risiko, ohne Gewähr** (siehe [LICENSE](LICENSE)).

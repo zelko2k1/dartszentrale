@@ -172,11 +172,11 @@ Such dir das Szenario aus, das zu deinem Verein passt:
 
 | Ich will … | Anleitung |
 |---|---|
-| **Nur ein Board** auf einem PC betreiben (ohne Server) | [`docs/anleitung-lokal-linux.md`](docs/anleitung-lokal-linux.md) · [`docs/anleitung-lokal-windows.md`](docs/anleitung-lokal-windows.md) |
-| **Im Vereinsheim/LAN** für mehrere Geräte (ein Rechner als Server) | [`docs/admin-anleitung-lan-linux.md`](docs/admin-anleitung-lan-linux.md) · [`docs/admin-anleitung-lan-windows.md`](docs/admin-anleitung-lan-windows.md) |
-| **Im Internet** mit eigener Domain & HTTPS betreiben | [`docs/admin-anleitung-cloud.md`](docs/admin-anleitung-cloud.md) + [`docs/go-live-checkliste-cloud.md`](docs/go-live-checkliste-cloud.md) |
-| Im **Homelab mit Docker/Arcane** laufen lassen | [`docs/arcane-homelab-anleitung.md`](docs/arcane-homelab-anleitung.md) |
-| Die App im Alltag **bedienen** (als Vereins-Admin) | [`docs/handbuch.md`](docs/handbuch.md) |
+| **Nur ein Board** auf einem PC betreiben (ohne Server) | [`docs/de/anleitung-lokal-linux.md`](docs/de/anleitung-lokal-linux.md) · [`docs/de/anleitung-lokal-windows.md`](docs/de/anleitung-lokal-windows.md) |
+| **Im Vereinsheim/LAN** für mehrere Geräte (ein Rechner als Server) | [`docs/de/admin-anleitung-lan-linux.md`](docs/de/admin-anleitung-lan-linux.md) · [`docs/de/admin-anleitung-lan-windows.md`](docs/de/admin-anleitung-lan-windows.md) |
+| **Im Internet** mit eigener Domain & HTTPS betreiben | [`docs/de/admin-anleitung-cloud.md`](docs/de/admin-anleitung-cloud.md) + [`docs/de/go-live-checkliste-cloud.md`](docs/de/go-live-checkliste-cloud.md) |
+| Im **Homelab mit Docker/Arcane** laufen lassen | [`docs/de/arcane-homelab-anleitung.md`](docs/de/arcane-homelab-anleitung.md) |
+| Die App im Alltag **bedienen** (als Vereins-Admin) | [`docs/de/handbuch.md`](docs/de/handbuch.md) |
 
 ---
 
@@ -213,7 +213,7 @@ dartszentrale/
 ├─ app/            → Die App selbst (Benutzeroberfläche). Quellcode in app/src/
 ├─ pocketbase/     → Backend: Datenbank, Login/Rollen, Server-Logik, Wartungs-Skripte, Docker
 ├─ scripts/        → Start-/Update-/Autostart-/Einrichten-Skripte (im Paket flach im Hauptordner)
-├─ docs/           → Alle Anleitungen und Pläne (siehe Tabelle unten)
+├─ docs/           → Alle Anleitungen und Pläne — Englisch in docs/, Deutsch in docs/de/ (Tabelle unten)
 ├─ tools/          → Kleine Helfer (z. B. Spielplan aus PDF einlesen)
 ├─ screenshots/    → Bildschirmfotos für dieses README
 ├─ spikes/         → Experimentierecke für neue Ideen (noch nicht im Einsatz)
@@ -232,18 +232,17 @@ dartszentrale/
 | [`DATA_MODEL.md`](DATA_MODEL.md) | Datenmodell (historisch; maßgeblich ist heute `pocketbase/SCHEMA.md`). |
 | [`Caddyfile.example`](Caddyfile.example) | Beispiel-Konfiguration für HTTPS im Cloud-Betrieb. |
 
-**Dokumentation im Ordner [`docs/`](docs/):**
+**Dokumentation im Ordner [`docs/`](docs/)** — Anleitungen auf Englisch direkt in `docs/`, die deutschen Fassungen in [`docs/de/`](docs/de/):
 
-| Datei | Inhalt |
-|---|---|
-| `handbuch.md` | Benutzerhandbuch für den Alltag |
-| `anleitung-lokal-linux.md` · `-windows.md` · `lokaler-betrieb.md` | Ein-Board-Betrieb einrichten |
-| `admin-anleitung-lan-linux.md` · `-windows.md` | Vereinsmodus im Netzwerk einrichten |
-| `admin-anleitung-cloud.md` · `go-live-checkliste-cloud.md` | Betrieb im Internet + Start-Checkliste |
-| `arcane-homelab-anleitung.md` | Betrieb im Homelab mit Docker/Arcane |
-| `security-audit.md` | Sicherheits­stand und Härtungs­maßnahmen |
-| `plan-*.md` · `verein-pocketbase-plan.md` | Konzepte & Pläne (umgesetzt bzw. geplant) |
-| [`pocketbase/SCHEMA.md`](pocketbase/SCHEMA.md) | **Maßgebliche** Beschreibung der Datenstruktur & Rechte |
+| Deutsch (`docs/de/`) | Englisch (`docs/`) | Inhalt |
+|---|---|---|
+| `handbuch.md` | `manual.md` | Benutzerhandbuch für den Alltag |
+| `anleitung-lokal-linux.md` · `-windows.md` · `lokaler-betrieb.md` | `guide-local-linux.md` · `-windows.md` · `local-operation.md` | Ein-Board-Betrieb einrichten |
+| `admin-anleitung-lan-linux.md` · `-windows.md` | `admin-guide-lan-linux.md` · `-windows.md` | Vereinsmodus im Netzwerk einrichten |
+| `admin-anleitung-cloud.md` · `go-live-checkliste-cloud.md` | `admin-guide-cloud.md` · `go-live-checklist-cloud.md` | Betrieb im Internet + Start-Checkliste |
+| `arcane-homelab-anleitung.md` | `arcane-homelab-guide.md` | Betrieb im Homelab mit Docker/Arcane |
+| — | `security-audit.md` · `plan-*.md` | Sicherheitsstand · Konzepte & Pläne (nur eine Fassung) |
+| — | [`pocketbase/SCHEMA.md`](pocketbase/SCHEMA.md) | **Maßgebliche** Beschreibung der Datenstruktur & Rechte |
 
 ---
 

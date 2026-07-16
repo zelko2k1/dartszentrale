@@ -172,15 +172,15 @@ More in [`WORKFLOWS.md`](WORKFLOWS.md) (German).
 
 ## Getting started — which guide fits me?
 
-The step-by-step guides are currently **German-only**:
+The step-by-step guides are available in English (German versions in [`docs/de/`](docs/de/)):
 
 | I want to … | Guide |
 |---|---|
-| Run **just one board** on a PC (no server) | [`docs/anleitung-lokal-linux.md`](docs/anleitung-lokal-linux.md) · [`docs/anleitung-lokal-windows.md`](docs/anleitung-lokal-windows.md) |
-| Run it **in the clubhouse/LAN** for several devices (one machine as server) | [`docs/admin-anleitung-lan-linux.md`](docs/admin-anleitung-lan-linux.md) · [`docs/admin-anleitung-lan-windows.md`](docs/admin-anleitung-lan-windows.md) |
-| Run it **on the internet** with your own domain & HTTPS | [`docs/admin-anleitung-cloud.md`](docs/admin-anleitung-cloud.md) + [`docs/go-live-checkliste-cloud.md`](docs/go-live-checkliste-cloud.md) |
-| Run it in a **homelab with Docker/Arcane** | [`docs/arcane-homelab-anleitung.md`](docs/arcane-homelab-anleitung.md) |
-| **Use** the app day to day (as a club admin) | [`docs/handbuch.md`](docs/handbuch.md) |
+| Run **just one board** on a PC (no server) | [`docs/guide-local-linux.md`](docs/guide-local-linux.md) · [`docs/guide-local-windows.md`](docs/guide-local-windows.md) |
+| Run it **in the clubhouse/LAN** for several devices (one machine as server) | [`docs/admin-guide-lan-linux.md`](docs/admin-guide-lan-linux.md) · [`docs/admin-guide-lan-windows.md`](docs/admin-guide-lan-windows.md) |
+| Run it **on the internet** with your own domain & HTTPS | [`docs/admin-guide-cloud.md`](docs/admin-guide-cloud.md) + [`docs/go-live-checklist-cloud.md`](docs/go-live-checklist-cloud.md) |
+| Run it in a **homelab with Docker/Arcane** | [`docs/arcane-homelab-guide.md`](docs/arcane-homelab-guide.md) |
+| **Use** the app day to day (as a club admin) | [`docs/manual.md`](docs/manual.md) |
 
 ---
 
@@ -218,7 +218,7 @@ dartszentrale/
 ├─ app/            → The app itself (user interface). Source in app/src/
 ├─ pocketbase/     → Backend: database, login/roles, server logic, maintenance scripts, Docker
 ├─ scripts/        → Start/update/autostart/setup scripts (flat in the download packages)
-├─ docs/           → All guides and plans (German)
+├─ docs/           → All guides and plans — English in docs/, German in docs/de/
 ├─ tools/          → Small helpers (e.g. read a schedule from a PDF)
 ├─ screenshots/    → Screenshots for the README
 ├─ spikes/         → Experiments (not in use yet)

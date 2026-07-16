@@ -1,5 +1,7 @@
 # DartsZentrale lokal starten — Befehls-Spickzettel
 
+**🇩🇪 Deutsch | [🇬🇧 English](../local-operation.md)**
+
 Zwei Wege: **A) Lokaler Modus** (nur Browser, kein Server – am einfachsten) und
 **B) Vereinsmodus** (mit PocketBase + Test-Daten + echten Logins).
 
@@ -13,7 +15,7 @@ Alle Pfade relativ zum Projekt `/mnt/Data/claudebase/dartszentrale`.
 (`provision.mjs`, `demo-seed.mjs`, `season-*.mjs`, `pb_hooks/` …) automatisch mit.
 
 **Zusätzlich manuell** mitnehmen (diese sind **gitignored**, kommen nicht per git):
-- `docs/lokaler-betrieb.md` — dieses Runbook (⚠️ unbedingt)
+- `docs/de/lokaler-betrieb.md` — dieses Runbook (⚠️ unbedingt)
 - `pocketbase/demo-seed.mjs` — Vereins-Import-Skript (falls gewünscht)
 - *(optional)* `pocketbase/pb_data/` — die echte DB; nur wenn du den exakten Datenstand
   übernehmen willst statt neu zu seeden (portables SQLite, OS-unabhängig)
@@ -33,7 +35,7 @@ Alle Pfade relativ zum Projekt `/mnt/Data/claudebase/dartszentrale`.
     `reset-password.mjs`, `add-*.mjs`, `season-*.mjs`) ← werden für Schema + Daten gebraucht!
   - **`pb_hooks/`** (beide `.pb.js` — Passwort-Reset & Board-Schutz)
   - **nicht** die Binärdatei (pro OS neu laden), **nicht** `pb_data/` (entsteht neu)
-- *(optional)* `docs/lokaler-betrieb.md` / die PDF
+- *(optional)* `docs/de/lokaler-betrieb.md` / die PDF
 
 **Wichtig:** `app/` und `pocketbase/` müssen **Geschwister-Ordner** bleiben (gleiche Ebene) —
 die Skripte greifen per `../app/node_modules` auf die PocketBase-Bibliothek zu.
@@ -126,8 +128,8 @@ Updates sind **modusspezifisch** — nutze das Skript des jeweiligen Pakets. **`
 
 | Modus | Update |
 |---|---|
-| **Ein Board lokal** (`01`) | `./update-lokal.sh <quelle>` bzw. `update-lokal.bat` — oder in der App *Einstellungen → App & Updates → Installieren* |
-| **Verein LAN** (`02`, Single-Binary) | `./update-verein-lan.sh` bzw. `update-verein-lan.bat` — tauscht `pb_public/`, kein Neustart |
+| **Ein Board lokal** (`01`) | `./update-local.sh <quelle>` bzw. `update-local.bat` — oder in der App *Einstellungen → App & Updates → Installieren* |
+| **Verein LAN** (`02`, Single-Binary) | `./update-club-lan.sh` bzw. `update-club-lan.bat` — tauscht `pb_public/`, kein Neustart |
 | **Verein Cloud** (`03`) | `./update-server.sh` (baut neu + startet die Dienste) — oder In-App |
 
 Danach an den **Boards die Seite neu laden** (ggf. zweimal — der PWA-Cache hält die alte Version evtl.
@@ -140,11 +142,11 @@ Der Vereinsmodus-LAN läuft als **ein** Programm (PocketBase liefert App + API a
 
 - **Manuell starten** (der Erststart lädt das Binary + legt die zwei Admin-Konten an; Strg+C beendet):
   ```bash
-  ./start-verein-lan.sh
+  ./start-club-lan.sh
   ```
 - **Als Dienst einrichten** (systemd-User: Autostart beim Boot, Auto-Restart, journald-Logs):
   ```bash
-  ./autostart-verein-lan.sh
+  ./autostart-club-lan.sh
   ```
   Verwaltung danach:
   ```bash

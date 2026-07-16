@@ -22,7 +22,7 @@ Die App kennt zwei Modi (umschaltbar in den Einstellungen, mit automatischer Erk
 
 Die Datenquelle ist über austauschbare Provider gekapselt: `src/data/provider.ts` (Schnittstelle),
 `localProvider.ts` (localStorage, synchron) und `pocketbaseProvider.ts` (API, asynchron, Realtime).
-Deploy-Setup: `../docs/arcane-homelab-anleitung.md` (Homelab/Docker) bzw. `../docs/admin-anleitung-cloud.md` (Cloud).
+Deploy-Setup: `../docs/de/arcane-homelab-anleitung.md` (Homelab/Docker) bzw. `../docs/de/admin-anleitung-cloud.md` (Cloud).
 
 ## Starten
 ```bash

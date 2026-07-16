@@ -1,39 +1,39 @@
 #!/usr/bin/env bash
 # ============================================================================
-# DartsZentrale – Update ohne git (Linux / Raspberry Pi / Git Bash)
-# [ PRODUKTIV / OPS ] — für den Produktivbetrieb gedacht
+# DartsZentrale – Update without git (Linux / Raspberry Pi / Git Bash)
+# [ PRODUCTION / OPS ] — intended for production operation
 # ----------------------------------------------------------------------------
-# Übernimmt eine neue App-Version von einem Stick/Ordner in den Projektordner,
-# installiert Abhängigkeiten und (optional) baut das Produktions-Bundle.
+# Takes a new app version from a stick/folder into the project folder,
+# installs dependencies and (optionally) builds the production bundle.
 #
-#   ./update-server.sh [QUELLE] [--build]
-#     QUELLE  = Ordner mit frischem  app/  und  pocketbase/  (Default: /media/usb)
-#     --build = zusätzlich  app/dist  bauen (nur nötig, wenn ihr dist/ ausliefert)
+#   ./update-server.sh [SOURCE] [--build]
+#     SOURCE  = folder with a fresh  app/  and  pocketbase/  (default: /media/usb)
+#     --build = additionally build  app/dist  (only needed if you serve dist/)
 #
-# WICHTIG: Dieses Skript im PROJEKTORDNER ausführen (dort wo app/ + pocketbase/
-# liegen), NICHT die Kopie auf dem Stick starten.
+# IMPORTANT: Run this script in the PROJECT FOLDER (where app/ + pocketbase/
+# live), do NOT start the copy on the stick.
 #
-# Wird NIE angefasst (bleibt erhalten):  pb_data/ (Daten) · node_modules/ ·
-# app/.env.local (Server-Adresse) · die PocketBase-Binärdatei.
+# Is NEVER touched (kept as is):  pb_data/ (data) · node_modules/ ·
+# app/.env.local (server address) · the PocketBase binary.
 # ============================================================================
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# --- Argumente -------------------------------------------------------------
+# --- Arguments ---------------------------------------------------------------
 SRC=""; DO_BUILD=0
 for a in "$@"; do
   case "$a" in
     --build) DO_BUILD=1 ;;
-    -*)      echo "✗ Unbekannte Option: $a"; exit 1 ;;
+    -*)      echo "✗ Unknown option: $a"; exit 1 ;;
     *)       [ -z "$SRC" ] && SRC="$a" ;;
   esac
 done
 SRC="${SRC:-/media/usb}"
 
-# Dienst-Modus erkennen: liefert das System die App ueber einen Dienst aus, ist
-# ein Build PFLICHT (ausgeliefert wird das gebaute dist/) und der Dienst muss neu
-# starten. system = schlanke Cloud-Variante · user = LAN-Autostart · none = Dev/Hand.
+# Detect service mode: if the system serves the app via a service, a build is
+# REQUIRED (the built dist/ is what gets served) and the service must restart.
+# system = lean cloud variant · user = LAN autostart · none = dev/manual.
 SVC_MODE="none"
 if [ -f /etc/systemd/system/darts-web.service ]; then
   SVC_MODE="system"
@@ -42,26 +42,26 @@ elif [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/darts-web.service" ]; 
 fi
 [ "$SVC_MODE" != "none" ] && DO_BUILD=1
 
-echo "▶ Quelle:      $SRC"
-echo "▶ Projektort:  $ROOT"
-[ -d "$SRC/app" ] || { echo "✗ '$SRC/app' nicht gefunden – Stick gemountet? Stimmt die QUELLE?"; exit 1; }
-[ -d "$ROOT/app" ] || { echo "✗ '$ROOT/app' fehlt – läuft das Skript im Projektordner?"; exit 1; }
+echo "▶ Source:      $SRC"
+echo "▶ Project:     $ROOT"
+[ -d "$SRC/app" ] || { echo "✗ '$SRC/app' not found – stick mounted? Is the SOURCE correct?"; exit 1; }
+[ -d "$ROOT/app" ] || { echo "✗ '$ROOT/app' missing – is the script running in the project folder?"; exit 1; }
 
-# --- Helfer ----------------------------------------------------------------
-# Ordner sauber ersetzen (alte Datei-Leichen verschwinden), nur für Code-Ordner.
-replace_dir() {  # <quelle> <ziel>
+# --- Helpers -----------------------------------------------------------------
+# Replace a folder cleanly (stale leftover files disappear), only for code folders.
+replace_dir() {  # <source> <target>
   [ -d "$1" ] || return 0
   rm -rf "$2"
   cp -r "$1" "$2"
   echo "  ✓ $(basename "$2")/"
 }
-# Einzeldatei überschreiben, falls in der Quelle vorhanden.
-copy_file() {    # <quelle> <ziel>
+# Overwrite a single file if present in the source.
+copy_file() {    # <source> <target>
   [ -f "$1" ] && { cp -f "$1" "$2"; echo "  ✓ $(basename "$1")"; } || true
 }
 
-# --- 1) Frontend (app/) ----------------------------------------------------
-echo "── Frontend aktualisieren (app/) ──"
+# --- 1) Frontend (app/) ------------------------------------------------------
+echo "── Updating frontend (app/) ──"
 replace_dir "$SRC/app/src"    "$ROOT/app/src"
 replace_dir "$SRC/app/public" "$ROOT/app/public"
 for f in package.json package-lock.json index.html vite.config.ts \
@@ -70,9 +70,9 @@ for f in package.json package-lock.json index.html vite.config.ts \
   copy_file "$SRC/app/$f" "$ROOT/app/$f"
 done
 
-# --- 2) PocketBase (Skripte/Schema/Hooks – NICHT pb_data, NICHT Binary) ----
+# --- 2) PocketBase (scripts/schema/hooks – NOT pb_data, NOT the binary) ------
 if [ -d "$SRC/pocketbase" ] && [ -d "$ROOT/pocketbase" ]; then
-  echo "── PocketBase aktualisieren (Schema/Hooks/Skripte) ──"
+  echo "── Updating PocketBase (schema/hooks/scripts) ──"
   replace_dir "$SRC/pocketbase/pb_migrations" "$ROOT/pocketbase/pb_migrations"
   replace_dir "$SRC/pocketbase/pb_hooks"      "$ROOT/pocketbase/pb_hooks"
   for mjs in "$SRC"/pocketbase/*.mjs; do [ -f "$mjs" ] && copy_file "$mjs" "$ROOT/pocketbase/$(basename "$mjs")"; done
@@ -81,7 +81,7 @@ else
   PB_TOUCHED=0
 fi
 
-# --- 3) Abhängigkeiten + optionaler Build ----------------------------------
+# --- 3) Dependencies + optional build ----------------------------------------
 echo "── npm install (app/) ──"
 ( cd "$ROOT/app" && npm install )
 
@@ -90,25 +90,25 @@ if [ "$DO_BUILD" = "1" ]; then
   ( cd "$ROOT/app" && npm run build )
 fi
 
-# --- Abschluss: Dienste neu starten (oder Hinweis) -------------------------
+# --- Finish: restart services (or print a hint) -------------------------------
 echo
 case "$SVC_MODE" in
   system)
-    echo "── Cloud-Dienste neu starten (systemd, braucht sudo) ──"
+    echo "── Restarting cloud services (systemd, needs sudo) ──"
     sudo systemctl restart darts-web
     [ "$PB_TOUCHED" = "1" ] && sudo systemctl restart darts-pocketbase
-    echo "✅ Update aktiv — Dienste neu gestartet."
+    echo "✅ Update active — services restarted."
     ;;
   user)
-    echo "── Dienste neu starten (systemd --user) ──"
+    echo "── Restarting services (systemd --user) ──"
     systemctl --user restart darts-web
     [ "$PB_TOUCHED" = "1" ] && systemctl --user restart darts-pocketbase
-    echo "✅ Update aktiv — Dienste neu gestartet."
+    echo "✅ Update active — services restarted."
     ;;
   none)
-    echo "✅ Update übernommen."
-    echo "   → Frontend NEU STARTEN (so wie gestartet): systemd-Dienst 'darts-web' bzw. 'node app/serve-dist.mjs'."
-    [ "$PB_TOUCHED" = "1" ] && echo "   → Schema evtl. geändert: PocketBase NEU STARTEN (Migrations laufen beim Start) – bei Bedarf:  node provision.mjs"
+    echo "✅ Update applied."
+    echo "   → RESTART the frontend (the way it was started): systemd service 'darts-web' or 'node app/serve-dist.mjs'."
+    [ "$PB_TOUCHED" = "1" ] && echo "   → Schema may have changed: RESTART PocketBase (migrations run at startup) – if needed:  node provision.mjs"
     ;;
 esac
-echo "   → An den Boards die Seite neu laden (ggf. zweimal, wegen PWA-Cache)."
+echo "   → Reload the page on the boards (possibly twice, because of the PWA cache)."

@@ -1,7 +1,7 @@
 # DartsZentrale — Workflows
 
 Praxis-Ablauf für die zwei Betriebsmodi sowie Trainings- und Ligaspieltage.
-Ergänzt [DATA_MODEL.md](DATA_MODEL.md) (Datenmodell) und [docs/arcane-homelab-anleitung.md](docs/arcane-homelab-anleitung.md) (Server/Härtung).
+Ergänzt [DATA_MODEL.md](DATA_MODEL.md) (Datenmodell) und [docs/de/arcane-homelab-anleitung.md](docs/de/arcane-homelab-anleitung.md) (Server/Härtung).
 
 ## Betriebsmodi
 

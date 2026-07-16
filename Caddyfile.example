@@ -3,7 +3,7 @@
 # NUR fuer den CLOUD-MODUS. on-board und LAN brauchen kein Caddy (kein Netz-Exposé
 # bzw. Absicherung per Firewall/VPN). Arcane/Docker ist nur Homelab/Dev, nicht dieser Pfad.
 #
-# `einrichten-cloud.sh` GENERIERT /etc/caddy/Caddyfile aus den Domains automatisch —
+# `setup-cloud.sh` GENERIERT /etc/caddy/Caddyfile aus den Domains automatisch —
 # diese Datei ist die Referenz zum Nachvollziehen + fuer die manuellen Schritte #5/#9.
 # Manuell: nach /etc/caddy/Caddyfile kopieren, <domain> ersetzen, dann:
 #   sudo caddy validate --config /etc/caddy/Caddyfile

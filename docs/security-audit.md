@@ -17,7 +17,7 @@ DartsZentrale läuft in **drei Modi** — die Checkliste unten ist entsprechend 
 
 > **Das Caddyfile / der Reverse-Proxy betrifft ausschließlich den Cloud-Modus.** on-board und LAN
 > brauchen **kein** Caddy — dort ist entweder gar kein Netz-Exposé (on-board) oder die Absicherung
-> läuft über Firewall/VPN (LAN). Der komplette Cloud-Aufbau ist in **`einrichten-cloud.sh`**
+> läuft über Firewall/VPN (LAN). Der komplette Cloud-Aufbau ist in **`setup-cloud.sh`**
 > automatisiert (systemd-Units + Caddy); das Template dazu ist **`Caddyfile.example`** (Referenz-Block
 > unten). **Arcane/Docker ist nur Homelab/Dev, nicht der Produktions-Cloud-Pfad.**
 
@@ -51,13 +51,13 @@ Kurz dokumentiert für die Nachvollziehbarkeit der Nummern; Details in der Git-H
 - **#6** Rollen-Scoping: `seasons`/`leagues`/`teams` anlegen+löschen nur Admin; `teams` *ändern* nur der eigene Kapitän (`captainId = @request.auth.playerId`).
 - **#7 / #8** Default-Passwörter (Superuser, Board-Konto): `pocketbase/_security-guard.mjs` bricht ab, sobald ein bekannter Default gegen ein **nicht-lokales** Ziel liefe (`MEMBER_PW`/`BOARD_PW` erzwingbar).
 - **#9 / #13** Security-Header + `-Server` (kein Versions-Header) als `security_headers`-Snippet im
-  **Caddyfile** (`einrichten-cloud.sh` / `Caddyfile.example`). *Die CSP-Aktivierung bleibt ein
+  **Caddyfile** (`setup-cloud.sh` / `Caddyfile.example`). *Die CSP-Aktivierung bleibt ein
   Deploy-Schritt → siehe #9 in der Checkliste.* (Das alte `app/nginx.conf` gilt nur für den
   Arcane-/Docker-**Homelab/Dev**-Pfad; im Cloud-Modus übernimmt Caddy die Header.)
 - **#11** `reset-password.mjs`: `NEW_PW` ist Pflicht, kein stiller Default mehr.
 - **Nebenbefund (nur Homelab/Dev):** Der Arcane-/Docker-Deploy backt Migrations/Hooks **ins Image**
   (Dockerfile `COPY`), Frontend über `app/Dockerfile`. Für den **Cloud-Produktivpfad irrelevant** —
-  dort laufen PB + Frontend als systemd-Units hinter Caddy (`einrichten-cloud.sh`).
+  dort laufen PB + Frontend als systemd-Units hinter Caddy (`setup-cloud.sh`).
 
 ---
 
@@ -77,7 +77,7 @@ Produktiv-Admin mit **starkem** Passwort selbst anlegen; die `demo-*`-Seeds sind
 Guard blockiert sie gegen nicht-lokale Ziele).
 
 **#3 — PocketBase nicht als Klartext-HTTP erreichbar** (Deploy)
-- **Cloud (Caddy): bereits gelöst.** `einrichten-cloud.sh` startet PB mit
+- **Cloud (Caddy): bereits gelöst.** `setup-cloud.sh` startet PB mit
   `--http=127.0.0.1:8090` → PB lauscht **nur auf Loopback**, ist von außen gar nicht erreichbar;
   Caddy terminiert TLS und reicht `db.<domain>` → `127.0.0.1:8090` durch. Ports 8090/4173 bleiben
   in der Firewall zu (nur 80/443 offen). ✅
@@ -101,7 +101,7 @@ also im Cloud-Modus** (im LAN via Firewall/VPN; on-board entfällt).
   Modi, in denen `/_/` erreichbar ist.
 
 > **CORS ist in der Cloud bereits gesetzt — nicht mehr im UI, sondern per CLI-Flag:** die
-> PocketBase-Unit läuft mit **`--origins=https://app.<domain>`** (setzt `einrichten-cloud.sh`
+> PocketBase-Unit läuft mit **`--origins=https://app.<domain>`** (setzt `setup-cloud.sh`
 > automatisch). PB 0.39 hat **keine CORS-Einstellung im Dashboard** mehr, aber das `--origins`-Flag
 > (Default `*`) — kein manueller UI-Schritt. Sicherheitlich ist CORS bei **Token-Auth** (JWT im
 > localStorage, keine Cookies) ohnehin nur Defense-in-Depth: eine Fremd-Origin kommt nicht ans Token.
@@ -135,7 +135,7 @@ ob die Kaderliste weiter eingeschränkt werden soll.
 - [ ] **#5** `/_/` per Firewall/VPN abgeschirmt (oder lokalen Caddy davorstellen).
 
 **Nur Cloud-Modus (Caddy) — zusätzlich:**
-- [ ] `einrichten-cloud.sh` ausgeführt → PB an `127.0.0.1:8090`, Frontend an `127.0.0.1:4173`, Caddy aktiv.
+- [ ] `setup-cloud.sh` ausgeführt → PB an `127.0.0.1:8090`, Frontend an `127.0.0.1:4173`, Caddy aktiv.
 - [ ] DNS-A-Records `app.<domain>` + `db.<domain>` zeigen auf die Server-IP; **nur Ports 80/443 offen**.
 - [ ] **#3** ✅ automatisch (PB nur Loopback) — verifizieren: `curl http://<public-ip>:8090` schlägt fehl.
 - [ ] **HTTPS/HSTS** ✅ automatisch (Caddy Auto-Let's-Encrypt + `security_headers`-Snippet) — verifizieren.
@@ -148,7 +148,7 @@ ob die Kaderliste weiter eingeschränkt werden soll.
 ## Caddyfile-Template (nur Cloud-Modus)
 
 > **Gilt ausschließlich für den Cloud-Modus.** on-board & LAN brauchen kein Caddy.
-> `einrichten-cloud.sh` **generiert `/etc/caddy/Caddyfile` automatisch** aus den Domains — das Template
+> `setup-cloud.sh` **generiert `/etc/caddy/Caddyfile` automatisch** aus den Domains — das Template
 > unten (`Caddyfile.example`) ist die Referenz zum Nachvollziehen und für manuelle Anpassungen (#5/#9).
 > Nach jeder Änderung: `sudo caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy`.
 
