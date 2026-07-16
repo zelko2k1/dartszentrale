@@ -9,9 +9,11 @@ import {
 import { IconBack, IconUndo, IconRefresh, IconX } from '../lib/icons';
 import { useDevice } from '../lib/useIsPhone';
 import { BoardScale } from '../components/BoardScale';
+import { useT } from '../i18n';
 
 export function Counter() {
   const s = useStore();
+  const tr = useT();
   const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
   const accent = s.settings.accent;
   const accFg = accentFg(accent);
@@ -95,7 +97,7 @@ export function Counter() {
 
   const outLabel = cfg.outMode === 'master' ? 'Master Out' : cfg.outMode === 'single' ? 'Single Out' : 'Double Out';
   const gameTitle = `X01 · ${cfg.startScore} · ${outLabel}`;
-  const matchInfo = cfg.unit === 'sets' ? `Satz · Best of ${cfg.bestOfSets}` : `Leg ${leg} · Best of ${cfg.bestOf}`;
+  const matchInfo = cfg.unit === 'sets' ? tr.counter.matchInfoSets(cfg.bestOfSets) : tr.counter.matchInfoLegs(leg, cfg.bestOf);
 
   const activePlayer = s.gamePlayers[curIdx];
   const activeRem = activePlayer ? sc[activePlayer.id] : 0;
@@ -131,15 +133,15 @@ export function Counter() {
         <>
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)', backdropFilter: 'blur(6px)', flexShrink: 0 }}>
-        <button onClick={() => s.go('dashboard')} style={headBtn}><IconBack size={15} sw={2} />Zurück</button>
+        <button onClick={() => s.go('dashboard')} style={headBtn}><IconBack size={15} sw={2} />{tr.counter.back}</button>
         <div style={{ textAlign: 'center', flexShrink: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '.02em', whiteSpace: 'nowrap' }}>{gameTitle}</div>
           <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>{matchInfo}</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => s.undo()} style={headBtn}><IconUndo size={15} />Undo</button>
-          <button onClick={() => s.newMatch()} style={headBtn}><IconRefresh size={15} />Neu</button>
-          <button onClick={() => s.abortGame()} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />Abbrechen</button>
+          <button onClick={() => s.newMatch()} style={headBtn}><IconRefresh size={15} />{tr.counter.newBtn}</button>
+          <button onClick={() => s.abortGame()} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />{tr.counter.abort}</button>
         </div>
       </div>
 
@@ -151,7 +153,7 @@ export function Counter() {
             const isActive = i === curIdx && !over;
             const rem = sc[p.id];
             const co = checkoutSuggestion(cfg, rem);
-            const turnLabel = isActive ? 'AM WURF' : '';
+            const turnLabel = isActive ? tr.trainingScr.atThrow : '';
             const pips = Array.from({ length: prog.legsToWinSet }, (_, k) => k < (prog.legsSet[p.id] || 0));
             return (
               <div key={p.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRadius: 16, background: isActive ? `color-mix(in srgb, ${accent} 9%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${isActive ? accent : 'var(--border-2)'}`, boxShadow: isActive ? `0 0 0 1px ${accent}, 0 0 46px color-mix(in srgb, ${accent} 12%, transparent)` : 'none', transition: 'border-color .18s ease', minWidth: 0, overflow: 'hidden' }}>
@@ -212,9 +214,9 @@ export function Counter() {
                     {cfg.showHistory && (
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRadius: 16, background: 'var(--surface-2)', border: '1px solid var(--border-2)', minWidth: 0, overflow: 'hidden' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '34px 1fr 1fr', gap: 4, padding: '12px 18px 8px', flexShrink: 0, borderBottom: '1px solid var(--hairline)' }}>
-                          <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase' }}>Rd</span>
-                          <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right' }}>Score</span>
-                          <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right' }}>Rest</span>
+                          <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase' }}>{tr.counter.colRd}</span>
+                          <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right' }}>{tr.counter.colScore}</span>
+                          <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right' }}>{tr.counter.colRest}</span>
                         </div>
                         <div className="dh-history-scroll" style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '4px 8px 8px' }}>
                           {rows.map((r, i) => (
@@ -230,7 +232,7 @@ export function Counter() {
                     {/* Durchschnittswerte / Statistik-Box */}
                     {cfg.showStats && (
                       <div style={{ flexShrink: 0, display: 'flex', gap: 1, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-2)', background: 'var(--border)' }}>
-                        {[['Ø 3-Dart', average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['Letzter', lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
+                        {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], [tr.counter.statLast, lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
                           <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '8px 3px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, textAlign: 'center', minWidth: 0 }}>
                             <div style={{ fontSize: Math.round(9 * cfg.statsSize / 100), color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
                             <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(13 * cfg.statsSize / 100), fontWeight: 700, lineHeight: 1 }}>{val}</div>
@@ -251,7 +253,7 @@ export function Counter() {
         <div style={{ flex: `0 0 ${36 * cfg.deckSize / 100}vh`, display: 'flex', gap: 12, padding: '0 12px 12px', minHeight: 0 }}>
           {cfg.showQuick && (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0, minHeight: 0 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', paddingLeft: 2, flexShrink: 0 }}>Quick Score</div>
+              <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', paddingLeft: 2, flexShrink: 0 }}>{tr.counter.quickScore}</div>
               <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gridAutoRows: '1fr', gap: 8, minHeight: 0 }}>
                 {quickChips.map((q, i) => (
                   <button key={i} onClick={() => s.quick(q)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 14, fontFamily: 'var(--font-num)', fontSize: 'clamp(15px,2.8vh,23px)', fontWeight: 800, cursor: 'pointer', minHeight: 0 }}>{q}</button>
@@ -260,7 +262,7 @@ export function Counter() {
             </div>
           )}
           <div style={{ width: 340, display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0, minHeight: 0 }}>
-            <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', paddingLeft: 2, flexShrink: 0 }}>Eingabe</div>
+            <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', paddingLeft: 2, flexShrink: 0 }}>{tr.counter.inputLabel}</div>
             <div style={{ flex: '2 1 0', minHeight: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 14, padding: 'clamp(4px,0.9vh,10px) 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 13, color: 'var(--text-3)', fontWeight: 600 }}>{activePlayer?.name}</span>
               <span style={{ fontFamily: 'var(--font-num)', fontSize: 'clamp(18px,2.8vh,30px)', fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 70, textAlign: 'right' }}>{inputDisplay}</span>
@@ -276,7 +278,7 @@ export function Counter() {
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" /><path d="M18 9l-6 6M12 9l6 6" /></svg>
                 </button>
               </div>
-              <button onClick={() => s.pressEnter()} style={{ background: accent, border: 'none', color: accFg, borderRadius: 13, padding: 'clamp(11px,1.9vh,15px) 0', fontSize: 'clamp(15px,2.1vh,18px)', fontWeight: 800, letterSpacing: '.02em', cursor: 'pointer', boxShadow: `0 6px 18px color-mix(in srgb, ${accent} 22%, transparent)`, flexShrink: 0 }}>EINTRAGEN</button>
+              <button onClick={() => s.pressEnter()} style={{ background: accent, border: 'none', color: accFg, borderRadius: 13, padding: 'clamp(11px,1.9vh,15px) 0', fontSize: 'clamp(15px,2.1vh,18px)', fontWeight: 800, letterSpacing: '.02em', cursor: 'pointer', boxShadow: `0 6px 18px color-mix(in srgb, ${accent} 22%, transparent)`, flexShrink: 0 }}>{tr.counter.enterBtn}</button>
             </div>
           </div>
         </div>
@@ -285,13 +287,13 @@ export function Counter() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
             <span style={{ width: 9, height: 9, borderRadius: '50%', background: accent, boxShadow: `0 0 10px ${accent}` }} />
             <span style={{ fontSize: 15, fontWeight: 700 }}>{activePlayer?.name}</span>
-            <span style={{ fontSize: 13, color: 'var(--text-4)' }}>wirft · Rest {activeRem}</span>
+            <span style={{ fontSize: 13, color: 'var(--text-4)' }}>{tr.counter.throwsRest(activeRem)}</span>
           </div>
           {activeCheckout && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'rgba(242,184,41,.12)', border: '1px solid rgba(242,184,41,.32)', color: coInk, padding: '5px 12px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)' }}>{activeCheckout}</div>}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{ fontFamily: 'var(--font-num)', fontSize: 38, fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 78, textAlign: 'right' }}>{inputDisplay}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, whiteSpace: 'nowrap' }}>
-              <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>Score tippen, dann</span>
+              <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>{tr.counter.typeScoreThen}</span>
               <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: accentInk, background: `color-mix(in srgb, ${accent} 12%, transparent)`, padding: '2px 8px', borderRadius: 5 }}>↵ Enter</span>
             </div>
           </div>
@@ -312,7 +314,7 @@ export function Counter() {
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 28, maxWidth: 420, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
             <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{s.hint.title}</div>
             <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.55, marginBottom: 24 }}>{s.hint.body}</div>
-            <button onClick={() => s.closeHint()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 32px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Verstanden</button>
+            <button onClick={() => s.closeHint()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 32px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.gotIt}</button>
           </div>
         </Overlay>
       )}
@@ -320,11 +322,11 @@ export function Counter() {
       {s.abortConfirm && (
         <Overlay z={40}>
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 28, maxWidth: 400, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
-            <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>Spiel abbrechen?</div>
-            <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>Das laufende Spiel wird verworfen und erscheint nicht in der Statistik.</div>
+            <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{tr.counter.abortTitle}</div>
+            <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>{tr.counter.abortBody}</div>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-              <button onClick={() => s.cancelAbort()} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Weiter spielen</button>
-              <button onClick={() => s.confirmAbort()} style={{ flex: 1, background: '#E0594B', border: 'none', color: '#fff', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
+              <button onClick={() => s.cancelAbort()} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.keepPlaying}</button>
+              <button onClick={() => s.confirmAbort()} style={{ flex: 1, background: '#E0594B', border: 'none', color: '#fff', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.abort}</button>
             </div>
           </div>
         </Overlay>
@@ -341,6 +343,7 @@ const phoneIconBtn: React.CSSProperties = { display: 'flex', alignItems: 'center
 // F9: type the REMAINING score after a throw — the app derives the scored value (so the throw counts toward the average).
 function RestEntryBox() {
   const s = useStore();
+  const tr = useT();
   const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
   const cfg = s.settings;
   const accent = cfg.accent;
@@ -355,20 +358,20 @@ function RestEntryBox() {
   return (
     <Overlay z={47}>
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 26, width: 360, maxWidth: '92vw', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
-        <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 4 }}>Restscore eintragen</div>
-        <div style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 18 }}>{cp?.name} · aktuell <b style={{ color: 'var(--text)', fontFamily: 'var(--font-num)' }}>{curRem}</b> übrig</div>
+        <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 4 }}>{tr.counter.restTitle}</div>
+        <div style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 18 }}>{cp?.name}{tr.counter.restCurrent1}<b style={{ color: 'var(--text)', fontFamily: 'var(--font-num)' }}>{curRem}</b>{tr.counter.restCurrent2}</div>
         <input
-          autoFocus type="text" inputMode="numeric" value={val} placeholder="z. B. 40"
+          autoFocus type="text" inputMode="numeric" value={val} placeholder={tr.counter.restPlaceholder}
           onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); else if (e.key === 'Escape') s.closeRestEntry(); }}
           style={{ width: '100%', background: 'var(--btn)', border: `1px solid ${val !== '' && !valid ? '#E0594B' : 'var(--border-2)'}`, borderRadius: 12, padding: '12px 14px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 26, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
         />
         <div style={{ fontSize: 13, height: 18, marginTop: 10, textAlign: 'center', color: val !== '' && !valid ? '#E0594B' : 'var(--text-4)' }}>
-          {val === '' ? 'Verbleibenden Score nach dem Wurf eingeben' : (scored != null ? `Geworfen: ${scored}` : 'Ungültiger Restscore')}
+          {val === '' ? tr.counter.restHintEmpty : (scored != null ? tr.counter.restScored(scored) : tr.counter.restInvalid)}
         </div>
         <div style={{ display: 'flex', gap: 12, marginTop: 18 }}>
-          <button onClick={() => s.closeRestEntry()} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
-          <button onClick={submit} disabled={!valid} style={{ flex: 1, background: valid ? accent : 'var(--surface-3)', border: 'none', color: valid ? accFg : 'var(--text-4)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: valid ? 'pointer' : 'default', fontFamily: 'inherit' }}>Eintragen</button>
+          <button onClick={() => s.closeRestEntry()} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.cancel}</button>
+          <button onClick={submit} disabled={!valid} style={{ flex: 1, background: valid ? accent : 'var(--surface-3)', border: 'none', color: valid ? accFg : 'var(--text-4)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: valid ? 'pointer' : 'default', fontFamily: 'inherit' }}>{tr.trainingScr.enter}</button>
         </div>
       </div>
     </Overlay>
@@ -378,6 +381,7 @@ function RestEntryBox() {
 // Small visual cheat-sheet of the function keys, shown at the bottom in desktop mode. Boxes are also clickable.
 function FKeyLegend() {
   const s = useStore();
+  const tr = useT();
   const cfg = s.settings;
   const accent = cfg.accent;
   const accentInk = accent;
@@ -386,7 +390,7 @@ function FKeyLegend() {
   const rem = cp ? scores(slice)[cp.id] : 0;
   const items = [
     ...(cfg.showQuick ? (cfg.fkeys || []).slice(0, 8).map((v, i) => ({ k: `F${i + 1}`, label: String(v), enabled: true, onClick: () => s.quick(v) })) : []),
-    { k: 'F9', label: 'Rest', enabled: true, onClick: () => s.openRestEntry() },
+    { k: 'F9', label: tr.counter.fkeyRest, enabled: true, onClick: () => s.openRestEntry() },
     { k: 'F10', label: '1-Dart', enabled: canCheckout(cfg, rem, 1).ok, onClick: () => { if (canCheckout(cfg, rem, 1).ok) s.apply(rem, 1); } },
     { k: 'F11', label: '2-Dart', enabled: canCheckout(cfg, rem, 2).ok, onClick: () => { if (canCheckout(cfg, rem, 2).ok) s.apply(rem, 2); } },
     { k: 'F12', label: '3-Dart', enabled: canCheckout(cfg, rem, 3).ok, onClick: () => { if (canCheckout(cfg, rem, 3).ok) s.apply(rem, 3); } },
@@ -408,6 +412,7 @@ function FKeyLegend() {
 // Leg; die kompakte große-Zahl-Leiste darüber bleibt für die Fernlesbarkeit erhalten.
 function ScoreSheet() {
   const s = useStore();
+  const tr = useT();
   const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
   const cfg = s.settings;
   const accent = cfg.accent;
@@ -459,7 +464,7 @@ function ScoreSheet() {
       <div style={{ display: 'grid', gridTemplateColumns: gridCols, borderBottom: '1px solid var(--border-2)', background: 'var(--surface-3)', flexShrink: 0 }}>
         {columns.map((col, ci) => (
           <div key={ci} style={{ padding: '7px 12px', textAlign: col.k === 'dart' ? 'center' : 'right', fontSize: 9, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--text-5)' }}>
-            {col.k === 'dart' ? 'Darts' : col.k === 'scored' ? 'Score' : 'Rest'}
+            {col.k === 'dart' ? tr.counter.colDarts : col.k === 'scored' ? tr.counter.colScore : tr.counter.colRest}
           </div>
         ))}
       </div>
@@ -489,6 +494,7 @@ function ScoreSheet() {
 // „Statistik-Box"-Schalter (showStats) an-/abwählbar – identisch zur bisherigen Handhabung.
 function SheetStats() {
   const s = useStore();
+  const tr = useT();
   const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
   const cfg = s.settings;
   return (
@@ -498,7 +504,7 @@ function SheetStats() {
         const fs = finishStats(slice, p.id);
         return (
           <div key={p.id} style={{ flex: 1, display: 'flex', gap: 1, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-2)', background: 'var(--border)' }}>
-            {[['Ø 3-Dart', average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['Letzter', lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
+            {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], [tr.counter.statLast, lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
               <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '8px 3px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, textAlign: 'center', minWidth: 0 }}>
                 <div style={{ fontSize: Math.round(9 * cfg.statsSize / 100), color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
                 <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(13 * cfg.statsSize / 100), fontWeight: 700, lineHeight: 1 }}>{val}</div>
@@ -513,6 +519,7 @@ function SheetStats() {
 
 function PhoneCounter({ landscape }: { landscape: boolean }) {
   const s = useStore();
+  const tr = useT();
   const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
   const cfg = s.settings;
   const accent = cfg.accent;
@@ -531,7 +538,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
   const rem = active ? sc[active.id] : 0;
   const co = active ? checkoutSuggestion(cfg, rem) : null;
   const inputDisplay = s.input === '' ? '—' : s.input;
-  const matchInfo = cfg.unit === 'sets' ? `Best of ${cfg.bestOfSets} Sätze` : `Leg ${leg} · BO${cfg.bestOf}`;
+  const matchInfo = cfg.unit === 'sets' ? tr.counter.matchInfoPhone(cfg.bestOfSets) : `Leg ${leg} · BO${cfg.bestOf}`;
   const others = s.gamePlayers.filter((_, i) => i !== curIdx);
   // fill = keys grow to fill available height (landscape, where the deck owns a full column)
   const keyBtn = (fill: boolean): React.CSSProperties => ({ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-num)', fontSize: 26, fontWeight: 700, cursor: 'pointer', minHeight: fill ? 0 : 54 });
@@ -546,7 +553,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
           <div style={{ fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{active?.name}</div>
         </div>
         {cfg.unit === 'sets' && <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: accentInk, background: `color-mix(in srgb, ${accent} 14%, transparent)`, padding: '3px 9px', borderRadius: 999, flexShrink: 0 }}>{(active && prog.setsWon[active.id]) || 0}</div>}
-        <div style={{ fontSize: 10, color: accentInk, fontWeight: 800, letterSpacing: '.08em', flexShrink: 0 }}>AM WURF</div>
+        <div style={{ fontSize: 10, color: accentInk, fontWeight: 800, letterSpacing: '.08em', flexShrink: 0 }}>{tr.trainingScr.atThrow}</div>
       </div>
       <div style={{ flex: 1, width: '100%', minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', containerType: 'size' }}>
         <div style={{ fontFamily: 'var(--font-score)', fontWeight: 800, fontSize: `min(${Math.round(150 * cfg.scoreScale / 100)}cqh, ${Math.round(46 * cfg.scoreScale / 100)}cqw)`, lineHeight: 1, letterSpacing: '-.03em', color: scoreInk, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', ...scoreOutline }}>{rem}</div>
@@ -563,7 +570,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
         {others.map((p) => (
           <span key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
             <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--border-strong)', flexShrink: 0 }} />
-            {p.name} · Rest <b style={{ color: 'var(--text-2)', fontFamily: 'var(--font-num)' }}>{sc[p.id]}</b>
+            {p.name} · {tr.counter.restWord} <b style={{ color: 'var(--text-2)', fontFamily: 'var(--font-num)' }}>{sc[p.id]}</b>
           </span>
         ))}
       </span>
@@ -579,7 +586,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
   const deck = (fill: boolean) => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: fill ? 6 : 8, minHeight: 0, ...(fill ? { flex: 1 } : { flexShrink: 0 }) }}>
       <div style={{ flexShrink: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 12, padding: fill ? '6px 16px' : '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>Wurf eingeben</span>
+        <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>{tr.counter.enterThrow}</span>
         <span style={{ fontFamily: 'var(--font-num)', fontSize: fill ? 24 : 28, fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 60, textAlign: 'right' }}>{inputDisplay}</span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 7, ...(fill ? { flex: 1, gridAutoRows: '1fr', minHeight: 0 } : {}) }}>
@@ -588,7 +595,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
         ))}
         <button onClick={() => s.pressClear()} style={{ ...keyBtn(fill), color: 'var(--text-3)', fontFamily: 'inherit', fontSize: 16 }}>C</button>
         <button onClick={() => s.pressDigit('0')} style={keyBtn(fill)}>0</button>
-        <button onClick={() => s.pressDel()} style={{ ...keyBtn(fill), color: 'var(--text-3)' }} aria-label="Löschen">
+        <button onClick={() => s.pressDel()} style={{ ...keyBtn(fill), color: 'var(--text-3)' }} aria-label={tr.counter.del}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" /><path d="M18 9l-6 6M12 9l6 6" /></svg>
         </button>
       </div>
@@ -599,17 +606,17 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
           ))}
         </div>
       )}
-      <button onClick={() => s.pressEnter()} style={{ flexShrink: 0, background: accent, border: 'none', color: accFg, borderRadius: 13, padding: fill ? '11px 0' : '15px 0', fontSize: 16, fontWeight: 800, letterSpacing: '.02em', cursor: 'pointer' }}>EINTRAGEN</button>
+      <button onClick={() => s.pressEnter()} style={{ flexShrink: 0, background: accent, border: 'none', color: accFg, borderRadius: 13, padding: fill ? '11px 0' : '15px 0', fontSize: 16, fontWeight: 800, letterSpacing: '.02em', cursor: 'pointer' }}>{tr.counter.enterBtn}</button>
     </div>
   );
 
   const header = (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)', flexShrink: 0 }}>
-      <button onClick={() => s.go('dashboard')} style={phoneIconBtn} aria-label="Zurück"><IconBack size={18} sw={2} /></button>
+      <button onClick={() => s.go('dashboard')} style={phoneIconBtn} aria-label={tr.counter.back}><IconBack size={18} sw={2} /></button>
       <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>{matchInfo}</div>
       <div style={{ display: 'flex', gap: 6 }}>
         <button onClick={() => s.undo()} style={phoneIconBtn} aria-label="Undo"><IconUndo size={18} /></button>
-        <button onClick={() => s.abortGame()} style={{ ...phoneIconBtn, color: '#E0594B' }} aria-label="Abbrechen"><IconX size={18} sw={2} /></button>
+        <button onClick={() => s.abortGame()} style={{ ...phoneIconBtn, color: '#E0594B' }} aria-label={tr.counter.abort}><IconX size={18} sw={2} /></button>
       </div>
     </div>
   );
@@ -644,8 +651,8 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
         <Overlay z={35}>
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 18, width: '92vw', maxWidth: 460, maxHeight: '84vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-              <div style={{ fontSize: 16, fontWeight: 800 }}>Spielstand & Verlauf</div>
-              <button onClick={() => setShowDetail(false)} style={phoneIconBtn} aria-label="Schließen"><IconX size={18} sw={2} /></button>
+              <div style={{ fontSize: 16, fontWeight: 800 }}>{tr.counter.detailTitle}</div>
+              <button onClick={() => setShowDetail(false)} style={phoneIconBtn} aria-label={tr.trainingScr.close}><IconX size={18} sw={2} /></button>
             </div>
             <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
               {s.gamePlayers.map((p) => {
@@ -657,7 +664,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
                       <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: accentInk }}>{sc[p.id]}</span>
                     </div>
                     <div style={{ display: 'flex', gap: 1, background: 'var(--border)' }}>
-                      {[['Ø 3-Dart', average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`]].map(([label, val], k) => (
+                      {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`]].map(([label, val], k) => (
                         <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '7px 4px', textAlign: 'center' }}>
                           <div style={{ fontSize: 9, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase' }}>{label}</div>
                           <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, marginTop: 2 }}>{val}</div>
@@ -665,7 +672,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
                       ))}
                     </div>
                     <div style={{ maxHeight: 150, overflowY: 'auto', padding: '4px 8px 8px' }}>
-                      {rows.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-4)', padding: '8px 6px' }}>Noch keine Würfe</div>}
+                      {rows.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-4)', padding: '8px 6px' }}>{tr.counter.noThrows}</div>}
                       {rows.map((r, i) => (
                         <div key={i} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 1fr', gap: 4, padding: '5px 8px', borderRadius: 6, background: r.checkout ? `color-mix(in srgb, ${accent} 12%, transparent)` : 'transparent' }}>
                           <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-5)' }}>{r.round}</span>
@@ -691,14 +698,15 @@ function Overlay({ children, z }: { children: React.ReactNode; z: number }) {
 
 function WhoStarts() {
   const s = useStore();
+  const tr = useT();
   return (
     <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,10,12,.86)', backdropFilter: 'blur(7px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 48 }}>
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 20, padding: '32px 34px', width: 520, maxWidth: '92vw', boxShadow: '0 30px 70px rgba(0,0,0,.55)' }}>
         {!s.bullMode ? (
           <>
             <div style={{ textAlign: 'center', marginBottom: 22 }}>
-              <div style={{ fontSize: 23, fontWeight: 800, marginBottom: 6 }}>Wer beginnt?</div>
-              <div style={{ fontSize: 14, color: 'var(--text-3)' }}>Anwurf festlegen — per Maus oder Tastatur</div>
+              <div style={{ fontSize: 23, fontWeight: 800, marginBottom: 6 }}>{tr.counter.whoStarts}</div>
+              <div style={{ fontSize: 14, color: 'var(--text-3)' }}>{tr.counter.whoStartsSub}</div>
             </div>
             <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
               {s.gamePlayers.map((p, i) => {
@@ -715,30 +723,30 @@ function WhoStarts() {
             <div style={{ display: 'flex', gap: 12 }}>
               <button className="dh-hover-border" onClick={() => s.openBullOff()} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 13, padding: 14, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
                 <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#E0594B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#19A463' }} /></span>
-                Ausbullen <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px' }}>B</kbd>
+                {tr.counter.bullOff} <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px' }}>B</kbd>
               </button>
               <button className="dh-hover-border" onClick={() => s.spinStarter()} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 13, padding: 14, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F2B829" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" /></svg>
-                Zufall <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px' }}>Z</kbd>
+                {tr.counter.random} <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px' }}>Z</kbd>
               </button>
             </div>
           </>
         ) : (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>Ausbullen</div>
-            <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>Beide werfen einen Dart auf das Bull. Wer näher liegt, beginnt.</div>
+            <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 6 }}>{tr.counter.bullOff}</div>
+            <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>{tr.counter.bullOffSub}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {s.gamePlayers.map((p, i) => {
                 return (
                   <button key={p.id} className="dh-hover-border" onClick={() => s.chooseStarter(i)} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 13, padding: '14px 18px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
                     <Avatar photo={p.photo} short={p.short} avi={p.av} size={42} circle />
-                    <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 16, fontWeight: 700 }}>{p.name}</div><div style={{ fontSize: 12, color: 'var(--text-4)' }}>war näher am Bull</div></div>
+                    <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 16, fontWeight: 700 }}>{p.name}</div><div style={{ fontSize: 12, color: 'var(--text-4)' }}>{tr.counter.closerBull}</div></div>
                     <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 7, padding: '4px 9px' }}>{i + 1}</kbd>
                   </button>
                 );
               })}
             </div>
-            <button onClick={() => s.closeBullOff()} style={{ marginTop: 18, background: 'transparent', border: 'none', color: 'var(--text-3)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: 8 }}>← Zurück</button>
+            <button onClick={() => s.closeBullOff()} style={{ marginTop: 18, background: 'transparent', border: 'none', color: 'var(--text-3)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: 8 }}>{tr.counter.backArrow}</button>
           </div>
         )}
       </div>
@@ -748,6 +756,7 @@ function WhoStarts() {
 
 function WinOverlay() {
   const s = useStore();
+  const tr = useT();
   const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
   const w = winner(slice);
   const prog = progress(slice);
@@ -772,14 +781,14 @@ function WinOverlay() {
         <div style={{ width: 96, height: 96, borderRadius: '50%', background: 'radial-gradient(circle,rgba(242,184,41,.25),rgba(242,184,41,.05))', border: '1px solid rgba(242,184,41,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 22px' }}>
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#F2B829" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z" /></svg>
         </div>
-        <div style={{ fontSize: 13, color: '#F2B829', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 8 }}>Match gewonnen</div>
+        <div style={{ fontSize: 13, color: '#F2B829', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 8 }}>{tr.counter.matchWon}</div>
         {/* Overlay liegt immer auf dunklem Schleier → Textfarben fest hell, unabhängig vom Hell/Dunkel-Modus. */}
         <div style={{ fontSize: 34, fontWeight: 800, marginBottom: 6, color: '#fff' }}>{w?.name}</div>
         <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, color: 'rgba(255,255,255,.6)', marginBottom: 28 }}>{legs} · Ø {avg}</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
-          <button onClick={() => s.endGameTo('dashboard')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Zum Dashboard<span style={kbd}>1</span></button>
-          <button onClick={() => s.endGameTo('setup')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Neues Spiel<span style={kbd}>2</span></button>
-          <button onClick={() => s.rematch()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 28px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Revanche<span style={{ ...kbd, background: 'rgba(0,0,0,.28)' }}>3</span></button>
+          <button onClick={() => s.endGameTo('dashboard')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.toDashboard}<span style={kbd}>1</span></button>
+          <button onClick={() => s.endGameTo('setup')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.newGame}<span style={kbd}>2</span></button>
+          <button onClick={() => s.rematch()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 28px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.rematch}<span style={{ ...kbd, background: 'rgba(0,0,0,.28)' }}>3</span></button>
         </div>
       </div>
     </div>
