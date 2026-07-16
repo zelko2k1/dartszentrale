@@ -9,13 +9,14 @@ import { suggestBoardScale } from '../lib/displayScale';
 import { useReorder } from '../lib/useReorder';
 import { qrSvg } from '../lib/qrcode';
 import type { TwoFactorStatus, TwoFactorSetup } from '../data/provider';
-import { useT, useLang, setLang, LANG_LABELS, type Lang } from '../i18n';
+import { useT, useLang, setLang, dict, LANG_LABELS, type Lang } from '../i18n';
 
 const ACCENTS = ['#FFFFFF', '#000000', '#2BD377', '#19A463', '#3B9EFF', '#F2B829', '#E0594B', '#9b6dff', '#2bd3c0', '#FF8A3D'];
 const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'];
 
 // number field that accepts manual entry but snaps to 5% steps on commit
 function PercentField({ value, min, max, onCommit }: { value: number; min: number; max: number; onCommit: (n: number) => void }) {
+  const tr = useT();
   const [text, setText] = useState(String(value));
   useEffect(() => { setText(String(value)); }, [value]);
   const commit = () => {
@@ -31,7 +32,7 @@ function PercentField({ value, min, max, onCommit }: { value: number; min: numbe
       onChange={(e) => setText(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
       onBlur={commit}
       onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-      title={`${min}–${max} % · in 5er-Schritten`}
+      title={tr.settings.percentTitle(min, max)}
       style={{ width: 44, textAlign: 'center', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 17, fontWeight: 700, padding: 0, margin: 0 }}
     />
   );
@@ -39,6 +40,7 @@ function PercentField({ value, min, max, onCommit }: { value: number; min: numbe
 
 // records a keyboard shortcut — only Strg + Alt + <letter/digit> is accepted
 function ShortcutRecorder({ value, accent, fallback, onChange }: { value: string; accent: string; fallback: string; onChange: (combo: string) => void }) {
+  const tr = useT();
   const [recording, setRecording] = useState(false);
   const [warn, setWarn] = useState(false);
   useEffect(() => {
@@ -56,11 +58,11 @@ function ShortcutRecorder({ value, accent, fallback, onChange }: { value: string
   }, [recording, onChange]);
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-      {warn && <span style={{ fontSize: 11, color: '#E0594B', fontWeight: 600 }}>Alt + Buchstabe/Ziffer (optional Strg)</span>}
+      {warn && <span style={{ fontSize: 11, color: '#E0594B', fontWeight: 600 }}>{tr.settings.shortcutWarn}</span>}
       <button onClick={() => { setRecording((r) => !r); setWarn(false); }} style={{ minWidth: 140, fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: recording ? accent : 'var(--text-2)', background: 'var(--btn)', border: `1px solid ${recording ? accent : 'var(--border-2)'}`, borderRadius: 8, padding: '8px 14px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-        {recording ? 'Alt + Taste …' : formatCombo(value)}
+        {recording ? tr.settings.recording : formatCombo(value)}
       </button>
-      <button onClick={() => { onChange(fallback); setRecording(false); setWarn(false); }} title={`Auf ${formatCombo(fallback)} zurücksetzen`} className="dh-btn" style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>↺</button>
+      <button onClick={() => { onChange(fallback); setRecording(false); setWarn(false); }} title={tr.settings.resetTo(formatCombo(fallback))} className="dh-btn" style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>↺</button>
     </div>
   );
 }
@@ -87,6 +89,7 @@ function Row({ label, sub, children, top }: { label: string; sub?: string; child
 // Arcane/nginx → Endpunkt fehlt), zeigt der Panel einen Hinweis statt eines Installers.
 const UPDATE_TOKEN_KEY = 'darts_update_token';
 function UpdatePanel() {
+  const tr = useT();
   const accent = useStore((st) => st.settings.accent);
   const [token, setToken] = useState(() => { try { return localStorage.getItem(UPDATE_TOKEN_KEY) || ''; } catch { return ''; } });
   const [phase, setPhase] = useState<'checking' | 'ok' | 'available' | 'needToken' | 'unavailable' | 'installing'>('checking');
@@ -110,7 +113,7 @@ function UpdatePanel() {
       const r = await fetch('/admin/update/install', { method: 'POST', headers: authHeaders() });
       const j = await r.json().catch(() => ({}));
       if (r.ok && j.ok) { window.location.reload(); return; }
-      setError(j.error || `Fehler (${r.status})`); setPhase('available');
+      setError(j.error || tr.settings.errorN(r.status)); setPhase('available');
     } catch (e) { setError(String((e as Error).message || e)); setPhase('available'); }
   };
   const saveToken = () => { try { localStorage.setItem(UPDATE_TOKEN_KEY, token.trim()); } catch { /* ignore */ } void check(); };
@@ -120,33 +123,33 @@ function UpdatePanel() {
   const field: CSSProperties = { width: 220, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 14, outline: 'none' };
 
   return (
-    <Section title="App & Updates">
-      <Row label="Installierte Version" sub="Version dieser App auf dem Board.">
+    <Section title={tr.settings.appUpdates}>
+      <Row label={tr.settings.installedVersion} sub={tr.settings.installedVersionSub}>
         <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, color: 'var(--text-2)' }}>{__APP_VERSION__}</span>
       </Row>
       {phase === 'unavailable' ? (
-        <Row label="Updates" sub="Auf diesem Board keine automatische Installation möglich.">
-          <span style={{ fontSize: 13, color: 'var(--text-4)', maxWidth: 320, textAlign: 'right' }}>Kein Update-Server erkannt — Updates laufen hier über einen Server-Redeploy bzw. das Update-Skript.</span>
+        <Row label={tr.settings.updates} sub={tr.settings.noAutoUpdateSub}>
+          <span style={{ fontSize: 13, color: 'var(--text-4)', maxWidth: 320, textAlign: 'right' }}>{tr.settings.noUpdateServer}</span>
         </Row>
       ) : phase === 'needToken' ? (
-        <Row label="Update-Freigabe" sub="Dieses Gerät darf Updates nur mit Freigabe-Token auslösen (direkt am Board ist kein Token nötig).">
+        <Row label={tr.settings.updateAuth} sub={tr.settings.updateAuthSub}>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <input type="password" value={token} onChange={(e) => setToken(e.target.value)} placeholder="Update-Token" style={field} />
-            <button className="dh-btn" onClick={saveToken} style={btn()}>Speichern &amp; prüfen</button>
+            <input type="password" value={token} onChange={(e) => setToken(e.target.value)} placeholder={tr.settings.tokenPh} style={field} />
+            <button className="dh-btn" onClick={saveToken} style={btn()}>{tr.settings.saveCheck}</button>
           </div>
         </Row>
       ) : (
         <>
-          <Row label="Updates" sub={info.dir ? `Update-Paket (.tar.gz) hier ablegen: ${info.dir}` : 'Prüft, ob ein Update bereitliegt.'}>
+          <Row label={tr.settings.updates} sub={info.dir ? tr.settings.updatesSubDir(info.dir) : tr.settings.updatesSubCheck}>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-              {phase === 'available' && <span style={{ fontSize: 13, color: accent, fontWeight: 700 }}>Version {info.available} verfügbar</span>}
-              {phase === 'ok' && <span style={{ fontSize: 13, color: 'var(--text-4)' }}>Aktuell</span>}
+              {phase === 'available' && <span style={{ fontSize: 13, color: accent, fontWeight: 700 }}>{tr.settings.versionAvailable(info.available || '')}</span>}
+              {phase === 'ok' && <span style={{ fontSize: 13, color: 'var(--text-4)' }}>{tr.settings.upToDate}</span>}
               {phase === 'available'
-                ? <button className="dh-btn" onClick={install} style={btn(true)}>Installieren</button>
-                : <button className="dh-btn" onClick={check} disabled={phase === 'checking' || phase === 'installing'} style={{ ...btn(), opacity: (phase === 'checking' || phase === 'installing') ? 0.6 : 1 }}>{phase === 'checking' ? 'Suche…' : phase === 'installing' ? 'Installiere…' : 'Nach Updates suchen'}</button>}
+                ? <button className="dh-btn" onClick={install} style={btn(true)}>{tr.settings.install}</button>
+                : <button className="dh-btn" onClick={check} disabled={phase === 'checking' || phase === 'installing'} style={{ ...btn(), opacity: (phase === 'checking' || phase === 'installing') ? 0.6 : 1 }}>{phase === 'checking' ? tr.settings.searching : phase === 'installing' ? tr.settings.installing : tr.settings.checkForUpdates}</button>}
             </div>
           </Row>
-          {phase === 'installing' && <div style={{ fontSize: 12, color: 'var(--text-4)', padding: '2px 2px 6px' }}>Installiere Update … die Seite lädt gleich neu.</div>}
+          {phase === 'installing' && <div style={{ fontSize: 12, color: 'var(--text-4)', padding: '2px 2px 6px' }}>{tr.settings.installingNote}</div>}
           {error && <div style={{ fontSize: 12, color: '#E0594B', padding: '2px 2px 6px' }}>{error}</div>}
         </>
       )}
@@ -156,6 +159,7 @@ function UpdatePanel() {
 
 // Self-Service: der angemeldete Nutzer setzt sein eigenes Passwort (über den privilegierten setPassword-Endpunkt).
 function PasswordChange() {
+  const tr = useT();
   const change = useStore((st) => st.changeOwnPassword);
   const accent = useStore((st) => st.settings.accent);
   const [pw, setPw] = useState('');
@@ -165,19 +169,19 @@ function PasswordChange() {
   const field: CSSProperties = { width: 210, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, outline: 'none' };
   const submit = async () => {
     setMsg(null);
-    if (pw.length < 8) { setMsg({ ok: false, text: 'Mindestens 8 Zeichen.' }); return; }
-    if (pw !== pw2) { setMsg({ ok: false, text: 'Passwörter stimmen nicht überein.' }); return; }
+    if (pw.length < 8) { setMsg({ ok: false, text: tr.settings.pwMin8 }); return; }
+    if (pw !== pw2) { setMsg({ ok: false, text: tr.settings.pwMismatch }); return; }
     setBusy(true);
     const ok = await change(pw);
     setBusy(false);
-    if (ok) { setPw(''); setPw2(''); setMsg({ ok: true, text: '✓ Passwort geändert.' }); }
-    else setMsg({ ok: false, text: 'Konnte nicht geändert werden.' });
+    if (ok) { setPw(''); setPw2(''); setMsg({ ok: true, text: tr.settings.pwChanged }); }
+    else setMsg({ ok: false, text: tr.settings.pwFailed });
   };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-      <input type="password" autoComplete="new-password" value={pw} onChange={(e) => { setPw(e.target.value); setMsg(null); }} placeholder="Neues Passwort" style={field} />
-      <input type="password" autoComplete="new-password" value={pw2} onChange={(e) => { setPw2(e.target.value); setMsg(null); }} placeholder="Wiederholen" style={field} />
-      <button onClick={submit} disabled={busy || !pw || !pw2} style={{ background: accent, color: 'var(--accent-fg)', border: 'none', borderRadius: 10, padding: '10px 18px', fontSize: 13, fontWeight: 800, cursor: busy ? 'default' : 'pointer', fontFamily: 'inherit', opacity: busy || !pw || !pw2 ? 0.6 : 1 }}>{busy ? 'Speichern …' : 'Passwort ändern'}</button>
+      <input type="password" autoComplete="new-password" value={pw} onChange={(e) => { setPw(e.target.value); setMsg(null); }} placeholder={tr.settings.newPw} style={field} />
+      <input type="password" autoComplete="new-password" value={pw2} onChange={(e) => { setPw2(e.target.value); setMsg(null); }} placeholder={tr.settings.repeatPw} style={field} />
+      <button onClick={submit} disabled={busy || !pw || !pw2} style={{ background: accent, color: 'var(--accent-fg)', border: 'none', borderRadius: 10, padding: '10px 18px', fontSize: 13, fontWeight: 800, cursor: busy ? 'default' : 'pointer', fontFamily: 'inherit', opacity: busy || !pw || !pw2 ? 0.6 : 1 }}>{busy ? tr.settings.saving : tr.settings.changePw}</button>
       {msg && <span style={{ fontSize: 12, fontWeight: 600, color: msg.ok ? 'var(--success)' : '#E0594B' }}>{msg.text}</span>}
     </div>
   );
@@ -186,11 +190,11 @@ function PasswordChange() {
 // Backup-Codes als Textdatei herunterladen (einmalige Anzeige → sicher speichern).
 function downloadBackupCodes(codes: string[], account: string) {
   const body = [
-    'DartsZentrale — 2FA Backup-Codes',
-    `Konto: ${account}`,
+    dict().settings.bcHeader,
+    dict().settings.bcAccount(account),
     '',
-    'Jeder Code ist EINMALIG beim Login statt des Authenticator-Codes nutzbar.',
-    'Sicher aufbewahren, nicht weitergeben.',
+    dict().settings.bcLine1,
+    dict().settings.bcLine2,
     '',
     ...codes.map((c, i) => `${String(i + 1).padStart(2, '0')}.  ${c}`),
   ].join('\n');
@@ -203,6 +207,7 @@ function downloadBackupCodes(codes: string[], account: string) {
 
 // Self-Service 2-Faktor-Authentifizierung (TOTP). Nutzt die serverseitigen Endpunkte über den Provider.
 function TwoFactorSettings() {
+  const tr = useT();
   const provider = useStore((st) => st.provider);
   const accent = useStore((st) => st.settings.accent);
   const [status, setStatus] = useState<TwoFactorStatus | null>(null);
@@ -218,7 +223,7 @@ function TwoFactorSettings() {
   const loadStatus = () => { void provider.twoFactorStatus().then(setStatus).catch(() => setStatus({ enabled: false, pending: false })); };
   useEffect(loadStatus, [provider]);
 
-  const errText = (e: unknown) => (e as { response?: { message?: string } })?.response?.message || 'Aktion fehlgeschlagen. Bitte erneut versuchen.';
+  const errText = (e: unknown) => (e as { response?: { message?: string } })?.response?.message || tr.settings.actionFailed;
   const reauthArg = () => (/^\d{6}$|^\d{8}$/.test(reauth.trim()) ? { code: reauth.trim() } : { password: reauth });
   const reset = () => { setPhase('idle'); setSetup(null); setCode(''); setReauth(''); setBackupCodes(null); setErr(''); setBusy(false); };
 
@@ -256,14 +261,14 @@ function TwoFactorSettings() {
     const acct = setup?.account || '';
     return (
       <div style={{ maxWidth: 420 }}>
-        <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 10 }}><b>Backup-Codes</b> — jeder Code ist einmal beim Login statt des App-Codes nutzbar. Jetzt sicher speichern; sie werden <b>nicht erneut angezeigt</b>.</div>
+        <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 10 }}><b>{tr.settings.bcTitle}</b>{tr.settings.bcNoteA}<b>{tr.settings.bcNoteB}</b>{tr.settings.bcNoteC}</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: 14 }}>
           {backupCodes.map((c) => <span key={c} style={{ fontFamily: 'var(--font-num, monospace)', fontSize: 15, letterSpacing: '.1em', textAlign: 'center' }}>{c}</span>)}
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
-          <button style={btn()} onClick={() => { void navigator.clipboard?.writeText(backupCodes.join('\n')).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}>{copied ? '✓ Kopiert' : 'Kopieren'}</button>
-          <button style={btn()} onClick={() => downloadBackupCodes(backupCodes, acct)}>Herunterladen</button>
-          <button style={btn(true)} onClick={reset}>Fertig</button>
+          <button style={btn()} onClick={() => { void navigator.clipboard?.writeText(backupCodes.join('\n')).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}>{copied ? tr.settings.copied : tr.settings.copy}</button>
+          <button style={btn()} onClick={() => downloadBackupCodes(backupCodes, acct)}>{tr.settings.download}</button>
+          <button style={btn(true)} onClick={reset}>{tr.modals.done}</button>
         </div>
       </div>
     );
@@ -275,19 +280,19 @@ function TwoFactorSettings() {
     const dataUri = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
     return (
       <div style={{ maxWidth: 420 }}>
-        <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 12 }}>1. Scanne den QR-Code mit einer Authenticator-App (Google Authenticator, Microsoft, 2FAS, Authy …).</div>
+        <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 12 }}>{tr.settings.setupStep1}</div>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-          <img src={dataUri} alt="QR-Code für die Authenticator-App" width={168} height={168} style={{ background: '#fff', borderRadius: 10, padding: 8 }} />
+          <img src={dataUri} alt={tr.settings.qrAlt} width={168} height={168} style={{ background: '#fff', borderRadius: 10, padding: 8 }} />
           <div style={{ minWidth: 160 }}>
-            <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, marginBottom: 4 }}>Oder manuell eingeben:</div>
+            <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, marginBottom: 4 }}>{tr.settings.orManual}</div>
             <div style={{ fontFamily: 'var(--font-num, monospace)', fontSize: 13, wordBreak: 'break-all', color: 'var(--text-2)', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '8px 10px' }}>{setup.secret}</div>
           </div>
         </div>
-        <div style={{ fontSize: 13, color: 'var(--text-2)', margin: '16px 0 8px' }}>2. Gib den aktuellen 6-stelligen Code zur Bestätigung ein:</div>
+        <div style={{ fontSize: 13, color: 'var(--text-2)', margin: '16px 0 8px' }}>{tr.settings.setupStep2}</div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <input type="text" inputMode="numeric" autoComplete="one-time-code" value={code} placeholder="123456" onChange={(e) => { setCode(e.target.value.replace(/\s/g, '')); setErr(''); }} onKeyDown={(e) => { if (e.key === 'Enter' && code.trim()) void confirmSetup(); }} style={field} />
-          <button style={btn(true)} disabled={busy || code.trim().length < 6} onClick={() => void confirmSetup()}>{busy ? 'Prüfe …' : 'Aktivieren'}</button>
-          <button style={btn()} disabled={busy} onClick={reset}>Abbrechen</button>
+          <button style={btn(true)} disabled={busy || code.trim().length < 6} onClick={() => void confirmSetup()}>{busy ? tr.settings.checking : tr.settings.activate}</button>
+          <button style={btn()} disabled={busy} onClick={reset}>{tr.common.cancel}</button>
         </div>
         {errBox}
       </div>
@@ -299,11 +304,11 @@ function TwoFactorSettings() {
     const isDisable = phase === 'disable';
     return (
       <div style={{ maxWidth: 420, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-        <div style={{ fontSize: 13, color: 'var(--text-2)', alignSelf: 'stretch' }}>{isDisable ? '2FA deaktivieren' : 'Neue Backup-Codes'} — bitte mit einem aktuellen Code (oder Backup-Code) oder deinem Passwort bestätigen.</div>
-        <input type="password" autoComplete="off" value={reauth} placeholder="Code oder Passwort" onChange={(e) => { setReauth(e.target.value); setErr(''); }} onKeyDown={(e) => { if (e.key === 'Enter' && reauth) void (isDisable ? doDisable() : doRegen()); }} style={{ ...field, fontFamily: 'inherit', letterSpacing: 0, width: 240 }} />
+        <div style={{ fontSize: 13, color: 'var(--text-2)', alignSelf: 'stretch' }}>{isDisable ? tr.settings.disableTitle : tr.settings.regenTitle}{tr.settings.reauthSuffix}</div>
+        <input type="password" autoComplete="off" value={reauth} placeholder={tr.settings.codeOrPw} onChange={(e) => { setReauth(e.target.value); setErr(''); }} onKeyDown={(e) => { if (e.key === 'Enter' && reauth) void (isDisable ? doDisable() : doRegen()); }} style={{ ...field, fontFamily: 'inherit', letterSpacing: 0, width: 240 }} />
         <div style={{ display: 'flex', gap: 8 }}>
-          <button style={btn()} disabled={busy} onClick={reset}>Abbrechen</button>
-          <button style={btn(true)} disabled={busy || !reauth} onClick={() => void (isDisable ? doDisable() : doRegen())}>{busy ? 'Bitte warten …' : (isDisable ? 'Deaktivieren' : 'Neu erzeugen')}</button>
+          <button style={btn()} disabled={busy} onClick={reset}>{tr.common.cancel}</button>
+          <button style={btn(true)} disabled={busy || !reauth} onClick={() => void (isDisable ? doDisable() : doRegen())}>{busy ? tr.settings.pleaseWait : (isDisable ? tr.settings.disable : tr.settings.regenerate)}</button>
         </div>
         {errBox}
       </div>
@@ -311,17 +316,17 @@ function TwoFactorSettings() {
   }
 
   // Ruhezustand: Status + Aktionen.
-  if (!status) return <span style={{ fontSize: 13, color: 'var(--text-4)' }}>Lädt …</span>;
+  if (!status) return <span style={{ fontSize: 13, color: 'var(--text-4)' }}>{tr.settings.loading}</span>;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-      <span style={{ fontSize: 13, fontWeight: 700, color: status.enabled ? 'var(--success)' : 'var(--text-4)' }}>{status.enabled ? '● Aktiv' : '○ Nicht aktiv'}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: status.enabled ? 'var(--success)' : 'var(--text-4)' }}>{status.enabled ? tr.settings.tfaActive : tr.settings.tfaInactive}</span>
       {status.enabled ? (
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          <button style={btn()} onClick={() => { setErr(''); setPhase('regen'); }}>Backup-Codes neu</button>
-          <button style={btn()} onClick={() => { setErr(''); setPhase('disable'); }}>Deaktivieren</button>
+          <button style={btn()} onClick={() => { setErr(''); setPhase('regen'); }}>{tr.settings.newBackupCodes}</button>
+          <button style={btn()} onClick={() => { setErr(''); setPhase('disable'); }}>{tr.settings.disable}</button>
         </div>
       ) : (
-        <button style={btn(true)} disabled={busy} onClick={() => void beginSetup()}>{busy ? 'Bitte warten …' : '2FA einrichten'}</button>
+        <button style={btn(true)} disabled={busy} onClick={() => void beginSetup()}>{busy ? tr.settings.pleaseWait : tr.settings.setup2FA}</button>
       )}
       {errBox}
     </div>
@@ -331,6 +336,7 @@ function TwoFactorSettings() {
 // „Geräte hinzufügen": zeigt die Server-Adresse als QR-Code (Tablets/Handys scannen) — nutzt den
 // vendored QR-Encoder aus der 2FA-Arbeit. Board-PCs legen die Adresse als Lesezeichen/Kiosk an.
 function JoinDevicesPanel() {
+  const tr = useT();
   const [url, setUrl] = useState(() => {
     try { return localStorage.getItem('darts_join_url') || window.location.origin; } catch { return window.location.origin; }
   });
@@ -342,15 +348,15 @@ function JoinDevicesPanel() {
   const field: CSSProperties = { width: 280, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'var(--font-num, monospace)', fontSize: 13, outline: 'none' };
   const btn: CSSProperties = { background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' };
   return (
-    <Section title="Geräte hinzufügen">
-      <Row label="Beitritts-Adresse" sub="So kommen weitere Geräte auf denselben Server: Tablet/Handy scannt den QR-Code, ein Board-PC legt die Adresse als Lesezeichen (Kiosk) an. Danach am Gerät mit dem jeweiligen Board-Konto anmelden." top>
+    <Section title={tr.settings.addDevices}>
+      <Row label={tr.settings.joinAddr} sub={tr.settings.joinAddrSub} top>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
-          {valid && <img src={dataUri} width={184} height={184} alt="QR-Code zum Beitreten" style={{ background: '#fff', borderRadius: 10, padding: 8 }} />}
+          {valid && <img src={dataUri} width={184} height={184} alt={tr.settings.joinQrAlt} style={{ background: '#fff', borderRadius: 10, padding: 8 }} />}
           <input value={url} onChange={(e) => setAndSave(e.target.value)} placeholder="http://192.168.0.10:8090" style={field} />
-          <button style={btn} onClick={() => { void navigator.clipboard?.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}>{copied ? '✓ Kopiert' : 'Adresse kopieren'}</button>
+          <button style={btn} onClick={() => { void navigator.clipboard?.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}>{copied ? tr.settings.copied : tr.settings.copyAddr}</button>
           {isLocalOnly && (
             <div style={{ fontSize: 12, color: '#E0594B', fontWeight: 600, maxWidth: 320, textAlign: 'right' }}>
-              Das ist die lokale Adresse dieses Rechners — andere Geräte erreichen sie nicht. Trage hier die Netzwerk-Adresse des Servers ein (z. B. http://192.168.0.10:8090); sie wird beim Serverstart angezeigt.
+              {tr.settings.localOnlyWarn}
             </div>
           )}
         </div>
@@ -393,9 +399,9 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
 
   const savePbUrl = () => {
     const v = pbUrlDraft.trim().replace(/\/+$/, ''); // trailing slash entfernen
-    if (v && !/^https?:\/\//i.test(v)) { setPbMsg('Adresse muss mit http:// oder https:// beginnen.'); return; }
+    if (v && !/^https?:\/\//i.test(v)) { setPbMsg(tr.settings.mustHttp); return; }
     s.setPbUrl(v);
-    setPbMsg(v ? 'Gespeichert – verbinde neu …' : 'Server entfernt – wechsle in den lokalen Modus …');
+    setPbMsg(v ? tr.settings.savedReconnect : tr.settings.serverRemoved);
     setTimeout(() => window.location.reload(), 600); // init() baut den Provider mit der neuen URL neu auf
   };
 
@@ -408,22 +414,22 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
       a.download = `backup-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
-      setDataMsg('Backup heruntergeladen.');
-    } catch { setDataMsg('Export fehlgeschlagen.'); }
+      setDataMsg(tr.settings.backupDownloaded);
+    } catch { setDataMsg(tr.settings.exportFailed); }
   };
   const onImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     setDataMsg('');
     if (!file) return;
-    if (!window.confirm('Bestehende Daten werden durch das Backup ersetzt. Fortfahren?')) return;
+    if (!window.confirm(tr.settings.importConfirm)) return;
     const reader = new FileReader();
-    reader.onerror = () => setDataMsg('Datei konnte nicht gelesen werden.');
+    reader.onerror = () => setDataMsg(tr.modals.fileUnreadable);
     reader.onload = () => {
       if (s.importData(String(reader.result))) {
-        setDataMsg('Import erfolgreich – wird neu geladen…');
+        setDataMsg(tr.settings.importOkReload);
         setTimeout(() => window.location.reload(), 600);
-      } else setDataMsg('Ungültige Backup-Datei.');
+      } else setDataMsg(tr.settings.invalidBackup);
     };
     reader.readAsText(file);
   };
@@ -434,18 +440,18 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     e.target.value = '';
     setLogoErr('');
     if (!file) return;
-    if (!LOGO_TYPES.includes(file.type)) { setLogoErr('Nur PNG, JPG, SVG oder WebP erlaubt.'); return; }
-    if (file.size > 2 * 1024 * 1024) { setLogoErr('Datei zu groß (max. 2 MB).'); return; }
+    if (!LOGO_TYPES.includes(file.type)) { setLogoErr(tr.settings.onlyLogoTypes); return; }
+    if (file.size > 2 * 1024 * 1024) { setLogoErr(tr.settings.tooBig); return; }
     const reader = new FileReader();
-    reader.onerror = () => setLogoErr('Datei konnte nicht gelesen werden.');
+    reader.onerror = () => setLogoErr(tr.modals.fileUnreadable);
     reader.onload = () => {
       const dataUrl = reader.result as string;
       if (file.type === 'image/svg+xml') { // SVG bleibt vektoriell, nicht rastern
-        try { set('clubLogo', dataUrl); } catch { setLogoErr('Konnte nicht gespeichert werden.'); }
+        try { set('clubLogo', dataUrl); } catch { setLogoErr(tr.settings.notSaved); }
         return;
       }
       const img = new Image();
-      img.onerror = () => setLogoErr('Bild konnte nicht verarbeitet werden.');
+      img.onerror = () => setLogoErr(tr.settings.imgFailed);
       img.onload = () => {
         const max = 256;
         const scale = Math.min(1, max / Math.max(img.width, img.height));
@@ -454,7 +460,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         const canvas = document.createElement('canvas');
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d')?.drawImage(img, 0, 0, w, h);
-        try { set('clubLogo', canvas.toDataURL('image/png')); } catch { setLogoErr('Konnte nicht gespeichert werden.'); }
+        try { set('clubLogo', canvas.toDataURL('image/png')); } catch { setLogoErr(tr.settings.notSaved); }
       };
       img.src = dataUrl;
     };
@@ -494,13 +500,13 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     return (
       <div style={{ display: 'flex', gap: 8, flexWrap: 'nowrap', justifyContent: 'flex-end', overflowX: 'auto', maxWidth: '100%', paddingBottom: 2 }}>
         {allowAuto && (
-          <button onClick={() => set(key, null as SettingsType[typeof key])} title="Standard (Akzentfarbe)" style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--btn)', border: `2px solid ${cur == null ? 'var(--text-3)' : 'var(--border-2)'}`, color: 'var(--text-3)', fontSize: 9, fontWeight: 800, cursor: 'pointer', flexShrink: 0 }}>STD</button>
+          <button onClick={() => set(key, null as SettingsType[typeof key])} title={tr.settings.stdTitle} style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--btn)', border: `2px solid ${cur == null ? 'var(--text-3)' : 'var(--border-2)'}`, color: 'var(--text-3)', fontSize: 9, fontWeight: 800, cursor: 'pointer', flexShrink: 0 }}>STD</button>
         )}
         {ACCENTS.map((c) => {
           const on = (cur || '').toLowerCase() === c.toLowerCase();
           return <button key={c} onClick={() => set(key, c as SettingsType[typeof key])} style={ring(on, c)} />;
         })}
-        <label title="Eigene Farbe wählen" style={{ position: 'relative', width: 34, height: 34, borderRadius: '50%', overflow: 'hidden', cursor: 'pointer', boxShadow: '0 0 0 2px var(--surface), 0 0 0 3px var(--border-2)', background: 'conic-gradient(from 90deg, #ff2d55, #ffcc00, #34c759, #00c7be, #007aff, #af52de, #ff2d55)', flexShrink: 0 }}>
+        <label title={tr.settings.customColor} style={{ position: 'relative', width: 34, height: 34, borderRadius: '50%', overflow: 'hidden', cursor: 'pointer', boxShadow: '0 0 0 2px var(--surface), 0 0 0 3px var(--border-2)', background: 'conic-gradient(from 90deg, #ff2d55, #ffcc00, #34c759, #00c7be, #007aff, #af52de, #ff2d55)', flexShrink: 0 }}>
           <input type="color" value={cur || accent} onChange={(e) => set(key, e.target.value as SettingsType[typeof key])} style={{ position: 'absolute', top: -8, left: -8, width: 50, height: 50, border: 'none', padding: 0, margin: 0, background: 'none', cursor: 'pointer', opacity: 0 }} />
         </label>
       </div>
@@ -508,10 +514,10 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   };
 
   const toggles: { key: 'showCheckout' | 'showQuick' | 'showHistory' | 'showStats'; label: string; sub: string }[] = [
-    { key: 'showCheckout', label: 'Checkout-Vorschlag', sub: 'Zeigt mögliche Finish-Wege unter dem Restscore' },
-    { key: 'showQuick', label: 'Quick-Scores', sub: 'Quick-Score-Buttons (Tablet) bzw. die F1–F8-Leiste (Desktop)' },
-    { key: 'showHistory', label: 'Wurf-Verlauf', sub: 'Liste der bisherigen Aufnahmen' },
-    { key: 'showStats', label: 'Statistik-Box', sub: 'Ø 3-Dart, First 9, Letzter, 180·140+, CO % und High Finish (HF)' },
+    { key: 'showCheckout', label: tr.settings.tglCheckout, sub: tr.settings.tglCheckoutSub },
+    { key: 'showQuick', label: tr.settings.tglQuick, sub: tr.settings.tglQuickSub },
+    { key: 'showHistory', label: tr.settings.tglHistory, sub: tr.settings.tglHistorySub },
+    { key: 'showStats', label: tr.settings.tglStats, sub: tr.settings.tglStatsSub },
   ];
 
   // Read-only-Dimmen für zentrale (vereinsweite) Einstellungen, wenn der Benutzer nicht bearbeiten darf.
@@ -522,50 +528,50 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     (canEdit || DEVICE_LOCAL_SETTING_KEYS.includes(key)) ? node : dim(node);
 
   const modusNode = (
-    <Section title="App-Modus">
-      <Row label="Nutzungsart" sub="Lokal: Dashboard, Counter, Training, Spieler, Statistiken. Verein: zusätzlich Ligen, Mannschaften, Kalender, Benutzer & Saisons.">
-        {seg('appMode', [{ label: 'Lokal', val: 'local' }, { label: 'Verein', val: 'verein' }], '10px 18px')}
+    <Section title={tr.settings.secAppMode}>
+      <Row label={tr.settings.catUsage} sub={tr.settings.usageSub}>
+        {seg('appMode', [{ label: tr.settings.modeLocal, val: 'local' }, { label: tr.settings.modeVerein, val: 'verein' }], '10px 18px')}
       </Row>
     </Section>
   );
 
   const vereinNode = (
-    <Section title="Verein">
-      <Row label="Vereins-Server (PocketBase)" sub="Adresse deiner PocketBase-Instanz, z. B. https://db.deinverein.de. Wird nur auf diesem Gerät gespeichert – nach dem Speichern verbindet sich die App neu." top>
+    <Section title={tr.settings.secVerein}>
+      <Row label={tr.settings.pbServer} sub={tr.settings.pbServerSub} top>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <input className="dh-input" type="url" inputMode="url" autoCapitalize="off" autoCorrect="off" spellCheck={false} value={pbUrlDraft} onChange={(e) => { setPbUrlDraft(e.target.value); setPbMsg(''); }} placeholder="https://db.deinverein.de" style={{ width: 260, maxWidth: '100%', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, outline: 'none' }} />
-            <button onClick={savePbUrl} style={{ background: accent, color: 'var(--accent-fg)', border: `1px solid ${accent}`, padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>Speichern &amp; verbinden</button>
+            <button onClick={savePbUrl} style={{ background: accent, color: 'var(--accent-fg)', border: `1px solid ${accent}`, padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{tr.settings.saveConnect}</button>
           </div>
           <span style={{ fontSize: 12, fontWeight: 600, color: s.pbMode ? accent : 'var(--text-4)' }}>
-            {s.pbMode ? `✓ Verbunden mit ${cfg.pbUrl || 'Server'}` : (cfg.pbUrl ? '⚠ Nicht verbunden – Adresse prüfen' : 'Kein Server – läuft im lokalen Modus')}
+            {s.pbMode ? tr.settings.connectedTo(cfg.pbUrl || tr.settings.serverFallback) : (cfg.pbUrl ? tr.settings.notConnected : tr.settings.noServerLocal)}
           </span>
           {pbMsg && <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>{pbMsg}</span>}
         </div>
       </Row>
-      <Row label="Vereinsname" sub="Wird in der Hauptansicht neben dem Logo angezeigt.">
-        <input className="dh-input" type="text" value={cfg.clubName} onChange={(e) => set('clubName', e.target.value)} placeholder="z. B. Dartverein Musterstadt" style={{ width: 260, maxWidth: '100%', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, outline: 'none' }} />
+      <Row label={tr.settings.clubName} sub={tr.settings.clubNameSub}>
+        <input className="dh-input" type="text" value={cfg.clubName} onChange={(e) => set('clubName', e.target.value)} placeholder={tr.settings.clubNamePh} style={{ width: 260, maxWidth: '100%', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, outline: 'none' }} />
       </Row>
-      <Row label="Vereinslogo" sub="Erscheint in der Hauptansicht oben links. PNG, JPG, SVG oder WebP · max. 2 MB · wird automatisch verkleinert.">
+      <Row label={tr.settings.clubLogo} sub={tr.settings.clubLogoSub}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <div style={{ width: 44, height: 44, borderRadius: 11, background: 'var(--btn)', border: '1px solid var(--border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, color: 'var(--text-4)' }}>
-              {cfg.clubLogo ? <img src={cfg.clubLogo} alt="Vereinslogo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <IconUsers size={20} />}
+              {cfg.clubLogo ? <img src={cfg.clubLogo} alt={tr.sidebar.clubLogoAlt} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <IconUsers size={20} />}
             </div>
             <label className="dh-btn" style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-              {cfg.clubLogo ? 'Logo ändern' : 'Logo wählen'}
+              {cfg.clubLogo ? tr.settings.logoChange : tr.settings.logoChoose}
               <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" onChange={onLogoFile} style={{ display: 'none' }} />
             </label>
-            {cfg.clubLogo && <button onClick={() => { set('clubLogo', null); setLogoErr(''); }} style={{ background: 'transparent', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '10px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Entfernen</button>}
+            {cfg.clubLogo && <button onClick={() => { set('clubLogo', null); setLogoErr(''); }} style={{ background: 'transparent', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '10px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.modals.remove}</button>}
           </div>
           {logoErr && <span style={{ fontSize: 12, color: '#E0594B', fontWeight: 600 }}>{logoErr}</span>}
         </div>
       </Row>
-      <Row label="Logo-Größe auf der Startseite" sub="Größe des Logos auf der Anmeldeseite (in Pixel). Das kleine Logo in der App-Kopfzeile bleibt unverändert." top>
+      <Row label={tr.settings.loginLogoSize} sub={tr.settings.loginLogoSizeSub} top>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
           <div style={{ width: 88, height: 88, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {cfg.clubLogo
-              ? <img src={cfg.clubLogo} alt="Vorschau" style={{ width: Math.min(88, cfg.loginLogoSize ?? 88), height: Math.min(88, cfg.loginLogoSize ?? 88), borderRadius: Math.round((cfg.loginLogoSize ?? 88) * 0.2), objectFit: 'contain' }} />
+              ? <img src={cfg.clubLogo} alt={tr.settings.preview} style={{ width: Math.min(88, cfg.loginLogoSize ?? 88), height: Math.min(88, cfg.loginLogoSize ?? 88), borderRadius: Math.round((cfg.loginLogoSize ?? 88) * 0.2), objectFit: 'contain' }} />
               : <IconUsers size={Math.min(88, cfg.loginLogoSize ?? 88)} />}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -581,43 +587,43 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   // nur Admin. Werden auf der Login-Seite ohne Anmeldung verlinkt (siehe screens/Login.tsx).
   const legalArea: CSSProperties = { width: '100%', minHeight: 160, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '11px 13px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, lineHeight: 1.55, outline: 'none', resize: 'vertical' };
   const rechtlichesNode = (
-    <Section title="Rechtliches">
+    <Section title={tr.settings.secLegal}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '12px 16px', margin: '4px 0 6px', fontSize: 13, color: 'var(--text-3)', lineHeight: 1.5 }}>
-        <span>Wird die App öffentlich im Internet betrieben, sind in Deutschland ein <b>Impressum</b> (§ 5 DDG) und eine <b>Datenschutzerklärung</b> (Art. 13 DSGVO) Pflicht. Verantwortlich ist der Betreiber (Verein). Beide Texte erscheinen als Links auf der Anmelde­seite und sind dort ohne Anmeldung erreichbar. Im lokalen/LAN-Betrieb kannst du sie leer lassen.</span>
+        <span>{tr.settings.legalIntroA}<b>{tr.settings.impressum}</b>{tr.settings.legalIntroB}<b>{tr.settings.datenschutz}</b>{tr.settings.legalIntroC}</span>
       </div>
-      <Row label="Impressum" sub="Anbieterkennzeichnung nach § 5 DDG: Name/Verein, Anschrift, Vertretungsberechtigte(r), Kontakt (E-Mail), ggf. Registereintrag." top>
-        <textarea value={cfg.impressum ?? ''} onChange={(e) => set('impressum', e.target.value)} placeholder={'z. B.\nDartverein Musterstadt e. V.\nMusterstraße 1, 12345 Musterstadt\nVertreten durch: Max Mustermann (1. Vorsitzender)\nE-Mail: vorstand@musterverein.de\nVereinsregister: Amtsgericht Musterstadt, VR 1234'} style={{ ...legalArea, width: 420, maxWidth: '100%' }} />
+      <Row label={tr.settings.impressum} sub={tr.settings.impressumSub} top>
+        <textarea value={cfg.impressum ?? ''} onChange={(e) => set('impressum', e.target.value)} placeholder={tr.settings.impressumPh} style={{ ...legalArea, width: 420, maxWidth: '100%' }} />
       </Row>
-      <Row label="Datenschutzerklärung" sub="Informationen nach Art. 13 DSGVO: Verantwortlicher, verarbeitete Daten (Namen, Spielstatistiken …), Zweck, Speicherdauer und Betroffenenrechte." top>
-        <textarea value={cfg.datenschutz ?? ''} onChange={(e) => set('datenschutz', e.target.value)} placeholder={'Kurzfassung oder Volltext deiner Datenschutzerklärung …'} style={{ ...legalArea, width: 420, maxWidth: '100%' }} />
+      <Row label={tr.settings.datenschutz} sub={tr.settings.datenschutzSub} top>
+        <textarea value={cfg.datenschutz ?? ''} onChange={(e) => set('datenschutz', e.target.value)} placeholder={tr.settings.datenschutzPh} style={{ ...legalArea, width: 420, maxWidth: '100%' }} />
       </Row>
     </Section>
   );
 
   const benutzerNode = (
-    <Section title="Benutzer & Rechte">
+    <Section title={tr.dashboard.usersRights}>
       <button className="dh-row" onClick={() => s.go('users')} style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: '16px 0', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--text)' }}>
         <div style={{ width: 40, height: 40, borderRadius: 11, background: 'var(--btn)', border: '1px solid var(--border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--text-2)' }}><IconUsers size={20} /></div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 600 }}>Benutzer verwalten</div>
-          <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>Vereinskonten, Rollen &amp; Verknüpfung mit Spielern verwalten</div>
+          <div style={{ fontSize: 14, fontWeight: 600 }}>{tr.settings.manageUsers}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>{tr.settings.manageUsersSub}</div>
         </div>
-        <span style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700, flexShrink: 0 }}>{s.accounts.length} Konten</span>
+        <span style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700, flexShrink: 0 }}>{tr.dashboard.accountsCount(s.accounts.length)}</span>
         <IconChevronRight size={18} style={{ flexShrink: 0, color: 'var(--text-4)' }} />
       </button>
     </Section>
   );
 
   const eingabeNode = (
-    <Section title="Eingabe & Tasten">
-      <Row label="Eingabe-Modus" sub="Tablet zeigt das Tastenfeld · Desktop nutzt nur die Tastatur · gilt nur für dieses Gerät">
+    <Section title={tr.settings.secInput}>
+      <Row label={tr.settings.inputMode} sub={tr.settings.inputModeSub}>
         {ed('device', seg('device', [{ label: 'Tablet', val: 'tablet' }, { label: 'Desktop', val: 'desktop' }]))}
       </Row>
       {kiosk ? (
         // Am Board nur als Info: Tastenkürzel legt der Verein zentral fest. Auf einem Desktop-Board jederzeit per Tastatur nutzbar.
-        <Row label="Tastenkürzel" sub="Legt der Verein zentral fest. Am Board-PC im Eingabe-Modus Desktop direkt per Tastatur nutzbar." top>
+        <Row label={tr.settings.shortcuts} sub={tr.settings.shortcutsKioskSub} top>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
-            {([['Neues Spiel', cfg.newGameKey || 'alt+n'], ['Schnellstart Bo5', cfg.quickBo5Key || 'alt+5'], ['Schnellstart Bo3', cfg.quickBo3Key || 'alt+3']] as const).map(([label, combo]) => (
+            {([[tr.settings.newGameShortcut, cfg.newGameKey || 'alt+n'], [tr.settings.quickBo5Short, cfg.quickBo5Key || 'alt+5'], [tr.settings.quickBo3Short, cfg.quickBo3Key || 'alt+3']] as const).map(([label, combo]) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{label}</span>
                 <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 12.5, fontWeight: 700, color: accent, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '4px 10px' }}>{formatCombo(combo)}</kbd>
@@ -627,7 +633,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         </Row>
       ) : (
         <>
-          <Row label="Funktionstasten F1–F8" sub="Frei belegbare Quick-Scores — als Tastatur-Tasten (Desktop) und als Quick-Score-Buttons (Tablet). F9 = Restscore übernehmen, F10–F12 = Checkout mit 1–3 Darts (nur Desktop)." top>
+          <Row label={tr.settings.fkeys} sub={tr.settings.fkeysSub} top>
             {ed('fkeys', (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, width: '100%', maxWidth: 340 }}>
                 {cfg.fkeys.map((v, i) => (
@@ -639,13 +645,13 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
               </div>
             ))}
           </Row>
-          <Row label="Neues Spiel — Tastenkürzel" sub="Global. Startet jederzeit ein neues Spiel (mit Spielerauswahl); läuft gerade ein Spiel, wird vorher nachgefragt. Alt + Buchstabe/Ziffer (optional zusätzlich Strg).">
+          <Row label={tr.settings.newGameKeyRow} sub={tr.settings.newGameKeySub}>
             {ed('newGameKey', <ShortcutRecorder value={cfg.newGameKey || 'alt+n'} accent={accent} fallback="alt+n" onChange={(combo) => set('newGameKey', combo)} />)}
           </Row>
-          <Row label="Schnellstart 501 · Double Out · Best of 5" sub="Global. Startet sofort ein 501-Spiel (Double Out, Best of 5) mit den zuletzt gewählten Spielern.">
+          <Row label={tr.settings.quickBo5Row} sub={tr.settings.quickBo5Sub}>
             {ed('quickBo5Key', <ShortcutRecorder value={cfg.quickBo5Key || 'alt+5'} accent={accent} fallback="alt+5" onChange={(combo) => set('quickBo5Key', combo)} />)}
           </Row>
-          <Row label="Schnellstart 501 · Double Out · Best of 3" sub="Global. Startet sofort ein 501-Spiel (Double Out, Best of 3) mit den zuletzt gewählten Spielern.">
+          <Row label={tr.settings.quickBo3Row} sub={tr.settings.quickBo3Sub}>
             {ed('quickBo3Key', <ShortcutRecorder value={cfg.quickBo3Key || 'alt+3'} accent={accent} fallback="alt+3" onChange={(combo) => set('quickBo3Key', combo)} />)}
           </Row>
         </>
@@ -654,7 +660,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   );
 
   const darstellungNode = (
-    <Section title="Darstellung">
+    <Section title={tr.settings.secAppearance}>
       {/* Sprache ist GERÄTELOKAL (i18n, kein Settings-Key, kein Server-Sync) — deshalb eigener Umschalter statt seg(). */}
       <Row label={tr.settings.language} sub={tr.settings.languageSub}>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -666,49 +672,49 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
           })}
         </div>
       </Row>
-      <Row label="Modus" sub="Dunkles oder helles Erscheinungsbild · gilt nur für dieses Gerät">
-        {ed('mode', seg('mode', [{ label: 'Dunkel', val: 'dark' }, { label: 'Hell', val: 'light' }]))}
+      <Row label={tr.settings.displayMode} sub={tr.settings.displayModeSub}>
+        {ed('mode', seg('mode', [{ label: tr.settings.dark, val: 'dark' }, { label: tr.settings.light, val: 'light' }]))}
       </Row>
-      <Row label="Counter-Ansicht" sub="„Große Zahl“ = riesiger Restscore (fernlesbar). „Aufschrieb“ = zusätzlich der volle Score-Sheet im n01-Stil (Score/Rest je Aufnahme, Dart-Zähler, Ton-Markierung) darunter · gilt nur für dieses Gerät · nicht am Handy">
-        {ed('counterView', seg('counterView', [{ label: 'Große Zahl', val: 'big' }, { label: 'Aufschrieb', val: 'sheet' }]))}
+      <Row label={tr.settings.counterViewRow} sub={tr.settings.counterViewSub}>
+        {ed('counterView', seg('counterView', [{ label: tr.settings.bigNumber, val: 'big' }, { label: tr.settings.sheet, val: 'sheet' }]))}
       </Row>
-      <Row label={`Akzentfarbe (${cfg.mode === 'light' ? 'Hell' : 'Dunkel'})`} sub="Buttons & Highlights. Wird je Modus (Hell/Dunkel) separat gespeichert.">{ed('accent', colorPicker('accent', false))}</Row>
-      <Row label={`Score-Farbe (${cfg.mode === 'light' ? 'Hell' : 'Dunkel'})`} sub="Restpunktzahl des aktiven Spielers · „Standard“ folgt dem Akzent · je Modus separat">{ed('scoreColor', colorPicker('scoreColor', true))}</Row>
-      <Row label={`Leg-Anzeige-Farbe (${cfg.mode === 'light' ? 'Hell' : 'Dunkel'})`} sub="Leg-Punkte & Satz-Badge · „Standard“ folgt dem Akzent · je Modus separat">{ed('legColor', colorPicker('legColor', true))}</Row>
-      <Row label="Hintergrund" sub="Farbton der gesamten Oberfläche">
+      <Row label={tr.settings.accentColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.accentColorSub}>{ed('accent', colorPicker('accent', false))}</Row>
+      <Row label={tr.settings.scoreColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.scoreColorSub}>{ed('scoreColor', colorPicker('scoreColor', true))}</Row>
+      <Row label={tr.settings.legColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.legColorSub}>{ed('legColor', colorPicker('legColor', true))}</Row>
+      <Row label={tr.settings.background} sub={tr.settings.backgroundSub}>
         {ed('theme', seg('theme', cfg.mode === 'light'
-          ? [{ label: 'Mint', val: 'midnight' }, { label: 'Sand', val: 'charcoal' }, { label: 'Nebel', val: 'slate' }]
-          : [{ label: 'Mitternacht', val: 'midnight' }, { label: 'Anthrazit', val: 'charcoal' }, { label: 'Schiefer', val: 'slate' }], '10px 14px'))}
+          ? [{ label: tr.settings.themeMint, val: 'midnight' }, { label: tr.settings.themeSand, val: 'charcoal' }, { label: tr.settings.themeFog, val: 'slate' }]
+          : [{ label: tr.settings.themeMidnight, val: 'midnight' }, { label: tr.settings.themeCharcoal, val: 'charcoal' }, { label: tr.settings.themeSlate, val: 'slate' }], '10px 14px'))}
       </Row>
-      <Row label="Schriftart" sub="Wirkt im gesamten Counter">
+      <Row label={tr.settings.font} sub={tr.settings.fontSub}>
         {ed('font', seg('font', (Object.keys(FONTS) as (keyof typeof FONTS)[]).map((f) => ({ label: f, val: f as SettingsType['font'], fam: FONTS[f] }))))}
       </Row>
-      <Row label="Board-Gesamtgröße" sub="Vergrößert am Board-Monitor die gesamte Anzeige für große Leseabstände (Counter & Training). Der Restscore bleibt gleich groß · nur Desktop/Board · pro Gerät">
+      <Row label={tr.settings.boardScaleRow} sub={tr.settings.boardScaleSub}>
         {ed('boardScale', (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <button
               className="dh-btn"
               onClick={() => set('boardScale', suggestBoardScale())}
-              title="Startwert aus Bildschirm-Eigenschaften vorschlagen"
+              title={tr.settings.autoBtnTitle}
               style={{ height: 40, padding: '0 14px', borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
             >
-              Auto
+              {tr.settings.autoBtn}
             </button>
             {stepper('boardScale', 100, 250)}
           </div>
         ))}
       </Row>
-      <Row label="Score-Bereich" sub="Anteil des Restscores am Spielbrett · pro Gerät">{ed('scoreArea', stepper('scoreArea', 35, 80))}</Row>
-      <Row label="Score-Schriftgröße" sub="Größe der Restpunktzahl · pro Gerät">{ed('scoreScale', stepper('scoreScale', 70, 140))}</Row>
-      <Row label="Statistik-Schriftgröße" sub="Text in der Werte-Box (Ø, First 9, …) · pro Gerät">{ed('statsSize', stepper('statsSize', 70, 150))}</Row>
-      <Row label="Spielername-Größe" sub="Kopfzeile mit Name, Avatar & „am Wurf“ · pro Gerät">{ed('headerSize', stepper('headerSize', 70, 150))}</Row>
-      <Row label="Eingabefeld-Größe" sub="Höhe von Quick-Score & Tastenfeld (nur Tablet) · pro Gerät">{ed('deckSize', stepper('deckSize', 70, 140))}</Row>
-      <Row label="Leg-Anzeige-Größe" sub="Punkte & Satz-Badge neben dem Spielernamen · pro Gerät">{ed('legSize', stepper('legSize', 60, 180))}</Row>
+      <Row label={tr.settings.scoreAreaRow} sub={tr.settings.scoreAreaSub}>{ed('scoreArea', stepper('scoreArea', 35, 80))}</Row>
+      <Row label={tr.settings.scoreScaleRow} sub={tr.settings.scoreScaleSub}>{ed('scoreScale', stepper('scoreScale', 70, 140))}</Row>
+      <Row label={tr.settings.statsSizeRow} sub={tr.settings.statsSizeSub}>{ed('statsSize', stepper('statsSize', 70, 150))}</Row>
+      <Row label={tr.settings.headerSizeRow} sub={tr.settings.headerSizeSub}>{ed('headerSize', stepper('headerSize', 70, 150))}</Row>
+      <Row label={tr.settings.deckSizeRow} sub={tr.settings.deckSizeSub}>{ed('deckSize', stepper('deckSize', 70, 140))}</Row>
+      <Row label={tr.settings.legSizeRow} sub={tr.settings.legSizeSub}>{ed('legSize', stepper('legSize', 60, 180))}</Row>
     </Section>
   );
 
   const hilfenNode = (
-    <Section title="Hilfen & Anzeige">
+    <Section title={tr.settings.secHelpers}>
       {toggles.map((t) => {
         const on = cfg[t.key];
         return (
@@ -723,12 +729,12 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   );
 
   const datenNode = (
-    <Section title="Backup">
-      <Row label="Sichern & Wiederherstellen" sub="Alle Daten (Spieler, Spiele, Termine, Einstellungen) als Datei sichern oder zurückspielen. Die Daten liegen sonst nur in diesem Browser.">
+    <Section title={tr.settings.secBackup}>
+      <Row label={tr.settings.backupRow} sub={tr.settings.backupRowSub}>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          <button className="dh-btn" onClick={doExport} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Exportieren</button>
+          <button className="dh-btn" onClick={doExport} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.exportBtn}</button>
           <label className="dh-btn" style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-            Importieren
+            {tr.settings.importBtn}
             <input type="file" accept="application/json,.json" onChange={onImportFile} style={{ display: 'none' }} />
           </label>
         </div>
@@ -736,22 +742,22 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
       {dataMsg && <div style={{ fontSize: 12, color: 'var(--text-4)', padding: '2px 2px 6px' }}>{dataMsg}</div>}
       {cfg.appMode !== 'verein' && (
         <>
-          <Row label="Automatisches Backup" sub="Sichert bei jedem Start und täglich zur Uhrzeit automatisch in den festen Ordner backup/ neben der App. Funktioniert nur, wenn die App über serve-dist.mjs läuft (lokaler/Board-Betrieb). Der Ordner ist nicht wählbar.">
+          <Row label={tr.settings.autoBackupRow} sub={tr.settings.autoBackupSub}>
             <button onClick={() => set('autoBackup', !cfg.autoBackup)} role="switch" aria-checked={!!cfg.autoBackup}
               style={{ flexShrink: 0, width: 46, height: 26, borderRadius: 999, background: cfg.autoBackup ? accent : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative', cursor: 'pointer', padding: 0 }}>
               <span style={{ position: 'absolute', top: 2, left: cfg.autoBackup ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff' }} />
             </button>
           </Row>
           {cfg.autoBackup && (
-            <Row label="Uhrzeit" sub="Tageszeit fürs tägliche Backup. War die App zu dem Zeitpunkt aus, wird beim nächsten Start nachgeholt.">
+            <Row label={tr.settings.backupTimeRow} sub={tr.settings.backupTimeSub}>
               <input type="time" value={cfg.backupTime || '20:00'} onChange={(e) => set('backupTime', e.target.value)}
                 style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '9px 12px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 700, outline: 'none' }} />
             </Row>
           )}
           {cfg.autoBackup && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', fontSize: 12, color: 'var(--text-4)', padding: '2px 2px 6px' }}>
-              <span>{s.lastBackupAt ? `Zuletzt gesichert: ${new Date(s.lastBackupAt).toLocaleString()}` : 'Noch kein automatisches Backup.'}{s.backupMsg ? ` · ${s.backupMsg}` : ''}</span>
-              <button className="dh-btn" onClick={() => void s.runBackup()} style={{ marginLeft: 'auto', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '7px 13px', borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Jetzt sichern</button>
+              <span>{s.lastBackupAt ? tr.settings.lastBackup(new Date(s.lastBackupAt).toLocaleString(tr.format.dateLocale)) : tr.settings.noAutoBackupYet}{s.backupMsg ? ` · ${s.backupMsg}` : ''}</span>
+              <button className="dh-btn" onClick={() => void s.runBackup()} style={{ marginLeft: 'auto', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '7px 13px', borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.backupNow}</button>
             </div>
           )}
         </>
@@ -763,10 +769,10 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
 
   const listenNode = (
     // Namens-Sortierung: persönliche Anzeige-Vorliebe → gerätelokal, jeder darf sie ändern (außerhalb read-only).
-    <Section title="Listen">
-      <Row label="Namens-Sortierung" sub="Reihenfolge der Spieler-, Benutzer- & Kaderlisten. Gilt nur auf diesem Gerät.">
+    <Section title={tr.settings.secLists}>
+      <Row label={tr.settings.nameOrderRow} sub={tr.settings.nameOrderSub}>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          {([['first', 'Vorname Nachname'], ['last', 'Nachname Vorname']] as const).map(([val, label]) => {
+          {([['first', tr.settings.firstLast], ['last', tr.settings.lastFirst]] as const).map(([val, label]) => {
             const on = (cfg.nameOrder ?? 'first') === val;
             return (
               <button key={val} onClick={() => s.setDeviceSetting('nameOrder', val)} style={{ background: on ? accent : 'var(--btn)', color: on ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${on ? accent : 'var(--border-2)'}`, fontWeight: on ? 800 : 600, padding: '10px 16px', borderRadius: 10, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{label}</button>
@@ -779,23 +785,23 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
 
   const boardNode = (
     // Board-Rechner laufen über nummerierte Board-Konten: Anmeldung als „Board N" → automatisch im Kiosk.
-    <Section title="Board-Rechner">
-      <Row label="Board-Konten" sub="Jeder Brett-Rechner meldet sich mit seinem eigenen Board-Konto (Board 1…N) an und startet damit automatisch im gesperrten Kiosk. Konten anlegen unter Benutzer → Board-Konten.">
-        <button onClick={() => s.go('users')} className="dh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Zu den Benutzern →</button>
+    <Section title={tr.settings.secBoard}>
+      <Row label={tr.settings.boardAccountsRow} sub={tr.settings.boardAccountsSub}>
+        <button onClick={() => s.go('users')} className="dh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.toUsers}</button>
       </Row>
-      <Row label="Spiele am Board anzeigen" sub="Wie viele Tage um den Spieltag ein Board die zugeordnete Begegnung automatisch zeigt. Manuell überschreibbar in der Aufstellung (an die Boards senden) oder direkt am Board (jetzt anzeigen). Vereinsweit.">
-        {ed('boardMatchWindow', seg('boardMatchWindow', [{ label: 'Nur Spieltag', val: 0 }, { label: '±1 Tag', val: 1 }, { label: '±2 Tage', val: 2 }, { label: '±3 Tage', val: 3 }], '9px 14px'))}
+      <Row label={tr.settings.boardWindowRow} sub={tr.settings.boardWindowSub}>
+        {ed('boardMatchWindow', seg('boardMatchWindow', [{ label: tr.settings.matchdayOnly, val: 0 }, { label: tr.settings.plusDay(1), val: 1 }, { label: tr.settings.plusDay(2), val: 2 }, { label: tr.settings.plusDay(3), val: 3 }], '9px 14px'))}
       </Row>
     </Section>
   );
 
   // „Mein Konto": jeder angemeldete Nutzer kann sein eigenes Passwort ändern (nicht für Board-Maschinenkonten).
   const kontoNode = (
-    <Section title="Mein Konto">
-      <Row label="Passwort ändern" sub="Neues Passwort für deinen eigenen Login. Mindestens 8 Zeichen; bestehende Sitzungen werden danach abgemeldet." top>
+    <Section title={tr.settings.secAccount}>
+      <Row label={tr.settings.changePwRow} sub={tr.settings.changePwSub} top>
         <PasswordChange />
       </Row>
-      <Row label="2-Faktor-Authentifizierung" sub="Zusätzlicher Schutz beim Login per Authenticator-App (TOTP). Optional. Mit Backup-Codes für den Notfall." top>
+      <Row label={tr.settings.tfaRow} sub={tr.settings.tfaRowSub} top>
         <TwoFactorSettings />
       </Row>
     </Section>
@@ -827,112 +833,112 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     reader.onload = () => {
       try {
         const res = s.reimportSeason(JSON.parse(String(reader.result)));
-        setSeasonMsg(res ? `Wieder eingelesen: ${res.matches} Spiele${res.restored ? `, ${res.restored} weitere Datensätze` : ''}.` : 'Ungültiges Bundle.');
-      } catch { setSeasonMsg('Datei konnte nicht gelesen werden (kein gültiges JSON).'); }
+        setSeasonMsg(res ? tr.settings.reimported(res.matches, res.restored || 0) : tr.settings.invalidBundle);
+      } catch { setSeasonMsg(tr.settings.noValidJson); }
     };
     reader.readAsText(f);
   };
   const saisonNode = (
-    <Section title="Saison">
-      <Row label="Aktive Saison" sub="Neue Ligen, Mannschaften, Termine und Spiele werden dieser Saison zugeordnet.">
+    <Section title={tr.settings.secSeason}>
+      <Row label={tr.settings.activeSeason} sub={tr.settings.activeSeasonSub}>
         <span style={{ fontSize: 14, fontWeight: 800, color: accent }}>{activeSeasonObj ? activeSeasonObj.name : '—'}</span>
       </Row>
-      <Row label="Saison-Daten sichern" sub="Lädt die komplette aktive Saison (Ligen, Mannschaften, Termine, Spiele + Abschluss-Stand) als JSON-Datei herunter. Ändert nichts.">
-        <button className="dh-btn" onClick={() => s.exportSeason()} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Exportieren</button>
+      <Row label={tr.settings.exportSeasonRow} sub={tr.settings.exportSeasonSub}>
+        <button className="dh-btn" onClick={() => s.exportSeason()} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.exportBtn}</button>
       </Row>
-      <Row label="Saison abschließen" sub="Friert Tabellen & Statistiken als Schnappschuss ein, lädt eine Sicherung herunter, archiviert die Saison (read-only) und legt automatisch eine neue, leere Folgesaison an.">
+      <Row label={tr.settings.closeSeasonRow} sub={tr.settings.closeSeasonSub}>
         {!closeConfirm ? (
-          <button onClick={() => setCloseConfirm(true)} style={{ background: 'transparent', border: '1px solid rgba(242,184,41,.5)', color: '#F2B829', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Abschließen …</button>
+          <button onClick={() => setCloseConfirm(true)} style={{ background: 'transparent', border: '1px solid rgba(242,184,41,.5)', color: '#F2B829', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.closeDots}</button>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
             <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600, textAlign: 'right', maxWidth: 320 }}>
-              „{activeSeasonObj ? activeSeasonObj.name : ''}" wird archiviert (bleibt read-only sichtbar) und eine neue Saison gestartet. Eine Sicherungsdatei wird heruntergeladen.
+              {tr.settings.closeConfirmText(activeSeasonObj ? activeSeasonObj.name : '')}
             </span>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setCloseConfirm(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
-              <button onClick={() => { s.closeSeason(); setCloseConfirm(false); }} style={{ background: '#F2B829', border: 'none', color: '#1a1206', padding: '9px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Jetzt abschließen</button>
+              <button onClick={() => setCloseConfirm(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
+              <button onClick={() => { s.closeSeason(); setCloseConfirm(false); }} style={{ background: '#F2B829', border: 'none', color: '#1a1206', padding: '9px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.closeNow}</button>
             </div>
           </div>
         )}
       </Row>
       {(activeSeasonLeagues.length > 0 || activeSeasonTeams.length > 0) && (
-        <Row label="Ligen & Mannschaften zurücksetzen" sub="Löscht alle Ligen und Mannschaften der aktiven Saison samt Spielplänen, Ergebnissen und den zugehörigen Spieltag-Terminen. Gedacht für den Fall eines Fehlers in der importierten CSV: zurücksetzen, CSV korrigieren, neu importieren. Gespielte Board-Spiele & Statistiken, Spieler und andere Saisons bleiben erhalten.">
+        <Row label={tr.settings.resetLeaguesRow} sub={tr.settings.resetLeaguesSub}>
           {!resetConfirm ? (
-            <button onClick={() => setResetConfirm(true)} style={{ background: 'transparent', border: '1px solid rgba(224,89,75,.5)', color: '#E0594B', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Zurücksetzen …</button>
+            <button onClick={() => setResetConfirm(true)} style={{ background: 'transparent', border: '1px solid rgba(224,89,75,.5)', color: '#E0594B', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.resetDots}</button>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
               <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600, textAlign: 'right', maxWidth: 340, lineHeight: 1.5 }}>
-                <b style={{ color: '#E0594B' }}>Achtung:</b> {activeSeasonLeagues.length} Ligen und {activeSeasonTeams.length} Mannschaften der Saison „{activeSeasonObj ? activeSeasonObj.name : ''}" werden <b>unwiderruflich gelöscht</b> (inkl. Spielpläne, Ergebnisse &amp; Spieltag-Termine). Danach kannst du die korrigierte CSV neu importieren.
+                <b style={{ color: '#E0594B' }}>{tr.settings.attention}</b>{tr.settings.resetConfirmA(activeSeasonLeagues.length, activeSeasonTeams.length, activeSeasonObj ? activeSeasonObj.name : '')}<b>{tr.settings.irrevDeleted}</b>{tr.settings.resetConfirmB}
               </span>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => setResetConfirm(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
-                <button onClick={() => { s.resetSeasonData(); setResetConfirm(false); }} style={{ background: '#E0594B', border: 'none', color: '#fff', padding: '9px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Jetzt löschen</button>
+                <button onClick={() => setResetConfirm(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
+                <button onClick={() => { s.resetSeasonData(); setResetConfirm(false); }} style={{ background: '#E0594B', border: 'none', color: '#fff', padding: '9px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.deleteNow}</button>
               </div>
             </div>
           )}
         </Row>
       )}
-      <Row label="Alte Termine löschen" sub="Räumt vergangene Kalender-Einträge auf (alle Arten & Saisons). Wähle, wie viel behalten wird — alles Ältere wird unwiderruflich gelöscht.">
+      <Row label={tr.settings.pruneRow} sub={tr.settings.pruneSub}>
         {!pruneConfirm ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             {pruneMsg && <span style={{ fontSize: 12, color: 'var(--success)', fontWeight: 600 }}>{pruneMsg}</span>}
             <select value={pruneKeep} onChange={(e) => { setPruneKeep(e.target.value as typeof pruneKeep); setPruneMsg(''); }} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '9px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, fontWeight: 600 }}>
-              <option value="1y">1 Jahr behalten</option>
-              <option value="6m">6 Monate behalten</option>
-              <option value="3m">3 Monate behalten</option>
-              <option value="1m">1 Monat behalten</option>
-              <option value="all">Alles Vergangene löschen</option>
+              <option value="1y">{tr.settings.keep1y}</option>
+              <option value="6m">{tr.settings.keep6m}</option>
+              <option value="3m">{tr.settings.keep3m}</option>
+              <option value="1m">{tr.settings.keep1m}</option>
+              <option value="all">{tr.settings.keepNone}</option>
             </select>
-            <button onClick={() => { setPruneMsg(''); setPruneConfirm(true); }} disabled={prunableCount === 0} style={{ background: 'transparent', border: '1px solid rgba(224,89,75,.5)', color: '#E0594B', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: prunableCount === 0 ? 'not-allowed' : 'pointer', opacity: prunableCount === 0 ? 0.5 : 1, fontFamily: 'inherit' }}>Löschen ({prunableCount})</button>
+            <button onClick={() => { setPruneMsg(''); setPruneConfirm(true); }} disabled={prunableCount === 0} style={{ background: 'transparent', border: '1px solid rgba(224,89,75,.5)', color: '#E0594B', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: prunableCount === 0 ? 'not-allowed' : 'pointer', opacity: prunableCount === 0 ? 0.5 : 1, fontFamily: 'inherit' }}>{tr.settings.deleteN(prunableCount)}</button>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
             <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600, textAlign: 'right', maxWidth: 340, lineHeight: 1.5 }}>
-              <b style={{ color: '#E0594B' }}>Achtung:</b> {prunableCount} Termine vor dem {pruneCutoff.split('-').reverse().join('.')} werden <b>unwiderruflich gelöscht</b> (auch eigene).
+              <b style={{ color: '#E0594B' }}>{tr.settings.attention}</b>{tr.settings.pruneConfirmA(prunableCount, pruneCutoff.split('-').reverse().join('.'))}<b>{tr.settings.irrevDeleted}</b>{tr.settings.pruneConfirmB}
             </span>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setPruneConfirm(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
-              <button onClick={() => { const n = s.pruneEvents(pruneCutoff); setPruneConfirm(false); setPruneMsg(n > 0 ? `${n} alte Termine gelöscht.` : 'Keine gelöscht.'); }} style={{ background: '#E0594B', border: 'none', color: '#fff', padding: '9px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Jetzt löschen</button>
+              <button onClick={() => setPruneConfirm(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
+              <button onClick={() => { const n = s.pruneEvents(pruneCutoff); setPruneConfirm(false); setPruneMsg(n > 0 ? tr.settings.prunedN(n) : tr.settings.prunedNone); }} style={{ background: '#E0594B', border: 'none', color: '#fff', padding: '9px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.deleteNow}</button>
             </div>
           </div>
         )}
       </Row>
       {activeIsEmpty && otherSeasons.length > 0 && (
-        <Row label="Vorsaison übernehmen" sub="Übernimmt Mannschaften und/oder Liga-Strukturen (Teilnehmer & Format, OHNE Begegnungen/Ergebnisse) aus einer früheren Saison in die aktuelle. Den neuen Spielplan danach über Ligen → Import einlesen.">
+        <Row label={tr.settings.carryRow} sub={tr.settings.carrySub}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
             <select value={carrySrc} onChange={(e) => setCarrySource(e.target.value)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '8px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, fontWeight: 600 }}>
-              {otherSeasons.map((se) => <option key={se.id} value={se.id}>aus Saison {se.name}</option>)}
+              {otherSeasons.map((se) => <option key={se.id} value={se.id}>{tr.settings.fromSeason(se.name)}</option>)}
             </select>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-2)', cursor: 'pointer' }}>
-              <input type="checkbox" checked={carryTeams} onChange={(e) => setCarryTeams(e.target.checked)} /> Mannschaften (mit Kader &amp; Kapitän)
+              <input type="checkbox" checked={carryTeams} onChange={(e) => setCarryTeams(e.target.checked)} /> {tr.settings.carryTeams}
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-2)', cursor: 'pointer' }}>
-              <input type="checkbox" checked={carryLeagues} onChange={(e) => setCarryLeagues(e.target.checked)} /> Liga-Struktur (ohne Ergebnisse)
+              <input type="checkbox" checked={carryLeagues} onChange={(e) => setCarryLeagues(e.target.checked)} /> {tr.settings.carryLeagues}
             </label>
-            <button onClick={() => s.carryOverSeason({ fromSeasonId: carrySrc, teams: carryTeams, leagues: carryLeagues })} disabled={!carrySrc || (!carryTeams && !carryLeagues)} style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: (!carrySrc || (!carryTeams && !carryLeagues)) ? 'not-allowed' : 'pointer', opacity: (!carrySrc || (!carryTeams && !carryLeagues)) ? 0.5 : 1, fontFamily: 'inherit' }}>Übernehmen</button>
+            <button onClick={() => s.carryOverSeason({ fromSeasonId: carrySrc, teams: carryTeams, leagues: carryLeagues })} disabled={!carrySrc || (!carryTeams && !carryLeagues)} style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: (!carrySrc || (!carryTeams && !carryLeagues)) ? 'not-allowed' : 'pointer', opacity: (!carrySrc || (!carryTeams && !carryLeagues)) ? 0.5 : 1, fontFamily: 'inherit' }}>{tr.settings.takeOver}</button>
           </div>
         </Row>
       )}
       {archivedSeasons.length > 0 && (
-        <Row label="Archivierte Saisons" sub="Lesemodus über den Saison-Umschalter links. Auslagern entfernt die Spiele aus der Datenbank (lädt vorher eine Sicherung herunter) und gibt Platz frei; Re-Import liest ein Bundle wieder ein.">
+        <Row label={tr.settings.archivedRow} sub={tr.settings.archivedSub}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
             {archivedSeasons.map((se) => (
               <div key={se.id} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-2)' }}>{se.name}</span>
-                {se.offloaded && <span style={{ fontSize: 10, fontWeight: 800, color: '#F2B829', background: 'rgba(242,184,41,.14)', border: '1px solid rgba(242,184,41,.4)', padding: '2px 7px', borderRadius: 6 }}>AUSGELAGERT</span>}
-                <button className="dh-btn" onClick={() => s.exportSeason(se.id)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Export</button>
+                {se.offloaded && <span style={{ fontSize: 10, fontWeight: 800, color: '#F2B829', background: 'rgba(242,184,41,.14)', border: '1px solid rgba(242,184,41,.4)', padding: '2px 7px', borderRadius: 6 }}>{tr.settings.offloadedBadge}</span>}
+                <button className="dh-btn" onClick={() => s.exportSeason(se.id)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.exportShort}</button>
                 {se.offloaded ? (
                   <label className="dh-btn" style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-                    Re-Import
+                    {tr.settings.reimport}
                     <input type="file" accept="application/json,.json" onChange={onReimportFile} style={{ display: 'none' }} />
                   </label>
                 ) : offloadConfirm === se.id ? (
                   <span style={{ display: 'inline-flex', gap: 6 }}>
-                    <button onClick={() => setOffloadConfirm(null)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
-                    <button onClick={() => { s.offloadSeason(se.id); setOffloadConfirm(null); setSeasonMsg(`„${se.name}" ausgelagert – Sicherung wurde heruntergeladen.`); }} style={{ background: '#E0594B', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Auslagern bestätigen</button>
+                    <button onClick={() => setOffloadConfirm(null)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
+                    <button onClick={() => { s.offloadSeason(se.id); setOffloadConfirm(null); setSeasonMsg(tr.settings.offloadedMsg(se.name)); }} style={{ background: '#E0594B', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.offloadConfirm}</button>
                   </span>
                 ) : (
-                  <button onClick={() => { setOffloadConfirm(se.id); setSeasonMsg(''); }} style={{ background: 'transparent', border: '1px solid rgba(224,89,75,.5)', color: '#E0594B', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Auslagern</button>
+                  <button onClick={() => { setOffloadConfirm(se.id); setSeasonMsg(''); }} style={{ background: 'transparent', border: '1px solid rgba(224,89,75,.5)', color: '#E0594B', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.offload}</button>
                 )}
               </div>
             ))}
@@ -945,20 +951,20 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
 
   // Rubriken als Buttons. Verein/Benutzer/Board nur im Vereinsmodus; sonst bleibt nur die Nutzungsart + Counter-Rubriken.
   const categories: { key: string; label: string; show: boolean; node: ReactNode }[] = [
-    { key: 'modus', label: 'Nutzungsart', show: p.manageClub, node: dim(modusNode) },
-    { key: 'verein', label: 'Verein', show: isVerein && p.manageClub, node: vereinNode },
-    { key: 'saison', label: 'Saison', show: isVerein && p.manageClub, node: saisonNode },
-    { key: 'rechtliches', label: 'Rechtliches', show: isVerein && p.manageClub, node: rechtlichesNode },
-    { key: 'benutzer', label: 'Benutzer & Rechte', show: isVerein && p.manageUsers, node: benutzerNode },
-    { key: 'board', label: 'Board-Rechner', show: isVerein && p.manageUsers, node: boardNode },
-    { key: 'geraete', label: 'Geräte', show: isVerein && p.manageUsers, node: <JoinDevicesPanel /> },
-    { key: 'konto', label: 'Mein Konto', show: isVerein && !!s.session && !s.accounts.find((a) => a.id === s.session)?.isBoard, node: kontoNode },
-    { key: 'eingabe', label: 'Eingabe & Tasten', show: true, node: eingabeNode },
-    { key: 'darstellung', label: 'Darstellung', show: true, node: darstellungNode },
-    { key: 'hilfen', label: 'Hilfen & Anzeige', show: true, node: dim(hilfenNode) },
-    { key: 'listen', label: 'Listen', show: true, node: listenNode },
-    { key: 'daten', label: 'Backup', show: true, node: dim(datenNode) },
-    { key: 'app', label: 'App & Updates', show: true, node: appNode },
+    { key: 'modus', label: tr.settings.catUsage, show: p.manageClub, node: dim(modusNode) },
+    { key: 'verein', label: tr.settings.secVerein, show: isVerein && p.manageClub, node: vereinNode },
+    { key: 'saison', label: tr.settings.secSeason, show: isVerein && p.manageClub, node: saisonNode },
+    { key: 'rechtliches', label: tr.settings.secLegal, show: isVerein && p.manageClub, node: rechtlichesNode },
+    { key: 'benutzer', label: tr.dashboard.usersRights, show: isVerein && p.manageUsers, node: benutzerNode },
+    { key: 'board', label: tr.settings.secBoard, show: isVerein && p.manageUsers, node: boardNode },
+    { key: 'geraete', label: tr.settings.secDevices, show: isVerein && p.manageUsers, node: <JoinDevicesPanel /> },
+    { key: 'konto', label: tr.settings.secAccount, show: isVerein && !!s.session && !s.accounts.find((a) => a.id === s.session)?.isBoard, node: kontoNode },
+    { key: 'eingabe', label: tr.settings.secInput, show: true, node: eingabeNode },
+    { key: 'darstellung', label: tr.settings.secAppearance, show: true, node: darstellungNode },
+    { key: 'hilfen', label: tr.settings.secHelpers, show: true, node: dim(hilfenNode) },
+    { key: 'listen', label: tr.settings.secLists, show: true, node: listenNode },
+    { key: 'daten', label: tr.settings.secBackup, show: true, node: dim(datenNode) },
+    { key: 'app', label: tr.settings.appUpdates, show: true, node: appNode },
   ];
   // Im Kiosk nur die gerätenahen Counter-Rubriken (kein Admin/Daten) – als eigener Board-Tab.
   // 'app' ist dabei, damit der Board-Betreuer Version prüfen & Updates anstoßen kann.
@@ -980,14 +986,14 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
 
   return (
     <div style={{ padding: '28px 32px', maxWidth: 920, margin: '0 auto' }}>
-      <div style={{ marginBottom: 4, fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>Counter</div>
-      <h1 style={{ margin: '0 0 6px', fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>Einstellungen</h1>
-      <p style={{ margin: '0 0 22px', fontSize: 14, color: 'var(--text-3)' }}>{canEdit ? 'Zentrale Einstellungen – wird automatisch gespeichert' : 'Diese Einstellungen legt die Vereinsverwaltung zentral fest.'}</p>
+      <div style={{ marginBottom: 4, fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>{tr.settings.kicker}</div>
+      <h1 style={{ margin: '0 0 6px', fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{tr.nav.settings}</h1>
+      <p style={{ margin: '0 0 22px', fontSize: 14, color: 'var(--text-3)' }}>{canEdit ? tr.settings.autoSaved : tr.settings.centralOnly}</p>
 
       {!canEdit && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '12px 16px', marginBottom: 18, fontSize: 13, color: 'var(--text-3)' }}>
           <IconUsers size={17} />
-          <span>Oberfläche &amp; Counter-Optionen sind vereinsweit einheitlich und können nur von einem Administrator geändert werden.</span>
+          <span>{tr.settings.readOnlyNote}</span>
         </div>
       )}
 
@@ -1000,7 +1006,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
           const dragging = tabDnd.dragIndex === i;
           const isTarget = tabDnd.dragIndex !== null && tabDnd.overIndex === i && !dragging;
           return (
-            <button key={c.key} {...ip} onClick={() => setActiveKey(c.key)} title="Ziehen zum Umsortieren" style={{
+            <button key={c.key} {...ip} onClick={() => setActiveKey(c.key)} title={tr.leagues.dragToReorder} style={{
               display: 'flex', alignItems: 'center', gap: 6, background: on ? accent : 'var(--surface)', color: on ? 'var(--accent-fg)' : 'var(--text-2)',
               border: `1px solid ${isTarget ? accent : (on ? accent : 'var(--border-2)')}`, fontWeight: on ? 800 : 600, padding: '9px 14px', borderRadius: 999, fontSize: 13,
               cursor: dragging ? 'grabbing' : 'grab', fontFamily: 'inherit', whiteSpace: 'nowrap', opacity: dragging ? 0.55 : 1,
