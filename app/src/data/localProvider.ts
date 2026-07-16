@@ -2,6 +2,7 @@
 import type { DataProvider, Snapshot, CollectionName, AuthUser, ProviderRecord, LoginResult, TwoFactorStatus, TwoFactorSetup } from './provider';
 import type { Settings } from './types';
 import { STORAGE_KEYS } from './storageKeys';
+import { dict } from '../i18n';
 
 const COLL_KEY: Record<CollectionName, string> = {
   players: STORAGE_KEYS.players,
@@ -93,6 +94,6 @@ export class LocalProvider implements DataProvider {
   async logout(): Promise<void> { /* noop */ }
   currentUser(): AuthUser | null { return null; }
   async setPassword(): Promise<void> { /* lokaler Modus hat keine Anmeldung/Passwörter */ }
-  async fetchNuliga(): Promise<never> { throw new Error('Der nuLiga-Abruf ist nur im Vereinsmodus verfügbar.'); }
+  async fetchNuliga(): Promise<never> { throw new Error(dict().storeMsg.nuligaVereinOnly); }
   subscribe(): () => void { return () => {}; }
 }

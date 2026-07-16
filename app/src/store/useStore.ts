@@ -25,6 +25,7 @@ import type { ProviderRecord } from '../data/provider';
 import { mergeSchedule, deriveOwnTeams, seasonKey, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
 import { mergeNuliga, type NuligaCounts, type NuligaConflict } from '../lib/nuligaImport';
 import { applyPwaUpdate, checkForUpdate as checkPwaUpdate } from '../lib/pwaUpdate';
+import { dict } from '../i18n';
 
 const LS = {
   settings: 'darts_settings',
@@ -720,8 +721,8 @@ export const useStore = create<AppState>((set, get) => ({
     const moveById = new Map(moveEvents.map((e) => [e.id, e]));
     const events = st.events.filter((e) => !delIds.has(e.id)).map((e) => moveById.get(e.id) || e);
     if (st.provider.mode === 'verein') {
-      delEvents.forEach((e) => void st.provider.deleteRecord('events', e.id).catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht gelöscht werden.' }); }));
-      moveEvents.forEach((e) => void st.provider.updateRecord('events', e.id, e as unknown as ProviderRecord).catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht verschoben werden.' }); }));
+      delEvents.forEach((e) => void st.provider.deleteRecord('events', e.id).catch((err) => { console.error('[sync]', err); set({ syncError: dict().storeMsg.errEventDelete }); }));
+      moveEvents.forEach((e) => void st.provider.updateRecord('events', e.id, e as unknown as ProviderRecord).catch((err) => { console.error('[sync]', err); set({ syncError: dict().storeMsg.errEventMove }); }));
     } else if (delEvents.length || moveEvents.length) {
       write(LS.events, events);
     }
@@ -747,9 +748,9 @@ export const useStore = create<AppState>((set, get) => ({
     const events = st.events.filter((e) => !delEventIds.has(e.id));
 
     if (st.provider.mode === 'verein') {
-      delLeagues.forEach((l) => void st.provider.deleteRecord('leagues', l.id).catch((e) => { console.error('[sync]', e); set({ syncError: 'Liga konnte nicht gelöscht werden.' }); }));
-      delTeams.forEach((t) => void st.provider.deleteRecord('teams', t.id).catch((e) => { console.error('[sync]', e); set({ syncError: 'Mannschaft konnte nicht gelöscht werden.' }); }));
-      delEvents.forEach((e) => void st.provider.deleteRecord('events', e.id).catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht gelöscht werden.' }); }));
+      delLeagues.forEach((l) => void st.provider.deleteRecord('leagues', l.id).catch((e) => { console.error('[sync]', e); set({ syncError: dict().storeMsg.errLeagueDelete }); }));
+      delTeams.forEach((t) => void st.provider.deleteRecord('teams', t.id).catch((e) => { console.error('[sync]', e); set({ syncError: dict().storeMsg.errTeamDelete }); }));
+      delEvents.forEach((e) => void st.provider.deleteRecord('events', e.id).catch((err) => { console.error('[sync]', err); set({ syncError: dict().storeMsg.errEventDelete }); }));
     } else {
       write(LS.leagues, leagues);
       write(LS.teams, teams);
@@ -866,7 +867,7 @@ export const useStore = create<AppState>((set, get) => ({
         const user = res.user;
         if (!user.active) { // Zusatzabsicherung (Server blockt inaktive bereits).
           void st.provider.logout();
-          set((s) => ({ session: null, loginForm: { ...s.loginForm, err: 'Dieses Konto ist deaktiviert. Bitte wende dich an die Vereinsverwaltung.' } }));
+          set((s) => ({ session: null, loginForm: { ...s.loginForm, err: dict().storeMsg.accountDeactivated } }));
           return;
         }
         set({ session: user.id, screen: 'dashboard', loginForm: { email: '', pw: '', code: '', mfaStep: false, err: '' } });
@@ -874,13 +875,13 @@ export const useStore = create<AppState>((set, get) => ({
       }).catch((e: unknown) => {
         // Echter Auth-Fehler: server-seitige Meldung (deutsch) anzeigen, sonst generisch.
         const msg = (e as { response?: { message?: string } })?.response?.message;
-        set((s) => ({ loginForm: { ...s.loginForm, err: msg || 'Anmeldung fehlgeschlagen. E-Mail oder Passwort falsch.' } }));
+        set((s) => ({ loginForm: { ...s.loginForm, err: msg || dict().storeMsg.loginFailed } }));
       });
       return;
     }
     // Lokaler Demo-Modus: Konto per E-Mail finden (Passwort beliebig).
     const acc = st.accounts.find((a) => a.email.toLowerCase() === email.toLowerCase() && a.active);
-    if (!acc) { set((s) => ({ loginForm: { ...s.loginForm, err: 'Kein aktives Konto mit dieser E-Mail.' } })); return; }
+    if (!acc) { set((s) => ({ loginForm: { ...s.loginForm, err: dict().storeMsg.noActiveAccount } })); return; }
     get().login(acc.id);
   },
   logout() {
@@ -1016,10 +1017,10 @@ export const useStore = create<AppState>((set, get) => ({
         write(LS.lastBackup, at);
         set({ lastBackupAt: at, backupMsg: `Gesichert: ${(data as { file?: string }).file || 'backup'}` });
       } else {
-        set({ backupMsg: `Backup fehlgeschlagen (${(data as { error?: string }).error || res.status}).` });
+        set({ backupMsg: dict().storeMsg.backupFailed((data as { error?: string }).error || res.status) });
       }
     } catch {
-      set({ backupMsg: 'Backup nicht möglich – läuft die App über serve-dist.mjs?' });
+      set({ backupMsg: dict().storeMsg.backupNotPossible });
     }
   },
 
@@ -1062,7 +1063,7 @@ export const useStore = create<AppState>((set, get) => ({
         st.teams.forEach((t) => {
           if (!t.memberIds.includes(id) && t.captainId !== id) return;
           const nt = teams.find((x) => x.id === t.id)!;
-          void st.provider.updateRecord('teams', nt.id, nt as unknown as ProviderRecord).catch((e) => { console.error('[sync]', e); set({ syncError: 'Mannschaft konnte nicht aktualisiert werden.' }); });
+          void st.provider.updateRecord('teams', nt.id, nt as unknown as ProviderRecord).catch((e) => { console.error('[sync]', e); set({ syncError: dict().storeMsg.errTeamUpdate }); });
         });
       } else {
         write(LS.teams, teams);
@@ -1249,16 +1250,16 @@ export const useStore = create<AppState>((set, get) => ({
   },
   async changeOwnPassword(newPassword) {
     const st = get();
-    if (st.provider.mode !== 'verein') { set({ syncError: 'Passwort-Änderung gibt es nur im Vereinsmodus.' }); return false; }
-    if (!st.session) { set({ syncError: 'Nicht angemeldet.' }); return false; }
-    if (!newPassword || newPassword.length < 8) { set({ syncError: 'Das Passwort muss mindestens 8 Zeichen haben.' }); return false; }
+    if (st.provider.mode !== 'verein') { set({ syncError: dict().storeMsg.pwVereinOnly }); return false; }
+    if (!st.session) { set({ syncError: dict().storeMsg.notLoggedIn }); return false; }
+    if (!newPassword || newPassword.length < 8) { set({ syncError: dict().storeMsg.pwMin8 }); return false; }
     try {
       await st.provider.setPassword(st.session, newPassword);
       // setPassword erneuert den tokenKey → die aktuelle Sitzung würde sonst ungültig. Nahtlos neu anmelden.
       const me = st.accounts.find((a) => a.id === st.session);
       if (me?.email) { try { await st.provider.login(me.email, newPassword); } catch { /* nicht kritisch – ggf. neu anmelden */ } }
       return true;
-    } catch (e) { console.error('[pw]', e); set({ syncError: 'Passwort konnte nicht geändert werden.' }); return false; }
+    } catch (e) { console.error('[pw]', e); set({ syncError: dict().storeMsg.pwChangeFailed }); return false; }
   },
   loadTwoFAAdminList() {
     const st = get();
@@ -1274,7 +1275,7 @@ export const useStore = create<AppState>((set, get) => ({
       await st.provider.twoFactorAdminReset(userId);
       set((s) => ({ twoFAUserIds: s.twoFAUserIds.filter((id) => id !== userId) }));
       return true;
-    } catch (e) { console.error('[2fa-reset]', e); set({ syncError: '2FA konnte nicht zurückgesetzt werden.' }); return false; }
+    } catch (e) { console.error('[2fa-reset]', e); set({ syncError: dict().storeMsg.twoFAResetFailed }); return false; }
   },
   toggleUserActive(id) {
     set((st) => {
@@ -1286,7 +1287,7 @@ export const useStore = create<AppState>((set, get) => ({
   },
   async createBoardAccounts(count, password) {
     const st = get();
-    if (st.provider.mode !== 'verein') { set({ syncError: 'Board-Konten gibt es nur im Vereinsmodus (mit Server).' }); return; }
+    if (st.provider.mode !== 'verein') { set({ syncError: dict().storeMsg.boardsVereinOnly }); return; }
     const n = Math.max(1, Math.min(32, count | 0));
     const have = new Set(st.accounts.filter((a) => a.isBoard && a.boardNumber != null).map((a) => a.boardNumber));
     let created = 0;
@@ -1304,20 +1305,20 @@ export const useStore = create<AppState>((set, get) => ({
   },
   async uploadPhoto(kind, id, file) {
     const st = get();
-    if (st.provider.mode !== 'verein') { set({ syncError: 'Profilfotos gibt es nur im Vereinsmodus.' }); return; }
+    if (st.provider.mode !== 'verein') { set({ syncError: dict().storeMsg.photosVereinOnly }); return; }
     const coll = kind === 'player' ? 'players' : 'accounts';
     try {
       const blob = await downscaleSquare(file, 256); // klein halten: zentriertes 256er-Quadrat
       await st.provider.uploadPhoto(coll, id, blob);
       await applySnapshot(get, set);
-    } catch (e) { console.error('[photo]', e); set({ syncError: 'Foto konnte nicht gespeichert werden.' }); }
+    } catch (e) { console.error('[photo]', e); set({ syncError: dict().storeMsg.errPhotoSave }); }
   },
   async clearPhoto(kind, id) {
     const st = get();
     if (st.provider.mode !== 'verein') return;
     const coll = kind === 'player' ? 'players' : 'accounts';
     try { await st.provider.clearPhoto(coll, id); await applySnapshot(get, set); }
-    catch (e) { console.error('[photo]', e); set({ syncError: 'Foto konnte nicht entfernt werden.' }); }
+    catch (e) { console.error('[photo]', e); set({ syncError: dict().storeMsg.errPhotoRemove }); }
   },
 
   // ── league modal ──
@@ -1742,7 +1743,7 @@ export const useStore = create<AppState>((set, get) => ({
         const op = seasonNew.has(se.id)
           ? st.provider.createRecord('seasons', se as unknown as ProviderRecord)
           : st.provider.updateRecord('seasons', se.id, se as unknown as ProviderRecord);
-        void op.catch((e) => { console.error('[sync]', e); set({ syncError: 'Saison konnte nicht gespeichert werden.' }); });
+        void op.catch((e) => { console.error('[sync]', e); set({ syncError: dict().storeMsg.errSeasonSave }); });
       });
       // Pro betroffener Liga anlegen/aktualisieren (PocketBase speichert teams/fixtures als JSON).
       touched.forEach(({ id, isNew }) => {
@@ -1751,19 +1752,19 @@ export const useStore = create<AppState>((set, get) => ({
         const op = isNew
           ? st.provider.createRecord('leagues', rec as unknown as ProviderRecord)
           : st.provider.updateRecord('leagues', id, rec as unknown as ProviderRecord);
-        void op.catch((e) => { console.error('[sync]', e); set({ syncError: 'Import konnte nicht vollständig gespeichert werden.' }); });
+        void op.catch((e) => { console.error('[sync]', e); set({ syncError: dict().storeMsg.errImportSave }); });
       });
       newTeams.forEach((t) => {
         void st.provider.createRecord('teams', t as unknown as ProviderRecord)
-          .catch((e) => { console.error('[sync]', e); set({ syncError: 'Mannschaft konnte nicht angelegt werden.' }); });
+          .catch((e) => { console.error('[sync]', e); set({ syncError: dict().storeMsg.errTeamCreate }); });
       });
       newEvents.forEach((e) => {
         void st.provider.createRecord('events', e as unknown as ProviderRecord)
-          .catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht angelegt werden.' }); });
+          .catch((err) => { console.error('[sync]', err); set({ syncError: dict().storeMsg.errEventCreate }); });
       });
       updatedEvents.forEach((e) => {
         void st.provider.updateRecord('events', e.id, e as unknown as ProviderRecord)
-          .catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht aktualisiert werden.' }); });
+          .catch((err) => { console.error('[sync]', err); set({ syncError: dict().storeMsg.errEventUpdate }); });
       });
     } else {
       if (changedSeasonRecs.length) write(LS.seasons, seasons);
@@ -1782,12 +1783,12 @@ export const useStore = create<AppState>((set, get) => ({
     const lg0 = st0.leagues.find((l) => l.id === leagueId);
     if (!lg0) return;
     if (st0.provider.mode !== 'verein') {
-      set({ nuligaSync: { leagueId, leagueName: lg0.name, phase: 'error', error: 'Der nuLiga-Abruf ist nur im Vereinsmodus verfügbar.' } });
+      set({ nuligaSync: { leagueId, leagueName: lg0.name, phase: 'error', error: dict().storeMsg.nuligaVereinOnly } });
       return;
     }
     const url = (lg0.nuligaUrl || '').trim();
     if (!url) {
-      set({ nuligaSync: { leagueId, leagueName: lg0.name, phase: 'error', error: 'Für diese Liga ist keine nuLiga-URL hinterlegt.' } });
+      set({ nuligaSync: { leagueId, leagueName: lg0.name, phase: 'error', error: dict().storeMsg.nuligaNoUrl } });
       return;
     }
     set({ nuligaSync: { leagueId, leagueName: lg0.name, phase: 'loading' } });
@@ -1796,7 +1797,7 @@ export const useStore = create<AppState>((set, get) => ({
       resp = await st0.provider.fetchNuliga(url);
     } catch (e) {
       const msg = (e && typeof e === 'object' && 'message' in e && (e as { message?: unknown }).message)
-        ? String((e as { message: unknown }).message) : 'nuLiga-Abruf fehlgeschlagen.';
+        ? String((e as { message: unknown }).message) : dict().storeMsg.nuligaFetchFailed;
       set({ nuligaSync: { leagueId, leagueName: lg0.name, phase: 'error', error: msg } });
       return;
     }
@@ -1821,11 +1822,11 @@ export const useStore = create<AppState>((set, get) => ({
       : st.events;
     if (res.changed) {
       void st.provider.updateRecord('leagues', leagueId, res.league as unknown as ProviderRecord)
-        .catch((err) => { console.error('[sync]', err); set({ syncError: 'nuLiga-Import konnte nicht gespeichert werden.' }); });
+        .catch((err) => { console.error('[sync]', err); set({ syncError: dict().storeMsg.errNuligaSave }); });
       newEvents.forEach((e) => void st.provider.createRecord('events', e as unknown as ProviderRecord)
-        .catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht angelegt werden.' }); }));
+        .catch((err) => { console.error('[sync]', err); set({ syncError: dict().storeMsg.errEventCreate }); }));
       updatedEvents.forEach((e) => void st.provider.updateRecord('events', e.id, e as unknown as ProviderRecord)
-        .catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht aktualisiert werden.' }); }));
+        .catch((err) => { console.error('[sync]', err); set({ syncError: dict().storeMsg.errEventUpdate }); }));
     }
     set({
       leagues, events,
@@ -1854,7 +1855,7 @@ export const useStore = create<AppState>((set, get) => ({
       if (!updated) return {};
       if (st.provider.mode === 'verein') {
         void st.provider.updateRecord('leagues', updated.id, updated as unknown as ProviderRecord)
-          .catch((e) => { console.error('[sync]', e); set({ syncError: 'Konflikt konnte nicht gespeichert werden.' }); });
+          .catch((e) => { console.error('[sync]', e); set({ syncError: dict().storeMsg.errConflictSave }); });
       } else {
         write(LS.leagues, leagues);
       }
@@ -1967,7 +1968,7 @@ export const useStore = create<AppState>((set, get) => ({
           cur = addRepeat(cur, m.repeat); guard++;
         }
         const events = [...st.events, ...recs];
-        if (st.provider.mode === 'verein') recs.forEach((r) => void st.provider.createRecord('events', r as unknown as ProviderRecord).catch((e) => { console.error('[sync]', e); set({ syncError: 'Serientermin konnte nicht gespeichert werden.' }); }));
+        if (st.provider.mode === 'verein') recs.forEach((r) => void st.provider.createRecord('events', r as unknown as ProviderRecord).catch((e) => { console.error('[sync]', e); set({ syncError: dict().storeMsg.errSeriesSave }); }));
         else write(LS.events, events);
         return { events, eventModal: null };
       }
@@ -1985,7 +1986,7 @@ export const useStore = create<AppState>((set, get) => ({
       const del = st.events.filter((e) => e.seriesId === seriesId);
       if (!del.length) return { eventModal: null };
       const events = st.events.filter((e) => e.seriesId !== seriesId);
-      if (st.provider.mode === 'verein') del.forEach((e) => void st.provider.deleteRecord('events', e.id).catch((err) => { console.error('[sync]', err); set({ syncError: 'Serie konnte nicht gelöscht werden.' }); }));
+      if (st.provider.mode === 'verein') del.forEach((e) => void st.provider.deleteRecord('events', e.id).catch((err) => { console.error('[sync]', err); set({ syncError: dict().storeMsg.errSeriesDelete }); }));
       else write(LS.events, events);
       return { events, eventModal: null };
     });
@@ -1996,7 +1997,7 @@ export const useStore = create<AppState>((set, get) => ({
     const del = st.events.filter((e) => e.date && e.date < cutoffIso);
     if (!del.length) return 0;
     const events = st.events.filter((e) => !(e.date && e.date < cutoffIso));
-    if (st.provider.mode === 'verein') del.forEach((e) => void st.provider.deleteRecord('events', e.id).catch((err) => { console.error('[sync]', err); set({ syncError: 'Termin konnte nicht gelöscht werden.' }); }));
+    if (st.provider.mode === 'verein') del.forEach((e) => void st.provider.deleteRecord('events', e.id).catch((err) => { console.error('[sync]', err); set({ syncError: dict().storeMsg.errEventDelete }); }));
     else write(LS.events, events);
     set({ events });
     return del.length;
@@ -2258,7 +2259,7 @@ type SetFn = (p: Partial<AppState>) => void;
 
 function persist(st: AppState, set: SetFn, lsKey: string, fullArray: unknown, verein: (p: DataProvider) => Promise<unknown>) {
   if (st.provider.mode === 'verein') {
-    void verein(st.provider).catch((e) => { console.error('[sync]', e); set({ syncError: 'Änderung konnte nicht gespeichert werden.' }); });
+    void verein(st.provider).catch((e) => { console.error('[sync]', e); set({ syncError: dict().storeMsg.errChangeSave }); });
   } else {
     write(lsKey, fullArray);
   }
@@ -2268,7 +2269,7 @@ function persistSettings(st: AppState, set: SetFn, settings: Settings) {
     // pbUrl ist gerätelokal → nicht zum Server synchronisieren (sonst würde sie geräteübergreifend verteilt).
     const serverSettings: Settings = { ...settings };
     delete (serverSettings as Partial<Settings>).pbUrl;
-    void st.provider.saveSettings(serverSettings).catch((e) => { console.error('[sync]', e); set({ syncError: 'Einstellungen konnten nicht gespeichert werden.' }); });
+    void st.provider.saveSettings(serverSettings).catch((e) => { console.error('[sync]', e); set({ syncError: dict().storeMsg.errSettingsSave }); });
   } else {
     write(LS.settings, settings);
   }
@@ -2292,7 +2293,7 @@ function fixtureEvent(league: League, fx: Fixture, prev?: EventItem): EventItem 
     date: fx.date,
     time: fx.time || prev?.time || '',
     type: league.kind === 'friendly' ? 'freundschaft' : league.kind === 'cup' ? 'pokal' : 'ligaspiel',
-    loc: fx.loc || prev?.loc || (ownIsHome ? 'Heim' : 'Auswärts'),
+    loc: fx.loc || prev?.loc || (ownIsHome ? dict().teams.home : dict().teams.away),
     seasonId: league.seasonId ?? prev?.seasonId,
     fixtureId: fx.id,
   };
@@ -2396,7 +2397,7 @@ async function applySnapshot(get: () => AppState, set: SetFn) {
       const me = snap.accounts.find((a) => a.id === sessionId);
       if (!me || me.active === false) {
         void get().provider.logout();
-        set({ session: null, screen: 'dashboard', loginForm: { email: '', pw: '', code: '', mfaStep: false, err: 'Dein Konto wurde deaktiviert. Bitte wende dich an die Vereinsverwaltung.' } });
+        set({ session: null, screen: 'dashboard', loginForm: { email: '', pw: '', code: '', mfaStep: false, err: dict().storeMsg.accountDeactivatedNow } });
         return;
       }
     }
@@ -2433,7 +2434,7 @@ async function applySnapshot(get: () => AppState, set: SetFn) {
     });
   } catch (e) {
     console.error('[load]', e);
-    set({ syncError: 'Daten konnten nicht vom Server geladen werden.' });
+    set({ syncError: dict().storeMsg.errLoad });
   }
 }
 let _reloadTimer: ReturnType<typeof setTimeout> | null = null;

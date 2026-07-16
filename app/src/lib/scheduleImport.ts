@@ -7,6 +7,7 @@
 import type { League, LeagueTeam, Fixture, Team, EventItem, TeamKind, Season } from '../data/types';
 import { uid } from './format';
 import { parseCsv } from './csv';
+import { dict } from '../i18n';
 
 // ── geparste Zwischenform ──
 export interface ParsedFixture {
@@ -136,7 +137,7 @@ function teamDisplayName(mannschaftName: string, vereinName: string, nrRaw: stri
  */
 export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
   const rows = parseCsv(text);
-  if (rows.length < 2) throw new Error('Die Datei enthält keine Datenzeilen.');
+  if (rows.length < 2) throw new Error(dict().storeMsg.importNoRows);
 
   const headers = rows[0];
   const idx = {
@@ -161,7 +162,7 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
 
   const leagueCol = idx.staffel >= 0 ? idx.staffel : (idx.liga >= 0 ? idx.liga : idx.meisterschaft);
   if (idx.date < 0 || idx.home < 0 || idx.away < 0) {
-    throw new Error('Pflichtspalten fehlen (Datum, Heim, Gast). Bitte Vorlage prüfen.');
+    throw new Error(dict().storeMsg.importMissingCols);
   }
 
   const data = rows.slice(1);
@@ -239,7 +240,7 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
     total++;
   }
 
-  if (total === 0) warnings.push('Keine gültigen Begegnungen erkannt.');
+  if (total === 0) warnings.push(dict().storeMsg.importNoneRecognized);
 
   return {
     groups: [...groups.values()].sort((a, b) => a.name.localeCompare(b.name, 'de')),
@@ -395,7 +396,7 @@ export function deriveLeagueEvents(parsed: ParsedSchedule, existingEvents: Event
       out.push({
         id: uid(), scope: 'verein', title: t, date: pf.date,
         time: pf.time || '19:30', type: 'ligaspiel',
-        loc: pf.homeOwn ? 'Heim' : 'Auswärts',
+        loc: pf.homeOwn ? dict().teams.home : dict().teams.away,
       });
     }
   }

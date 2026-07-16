@@ -26,6 +26,7 @@ import { NextGameOverlay } from './components/NextGameOverlay';
 import { CommandPalette } from './components/CommandPalette';
 import { LiveClock } from './components/LiveClock';
 import { Modals } from './modals/Modals';
+import { useT } from './i18n';
 
 function ScreenView() {
   const screen = useStore((s) => s.screen);
@@ -48,6 +49,7 @@ function ScreenView() {
 
 export default function App() {
   const s = useStore();
+  const tr = useT();
   const init = useStore((st) => st.init);
   const { isHandset, width } = useDevice();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -136,7 +138,7 @@ export default function App() {
     setExitForm((f) => ({ ...f, busy: true, err: '' }));
     void Promise.resolve(s.kioskExitLogin(exitForm.email, exitForm.pw)).then((ok) => {
       if (ok) { setExitOpen(false); setExitForm({ email: '', pw: '', err: '', busy: false }); }
-      else setExitForm((f) => ({ ...f, busy: false, err: 'Anmeldung fehlgeschlagen oder keine Berechtigung (nur Admin/Kapitän).' }));
+      else setExitForm((f) => ({ ...f, busy: false, err: tr.app.exitFailed }));
     });
   };
 
@@ -159,20 +161,20 @@ export default function App() {
     <>
       <header style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)' }}>
         {narrowBar && (
-          <button onClick={() => setKioskMenuOpen(true)} aria-label="Menü öffnen" title="Menü"
+          <button onClick={() => setKioskMenuOpen(true)} aria-label={tr.app.menuOpen} title={tr.app.menu}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 42, height: 42, background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 11, color: 'var(--text-2)', cursor: 'pointer', flexShrink: 0 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
           </button>
         )}
         {isVerein && s.settings.clubLogo
-          ? <img src={s.settings.clubLogo} alt="Vereinslogo" style={{ width: 28, height: 28, borderRadius: 7, objectFit: 'contain' }} />
+          ? <img src={s.settings.clubLogo} alt={tr.sidebar.clubLogoAlt} style={{ width: 28, height: 28, borderRadius: 7, objectFit: 'contain' }} />
           : <Logo size={28} />}
-        <div style={{ fontWeight: 800, fontSize: 15 }}>{boardNumber != null ? `Board ${boardNumber}` : 'Board'}</div>
+        <div style={{ fontWeight: 800, fontSize: 15 }}>{boardNumber != null ? `Board ${boardNumber}` : tr.app.board}</div>
         {!narrowBar && (
           <div style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
-            {kioskTab('Spiel', !kioskInTraining && !kioskInSettings, () => s.go('setup'), 'Alt+S')}
-            {kioskTab('Training', kioskInTraining, () => s.go('training'), 'Alt+T')}
-            {kioskTab('Einstellungen', kioskInSettings, () => s.go('settings'), 'Alt+E')}
+            {kioskTab(tr.palette.game, !kioskInTraining && !kioskInSettings, () => s.go('setup'), 'Alt+S')}
+            {kioskTab(tr.common.training, kioskInTraining, () => s.go('training'), 'Alt+T')}
+            {kioskTab(tr.nav.settings, kioskInSettings, () => s.go('settings'), 'Alt+E')}
           </div>
         )}
         {/* Datum + Uhrzeit mittig – nur im breiten Layout, sonst würde sie mit dem Menü-Button kollidieren. */}
@@ -180,10 +182,10 @@ export default function App() {
         <div style={{ flex: 1 }} />
         {!narrowBar && (
           <button onClick={openExit}
-            title="Board-Modus verlassen (Admin/Kapitän) · Alt+V"
+            title={tr.app.exitTitleBar}
             style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 13px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
-            Verlassen
+            {tr.app.leave}
             <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.65, background: 'var(--btn)', borderRadius: 5, padding: '1px 5px' }}>Alt+V</span>
           </button>
         )}
@@ -193,20 +195,20 @@ export default function App() {
           <div onClick={() => setKioskMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.6)', backdropFilter: 'blur(2px)', zIndex: 70 }} />
           <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: 'min(84vw, 320px)', background: 'var(--surface)', borderRight: '1px solid var(--border-2)', boxShadow: '12px 0 40px rgba(0,0,0,.5)', zIndex: 71, display: 'flex', flexDirection: 'column', padding: 16, gap: 9 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-              <div style={{ fontWeight: 800, fontSize: 16 }}>{boardNumber != null ? `Board ${boardNumber}` : 'Board'}</div>
-              <button onClick={() => setKioskMenuOpen(false)} aria-label="Schließen" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, color: 'var(--text-3)', cursor: 'pointer' }}>
+              <div style={{ fontWeight: 800, fontSize: 16 }}>{boardNumber != null ? `Board ${boardNumber}` : tr.app.board}</div>
+              <button onClick={() => setKioskMenuOpen(false)} aria-label={tr.common.close} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, color: 'var(--text-3)', cursor: 'pointer' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
             <LiveClock mode="datetime" style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-3)', marginBottom: 6 }} />
-            {kioskMenuItem('Spiel', !kioskInTraining && !kioskInSettings, () => { s.go('setup'); setKioskMenuOpen(false); })}
-            {kioskMenuItem('Training', kioskInTraining, () => { s.go('training'); setKioskMenuOpen(false); })}
-            {kioskMenuItem('Einstellungen', kioskInSettings, () => { s.go('settings'); setKioskMenuOpen(false); })}
+            {kioskMenuItem(tr.palette.game, !kioskInTraining && !kioskInSettings, () => { s.go('setup'); setKioskMenuOpen(false); })}
+            {kioskMenuItem(tr.common.training, kioskInTraining, () => { s.go('training'); setKioskMenuOpen(false); })}
+            {kioskMenuItem(tr.nav.settings, kioskInSettings, () => { s.go('settings'); setKioskMenuOpen(false); })}
             <div style={{ flex: 1 }} />
             <button onClick={openExit}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 15px', borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
-              Board-Modus verlassen
+              {tr.app.leaveBoardMode}
             </button>
           </div>
         </>
@@ -303,17 +305,17 @@ export default function App() {
           style={{ position: 'fixed', bottom: 18, left: '50%', transform: 'translateX(-50%)', zIndex: 95, display: 'flex', alignItems: 'center', gap: 10, background: '#3a1714', border: '1px solid #E0594B', color: '#ffd9d3', padding: '10px 16px', borderRadius: 12, fontSize: 13, fontWeight: 600, boxShadow: '0 12px 30px rgba(0,0,0,.45)', cursor: 'pointer', maxWidth: '92vw' }}
         >
           <span>⚠ {s.syncError}</span>
-          <span style={{ opacity: .7, fontSize: 11 }}>(antippen zum Schließen)</span>
+          <span style={{ opacity: .7, fontSize: 11 }}>{tr.app.tapToClose}</span>
         </div>
       )}
       {s.newConfirm && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.82)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 90 }}>
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 28, width: '92vw', maxWidth: 400, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
-            <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>Neues Spiel starten?</div>
-            <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>Das laufende Spiel wird verworfen und erscheint nicht in der Statistik.</div>
+            <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{tr.app.newGameConfirmTitle}</div>
+            <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>{tr.counter.abortBody}</div>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-              <button onClick={() => s.cancelNew()} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Weiter spielen</button>
-              <button onClick={() => s.confirmNew()} style={{ flex: 1, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Neues Spiel</button>
+              <button onClick={() => s.cancelNew()} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.keepPlaying}</button>
+              <button onClick={() => s.confirmNew()} style={{ flex: 1, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.newGame}</button>
             </div>
           </div>
         </div>
@@ -322,25 +324,25 @@ export default function App() {
       {kioskUnlocked && (
         <button
           onClick={() => s.relockKiosk()}
-          title="Abmelden – der Board-Rechner meldet sich danach wieder mit seinem Board-Konto an"
+          title={tr.app.relockTitle}
           style={{ position: 'fixed', bottom: 18, right: 18, zIndex: 92, display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '12px 18px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 10px 28px rgba(0,0,0,.4)' }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
-          Abmelden &amp; zum Board
+          {tr.app.relock}
         </button>
       )}
 
       {exitOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.82)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 96 }}>
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 26, width: '92vw', maxWidth: 420, boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
-            <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>Board-Modus verlassen</div>
-            <div style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 18 }}>Anmeldung als Administrator oder Kapitän, um z. B. die Aufstellung zu ändern. Danach kann der Rechner wieder als Board gesperrt werden.</div>
-            <input className="dh-input" type="email" inputMode="email" autoCapitalize="off" autoCorrect="off" spellCheck={false} value={exitForm.email} onChange={(e) => setExitForm((f) => ({ ...f, email: e.target.value, err: '' }))} placeholder="E-Mail" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 10 }} />
-            <input className="dh-input" type="password" value={exitForm.pw} onChange={(e) => setExitForm((f) => ({ ...f, pw: e.target.value, err: '' }))} onKeyDown={(e) => { if (e.key === 'Enter' && !exitForm.busy) submitExit(); }} placeholder="Passwort" autoComplete="current-password" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: exitForm.err ? 8 : 18 }} />
+            <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>{tr.app.leaveBoardMode}</div>
+            <div style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 18 }}>{tr.app.exitInfo}</div>
+            <input className="dh-input" type="email" inputMode="email" autoCapitalize="off" autoCorrect="off" spellCheck={false} value={exitForm.email} onChange={(e) => setExitForm((f) => ({ ...f, email: e.target.value, err: '' }))} placeholder={tr.login.email} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 10 }} />
+            <input className="dh-input" type="password" value={exitForm.pw} onChange={(e) => setExitForm((f) => ({ ...f, pw: e.target.value, err: '' }))} onKeyDown={(e) => { if (e.key === 'Enter' && !exitForm.busy) submitExit(); }} placeholder={tr.login.password} autoComplete="current-password" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: exitForm.err ? 8 : 18 }} />
             {exitForm.err && <div style={{ fontSize: 12, color: '#E0594B', fontWeight: 600, marginBottom: 14 }}>{exitForm.err}</div>}
             <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-              <button onClick={() => setExitOpen(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Abbrechen</button>
-              <button onClick={submitExit} disabled={exitForm.busy || !exitForm.email.trim() || !exitForm.pw} style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: exitForm.busy ? 'default' : 'pointer', opacity: (exitForm.busy || !exitForm.email.trim() || !exitForm.pw) ? 0.6 : 1, fontFamily: 'inherit' }}>{exitForm.busy ? 'Anmelden…' : 'Anmelden & verlassen'}</button>
+              <button onClick={() => setExitOpen(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
+              <button onClick={submitExit} disabled={exitForm.busy || !exitForm.email.trim() || !exitForm.pw} style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: exitForm.busy ? 'default' : 'pointer', opacity: (exitForm.busy || !exitForm.email.trim() || !exitForm.pw) ? 0.6 : 1, fontFamily: 'inherit' }}>{exitForm.busy ? tr.app.signingIn : tr.app.signInLeave}</button>
             </div>
           </div>
         </div>

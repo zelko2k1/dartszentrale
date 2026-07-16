@@ -20,10 +20,11 @@ export const TEAM_KINDS: Record<TeamKind, { label: string; short: string; color:
 export const teamKind = (t: { kind?: TeamKind }): TeamKind => (t.kind === 'cup' ? 'cup' : t.kind === 'friendly' ? 'friendly' : 'league');
 
 // Spielformat-Vorlagen laut Wettkampfordnung. Reihenfolge der Segmente = realer Spielablauf.
+// Liga-Namen sind Eigennamen (bleiben deutsch); die Kurzbeschreibung kommt aus dem Sprachpaket.
 export const LEAGUE_FORMAT_PRESETS: Record<string, { label: string; short: string; segments: LineupSegment[] }> = {
-  BZ: { label: 'Bezirksliga', short: '8 Einzel + 4 Doppel', segments: [{ kind: 'singles', count: 8 }, { kind: 'doubles', count: 4 }] },
-  BL: { label: 'Bayernliga', short: '8 Einzel + 4 Doppel', segments: [{ kind: 'singles', count: 8 }, { kind: 'doubles', count: 4 }] },
-  LL: { label: 'Landesliga', short: '6 Einzel · 3 Doppel · 6 Einzel', segments: [{ kind: 'singles', count: 6 }, { kind: 'doubles', count: 3 }, { kind: 'singles', count: 6 }] },
+  BZ: { label: 'Bezirksliga', get short() { return dict().leagueFormats.f84; }, segments: [{ kind: 'singles', count: 8 }, { kind: 'doubles', count: 4 }] },
+  BL: { label: 'Bayernliga', get short() { return dict().leagueFormats.f84; }, segments: [{ kind: 'singles', count: 8 }, { kind: 'doubles', count: 4 }] },
+  LL: { label: 'Landesliga', get short() { return dict().leagueFormats.f636; }, segments: [{ kind: 'singles', count: 6 }, { kind: 'doubles', count: 3 }, { kind: 'singles', count: 6 }] },
 };
 
 // Einstellungen, die NICHT vereinsweit zentral gelten, sondern an Gerät/Login gebunden bleiben:
