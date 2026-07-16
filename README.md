@@ -1,12 +1,14 @@
 # 🎯 DartsZentrale
 
+**🇩🇪 Deutsch | [🇬🇧 English](README.en.md)**
+
 **Die kostenlose Vereins- und Zähl-App für Darts-Clubs.** Spielstände zählen, Trainings­spiele,
 Ligen mit automatischer Tabelle, Mannschaften, Termine, Statistiken und Benutzer­verwaltung —
 alles an einem Ort, auf deinem eigenen Gerät oder Server.
 
 [![Version](https://img.shields.io/github/v/release/zelko2k1/dartszentrale?label=Version&color=blue)](https://github.com/zelko2k1/dartszentrale/releases/latest)
 [![Lizenz: MIT](https://img.shields.io/github/license/zelko2k1/dartszentrale?label=Lizenz&color=green)](LICENSE)
-![Deutsch](https://img.shields.io/badge/Sprache-Deutsch-informational)
+![Sprache](https://img.shields.io/badge/Sprache-DE%20%2F%20EN-informational)
 ![React](https://img.shields.io/badge/React-19-61dafb)
 ![PocketBase](https://img.shields.io/badge/Backend-PocketBase-b8dbe4)
 ![PWA](https://img.shields.io/badge/PWA-offline--f%C3%A4hig-5a0fc8)
@@ -141,6 +143,7 @@ Macht aus einem PC am Board einen **selbstständigen Spiel-Rechner** — ideal f
 - **Login** per E-Mail + Passwort (optional mit 2FA-Code); eigenes Passwort änderbar, inaktive Konten werden abgewiesen
 
 ### 💻 Betriebsmodi & Technik
+- **Zweisprachige Oberfläche:** Deutsch/Englisch, pro Gerät umschaltbar unter Einstellungen → Darstellung
 - **Darstellung:** Hell/Dunkel, Akzentfarben, 5 Schriftarten, viele Größenregler, Befehls-Palette (Strg+K), konfigurierbare Tastenkürzel
 - **Progressive Web App (PWA):** installierbar und **offline lauffähig**, Update-Hinweis ohne Zwangs-Neustart
 - **Backup:** Voll-Export/-Import aller Daten als JSON; im lokalen Betrieb zusätzlich automatisches tägliches Backup
