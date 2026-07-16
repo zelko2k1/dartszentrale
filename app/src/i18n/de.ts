@@ -141,6 +141,51 @@ export const de = {
     moreCount: (n: number) => `+${n} weitere`,
   },
 
+  // ── Texte der zentralen Konstanten (data/constants.ts liest sie per Getter live) ──
+  roles: {
+    admin:   { label: 'Administrator', short: 'Admin',      desc: 'Voller Zugriff: Verein, Benutzer & Einstellungen' },
+    captain: { label: 'Kapitän',       short: 'Kapitän',    desc: 'Aufstellung & Kader der eigenen Mannschaft' },
+    player:  { label: 'Spieler',       short: 'Spieler',    desc: 'Eigene Statistik, Termine & Spiele' },
+    viewer:  { label: 'Betrachter',    short: 'Betrachter', desc: 'Nur Lesezugriff auf Spielpläne & Tabellen' },
+    board:   { label: 'Board-Rechner', short: 'Board',      desc: 'Maschinen-Konto: nur spielen, nichts verwalten' },
+  },
+  eventTypes: {
+    training: 'Training',
+    ligaspiel: 'Ligaspiel',
+    verein: 'Verein',
+    competition: 'Competition',
+    pokal: 'Pokal',
+    sonstiges: 'Sonstiges',
+    freundschaft: 'Freundschaft',
+  },
+  teamKinds: {
+    league:   { label: 'Liga-Mannschaft', short: 'Liga' },
+    cup:      { label: 'Pokalmannschaft', short: 'Pokal' },
+    friendly: { label: 'Freundschaft',    short: 'Freundschaft' },
+  },
+  trainModes: {
+    doubles:     { name: 'Doppel-Training',  desc: 'Doppelfelder treffen, Quote tracken',            metric: 'Quote' },
+    atc:         { name: 'Around the Clock', desc: '1 bis 20 und Bull der Reihe nach',               metric: 'Darts' },
+    bobs27:      { name: "Bob's 27",         desc: 'Doppel-Routine, Start mit 27 Punkten',           metric: 'Bestwert' },
+    checkout121: { name: '121 Checkout',     desc: 'Finishes ab 121 üben',                           metric: 'Bestwert' },
+    cricket:     { name: 'Cricket',          desc: '15–20 & Bull schließen, Punkte sammeln',         metric: 'MPR' },
+    baseball:    { name: 'Baseball',         desc: '9 Innings · Treffer zählen als Runs',            metric: 'Runs' },
+    halveit:     { name: 'Halve It',         desc: 'Verfehlst du das Ziel, halbiert sich dein Score', metric: 'Bestwert' },
+    elimination: { name: 'Elimination',      desc: 'Triff den Gegner-Punktestand, wirf ihn zurück',  metric: 'Siege' },
+    killer:      { name: 'Killer',           desc: 'Werde Killer und nimm Gegnern die Leben',        metric: 'Siege' },
+  },
+  modeRules: {
+    cricket: { goal: 'Schließe alle Felder 15–20 und Bull und führe nach Punkten.', lines: ['Jedes Feld brauchst du 3× (Single=1, Double=2, Triple=3 Marks).', 'Ist ein Feld bei dir geschlossen und beim Gegner noch offen, bringen weitere Treffer Punkte.', 'Gewonnen: alle Felder geschlossen UND mindestens so viele Punkte wie der beste Gegner.', 'Solo: schließe alle Felder mit möglichst wenig Darts (MPR).'] },
+    atc: { goal: 'Triff die Zahlen 1 bis 20 und das Bull der Reihe nach.', lines: ['Pro Aufnahme hast du 3 Darts.', 'Triffst du die aktuelle Zahl, rückst du zum nächsten Ziel.', 'Solo: schaffe alle Ziele mit möglichst wenig Darts.', 'Mehrspieler: wer zuerst durch ist, gewinnt.'] },
+    doubles: { goal: 'Triff der Reihe nach jedes Doppel von D1 bis Bull.', lines: ['Pro Doppel hast du 3 Darts.', 'Für jeden Dart tippst du Treffer oder Daneben.', 'Am Ende zählt deine Doppelquote (Treffer ÷ Würfe).', 'Ideal zum gezielten Finish-Training.'] },
+    bobs27: { goal: 'Starte mit 27 Punkten und arbeite dich durch alle Doppel.', lines: ['Pro Doppel 3 Darts. Jeder Treffer bringt +2× die Zahl.', 'Triffst du in einer Aufnahme keinen, verlierst du 2× die Zahl.', 'Fällt dein Score auf 0 oder darunter, bist du raus.', 'Ziel: möglichst hoher Endstand – ein echter Klassiker.'] },
+    checkout121: { goal: 'Spiele Finishes ab 121 aufwärts aus.', lines: ['Pro Finish hast du 3 Darts (eine Aufnahme).', 'Tippe Geschafft oder Verfehlt.', 'Es zählen Trefferquote und höchstes ausgespieltes Finish.', 'Perfekt, um Doppel und Finish-Wege zu trainieren.'] },
+    elimination: { goal: 'Erreiche als Erster genau das Ziel (301).', lines: ['Reihum trägt jeder seine Aufnahme ein.', 'Triffst du exakt den Punktestand eines Gegners, fällt dieser zurück auf 0.', 'Wer 301 zuerst erreicht, gewinnt.', 'Taktik: Gegner kurz vor dem Ziel zurückwerfen.'] },
+    baseball: { goal: '9 Innings – sammle in jedem Inning Runs.', lines: ['Inning N = die Zahl N. Pro Inning 3 Darts.', 'Single = 1 Run, Double = 2, Triple = 3.', 'Die Runs aller 9 Innings werden addiert.', 'Wer am Ende die meisten Runs hat, gewinnt.'] },
+    halveit: { goal: 'Triff das vorgegebene Ziel – sonst halbiert sich dein Score.', lines: ['Jede Runde gilt ein Ziel (Zahl, Doppel, Triple oder Bull).', 'Triffst du, zählen die erzielten Punkte dazu.', 'Verfehlst du das Ziel in der ganzen Aufnahme, wird dein Score HALBIERT.', 'Nach allen Runden gewinnt der höchste Score.'] },
+    killer: { goal: 'Werde Killer und nimm den Gegnern alle Leben.', lines: ['Jeder hat eine eigene Zahl und 3 Leben.', 'Triff zuerst deine eigene Zahl, um Killer zu werden.', 'Als Killer nimmst du pro Treffer auf gegnerische Zahlen ein Leben.', 'Wer als Letzter Leben übrig hat, gewinnt.'] },
+  },
+
   login: {
     management: 'Vereinsverwaltung',
     signIn: 'Anmelden',
