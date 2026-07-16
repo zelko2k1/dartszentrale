@@ -16,6 +16,9 @@ alles an einem Ort, auf deinem eigenen Gerät oder Server.
 
 ## ⬇️ Herunterladen & loslegen
 
+### ▶️ **[Demo direkt im Browser ausprobieren](https://zelko2k1.github.io/dartszentrale/)** — nichts zu installieren
+*(Beim ersten Start „Lokal" wählen — Counter, Trainingsspiele und Statistik laufen komplett im Browser.)*
+
 ### 👉 **[Fertiges Paket herunterladen (neueste Version)](https://github.com/zelko2k1/dartszentrale/releases/latest)**
 
 Kein Fachwissen nötig: Paket laden, entpacken, Start-Datei doppelklicken. Welches passt zu mir?

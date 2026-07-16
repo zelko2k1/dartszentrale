@@ -14,11 +14,14 @@ all in one place, on your own device or server.
 ![PWA](https://img.shields.io/badge/PWA-offline--capable-5a0fc8)
 ![Club use](https://img.shields.io/badge/battle--tested%20in-real%20club%20play-success)
 
-> **Note on language:** The **app itself is fully bilingual (German/English)** — switch in
-> Settings → Appearance, per device. The **written guides and admin docs are currently
-> German-only**; contributions translating them are very welcome.
+> **Note on language:** The **app is fully bilingual (German/English)** — switch in
+> Settings → Appearance, per device. All step-by-step guides are available in **English**
+> (in [`docs/`](docs/)) and **German** (in [`docs/de/`](docs/de/)).
 
 ## ⬇️ Download & get started
+
+### ▶️ **[Try the demo right in your browser](https://zelko2k1.github.io/dartszentrale/)** — nothing to install
+*(Pick "Local" on first start — counter, training games and statistics run entirely in your browser.)*
 
 ### 👉 **[Download the ready-made package (latest release)](https://github.com/zelko2k1/dartszentrale/releases/latest)**
 
@@ -30,7 +33,7 @@ No expertise needed: download, unzip, double-click the start file. Which one fit
 | **`02-club-lan.zip`** | The whole club on your own network — one program serves the app **and** the database. |
 | **`03-club-cloud.zip`** | Running on your own internet server with domain & HTTPS. |
 
-The matching step-by-step guide is **inside the package** (German) and under
+The matching step-by-step guide is **inside the package** (English and German) and under
 [“Getting started”](#getting-started--which-guide-fits-me) below.
 
 ---

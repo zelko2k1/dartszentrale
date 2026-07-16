@@ -1,0 +1,58 @@
+# Browser demo on GitHub Pages — builds the app for local mode (no PocketBase)
+# and publishes it at https://zelko2k1.github.io/dartszentrale/
+# "Try it in the browser" without installing anything: pick "Local" on first start.
+name: Deploy demo (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', '.github/workflows/pages-demo.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two deployments at once; cancel superseded ones.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (subpath base, no PocketBase URL baked in)
+        run: npm run build
+        env:
+          VITE_BASE: /dartszentrale/
+          VITE_PB_URL: ''
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

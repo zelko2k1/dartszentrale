@@ -1,0 +1,46 @@
+# Release automation — push a tag like v1.0.1 and this workflow builds the three
+# distribution bundles + the update package (via the copy2share build script) and
+# publishes them as a GitHub release.
+#
+# Release notes are auto-generated from commits; polish them (bilingual DE/EN)
+# afterwards in the GitHub UI or via `gh release edit`.
+name: Release bundles
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: app
+
+      - name: Build distribution bundles (01-single-board, 02-club-lan, 03-club-cloud + update package)
+        run: bash .claude/skills/copy2share/build.sh copy2share
+
+      - name: Create GitHub release with assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          gh release create "$TAG" \
+            copy2share/01-single-board.zip \
+            copy2share/02-club-lan.zip \
+            copy2share/03-club-cloud.zip \
+            copy2share/dartszentrale-update-*.tar.gz \
+            --title "DartsZentrale ${TAG#v}" \
+            --generate-notes

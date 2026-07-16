@@ -9,6 +9,26 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 _Noch nichts._
 
+## [1.0.1] – 2026-07-16
+
+### Behoben
+- **Counter:** Bei Rest 2 oder 3 war der **3-Dart-Checkout** fälschlich gesperrt
+  (z. B. Miss, Miss, D1) und solche Aufnahmen fehlten in der Checkout-Quote —
+  die Auscheck-Prüfung berücksichtigt jetzt Finishes mit weniger Darts als verfügbar.
+
+### Hinzugefügt
+- **Browser-Demo** auf GitHub Pages: App ohne Installation im Lokal-Modus ausprobieren.
+- **Automatische Tests** für die Spiellogik (Checkout-Regeln aller drei Out-Modi,
+  Checkout-Tabelle, Leg-/Satz-Wertung, Bust-Regel, Ligatabelle) — laufen in der neuen **CI**
+  (Lint + Tests + Build bei jedem Push/Pull-Request).
+- **Release-Automation:** Ein Git-Tag `v*` baut die Verteil-Bundles und veröffentlicht das Release.
+
+### Geändert
+- **Alles englischsprachig als Primärfassung** (App war es schon): Skripte in `scripts/`
+  (Namen + Inhalte), alle Anleitungen in `docs/` mit deutschen Fassungen in `docs/de/`,
+  Verteil-Bundles heißen jetzt `01-single-board` / `02-club-lan` / `03-club-cloud`,
+  Release-Notes zweisprachig.
+
 ## [1.0.0] – 2026-07-14
 
 Erste öffentliche Version. Läuft im echten Vereinsbetrieb.
@@ -32,5 +52,6 @@ Erste öffentliche Version. Läuft im echten Vereinsbetrieb.
   Verein-Cloud — plus dateibasiertes In-App-Update.
 - Konfigurierbares **Impressum & Datenschutz** und automatisches Backup für den Eigenbetrieb.
 
-[Unveröffentlicht]: https://github.com/zelko2k1/dartszentrale/compare/v1.0.0...HEAD
+[Unveröffentlicht]: https://github.com/zelko2k1/dartszentrale/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/zelko2k1/dartszentrale/releases/tag/v1.0.1
 [1.0.0]: https://github.com/zelko2k1/dartszentrale/releases/tag/v1.0.0

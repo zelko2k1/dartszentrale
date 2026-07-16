@@ -5,8 +5,13 @@ import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import pkg from './package.json' with { type: 'json' }
 
+// Basis-Pfad (Default '/'): für Deployments in einem Unterpfad — z. B. die GitHub-Pages-Demo
+// unter /dartszentrale/ — beim Build via  VITE_BASE=/dartszentrale/  setzen.
+const BASE = process.env.VITE_BASE || '/'
+
 // https://vite.dev/config/
 export default defineConfig({
+  base: BASE,
   define: {
     // App-Version aus package.json → im UI anzeigbar (Update-Abschnitt der Einstellungen)
     __APP_VERSION__: JSON.stringify(pkg.version),
@@ -36,8 +41,8 @@ export default defineConfig({
         background_color: '#0d0f12',
         display: 'standalone',
         orientation: 'any',
-        start_url: '/',
-        scope: '/',
+        start_url: BASE,
+        scope: BASE,
         icons: [
           { src: 'app-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
           { src: 'app-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },

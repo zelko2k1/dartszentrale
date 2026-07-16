@@ -158,10 +158,11 @@ export function canCheckout(settings: Settings, rem: number, darts: number): Che
   const finSet = new Set(finishers); const sglSet = new Set(singles);
   const max = Math.max(...finishers) + (darts - 1) * Math.max(...singles);
   if (rem > max) return { ok: false, reason: 'high', max };
-  let ok = false;
-  if (darts === 1) ok = finSet.has(rem);
-  else if (darts === 2) { for (const a of sglSet) { if (finSet.has(rem - a)) { ok = true; break; } } }
-  else { for (const a of singles) { for (const b of singles) { if (finSet.has(rem - a - b)) { ok = true; break; } } if (ok) break; } }
+  // Mit d Darts ist auch jedes Finish mit WENIGER Darts möglich (Fehlwürfe = 0 Punkte davor) —
+  // sonst wäre z. B. Rest 2 mit 3 Darts (Miss, Miss, D1) fälschlich "unmöglich".
+  let ok = finSet.has(rem);
+  if (!ok && darts >= 2) { for (const a of sglSet) { if (finSet.has(rem - a)) { ok = true; break; } } }
+  if (!ok && darts >= 3) { for (const a of singles) { for (const b of singles) { if (finSet.has(rem - a - b)) { ok = true; break; } } if (ok) break; } }
   return { ok, reason: ok ? '' : 'impossible', max };
 }
 
