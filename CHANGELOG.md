@@ -7,6 +7,10 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+_Noch nichts._
+
+## [1.0.2] – 2026-07-16
+
 ### Geändert
 - **Mobile-Layout:** Kein horizontales Scrollen mehr am Smartphone —
   Statistik-Bestenliste als Karten je Spieler, Kalender als Agenda-Liste,
@@ -59,6 +63,7 @@ Erste öffentliche Version. Läuft im echten Vereinsbetrieb.
   Verein-Cloud — plus dateibasiertes In-App-Update.
 - Konfigurierbares **Impressum & Datenschutz** und automatisches Backup für den Eigenbetrieb.
 
-[Unveröffentlicht]: https://github.com/zelko2k1/dartszentrale/compare/v1.0.1...HEAD
+[Unveröffentlicht]: https://github.com/zelko2k1/dartszentrale/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/zelko2k1/dartszentrale/releases/tag/v1.0.2
 [1.0.1]: https://github.com/zelko2k1/dartszentrale/releases/tag/v1.0.1
 [1.0.0]: https://github.com/zelko2k1/dartszentrale/releases/tag/v1.0.0
