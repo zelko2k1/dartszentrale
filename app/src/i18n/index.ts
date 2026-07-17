@@ -18,8 +18,20 @@ export const LANG_LABELS: Record<Lang, string> = { de: 'Deutsch', en: 'English' 
 const LS_LANG = 'darts_lang'; // gerätelokal, bewusst NICHT in club_config
 const DICTS: Record<Lang, Dict> = { de, en };
 
+/** Browser-Sprache: Deutsch → 'de', jede andere → 'en'. Fällt bei fehlendem navigator auf 'de'. */
+function detectBrowserLang(): Lang {
+  try {
+    const langs = navigator.languages?.length ? navigator.languages : [navigator.language];
+    return langs.some((l) => l?.toLowerCase().startsWith('de')) ? 'de' : 'en';
+  } catch { return 'de'; }
+}
+
 function readInitial(): Lang {
-  try { return localStorage.getItem(LS_LANG) === 'en' ? 'en' : 'de'; } catch { return 'de'; }
+  try {
+    const saved = localStorage.getItem(LS_LANG);
+    if (saved === 'de' || saved === 'en') return saved; // ausdrückliche Nutzerwahl hat Vorrang
+  } catch { /* localStorage gesperrt → Browser-Sprache entscheidet */ }
+  return detectBrowserLang(); // beim Erststart: Browser Deutsch → DE, sonst EN
 }
 
 let current: Lang = readInitial();
