@@ -124,6 +124,7 @@ export const de = {
     all: 'Alle',
     openCalendar: 'Kalender öffnen →',
     noEventsInRange: 'Keine Termine in diesem Zeitraum.',
+    nextEventHint: (d: string) => `Nächster Termin: ${d} · alle anzeigen →`,
     // Lokales Dashboard
     quickstart: 'Schnellstart',
     x01Match: 'X01 Match',
@@ -427,6 +428,7 @@ export const de = {
     addEvent: 'Termin',
     moreCount: (n: number) => `+${n} weitere`,
     noEventsMonth: 'Keine Termine in diesem Monat.',
+    nextEventHint: (d: string) => `Nächster Termin: ${d} →`,
   },
 
   // ── Texte der zentralen Konstanten (data/constants.ts liest sie per Getter live) ──

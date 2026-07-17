@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { EVENT_TYPES, EVENT_TYPE_ALL } from '../data/constants';
-import { perm, inSeason } from '../store/selectors';
+import { perm, inSeason, upcomingEvents } from '../store/selectors';
+import { shortLong } from '../lib/format';
 import { IconChevronLeft, IconChevronRight, IconPlus } from '../lib/icons';
 import { useIsPhone } from '../lib/useIsPhone';
 import { useT } from '../i18n';
@@ -57,6 +58,9 @@ export function Calendar() {
     .sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || ''));
   const monthEvents = monthList.length;
   const shift = (dir: number) => setRef((r) => { const d = new Date(r.y, r.m + dir, 1); return { y: d.getFullYear(), m: d.getMonth() }; });
+  // Leerer Monat, aber später gibt es Termine? Auf den nächsten hinweisen + dorthin springen (Erststart-Orientierung).
+  const nextEv = monthEvents === 0 ? upcomingEvents(events, scope, 'all', 1)[0] : undefined;
+  const jumpTo = (dateIso: string) => { const [y, m] = dateIso.split('-').map(Number); setRef({ y, m: m - 1 }); };
 
   return (
     <div style={{ padding: isPhone ? '18px 14px' : '28px 32px', maxWidth: 1240, margin: '0 auto' }}>
@@ -65,6 +69,11 @@ export function Calendar() {
           <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 6 }}>{tr.calendar.title}</div>
           <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{MON[ref.m]} {ref.y}</h1>
           <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>{tr.calendar.eventsThisMonth(monthEvents)}</div>
+          {nextEv && (
+            <button onClick={() => jumpTo(nextEv.date)} style={{ marginTop: 6, background: 'none', border: 'none', padding: 0, color: 'var(--accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              {tr.calendar.nextEventHint(shortLong(nextEv.date))}
+            </button>
+          )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button className="dh-hover-border" onClick={() => shift(-1)} title={tr.calendar.prevMonth} style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IconChevronLeft size={18} /></button>

@@ -458,10 +458,10 @@ export function describeImportSeason(
 export function scheduleTemplate(): string {
   return [
     'Termin;Saison;Staffel;SpiellokalName;HeimMannschaftName;GastMannschaftName;ToreHeim;ToreGast',
-    '06.09.2025 19:30;2025/26;Bezirksoberliga;Vereinsheim;DC Beispiel;DC Falken;8;4',
-    '04.10.2025 19:30;2025/26;Bezirksoberliga;Sportheim Falken;DC Falken;DC Beispiel;;',
-    '20.09.2025 19:30;2025/26;Kreisliga;Vereinsheim;DC Beispiel II;SG Adler;6;6',
-    '27.09.2025 14:00;2025/26;Vereinspokal;Vereinsheim;DC Beispiel;DC Löwen;;',
+    '06.09.2026 19:30;2026/27;Bezirksoberliga;Vereinsheim;DC Beispiel;DC Falken;8;4',
+    '04.10.2026 19:30;2026/27;Bezirksoberliga;Sportheim Falken;DC Falken;DC Beispiel;;',
+    '20.09.2026 19:30;2026/27;Kreisliga;Vereinsheim;DC Beispiel II;SG Adler;6;6',
+    '27.09.2026 14:00;2026/27;Vereinspokal;Vereinsheim;DC Beispiel;DC Löwen;;',
   ].join('\r\n');
 }
 

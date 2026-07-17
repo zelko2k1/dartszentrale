@@ -111,6 +111,7 @@ export const en: Dict = {
     all: 'All',
     openCalendar: 'Open calendar →',
     noEventsInRange: 'No events in this period.',
+    nextEventHint: (d: string) => `Next event: ${d} · show all →`,
     quickstart: 'Quick start',
     x01Match: 'X01 match',
     nextEvents: 'Next events',
@@ -402,6 +403,7 @@ export const en: Dict = {
     addEvent: 'Event',
     moreCount: (n: number) => `+${n} more`,
     noEventsMonth: 'No events this month.',
+    nextEventHint: (d: string) => `Next event: ${d} →`,
   },
 
   roles: {

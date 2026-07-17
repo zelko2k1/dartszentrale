@@ -2,7 +2,7 @@ import { useStore } from '../store/useStore';
 import { EVENT_TYPES, TRAIN_MODES, ROLES, TEAM_KINDS, teamKind, type TrainMode } from '../data/constants';
 import { Avatar } from '../components/Avatar';
 import {
-  dashboardMetrics, recentResults, aggregateFor, perm, currentUser, nextOwnFixture, computeStandings, inSeason,
+  dashboardMetrics, recentResults, aggregateFor, perm, currentUser, nextOwnFixture, computeStandings, inSeason, upcomingEvents,
 } from '../store/selectors';
 import { longDate, greeting as greetFn, shortLong, todayIso } from '../lib/format';
 import { useT } from '../i18n';
@@ -327,7 +327,20 @@ function VereinDashboard() {
               <button className="dh-hover-border" onClick={() => s.go('calendar')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 15px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.openCalendar}</button>
             </div>
           </div>
-          {events.length === 0 && <div style={{ padding: 22, textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.dashboard.noEventsInRange}</div>}
+          {events.length === 0 && (() => {
+            // Leerer Zeitraum, aber es gibt später Termine? Auf den nächsten hinweisen (+ „Alle" öffnen).
+            const nextAll = range !== 'all' ? upcomingEvents(dEvents, scope, 'all', 1)[0] : undefined;
+            return (
+              <div style={{ padding: 22, textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>
+                {tr.dashboard.noEventsInRange}
+                {nextAll && (
+                  <button onClick={() => s.setSetting('dashRange', 'all')} style={{ display: 'block', margin: '8px auto 0', background: 'none', border: 'none', color: 'var(--accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    {tr.dashboard.nextEventHint(shortLong(nextAll.date))}
+                  </button>
+                )}
+              </div>
+            );
+          })()}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '8px 18px' }}>
             {events.map((ev) => (
               <div key={ev.id} className="dh-hover-border dh-row" onClick={() => s.openEditEvent(ev.id)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 10px', borderRadius: 12, cursor: 'pointer', border: '1px solid transparent' }}>
