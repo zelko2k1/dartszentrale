@@ -31,7 +31,6 @@ HTTPS) — written down after the first setup, including the pitfalls.
   so Arcane needs the files on that machine:
   ```bash
   git clone https://github.com/zelko2k1/dartszentrale.git
-  # (SSH: git@github.com:zelko2k1/dartszentrale.git), branch main
   ```
   Updating later: `git pull` in the same directory, then **Redeploy** in Arcane (with rebuild).
 
