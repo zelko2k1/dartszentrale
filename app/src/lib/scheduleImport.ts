@@ -140,24 +140,27 @@ export function parseSchedule(text: string, clubName?: string): ParsedSchedule {
   if (rows.length < 2) throw new Error(dict().storeMsg.importNoRows);
 
   const headers = rows[0];
+  // Spalten werden über Alias-Listen erkannt (normalisiert: kleingeschrieben, ohne Sonderzeichen).
+  // Reihenfolge = Priorität (erster Treffer gewinnt). DE-/BDV-Aliase stehen bewusst VORN, die
+  // englischen Aliase hängen jeweils hinten an — so bleibt der BDV-Export bit-identisch matchbar.
   const idx = {
     date: colIndex(headers, ['termin', 'datum', 'date', 'spieltermin']),
     season: colIndex(headers, ['saison', 'season']),
-    staffel: colIndex(headers, ['staffel']),
+    staffel: colIndex(headers, ['staffel', 'division']),
     liga: colIndex(headers, ['liga', 'league', 'gruppe']),
     meisterschaft: colIndex(headers, ['meisterschaft']),
-    home: colIndex(headers, ['heimmannschaftname', 'heimmannschaft', 'heim', 'home', 'heimteam']),
-    away: colIndex(headers, ['gastmannschaftname', 'gastmannschaft', 'gast', 'away', 'gegner', 'gastteam']),
-    homeVereinNr: colIndex(headers, ['heimvereinnr', 'heimvereinnummer']),
-    awayVereinNr: colIndex(headers, ['gastvereinnr', 'gastvereinnummer']),
-    homeVereinName: colIndex(headers, ['heimvereinname']),
-    awayVereinName: colIndex(headers, ['gastvereinname']),
-    homeMannschaftNr: colIndex(headers, ['heimmannschaftnr', 'heimmannschaftnummer']),
-    awayMannschaftNr: colIndex(headers, ['gastmannschaftnr', 'gastmannschaftnummer']),
-    hs: colIndex(headers, ['toreheim', 'heimlegs', 'heimtore', 'heimpunkte', 'hs', 'heimscore']),
-    as: colIndex(headers, ['toregast', 'gastlegs', 'gasttore', 'gastpunkte', 'as', 'gastscore']),
+    home: colIndex(headers, ['heimmannschaftname', 'heimmannschaft', 'heim', 'home', 'heimteam', 'hometeam', 'hometeamname']),
+    away: colIndex(headers, ['gastmannschaftname', 'gastmannschaft', 'gast', 'away', 'gegner', 'gastteam', 'awayteam', 'awayteamname']),
+    homeVereinNr: colIndex(headers, ['heimvereinnr', 'heimvereinnummer', 'homeclubno', 'homeclubnr']),
+    awayVereinNr: colIndex(headers, ['gastvereinnr', 'gastvereinnummer', 'awayclubno', 'awayclubnr']),
+    homeVereinName: colIndex(headers, ['heimvereinname', 'homeclubname']),
+    awayVereinName: colIndex(headers, ['gastvereinname', 'awayclubname']),
+    homeMannschaftNr: colIndex(headers, ['heimmannschaftnr', 'heimmannschaftnummer', 'hometeamno', 'hometeamnr']),
+    awayMannschaftNr: colIndex(headers, ['gastmannschaftnr', 'gastmannschaftnummer', 'awayteamno', 'awayteamnr']),
+    hs: colIndex(headers, ['toreheim', 'heimlegs', 'heimtore', 'heimpunkte', 'hs', 'heimscore', 'homescore', 'homelegs', 'homesets']),
+    as: colIndex(headers, ['toregast', 'gastlegs', 'gasttore', 'gastpunkte', 'as', 'gastscore', 'awayscore', 'awaylegs', 'awaysets']),
     time: colIndex(headers, ['uhrzeit', 'zeit', 'time', 'anwurf', 'beginn']),
-    loc: colIndex(headers, ['ort', 'spielort', 'location', 'halle', 'spielstaette', 'spielstätte', 'spiellokalname', 'spiellokal']),
+    loc: colIndex(headers, ['ort', 'spielort', 'location', 'halle', 'spielstaette', 'spielstätte', 'spiellokalname', 'spiellokal', 'venue']),
   };
 
   const leagueCol = idx.staffel >= 0 ? idx.staffel : (idx.liga >= 0 ? idx.liga : idx.meisterschaft);
@@ -459,5 +462,21 @@ export function scheduleTemplate(): string {
     '04.10.2025 19:30;2025/26;Bezirksoberliga;Sportheim Falken;DC Falken;DC Beispiel;;',
     '20.09.2025 19:30;2025/26;Kreisliga;Vereinsheim;DC Beispiel II;SG Adler;6;6',
     '27.09.2025 14:00;2025/26;Vereinspokal;Vereinsheim;DC Beispiel;DC Löwen;;',
+  ].join('\r\n');
+}
+
+/**
+ * Englische Variante derselben Vorlage. Die Spaltenüberschriften werden vom Parser über die
+ * englischen Aliase erkannt (division, home/away team, home/away score, venue …), sodass beide
+ * Vorlagen durch denselben Import laufen. Datum bewusst im ISO-Format JJJJ-MM-TT (international
+ * eindeutig; der Parser kennt kein US-Format MM/TT/JJJJ). „Cup" im Staffelnamen → K.-o.-Wettbewerb.
+ */
+export function scheduleTemplateEn(): string {
+  return [
+    'Date;Season;Division;Venue;Home Team;Away Team;Home Score;Away Score',
+    '2026-09-06 19:30;2026/27;Premier Division;Clubhouse;Sample DC;Falcon Darts;8;4',
+    '2026-10-04 19:30;2026/27;Premier Division;Falcon Venue;Falcon Darts;Sample DC;;',
+    '2026-09-20 19:30;2026/27;County League;Clubhouse;Sample DC II;Eagle SC;6;6',
+    '2026-09-27 14:00;2026/27;Club Cup;Clubhouse;Sample DC;Lion DC;;',
   ].join('\r\n');
 }

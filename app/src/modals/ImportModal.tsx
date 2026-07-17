@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { Modal, ModalTitle } from '../components/Modal';
 import { decodeBytes, countReplacementChars } from '../lib/csv';
-import { parseSchedule, scheduleTemplate, describeImportSeason, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
+import { parseSchedule, scheduleTemplate, scheduleTemplateEn, describeImportSeason, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
 import { useT } from '../i18n';
 
 function teamCount(g: ParsedSchedule['groups'][number]): number {
@@ -43,11 +43,11 @@ export function ImportModal() {
     runParse(decodeBytes(buf), file.name);
   };
 
-  const downloadTemplate = () => {
-    const blob = new Blob(['﻿' + scheduleTemplate()], { type: 'text/csv;charset=utf-8' });
+  const downloadTemplate = (csv: string, name: string) => {
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'spielplan-vorlage.csv';
+    a.href = url; a.download = name;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -101,7 +101,8 @@ export function ImportModal() {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
             {btn(tr.modals.chooseFile, () => fileRef.current?.click())}
             {btn(paste ? tr.modals.pasteClose : tr.modals.pasteText, () => setPaste((v) => !v))}
-            {btn(tr.modals.downloadTemplate, downloadTemplate)}
+            {btn(tr.modals.downloadTemplateDe, () => downloadTemplate(scheduleTemplate(), 'spielplan-vorlage.csv'))}
+            {btn(tr.modals.downloadTemplateEn, () => downloadTemplate(scheduleTemplateEn(), 'schedule-template.csv'))}
           </div>
 
           {paste && (
