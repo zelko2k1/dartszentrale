@@ -24,7 +24,6 @@ import { CounterSetup } from './screens/CounterSetup';
 import { LiveEntry } from './screens/LiveEntry';
 import { parseLiveRoute } from './lib/deepLink';
 import { useLiveHost } from './lib/useLiveHost';
-import { LivePairBadge } from './components/LivePairBadge';
 import { BoardPanel } from './components/BoardPanel';
 import { NextGameOverlay } from './components/NextGameOverlay';
 import { CommandPalette } from './components/CommandPalette';
@@ -311,7 +310,6 @@ export default function App() {
         </>
       )}
       <Modals />
-      {!liveRoute && <LivePairBadge corner="br" />}
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       {s.syncError && (
         <div

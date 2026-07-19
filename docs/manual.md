@@ -285,11 +285,12 @@ Settings**, no administration.
 When a board runs in kiosk mode, it can be controlled from a **phone** — handy if
 a board's mouse/keyboard fails, or simply because standing at the PC is awkward.
 
-- On the board screen, a small **"Handy koppeln"** badge (bottom right) shows a
-  **QR code** and a short **pairing code**.
-- A club member scans the QR (or opens the link and enters the code) → the phone
-  becomes the **scorer**: number pad, quick scores, undo, and match navigation
-  (pick starter, new game, etc.). The board keeps showing everything.
+- On the board, open **Settings → Einstellungen** (kiosk tab): a **"Handy als
+  Fernbedienung koppeln"** panel shows a **QR code** and a short **pairing code**.
+- A club member either **scans the QR**, or opens **`<board-address>/#/remote`** on
+  the phone and **types the code** → the phone becomes the **scorer**: number pad,
+  quick scores, undo, and match navigation (pick starter, new game, etc.). The board
+  keeps showing everything. (Pair first, then start the match.)
 - Only **one** phone controls a board at a time. If a second phone wants to take
   over, the **current** phone must confirm.
 - Toggle the whole feature under **Settings → Board computers → "Handy als

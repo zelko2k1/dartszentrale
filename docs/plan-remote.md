@@ -335,6 +335,11 @@ Additiv zum `DataProvider`-Interface (Lokal: no-op/`unsupported`, wie bei 2FA/nu
       (a) Watch-Ansicht nutzt jetzt modus-unabhängig einen Server-Provider (frischer TV-Browser ohne
       „Vereinsmodus"-Wahl kam sonst nicht an den Server); (b) Einzel-Board-TV-Layout füllt die Breite
       (war links). Nebenbei bestätigt: verwaiste Session (Browser hart geschlossen) → Cleanup-Bedarf real.
+- [x] **Nachschliff (2026-07-19, nach echtem Handy-Test):** manuelle **Code-Eingabe** am Handy
+      (`#/remote` ohne ID → Code tippen; Server findet die Session per Code, `/api/live/claim` akzeptiert
+      code-only, `liveClaimByCode`). Koppel-UI (QR + Code) vom **überlappenden Floating-Badge** in die
+      **Einstellungen** verlegt (`components/BoardPairPanel.tsx`, nur im **Kiosk** sichtbar). Beides im
+      echten Browser verifiziert (Handy tippt Code → verbunden → 180 → Board rechnet).
 - [ ] _Optional/offen:_ PIN vor der Watch-Seite; In-App-„Live"-Einstieg für Mitglieder. Kernfeature steht.
 
 ---

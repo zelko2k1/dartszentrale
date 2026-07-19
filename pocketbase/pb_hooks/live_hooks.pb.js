@@ -24,31 +24,41 @@ onRecordCreateRequest((e) => {
   e.next();
 }, "live_commands");
 
-// ── POST /api/live/claim { sessionId, code } → koppeln oder Übernahme anfragen ──
+// ── POST /api/live/claim { sessionId?, code } → koppeln oder Übernahme anfragen ──
+//    sessionId per QR-Scan mitgeliefert; fehlt sie (manuelle Code-Eingabe am Handy), wird die aktive
+//    Session anhand des Codes gesucht. Liefert die sessionId zurück, damit das Handy sie danach beobachtet.
 routerAdd("POST", "/api/live/claim", (e) => {
   const auth = e.auth;
   if (!auth) throw new ForbiddenError("Anmeldung erforderlich.");
   const data = new DynamicModel({ sessionId: "", code: "" });
   e.bindBody(data);
-  if (!data.sessionId) throw new BadRequestError("sessionId fehlt.");
-  const sess = e.app.findRecordById("live_sessions", data.sessionId);
-  if (sess.get("status") === "ended") throw new BadRequestError("Diese Session ist beendet.");
-  const code = String(sess.get("code") || "");
-  if (!code || code !== String(data.code || "")) {
-    throw new BadRequestError("Falscher oder abgelaufener Kopplungscode.");
+  const code = String(data.code || "").trim().toUpperCase();
+  if (!code) throw new BadRequestError("Kopplungscode fehlt.");
+
+  let sess;
+  if (data.sessionId) {
+    sess = e.app.findRecordById("live_sessions", data.sessionId);
+  } else {
+    // Nur Code: die aktive Session mit diesem Code finden.
+    try { sess = e.app.findFirstRecordByFilter("live_sessions", "status = 'active' && code = {:c}", { c: code }); }
+    catch (_) { sess = null; }
+    if (!sess) throw new BadRequestError("Kein Board mit diesem Code gefunden.");
   }
+  if (sess.get("status") === "ended") throw new BadRequestError("Diese Session ist beendet.");
+  if (String(sess.get("code") || "") !== code) throw new BadRequestError("Falscher oder abgelaufener Kopplungscode.");
+
   const current = sess.get("remoteUser");
   if (!current || current === auth.id) {
     // Frei (oder man selbst) → sofort koppeln.
     sess.set("remoteUser", auth.id);
     sess.set("pendingRemote", "");
     e.app.save(sess);
-    return e.json(200, { ok: true, claimed: true, pending: false });
+    return e.json(200, { ok: true, claimed: true, pending: false, sessionId: sess.id });
   }
   // Belegt durch ein anderes Handy → Übernahme muss der aktuelle Anschreiber bestätigen.
   sess.set("pendingRemote", auth.id);
   e.app.save(sess);
-  return e.json(200, { ok: true, claimed: false, pending: true });
+  return e.json(200, { ok: true, claimed: false, pending: true, sessionId: sess.id });
 }, $apis.requireAuth("users"));
 
 // ── POST /api/live/claim/approve { sessionId } → aktueller Remote bestätigt die Übernahme ──

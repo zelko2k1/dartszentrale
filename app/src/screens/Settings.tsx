@@ -9,6 +9,7 @@ import { suggestBoardScale } from '../lib/displayScale';
 import { useReorder } from '../lib/useReorder';
 import { qrSvg } from '../lib/qrcode';
 import { WatchTvPanel } from '../components/WatchTvPanel';
+import { BoardPairPanel } from '../components/BoardPairPanel';
 import type { TwoFactorStatus, TwoFactorSetup } from '../data/provider';
 import { useT, useLang, setLang, dict, LANG_LABELS, type Lang } from '../i18n';
 
@@ -1004,6 +1005,9 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
           <span>{tr.settings.readOnlyNote}</span>
         </div>
       )}
+
+      {/* Board-/Kiosk-Modus: Handy als Fernbedienung koppeln (QR + Code dieses Boards). */}
+      {kiosk && <BoardPairPanel />}
 
       {/* Rubrik-Navigation — per Drag & Drop umsortierbar (Reihenfolge gerätelokal gespeichert) */}
       <div ref={tabDnd.containerRef} style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>

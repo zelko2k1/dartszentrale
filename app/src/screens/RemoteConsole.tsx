@@ -12,18 +12,23 @@ const ACCENT = '#E0594B';
 export function RemoteConsole({ route }: { route: LiveRoute }) {
   const provider = useStore((s) => s.provider);
   const meId = useMemo(() => provider.currentUser()?.id ?? '', [provider]);
+  // Session-ID: per QR aus dem Deep-Link, oder erst nach manueller Code-Eingaben (dann gesetzt).
+  const [sessionId, setSessionId] = useState(route.sessionId);
   const [session, setSession] = useState<LiveSession | null>(null);
   const [status, setStatus] = useState<'loading' | 'ok' | 'gone'>('loading');
   const [claim, setClaim] = useState<'idle' | 'pending' | 'error'>('idle');
   const [err, setErr] = useState('');
+  const [manualCode, setManualCode] = useState('');
+  const [busy, setBusy] = useState(false);
   const seqRef = useRef(0);
   const [pendingSeq, setPendingSeq] = useState(0);
 
   useEffect(() => {
+    if (!sessionId) return;                       // noch keine Session (manuelle Eingabe offen)
     if (!provider.liveSupported) { setStatus('gone'); return; }
-    const unsub = provider.liveWatch(route.sessionId, (s) => { setSession(s); setStatus(s ? 'ok' : 'gone'); });
-    return () => { unsub(); void provider.liveRelease(route.sessionId).catch(() => {}); };
-  }, [provider, route.sessionId]);
+    const unsub = provider.liveWatch(sessionId, (s) => { setSession(s); setStatus(s ? 'ok' : 'gone'); });
+    return () => { unsub(); void provider.liveRelease(sessionId).catch(() => {}); };
+  }, [provider, sessionId]);
 
   const isRemote = !!session && meId !== '' && session.remoteUser === meId;
   const someoneElse = !!session && !!session.remoteUser && session.remoteUser !== meId;
@@ -34,14 +39,25 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
   async function pair() {
     setErr('');
     try {
-      const r = await provider.liveClaim(route.sessionId, route.code);
+      const r = await provider.liveClaim(sessionId, route.code);
       setClaim(r.claimed ? 'idle' : r.pending ? 'pending' : 'idle');
     } catch (e) { setClaim('error'); setErr(msg(e)); }
+  }
+  async function pairByCode() {
+    const code = manualCode.trim().toUpperCase();
+    if (code.length < 4) return;
+    setErr(''); setBusy(true);
+    try {
+      const r = await provider.liveClaimByCode(code);
+      setSessionId(r.sessionId);                  // ab jetzt beobachten wir die gefundene Session
+      setClaim(r.pending ? 'pending' : 'idle');
+    } catch (e) { setErr(msg(e)); }
+    finally { setBusy(false); }
   }
   async function send(type: string, payload: Record<string, unknown> = {}) {
     seqRef.current = Math.max(seqRef.current, session?.lastAppliedSeq ?? 0) + 1;
     const seq = seqRef.current; setPendingSeq(seq);
-    try { await provider.liveSend(route.sessionId, seq, type, payload); }
+    try { await provider.liveSend(sessionId, seq, type, payload); }
     catch (e) { setErr(msg(e)); }
   }
 
@@ -50,6 +66,31 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
   const center: React.CSSProperties = { ...shell, alignItems: 'center', justifyContent: 'center', gap: 14, padding: 24, textAlign: 'center' };
   const bigBtn: React.CSSProperties = { background: ACCENT, color: '#fff', border: 'none', borderRadius: 14, padding: '16px 24px', fontSize: 16, fontWeight: 800, cursor: 'pointer' };
   const ghost: React.CSSProperties = { background: 'transparent', color: '#9aa4ad', border: '1px solid #2a3138', borderRadius: 11, padding: '10px 16px', fontSize: 14, fontWeight: 700, cursor: 'pointer' };
+
+  // ── Manuelle Code-Eingabe (Aufruf über #/remote ohne Session-ID) ──
+  if (!sessionId) {
+    if (!provider.liveSupported) return (
+      <div style={center}><div style={{ fontSize: 20, fontWeight: 800 }}>Nur im Vereinsmodus</div>
+        <div style={{ fontSize: 14, color: '#9aa4ad', maxWidth: 320, lineHeight: 1.5 }}>Die Fernbedienung ist nur im Vereins-/Board-Modus verfügbar.</div></div>
+    );
+    return (
+      <div style={center}>
+        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color: ACCENT }}>Fernbedienung</div>
+        <div style={{ fontSize: 22, fontWeight: 800 }}>Code eingeben</div>
+        <div style={{ fontSize: 14, color: '#9aa4ad', maxWidth: 320, lineHeight: 1.5 }}>Den Kopplungscode findest du am Board unter <b>Einstellungen → Handy koppeln</b>.</div>
+        <input
+          value={manualCode}
+          onChange={(e) => setManualCode(e.target.value.toUpperCase().slice(0, 8))}
+          onKeyDown={(e) => { if (e.key === 'Enter') void pairByCode(); }}
+          placeholder="z. B. DVXR2K"
+          autoCapitalize="characters" autoCorrect="off" spellCheck={false} autoFocus
+          style={{ width: 220, maxWidth: '80vw', textAlign: 'center', fontFamily: 'monospace', fontSize: 28, fontWeight: 800, letterSpacing: '.18em', background: '#12161a', border: '1px solid #2a3138', borderRadius: 12, padding: '14px 12px', color: '#e9edf1', outline: 'none' }}
+        />
+        <button style={{ ...bigBtn, opacity: busy || manualCode.trim().length < 4 ? 0.5 : 1 }} disabled={busy || manualCode.trim().length < 4} onClick={pairByCode}>Koppeln</button>
+        {err && <div style={{ color: ACCENT, fontWeight: 700 }}>{err}</div>}
+      </div>
+    );
+  }
 
   if (status === 'loading') return <div style={center}><div style={{ fontSize: 18, fontWeight: 700 }}>Verbinde…</div></div>;
   if (status === 'gone') return (
@@ -70,7 +111,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
         {iRequested ? (
           <>
             <div style={{ color: ACCENT, fontWeight: 700, maxWidth: 320, lineHeight: 1.5 }}>Übernahme angefragt — warte auf Bestätigung am aktuellen Handy.</div>
-            <button style={ghost} onClick={() => provider.liveRelease(route.sessionId)}>Abbrechen</button>
+            <button style={ghost} onClick={() => provider.liveRelease(sessionId)}>Abbrechen</button>
           </>
         ) : someoneElse ? (
           <>
@@ -110,8 +151,8 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
       {takeoverIncoming && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', background: '#3a2714', borderBottom: '1px solid #7a5a2a', fontSize: 13 }}>
           <span style={{ flex: 1 }}>Ein anderes Gerät möchte übernehmen.</span>
-          <button style={{ ...ghost, padding: '6px 12px' }} onClick={() => provider.liveClaimDeny(route.sessionId)}>Ablehnen</button>
-          <button style={{ background: ACCENT, color: '#fff', border: 'none', borderRadius: 9, padding: '6px 12px', fontSize: 13, fontWeight: 800, cursor: 'pointer' }} onClick={() => provider.liveClaimApprove(route.sessionId)}>Zulassen</button>
+          <button style={{ ...ghost, padding: '6px 12px' }} onClick={() => provider.liveClaimDeny(sessionId)}>Ablehnen</button>
+          <button style={{ background: ACCENT, color: '#fff', border: 'none', borderRadius: 9, padding: '6px 12px', fontSize: 13, fontWeight: 800, cursor: 'pointer' }} onClick={() => provider.liveClaimApprove(sessionId)}>Zulassen</button>
         </div>
       )}
 

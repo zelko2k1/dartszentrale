@@ -109,6 +109,7 @@ export class LocalProvider implements DataProvider {
   async liveListActive(): Promise<LiveSession[]> { return []; }
   liveSubscribeList(): () => void { return () => {}; }
   async liveClaim(): Promise<{ claimed: boolean; pending: boolean }> { throw new Error('Remote/Live gibt es nur im Vereinsmodus.'); }
+  async liveClaimByCode(): Promise<{ claimed: boolean; pending: boolean; sessionId: string }> { throw new Error('Remote/Live gibt es nur im Vereinsmodus.'); }
   async liveClaimApprove(): Promise<void> { /* noop */ }
   async liveClaimDeny(): Promise<void> { /* noop */ }
   async liveRelease(): Promise<void> { /* noop */ }

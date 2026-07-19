@@ -358,6 +358,10 @@ export class PocketBaseProvider implements DataProvider {
     const r = await this.pb.send('/api/live/claim', { method: 'POST', body: { sessionId, code } }) as { claimed?: boolean; pending?: boolean };
     return { claimed: !!r?.claimed, pending: !!r?.pending };
   }
+  async liveClaimByCode(code: string): Promise<{ claimed: boolean; pending: boolean; sessionId: string }> {
+    const r = await this.pb.send('/api/live/claim', { method: 'POST', body: { code } }) as { claimed?: boolean; pending?: boolean; sessionId?: string };
+    return { claimed: !!r?.claimed, pending: !!r?.pending, sessionId: String(r?.sessionId ?? '') };
+  }
   async liveClaimApprove(sessionId: string): Promise<void> {
     await this.pb.send('/api/live/claim/approve', { method: 'POST', body: { sessionId } });
   }

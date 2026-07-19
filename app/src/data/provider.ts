@@ -171,6 +171,8 @@ export interface DataProvider {
   liveSubscribeList(onChange: () => void): () => void;
   /** Remote: koppeln (Code prüfen). claimed=sofort gekoppelt, pending=Übernahme angefragt. */
   liveClaim(sessionId: string, code: string): Promise<{ claimed: boolean; pending: boolean }>;
+  /** Remote: koppeln NUR über den Code (manuelle Eingabe ohne QR) — findet die Session, liefert ihre ID. */
+  liveClaimByCode(code: string): Promise<{ claimed: boolean; pending: boolean; sessionId: string }>;
   /** Remote (aktueller): Übernahme durch ein anderes Handy bestätigen. */
   liveClaimApprove(sessionId: string): Promise<void>;
   /** Remote (aktueller): Übernahme ablehnen. */
