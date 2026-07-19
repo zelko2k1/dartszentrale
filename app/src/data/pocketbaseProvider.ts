@@ -5,7 +5,7 @@
 // Einzige Sonderfälle: 'accounts' → PB-Auth-Collection 'users' (Passwort), sowie
 // user_prefs (persönliche Einstellungen) und club_config (Vereinsname/Logo).
 import PocketBase, { type RecordModel } from 'pocketbase';
-import type { DataProvider, Snapshot, CollectionName, AuthUser, ProviderRecord, PublicConfig, LoginResult, TwoFactorStatus, TwoFactorSetup } from './provider';
+import type { DataProvider, Snapshot, CollectionName, AuthUser, ProviderRecord, PublicConfig, LoginResult, TwoFactorStatus, TwoFactorSetup, LiveViewState, LiveSession, LiveCommand } from './provider';
 import type { Settings, Role } from './types';
 import type { NuligaResponse } from '../lib/nuligaImport';
 import { DEVICE_LOCAL_SETTING_KEYS } from './constants';
@@ -274,5 +274,122 @@ export class PocketBaseProvider implements DataProvider {
     const colls = ['players', 'teams', 'users', 'leagues', 'events', 'matches', 'seasons', 'season_snapshots', 'club_config'];
     const unsubs = colls.map((c) => this.pb.collection(c).subscribe('*', () => onChange()).catch(() => () => {}));
     return () => { unsubs.forEach((p) => { void p.then((fn) => fn()).catch(() => {}); }); };
+  }
+
+  // ── Remote & Live (Plan docs/plan-remote.md) ──
+  readonly liveSupported = true;
+
+  private liveSessionFrom(r: ProviderRecord): LiveSession {
+    return {
+      id: String(r.id),
+      host: String(r.host ?? ''),
+      boardName: String(r.boardName ?? ''),
+      code: String(r.code ?? ''),
+      remoteUser: String(r.remoteUser ?? ''),
+      pendingRemote: String(r.pendingRemote ?? ''),
+      status: (String(r.status ?? 'idle') as LiveSession['status']),
+      state: (r.state as LiveViewState | null) ?? null,
+      lastAppliedSeq: Number(r.lastAppliedSeq ?? 0),
+    };
+  }
+
+  async livePublish(input: { boardName: string; code: string; state: LiveViewState }): Promise<string> {
+    const me = this.pb.authStore.record;
+    if (!me) throw new Error('Anmeldung erforderlich.');
+    const rec = await this.pb.collection('live_sessions').create({
+      host: me.id, boardName: input.boardName, code: input.code, status: 'active',
+      state: input.state, lastAppliedSeq: 0, heartbeat: new Date().toISOString(),
+      remoteUser: '', pendingRemote: '',
+    });
+    return rec.id;
+  }
+
+  async liveUpdateState(sessionId: string, state: LiveViewState, heartbeat = false): Promise<void> {
+    const body: ProviderRecord = { state };
+    if (heartbeat) body.heartbeat = new Date().toISOString();
+    await this.pb.collection('live_sessions').update(sessionId, body);
+  }
+
+  async liveAck(sessionId: string, lastAppliedSeq: number, state: LiveViewState): Promise<void> {
+    await this.pb.collection('live_sessions').update(sessionId, { lastAppliedSeq, state });
+  }
+
+  async liveEnd(sessionId: string): Promise<void> {
+    await this.pb.collection('live_sessions').update(sessionId, { status: 'ended' });
+  }
+
+  liveConsume(sessionId: string, onCmd: (cmd: LiveCommand) => void): () => void {
+    // Auf create-Events der eigenen Session hören; serverseitig sieht der Host ohnehin nur seine (listRule).
+    const p = this.pb.collection('live_commands').subscribe('*', (e) => {
+      if (e.action !== 'create') return;
+      const r = e.record as unknown as ProviderRecord;
+      if (String(r.session) !== sessionId) return;
+      onCmd({ id: String(r.id), session: String(r.session), seq: Number(r.seq ?? 0), type: String(r.type ?? ''), payload: r.payload ?? null, createdBy: String(r.createdBy ?? '') });
+    });
+    return () => { void p.then((fn) => fn()).catch(() => {}); };
+  }
+
+  async liveDeleteCommand(commandId: string): Promise<void> {
+    await this.pb.collection('live_commands').delete(commandId).catch(() => {});
+  }
+
+  liveWatch(sessionId: string, onChange: (s: LiveSession | null) => void): () => void {
+    this.pb.collection('live_sessions').getOne(sessionId, { requestKey: null })
+      .then((r) => onChange(this.liveSessionFrom(r as unknown as ProviderRecord)))
+      .catch(() => onChange(null));
+    const p = this.pb.collection('live_sessions').subscribe(sessionId, (e) => {
+      if (e.action === 'delete') { onChange(null); return; }
+      onChange(this.liveSessionFrom(e.record as unknown as ProviderRecord));
+    });
+    return () => { void p.then((fn) => fn()).catch(() => {}); };
+  }
+
+  async liveListActive(): Promise<LiveSession[]> {
+    const rows = await this.pb.collection('live_sessions').getFullList({ filter: 'status="active"', requestKey: null });
+    return rows.map((r) => this.liveSessionFrom(r as unknown as ProviderRecord));
+  }
+
+  liveSubscribeList(onChange: () => void): () => void {
+    const p = this.pb.collection('live_sessions').subscribe('*', () => onChange());
+    return () => { void p.then((fn) => fn()).catch(() => {}); };
+  }
+
+  async liveClaim(sessionId: string, code: string): Promise<{ claimed: boolean; pending: boolean }> {
+    const r = await this.pb.send('/api/live/claim', { method: 'POST', body: { sessionId, code } }) as { claimed?: boolean; pending?: boolean };
+    return { claimed: !!r?.claimed, pending: !!r?.pending };
+  }
+  async liveClaimApprove(sessionId: string): Promise<void> {
+    await this.pb.send('/api/live/claim/approve', { method: 'POST', body: { sessionId } });
+  }
+  async liveClaimDeny(sessionId: string): Promise<void> {
+    await this.pb.send('/api/live/claim/deny', { method: 'POST', body: { sessionId } });
+  }
+  async liveRelease(sessionId: string): Promise<void> {
+    await this.pb.send('/api/live/release', { method: 'POST', body: { sessionId } });
+  }
+
+  async liveSend(sessionId: string, seq: number, type: string, payload: unknown): Promise<void> {
+    const me = this.pb.authStore.record;
+    if (!me) throw new Error('Anmeldung erforderlich.');
+    await this.pb.collection('live_commands').create({ session: sessionId, seq, type, payload, createdBy: me.id });
+  }
+
+  // ── Öffentlicher Zuschauer-TV (Plan docs/plan-remote.md, Phase 4) ──
+  async watchGetConfig(): Promise<{ enabled: boolean; token: string }> {
+    const r = await this.pb.send('/api/live/watch/config', { method: 'GET' }) as { enabled?: boolean; token?: string };
+    return { enabled: !!r?.enabled, token: String(r?.token ?? '') };
+  }
+  async watchSetEnabled(enabled: boolean): Promise<{ enabled: boolean; token: string }> {
+    const r = await this.pb.send('/api/live/watch/config', { method: 'POST', body: { enabled } }) as { enabled?: boolean; token?: string };
+    return { enabled: !!r?.enabled, token: String(r?.token ?? '') };
+  }
+  async watchRotate(): Promise<{ enabled: boolean; token: string }> {
+    const r = await this.pb.send('/api/live/watch/config', { method: 'POST', body: { rotate: true } }) as { enabled?: boolean; token?: string };
+    return { enabled: !!r?.enabled, token: String(r?.token ?? '') };
+  }
+  async watchPublic(token: string): Promise<{ boards: { boardName: string; state: LiveViewState | null }[] }> {
+    // Ohne Login: der öffentliche Endpunkt prüft Kill-Switch + Token serverseitig.
+    const r = await this.pb.send('/api/live/public', { method: 'GET', query: { token } }) as { boards?: { boardName: string; state: LiveViewState | null }[] };
+    return { boards: Array.isArray(r?.boards) ? r.boards : [] };
   }
 }

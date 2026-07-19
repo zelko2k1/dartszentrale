@@ -280,6 +280,34 @@ Settings**, no administration.
 > Rotate board passwords regularly (run the script again) and never write them
 > down at the boards.
 
+### Phone as a Remote Control
+
+When a board runs in kiosk mode, it can be controlled from a **phone** — handy if
+a board's mouse/keyboard fails, or simply because standing at the PC is awkward.
+
+- On the board screen, a small **"Handy koppeln"** badge (bottom right) shows a
+  **QR code** and a short **pairing code**.
+- A club member scans the QR (or opens the link and enters the code) → the phone
+  becomes the **scorer**: number pad, quick scores, undo, and match navigation
+  (pick starter, new game, etc.). The board keeps showing everything.
+- Only **one** phone controls a board at a time. If a second phone wants to take
+  over, the **current** phone must confirm.
+- Toggle the whole feature under **Settings → Board computers → "Handy als
+  Fernbedienung"** (club-wide, on by default). Board/club mode only.
+
+### Public Live TV (watch without a login)
+
+For a screen in the next room, there's a **login-free** watch link that shows the
+current match(es) — one board full-screen, several as tiles.
+
+- Turn it on under **Settings → Board computers → "Öffentlicher Zuschauer-TV"**
+  (**off by default** — deliberately, so nothing is public on the internet unless
+  you enable it). You get a **secret link + QR** to open on the TV/next-room screen.
+- The link shows **only** board name and score — no personal data, and the pairing
+  code that controls a board is never exposed.
+- **"Neu generieren"** rotates the link (old links stop working immediately).
+  Turning the switch off is an instant kill-switch. Use HTTPS on the internet.
+
 ---
 
 ## 12. Settings

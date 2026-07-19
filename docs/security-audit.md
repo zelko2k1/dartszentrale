@@ -42,8 +42,16 @@ vor dem Go-live zu schließen (siehe Checkliste unten).
   Local-Mode-Allrechte sicher (kein Server beteiligt).
 - Die client-seitigen Rollen-Checks (`perm()`) sind **kosmetisch** — die echte Grenze sind die
   PB-Regeln, und die sind korrekt.
-
-## ✅ Bereits behoben (im Code)
+- **Remote & Live** (`pb_hooks/live_hooks.pb.js` + `watch_hooks.pb.js`, Plan `docs/plan-remote.md`):
+  **Ein-Schreiber-Garantie serverseitig** — nur der gekoppelte `remoteUser` darf `live_commands` anlegen
+  (`onRecordCreateRequest`-Guard; blockt auch Superuser-Forgery mit fremdem `createdBy`). Session-Update
+  nur durch den Host; Kopplung/Übernahme nur über Hook (Code-Prüfung). Der **öffentliche Zuschauer-Kanal**
+  ist **token-gegatet** mit serverseitigem **Kill-Switch** `watchEnabled` (Default **aus**, blockt sofort
+  auch bereits verteilte Links), Token **rotierbar** und **nicht auflistbar**; der öffentliche Payload
+  trägt **nur** Boardname + Spielstand — `code`/`host`/`remoteUser` verlassen nie den Server. `watch_config`
+  ist abgeschottet (Rules null). QR-Codes als data-URI im `<img>` (kein HTML-Injection-Sink). Nur
+  Vereinsmodus. **E2E-verifiziert** (32 Checks: Ein-Schreiber, Kopplung/Übernahme, Kill-Switch, kein Leak,
+  Token-Rotation, Cleanup/cascadeDelete).
 
 Kurz dokumentiert für die Nachvollziehbarkeit der Nummern; Details in der Git-Historie:
 

@@ -49,6 +49,7 @@ export const DEFAULT_SETTINGS: Settings = {
   quickBo5Key: 'ctrl+alt+5',
   quickBo3Key: 'ctrl+alt+3',
   appMode: 'verein',
+  remoteEnabled: true,
   pbUrl: '',
   clubName: '',
   clubLogo: null,

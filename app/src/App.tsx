@@ -21,6 +21,10 @@ import { TrainingSetup } from './screens/TrainingSetup';
 import { TrainingGame } from './screens/TrainingGame';
 import { Counter } from './screens/Counter';
 import { CounterSetup } from './screens/CounterSetup';
+import { LiveEntry } from './screens/LiveEntry';
+import { parseLiveRoute } from './lib/deepLink';
+import { useLiveHost } from './lib/useLiveHost';
+import { LivePairBadge } from './components/LivePairBadge';
 import { BoardPanel } from './components/BoardPanel';
 import { NextGameOverlay } from './components/NextGameOverlay';
 import { CommandPalette } from './components/CommandPalette';
@@ -58,8 +62,12 @@ export default function App() {
   const [exitForm, setExitForm] = useState({ email: '', pw: '', err: '', busy: false });
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [updateDismissed, setUpdateDismissed] = useState(false);
+  // Deep-Link-Einstieg (QR): #/remote/<id> oder #/watch/<id> — einmalig beim Start ausgewertet.
+  const [liveRoute] = useState(() => parseLiveRoute());
 
   useEffect(() => { init(); }, [init]);
+  // Host für „Remote & Live": veröffentlicht im Board-/Kiosk-Modus automatisch eine Live-Session.
+  useLiveHost();
   useEffect(() => {
     const t = setInterval(() => useStore.setState({ now: Date.now() }), 30000);
     return () => clearInterval(t);
@@ -239,10 +247,15 @@ export default function App() {
           <button onClick={() => setUpdateDismissed(true)} aria-label="Später" title="Später" style={{ background: 'transparent', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 4px' }}>×</button>
         </div>
       )}
-      {s.needsModeChoice ? (
+      {liveRoute?.mode === 'watch' ? (
+        // Login-freier Zuschauer-TV: rendert VOR den Mode-/Login-Gates (Plan docs/plan-remote.md, Phase 4).
+        <LiveEntry route={liveRoute} />
+      ) : s.needsModeChoice ? (
         <ModePicker />
       ) : needsLogin ? (
         <Login />
+      ) : liveRoute ? (
+        <LiveEntry route={liveRoute} />
       ) : kioskLocked ? (
         isCounter ? (
           <Counter />
@@ -298,6 +311,7 @@ export default function App() {
         </>
       )}
       <Modals />
+      {!liveRoute && <LivePairBadge corner="br" />}
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       {s.syncError && (
         <div

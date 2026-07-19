@@ -362,6 +362,8 @@ export const de = {
     toUsers: 'Zu den Benutzern →',
     boardWindowRow: 'Spiele am Board anzeigen',
     boardWindowSub: 'Wie viele Tage um den Spieltag ein Board die zugeordnete Begegnung automatisch zeigt. Manuell überschreibbar in der Aufstellung (an die Boards senden) oder direkt am Board (jetzt anzeigen). Vereinsweit.',
+    remoteRow: 'Handy als Fernbedienung',
+    remoteSub: 'Erlaubt, ein Smartphone per QR-Code an ein Board zu koppeln und Eingabe/Navigation vom Handy zu übernehmen (Notfall bei defekter Maus/Tastatur oder als bequeme Bedienung). Nur im Board-/Vereinsmodus. Vereinsweit.',
     matchdayOnly: 'Nur Spieltag',
     plusDay: (n: number) => `±${n} Tag${n === 1 ? '' : 'e'}`,
     secAccount: 'Mein Konto',

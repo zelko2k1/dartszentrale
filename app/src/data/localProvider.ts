@@ -1,5 +1,5 @@
 // LocalProvider — bildet das aktuelle localStorage-Verhalten hinter der DataProvider-Schnittstelle ab.
-import type { DataProvider, Snapshot, CollectionName, AuthUser, ProviderRecord, LoginResult, TwoFactorStatus, TwoFactorSetup } from './provider';
+import type { DataProvider, Snapshot, CollectionName, AuthUser, ProviderRecord, LoginResult, TwoFactorStatus, TwoFactorSetup, LiveSession } from './provider';
 import type { Settings } from './types';
 import { STORAGE_KEYS } from './storageKeys';
 import { dict } from '../i18n';
@@ -96,4 +96,25 @@ export class LocalProvider implements DataProvider {
   async setPassword(): Promise<void> { /* lokaler Modus hat keine Anmeldung/Passwörter */ }
   async fetchNuliga(): Promise<never> { throw new Error(dict().storeMsg.nuligaVereinOnly); }
   subscribe(): () => void { return () => {}; }
+
+  // Remote & Live gibt es nur im Vereinsmodus (gemeinsamer Server als Kanal). Lokal: aus / no-op.
+  readonly liveSupported = false;
+  async livePublish(): Promise<string> { throw new Error('Remote/Live gibt es nur im Vereinsmodus.'); }
+  async liveUpdateState(): Promise<void> { /* noop */ }
+  async liveAck(): Promise<void> { /* noop */ }
+  async liveEnd(): Promise<void> { /* noop */ }
+  liveConsume(): () => void { return () => {}; }
+  async liveDeleteCommand(): Promise<void> { /* noop */ }
+  liveWatch(_id: string, onChange: (s: LiveSession | null) => void): () => void { onChange(null); return () => {}; }
+  async liveListActive(): Promise<LiveSession[]> { return []; }
+  liveSubscribeList(): () => void { return () => {}; }
+  async liveClaim(): Promise<{ claimed: boolean; pending: boolean }> { throw new Error('Remote/Live gibt es nur im Vereinsmodus.'); }
+  async liveClaimApprove(): Promise<void> { /* noop */ }
+  async liveClaimDeny(): Promise<void> { /* noop */ }
+  async liveRelease(): Promise<void> { /* noop */ }
+  async liveSend(): Promise<void> { throw new Error('Remote/Live gibt es nur im Vereinsmodus.'); }
+  async watchGetConfig(): Promise<{ enabled: boolean; token: string }> { throw new Error('Remote/Live gibt es nur im Vereinsmodus.'); }
+  async watchSetEnabled(): Promise<{ enabled: boolean; token: string }> { throw new Error('Remote/Live gibt es nur im Vereinsmodus.'); }
+  async watchRotate(): Promise<{ enabled: boolean; token: string }> { throw new Error('Remote/Live gibt es nur im Vereinsmodus.'); }
+  async watchPublic(): Promise<{ boards: { boardName: string; state: null }[] }> { return { boards: [] }; }
 }

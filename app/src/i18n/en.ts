@@ -338,6 +338,8 @@ export const en: Dict = {
     toUsers: 'To the users →',
     boardWindowRow: 'Show matches at the board',
     boardWindowSub: 'How many days around the matchday a board automatically shows the assigned match. Can be overridden manually in the line-up (send to boards) or directly at the board (show now). Club-wide.',
+    remoteRow: 'Phone as remote control',
+    remoteSub: 'Allows pairing a smartphone to a board via QR code to take over input/navigation from the phone (emergency if mouse/keyboard fail, or as convenient control). Board/club mode only. Club-wide.',
     matchdayOnly: 'Matchday only',
     plusDay: (n: number) => `±${n} day${n === 1 ? '' : 's'}`,
     secAccount: 'My account',

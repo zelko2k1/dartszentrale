@@ -8,6 +8,7 @@ import { comboFromEvent, isValidCombo, formatCombo } from '../lib/shortcut';
 import { suggestBoardScale } from '../lib/displayScale';
 import { useReorder } from '../lib/useReorder';
 import { qrSvg } from '../lib/qrcode';
+import { WatchTvPanel } from '../components/WatchTvPanel';
 import type { TwoFactorStatus, TwoFactorSetup } from '../data/provider';
 import { useT, useLang, setLang, dict, LANG_LABELS, type Lang } from '../i18n';
 
@@ -792,6 +793,13 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
       <Row label={tr.settings.boardWindowRow} sub={tr.settings.boardWindowSub}>
         {ed('boardMatchWindow', seg('boardMatchWindow', [{ label: tr.settings.matchdayOnly, val: 0 }, { label: tr.settings.plusDay(1), val: 1 }, { label: tr.settings.plusDay(2), val: 2 }, { label: tr.settings.plusDay(3), val: 3 }], '9px 14px'))}
       </Row>
+      <Row label={tr.settings.remoteRow} sub={tr.settings.remoteSub}>
+        <button onClick={() => canEdit && set('remoteEnabled', cfg.remoteEnabled === false)} role="switch" aria-checked={cfg.remoteEnabled !== false}
+          style={{ flexShrink: 0, width: 46, height: 26, borderRadius: 999, background: cfg.remoteEnabled !== false ? accent : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative', cursor: canEdit ? 'pointer' : 'default', opacity: canEdit ? 1 : 0.5, padding: 0 }}>
+          <span style={{ position: 'absolute', top: 2, left: cfg.remoteEnabled !== false ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff' }} />
+        </button>
+      </Row>
+      {p.admin && <WatchTvPanel />}
     </Section>
   );
 
