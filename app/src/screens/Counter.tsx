@@ -75,6 +75,11 @@ export function Counter() {
   // Aufschrieb-Ansicht (n01-Stil): nur auf Desktop/Board/Tablet, nicht am Handy. Die kompakte
   // Score-Leiste bleibt oben (Fernlesbarkeit), der volle Aufschrieb füllt darunter.
   const sheetMode = !isPhone && cfg.counterView === 'sheet';
+  // Aufschrieb-Box klappbar (undefined = offen, damit Bestandsgeräte unverändert starten). Zugeklappt
+  // füllt die große-Zahl-Leiste den frei werdenden Platz; die Klappleiste bleibt zum Wieder-Aufklappen.
+  const sheetOpen = cfg.sheetOpen !== false;
+  // dito für die Wurfanzeige-Box im „Restscore"-Modus.
+  const historyOpen = cfg.historyOpen !== false;
 
   // resizable score area (score band vs throws band)
   const startResize = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -148,7 +153,7 @@ export function Counter() {
       {/* board */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 12, minHeight: 0 }}>
         {/* SCORE band */}
-        <div style={{ flex: sheetMode ? 40 : (cfg.showHistory ? cfg.scoreArea : 100), display: 'flex', gap: 12, minHeight: 0 }}>
+        <div style={{ flex: sheetMode ? (cfg.showHistory && sheetOpen ? 40 : 100) : (cfg.showHistory ? cfg.scoreArea : 100), display: 'flex', gap: 12, minHeight: 0 }}>
           {s.gamePlayers.map((p, i) => {
             const isActive = i === curIdx && !over;
             const rem = sc[p.id];
@@ -189,60 +194,27 @@ export function Counter() {
 
         {/* Aufschrieb-Ansicht (n01-Stil): ersetzt die Wurf-Liste; die Statistik-Box bleibt darunter
             wie gewohnt über den „Statistik-Box"-Schalter (showStats) an-/abwählbar. */}
-        {sheetMode && (
-          <div style={{ flex: 60, display: 'flex', flexDirection: 'column', minHeight: 0, marginTop: 8, gap: 8 }}>
-            <ScoreSheet />
+        {sheetMode && (cfg.showHistory || cfg.showStats) && (
+          <div style={{ flex: cfg.showHistory && sheetOpen ? '60 1 0' : '0 0 auto', display: 'flex', flexDirection: 'column', minHeight: 0, marginTop: 8, gap: 8 }}>
+            {/* Aufschrieb-Box (= Wurf-Verlauf): über den „Wurf-Verlauf"-Schalter (showHistory) an-/abwählbar;
+                Klapp-Pfeil ist in die Box integriert (bleibt zugeklappt als schmale Leiste sichtbar). */}
+            {cfg.showHistory && <ScoreSheet open={sheetOpen} onToggle={() => s.setSetting('sheetOpen', !sheetOpen)} />}
             {cfg.showStats && <SheetStats />}
           </div>
         )}
-        {/* throws & stats band (history list and the average/CO/HF box are separate, each toggleable) */}
+        {/* throws & stats band: die Wurfanzeige ist EINE gemeinsame Box (beide Spieler nebeneinander) mit
+            integriertem Klapp-Pfeil; die Statistik-Box bleibt separat über „showStats" schaltbar. */}
         {!sheetMode && (cfg.showHistory || cfg.showStats) && (
           <>
-            {cfg.showHistory && (
+            {/* Ziehgriff zum Verschieben der Trennung Score-Leiste ↔ Wurfanzeige — nur wenn aufgeklappt */}
+            {cfg.showHistory && historyOpen && (
               <div onPointerDown={startResize} style={{ height: 18, margin: '8px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexShrink: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 9, cursor: 'row-resize', touchAction: 'none', userSelect: 'none' }}>
                 <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border-strong)' }} />
               </div>
             )}
-            <div style={{ flex: cfg.showHistory ? `${100 - cfg.scoreArea} 1 0` : '0 0 auto', display: 'flex', gap: 12, minHeight: 0, marginTop: cfg.showHistory ? 0 : 8 }}>
-              {s.gamePlayers.map((p) => {
-                const rows = scoreList(slice, p.id);
-                const lt = lastThrow(slice, p.id);
-                const fs = finishStats(slice, p.id);
-                return (
-                  <div key={p.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0, minHeight: 0 }}>
-                    {/* Wurfanzeige */}
-                    {cfg.showHistory && (
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRadius: 16, background: 'var(--surface-2)', border: '1px solid var(--border-2)', minWidth: 0, overflow: 'hidden' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '34px 1fr 1fr', gap: 4, padding: '12px 18px 8px', flexShrink: 0, borderBottom: '1px solid var(--hairline)' }}>
-                          <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase' }}>{tr.counter.colRd}</span>
-                          <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right' }}>{tr.counter.colScore}</span>
-                          <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right' }}>{tr.counter.colRest}</span>
-                        </div>
-                        <div className="dh-history-scroll" style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '4px 8px 8px' }}>
-                          {rows.map((r, i) => (
-                            <div key={i} style={{ display: 'grid', gridTemplateColumns: '34px 1fr 1fr', gap: 4, padding: '6px 10px', borderRadius: 6, background: r.checkout ? `color-mix(in srgb, ${accent} 12%, transparent)` : 'transparent' }}>
-                              <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-5)' }}>{r.round}</span>
-                              <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, textAlign: 'right', color: r.bust ? '#E0594B' : 'var(--text)' }}>{r.scored}</span>
-                              <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, textAlign: 'right', color: r.checkout ? accent : 'var(--text-3)' }}>{r.rest}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {/* Durchschnittswerte / Statistik-Box */}
-                    {cfg.showStats && (
-                      <div style={{ flexShrink: 0, display: 'flex', gap: 1, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-2)', background: 'var(--border)' }}>
-                        {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], [tr.counter.statLast, lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
-                          <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '8px 3px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, textAlign: 'center', minWidth: 0 }}>
-                            <div style={{ fontSize: Math.round(9 * cfg.statsSize / 100), color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
-                            <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(13 * cfg.statsSize / 100), fontWeight: 700, lineHeight: 1 }}>{val}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+            <div style={{ flex: cfg.showHistory && historyOpen ? `${100 - cfg.scoreArea} 1 0` : '0 0 auto', display: 'flex', flexDirection: 'column', gap: 8, minHeight: 0, marginTop: cfg.showHistory && historyOpen ? 0 : 8 }}>
+              {cfg.showHistory && <HistoryBox open={historyOpen} onToggle={() => s.setSetting('historyOpen', !historyOpen)} />}
+              {cfg.showStats && <SheetStats />}
             </div>
           </>
         )}
@@ -340,6 +312,22 @@ export function Counter() {
 
 const phoneIconBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, cursor: 'pointer' };
 
+// Integrierter, beschriftungsloser Klapp-Pfeil (rechtsbündig) als schmale Kopfleiste einer auf-/zuklappbaren
+// Box (Aufschrieb, Wurfanzeige, Statistik). Klick schaltet um; die Leiste bleibt auch zugeklappt sichtbar,
+// damit man jederzeit wieder aufklappen kann. Pfeil zeigt bei „offen" nach unten, sonst nach oben.
+function CollapseArrow({ open, onToggle }: { open: boolean; onToggle: () => void }) {
+  const tr = useT();
+  return (
+    <button
+      onClick={onToggle}
+      title={open ? tr.counter.sheetCollapse : tr.counter.sheetExpand}
+      style={{ flexShrink: 0, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '2px 8px', background: 'var(--surface-3)', border: 'none', borderBottom: open ? '1px solid var(--border-2)' : 'none', cursor: 'pointer', color: 'var(--text-4)' }}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .18s ease' }}><path d="M6 9l6 6 6-6" /></svg>
+    </button>
+  );
+}
+
 // F9: type the REMAINING score after a throw — the app derives the scored value (so the throw counts toward the average).
 function RestEntryBox() {
   const s = useStore();
@@ -410,7 +398,7 @@ function FKeyLegend() {
 // Voller Aufschrieb im n01-Stil (Entwurf): beide Spieler nebeneinander mit Score/Rest je Aufnahme,
 // mittiger Dart-Zähler-Spalte (bei 2 Spielern) und Ton-Markierung (100+/140+/180). Zeigt das AKTUELLE
 // Leg; die kompakte große-Zahl-Leiste darüber bleibt für die Fernlesbarkeit erhalten.
-function ScoreSheet() {
+function ScoreSheet({ open, onToggle }: { open: boolean; onToggle: () => void }) {
   const s = useStore();
   const tr = useT();
   const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
@@ -459,60 +447,131 @@ function ScoreSheet() {
   });
 
   return (
-    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', border: '1px solid var(--border-2)', borderRadius: 16, background: 'var(--surface-2)', overflow: 'hidden' }}>
-      {/* Spaltenköpfe */}
-      <div style={{ display: 'grid', gridTemplateColumns: gridCols, borderBottom: '1px solid var(--border-2)', background: 'var(--surface-3)', flexShrink: 0 }}>
-        {columns.map((col, ci) => (
-          <div key={ci} style={{ padding: '7px 12px', textAlign: col.k === 'dart' ? 'center' : 'right', fontSize: 9, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--text-5)' }}>
-            {col.k === 'dart' ? tr.counter.colDarts : col.k === 'scored' ? tr.counter.colScore : tr.counter.colRest}
+    <div style={{ flex: open ? 1 : '0 0 auto', minWidth: 0, display: 'flex', flexDirection: 'column', border: '1px solid var(--border-2)', borderRadius: 16, background: 'var(--surface-2)', overflow: 'hidden' }}>
+      {/* integrierter Klapp-Pfeil (ohne Beschriftung), rechtsbündig in der Ecke */}
+      <CollapseArrow open={open} onToggle={onToggle} />
+      {open && (
+        <>
+          {/* Spaltenköpfe */}
+          <div style={{ display: 'grid', gridTemplateColumns: gridCols, borderBottom: '1px solid var(--border-2)', background: 'var(--surface-3)', flexShrink: 0 }}>
+            {columns.map((col, ci) => (
+              <div key={ci} style={{ padding: '7px 12px', textAlign: col.k === 'dart' ? 'center' : 'right', fontSize: 9, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--text-5)' }}>
+                {col.k === 'dart' ? tr.counter.colDarts : col.k === 'scored' ? tr.counter.colScore : tr.counter.colRest}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      {/* Aufschrieb */}
-      <div className="dh-sheet-scroll" style={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'grid', gridTemplateColumns: gridCols, alignContent: 'start' }}>
-        {/* Startzeile: Startscore in der Rest-Spalte */}
-        {columns.map((col, ci) => (
-          <div key={`s${ci}`} style={col.k === 'rest' ? { ...cellBase, color: 'var(--text-2)', fontWeight: 800 } : (col.k === 'dart' ? dartCellBase : cellBase)}>
-            {col.k === 'rest' ? start : (col.k === 'dart' ? 0 : '')}
+          {/* Aufschrieb */}
+          <div className="dh-sheet-scroll" style={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'grid', gridTemplateColumns: gridCols, alignContent: 'start' }}>
+            {/* Startzeile: Startscore in der Rest-Spalte */}
+            {columns.map((col, ci) => (
+              <div key={`s${ci}`} style={col.k === 'rest' ? { ...cellBase, color: 'var(--text-2)', fontWeight: 800 } : (col.k === 'dart' ? dartCellBase : cellBase)}>
+                {col.k === 'rest' ? start : (col.k === 'dart' ? 0 : '')}
+              </div>
+            ))}
+            {/* Aufnahmen */}
+            {Array.from({ length: maxR }).map((_, i) => dataRow(i))}
+            {/* Cursor-Zeile: aktuelle Eingabe des Spielers am Wurf (gelb hervorgehoben) */}
+            {!over && columns.map((col, ci) => {
+              const active = col.p === curIdx;
+              if (col.k === 'scored') return <div key={`p${ci}`} style={{ ...cellBase, borderBottom: 'none', background: active ? 'rgba(242,184,41,.16)' : 'transparent', color: active ? 'var(--text)' : 'var(--text-5)', fontWeight: 800 }}>{active ? (inputDisplay || <span style={{ color: 'var(--text-5)' }}>·</span>) : ''}</div>;
+              return <div key={`p${ci}`} style={{ ...(col.k === 'dart' ? dartCellBase : cellBase), borderBottom: 'none', background: col.k === 'dart' ? undefined : 'transparent' }} />;
+            })}
           </div>
-        ))}
-        {/* Aufnahmen */}
-        {Array.from({ length: maxR }).map((_, i) => dataRow(i))}
-        {/* Cursor-Zeile: aktuelle Eingabe des Spielers am Wurf (gelb hervorgehoben) */}
-        {!over && columns.map((col, ci) => {
-          const active = col.p === curIdx;
-          if (col.k === 'scored') return <div key={`p${ci}`} style={{ ...cellBase, borderBottom: 'none', background: active ? 'rgba(242,184,41,.16)' : 'transparent', color: active ? 'var(--text)' : 'var(--text-5)', fontWeight: 800 }}>{active ? (inputDisplay || <span style={{ color: 'var(--text-5)' }}>·</span>) : ''}</div>;
-          return <div key={`p${ci}`} style={{ ...(col.k === 'dart' ? dartCellBase : cellBase), borderBottom: 'none', background: col.k === 'dart' ? undefined : 'transparent' }} />;
-        })}
-      </div>
+        </>
+      )}
     </div>
   );
 }
 
-// Statistik-Box für den Aufschrieb-Modus: dieselben Kennzahlen wie in der großen-Zahl-Ansicht
-// (Ø 3-Dart, First 9, Letzter, 180·140+, CO %, HF), je Spieler nebeneinander. Über den
-// „Statistik-Box"-Schalter (showStats) an-/abwählbar – identisch zur bisherigen Handhabung.
+// Statistik-Box (beide Ansichten): dieselben Kennzahlen (Ø 3-Dart, First 9, Letzter, 180·140+, CO %, HF)
+// für beide Spieler in EINER Box mit Trennlinie in der Mitte. Über den „Statistik-Box"-Schalter (showStats)
+// grundsätzlich an-/abwählbar; zusätzlich im Counter über einen integrierten, beschriftungslosen Pfeil
+// auf-/zuklappbar (statsOpen). Standard: offen.
 function SheetStats() {
   const s = useStore();
   const tr = useT();
   const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
   const cfg = s.settings;
+  const statsOpen = cfg.statsOpen !== false;
   return (
-    <div style={{ flexShrink: 0, display: 'flex', gap: 12 }}>
-      {s.gamePlayers.map((p) => {
-        const lt = lastThrow(slice, p.id);
-        const fs = finishStats(slice, p.id);
-        return (
-          <div key={p.id} style={{ flex: 1, display: 'flex', gap: 1, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-2)', background: 'var(--border)' }}>
-            {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], [tr.counter.statLast, lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
-              <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '8px 3px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, textAlign: 'center', minWidth: 0 }}>
-                <div style={{ fontSize: Math.round(9 * cfg.statsSize / 100), color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
-                <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(13 * cfg.statsSize / 100), fontWeight: 700, lineHeight: 1 }}>{val}</div>
+    <div style={{ flexShrink: 0, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-2)', background: 'var(--surface-2)' }}>
+      {/* integrierter Klapp-Pfeil (ohne Beschriftung), rechtsbündig in der Ecke */}
+      <CollapseArrow open={statsOpen} onToggle={() => s.setSetting('statsOpen', !statsOpen)} />
+      {statsOpen && (
+        <div style={{ display: 'flex' }}>
+          {s.gamePlayers.map((p, pi) => {
+            const lt = lastThrow(slice, p.id);
+            const fs = finishStats(slice, p.id);
+            return (
+              <div key={p.id} style={{ flex: 1, display: 'flex', gap: 1, background: 'var(--border)', minWidth: 0, borderLeft: pi > 0 ? '2px solid var(--border-strong)' : 'none' }}>
+                {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], [tr.counter.statLast, lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
+                  <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '8px 3px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, textAlign: 'center', minWidth: 0 }}>
+                    <div style={{ fontSize: Math.round(9 * cfg.statsSize / 100), color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
+                    <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(13 * cfg.statsSize / 100), fontWeight: 700, lineHeight: 1 }}>{val}</div>
+                  </div>
+                ))}
               </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Wurfanzeige im „Restscore"-Modus: beide Spieler in EINER Box (gemeinsamer Kopf mit den Spielernamen,
+// darunter je Spieler die Spalten Rd/Score/Rest mit eigener Scroll-Liste). Ersetzt die früheren zwei
+// getrennten Boxen. Über die Klappleiste auf-/zuklappbar.
+function HistoryBox({ open, onToggle }: { open: boolean; onToggle: () => void }) {
+  const s = useStore();
+  const tr = useT();
+  const slice: CounterSlice = { gamePlayers: s.gamePlayers, allThrows: s.allThrows, startOffset: s.startOffset, settings: s.settings };
+  const cfg = s.settings;
+  const accent = cfg.accent;
+
+  // ans Ende scrollen, wenn eine neue Aufnahme dazukommt
+  useEffect(() => {
+    document.querySelectorAll('.dh-history-scroll').forEach((el) => { (el as HTMLElement).scrollTop = el.scrollHeight; });
+  }, [s.allThrows.length]);
+
+  return (
+    <div style={{ flex: open ? 1 : '0 0 auto', display: 'flex', flexDirection: 'column', borderRadius: 16, background: 'var(--surface-2)', border: '1px solid var(--border-2)', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
+      {/* integrierter Klapp-Pfeil (ohne Beschriftung), rechtsbündig in der Ecke */}
+      <CollapseArrow open={open} onToggle={onToggle} />
+      {open && (
+        <>
+          {/* gemeinsamer Kopf: Spielernamen nebeneinander */}
+          <div style={{ display: 'flex', flexShrink: 0, borderBottom: '1px solid var(--border-2)', background: 'var(--surface-3)' }}>
+            {s.gamePlayers.map((p, i) => (
+              <div key={p.id} style={{ flex: 1, minWidth: 0, padding: '9px 18px', borderLeft: i > 0 ? '1px solid var(--border-2)' : 'none', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
             ))}
           </div>
-        );
-      })}
+          {/* je Spieler eine Spalte mit Unter-Kopf (Rd/Score/Rest) und Scroll-Liste */}
+          <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
+            {s.gamePlayers.map((p, i) => {
+              const rows = scoreList(slice, p.id);
+              return (
+                <div key={p.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0, borderLeft: i > 0 ? '1px solid var(--border-2)' : 'none' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '34px 1fr 1fr', gap: 4, padding: '8px 18px 6px', flexShrink: 0, borderBottom: '1px solid var(--hairline)' }}>
+                    <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase' }}>{tr.counter.colRd}</span>
+                    <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right' }}>{tr.counter.colScore}</span>
+                    <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right' }}>{tr.counter.colRest}</span>
+                  </div>
+                  <div className="dh-history-scroll" style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '4px 8px 8px' }}>
+                    {rows.map((r, k) => (
+                      <div key={k} style={{ display: 'grid', gridTemplateColumns: '34px 1fr 1fr', gap: 4, padding: '6px 10px', borderRadius: 6, background: r.checkout ? `color-mix(in srgb, ${accent} 12%, transparent)` : 'transparent' }}>
+                        <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-5)' }}>{r.round}</span>
+                        <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, textAlign: 'right', color: r.bust ? '#E0594B' : 'var(--text)' }}>{r.scored}</span>
+                        <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, textAlign: 'right', color: r.checkout ? accent : 'var(--text-3)' }}>{r.rest}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }
