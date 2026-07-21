@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { CounterSlice } from './counter';
-import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner, checkoutCelebration } from './counter';
+import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner, checkoutCelebration, checkoutAchievement } from './counter';
 import type { GamePlayer, Settings, Throw } from '../data/types';
 
 // Minimal settings factory — only the fields the counter logic reads.
@@ -229,5 +229,25 @@ describe('checkoutCelebration — Short-Leg- & High-Finish-Feier', () => {
   it('feiert nicht bei langem Leg mit kleiner Ausmache', () => {
     const s = slice({ allThrows: leg([80, 80, 80, 80, 80, 80, 21]) }); // 21 Darts, Ausmache 21 → weder noch
     expect(checkoutCelebration(s, 'a')).toBeNull();
+  });
+});
+
+describe('checkoutAchievement — reine Auszeichnung fürs Sieg-Overlay', () => {
+  const leg = (raws: number[]) => raws.map((r, i) =>
+    turn('a', r, i === raws.length - 1 ? { checkout: true } : {}));
+
+  it('liefert die Auszeichnung AUCH beim Match-Ende (anders als checkoutCelebration)', () => {
+    const s = slice({ allThrows: leg([180, 180, 141]), settings: settings({ bestOf: 1 }) }); // Match vorbei
+    expect(checkoutCelebration(s, 'a')).toBeNull();                                            // Live-Feier unterdrückt
+    expect(checkoutAchievement(s, 'a')).toEqual({ highFinish: true, shortLeg: true, score: 141, darts: 9 });
+  });
+
+  it('ignoriert die Feier-Schalter (liefert die reinen Fakten – Gating macht der Aufrufer)', () => {
+    const s = slice({ allThrows: leg([180, 180, 141]), settings: settings({ shortLegHint: false, highFinishHint: false }) });
+    expect(checkoutAchievement(s, 'a')).toEqual({ highFinish: true, shortLeg: true, score: 141, darts: 9 });
+  });
+
+  it('null, wenn weder High Finish noch Short Leg', () => {
+    expect(checkoutAchievement(slice({ allThrows: leg([80, 80, 80, 80, 80, 80, 21]) }), 'a')).toBeNull();
   });
 });

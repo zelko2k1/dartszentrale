@@ -134,16 +134,31 @@ export function shortLegDarts(s: CounterSlice, pid: string | number, maxDarts = 
  *  Feiert nur, solange das Match weiterläuft (beim entscheidenden Leg hat das Sieg-Overlay Vorrang) und
  *  nur, wenn der jeweilige Schalter nicht ausgeschaltet ist (undefined = an). null = keine Feier. */
 export interface CheckoutCelebration { highFinish: boolean; shortLeg: boolean; score: number; darts: number; }
-export function checkoutCelebration(s: CounterSlice, pid: string | number): CheckoutCelebration | null {
-  if (matchOver(s)) return null;
+
+/** Reine Auszeichnung der letzten Aufnahme, wenn sie ein Checkout war: High Finish (Ausmache ≥100)
+ *  und/oder Short Leg (≤19 eigene Darts). OHNE Schalter, OHNE matchOver – die Fakten des Wurfs (auch beim
+ *  entscheidenden Leg). Fürs Sieg-Overlay, das die Ausmache zeigt. null = kein Checkout bzw. weder/noch. */
+export function checkoutAchievement(s: CounterSlice, pid: string | number): CheckoutCelebration | null {
   const mine = s.allThrows.filter((t) => t.playerId === pid);
   const last = mine[mine.length - 1];
   if (!last || !last.checkout) return null;
   const darts = s.allThrows.filter((t) => t.playerId === pid && t.leg === last.leg).reduce((a, t) => a + (t.darts || 3), 0);
-  const highFinish = last.raw >= 100 && s.settings.highFinishHint !== false;
-  const shortLeg = darts <= 19 && s.settings.shortLegHint !== false;
+  const highFinish = last.raw >= 100;
+  const shortLeg = darts <= 19;
   if (!highFinish && !shortLeg) return null;
   return { highFinish, shortLeg, score: last.raw, darts };
+}
+
+/** Live-Feier WÄHREND des Matches: nur solange es weiterläuft (beim entscheidenden Leg hat das
+ *  Sieg-Overlay Vorrang) und nur, was der jeweilige Schalter erlaubt (undefined = an). null = keine Feier. */
+export function checkoutCelebration(s: CounterSlice, pid: string | number): CheckoutCelebration | null {
+  if (matchOver(s)) return null;
+  const a = checkoutAchievement(s, pid);
+  if (!a) return null;
+  const highFinish = a.highFinish && s.settings.highFinishHint !== false;
+  const shortLeg = a.shortLeg && s.settings.shortLegHint !== false;
+  if (!highFinish && !shortLeg) return null;
+  return { highFinish, shortLeg, score: a.score, darts: a.darts };
 }
 
 export interface ScoreRow { round: number; scored: string | number; rest: number; bust: boolean; checkout: boolean; }
