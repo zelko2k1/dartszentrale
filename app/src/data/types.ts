@@ -265,6 +265,10 @@ export interface Settings {
   showQuick: boolean;
   showHistory: boolean;
   showStats: boolean;
+  // Live-Feier beim Short Leg (≤19 eigene Darts). Standard: an (undefined = an, damit Bestandsgeräte feiern).
+  shortLegHint?: boolean;
+  // Live-Feier beim High Finish (Checkout ≥100). Standard: an (undefined = an).
+  highFinishHint?: boolean;
   fkeys: number[];
   newGameKey: string;
   quickBo5Key: string;

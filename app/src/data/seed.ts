@@ -47,6 +47,8 @@ export const DEFAULT_SETTINGS: Settings = {
   showQuick: true,
   showHistory: true,
   showStats: true,
+  shortLegHint: true,
+  highFinishHint: true,
   fkeys: [180, 140, 100, 95, 85, 60, 45, 40],
   newGameKey: 'ctrl+alt+n',
   quickBo5Key: 'ctrl+alt+5',

@@ -44,7 +44,10 @@ export function Counter() {
         else if (e.key === 'Escape' && st.bullMode) { e.preventDefault(); st.closeBullOff(); }
         return;
       }
-      if (matchOver({ gamePlayers: st.gamePlayers, allThrows: st.allThrows, startOffset: st.startOffset, settings: st.settings }) || st.abortConfirm || st.hint) return;
+      // Auto-Hinweis (Short-Leg-Feier): jeder Tastendruck blendet ihn sofort weg (und wird geschluckt);
+      // ein blockierendes Modal-Hinweis (auto=false) schluckt Tasten wie bisher.
+      if (st.hint) { if (st.hint.auto) st.closeHint(); return; }
+      if (matchOver({ gamePlayers: st.gamePlayers, allThrows: st.allThrows, startOffset: st.startOffset, settings: st.settings }) || st.abortConfirm) return;
       // function keys F1–F12
       const fk = /^F(\d{1,2})$/.exec(e.key);
       if (fk) {
@@ -68,6 +71,13 @@ export function Counter() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+
+  // Auto-Hinweis (z. B. Short-Leg-Feier) blendet sich nach ~3 s selbst wieder aus.
+  useEffect(() => {
+    if (!s.hint?.auto) return;
+    const id = window.setTimeout(() => useStore.getState().closeHint(), 3000);
+    return () => window.clearTimeout(id);
+  }, [s.hint]);
 
   // phone mode: portrait → stacked minimal layout, landscape → scores | keypad split
   const { isPhonePortrait, isPhoneLandscape } = useDevice();
@@ -283,11 +293,19 @@ export function Counter() {
       {/* hint */}
       {s.hint && (
         <Overlay z={45}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 28, maxWidth: 420, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
-            <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{s.hint.title}</div>
-            <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.55, marginBottom: 24 }}>{s.hint.body}</div>
-            <button onClick={() => s.closeHint()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 32px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.gotIt}</button>
-          </div>
+          {s.hint.auto ? (
+            // Selbst-ausblendende Feier (Short Leg): kein Knopf, ganze Fläche zum Wegtippen.
+            <div onClick={() => s.closeHint()} style={{ cursor: 'pointer', background: 'var(--surface)', border: `2px solid ${accent}`, borderRadius: 22, padding: '30px 48px', textAlign: 'center', boxShadow: `0 24px 60px rgba(0,0,0,.5), 0 0 0 6px color-mix(in srgb, ${accent} 14%, transparent)` }}>
+              <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '.01em', color: accent, marginBottom: 6, lineHeight: 1.1 }}>{s.hint.title}</div>
+              <div style={{ fontSize: 22, fontWeight: 800 }}>{s.hint.body}</div>
+            </div>
+          ) : (
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 28, maxWidth: 420, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+              <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{s.hint.title}</div>
+              <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.55, marginBottom: 24 }}>{s.hint.body}</div>
+              <button onClick={() => s.closeHint()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 32px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.gotIt}</button>
+            </div>
+          )}
         </Overlay>
       )}
       {/* abort */}

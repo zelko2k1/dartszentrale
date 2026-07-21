@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { CounterSlice } from './counter';
-import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner } from './counter';
+import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner, checkoutCelebration } from './counter';
 import type { GamePlayer, Settings, Throw } from '../data/types';
 
 // Minimal settings factory — only the fields the counter logic reads.
@@ -185,5 +185,49 @@ describe('bust rule (as applied by the store when a turn is entered)', () => {
     expect(bust('double', 41, 40)).toBe(true);
     expect(bust('master', 41, 40)).toBe(true);
     expect(bust('single', 41, 40)).toBe(false);
+  });
+});
+
+describe('checkoutCelebration — Short-Leg- & High-Finish-Feier', () => {
+  // gewonnenes Leg für 'a' aus Aufnahmen bauen (letzte = Checkout); jede Aufnahme = 3 Darts.
+  const leg = (raws: number[]) => raws.map((r, i) =>
+    turn('a', r, i === raws.length - 1 ? { checkout: true } : {}));
+
+  it('feiert ein Short Leg (≤19 Darts, Ausmache <100)', () => {
+    const s = slice({ allThrows: leg([180, 180, 101, 40]) }); // 12 Darts, Ausmache 40
+    expect(checkoutCelebration(s, 'a')).toEqual({ highFinish: false, shortLeg: true, score: 40, darts: 12 });
+  });
+
+  it('feiert einen High Finish (Ausmache ≥100, >19 Darts)', () => {
+    const s = slice({ allThrows: leg([60, 60, 60, 60, 60, 60, 141]) }); // 21 Darts, Ausmache 141
+    expect(checkoutCelebration(s, 'a')).toEqual({ highFinish: true, shortLeg: false, score: 141, darts: 21 });
+  });
+
+  it('feiert beides beim 141er als 9-Darter', () => {
+    const s = slice({ allThrows: leg([180, 180, 141]) }); // 9 Darts, Ausmache 141
+    expect(checkoutCelebration(s, 'a')).toEqual({ highFinish: true, shortLeg: true, score: 141, darts: 9 });
+  });
+
+  it('respektiert die Schalter (aus = unterdrückt)', () => {
+    const both = leg([180, 180, 141]); // wäre beides
+    expect(checkoutCelebration(slice({ allThrows: both, settings: settings({ shortLegHint: false, highFinishHint: false }) }), 'a')).toBeNull();
+    expect(checkoutCelebration(slice({ allThrows: both, settings: settings({ highFinishHint: false }) }), 'a'))
+      .toEqual({ highFinish: false, shortLeg: true, score: 141, darts: 9 });
+    expect(checkoutCelebration(slice({ allThrows: both, settings: settings({ shortLegHint: false }) }), 'a'))
+      .toEqual({ highFinish: true, shortLeg: false, score: 141, darts: 9 });
+  });
+
+  it('feiert NICHT beim entscheidenden Leg (Match vorbei → Sieg-Overlay hat Vorrang)', () => {
+    const s = slice({ allThrows: leg([180, 180, 141]), settings: settings({ bestOf: 1 }) });
+    expect(checkoutCelebration(s, 'a')).toBeNull();
+  });
+
+  it('feiert nicht, wenn die letzte Aufnahme kein Checkout ist', () => {
+    expect(checkoutCelebration(slice({ allThrows: [turn('a', 180), turn('a', 60)] }), 'a')).toBeNull();
+  });
+
+  it('feiert nicht bei langem Leg mit kleiner Ausmache', () => {
+    const s = slice({ allThrows: leg([80, 80, 80, 80, 80, 80, 21]) }); // 21 Darts, Ausmache 21 → weder noch
+    expect(checkoutCelebration(s, 'a')).toBeNull();
   });
 });
