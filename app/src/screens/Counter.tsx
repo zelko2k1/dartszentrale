@@ -744,7 +744,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
                       <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: accentInk }}>{sc[p.id]}</span>
                     </div>
                     <div style={{ display: 'flex', gap: 1, background: 'var(--border)' }}>
-                      {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`]].map(([label, val], k) => (
+                      {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['180', String(countAtLeast(slice, p.id, 180, true))], ['SL', String(shortLegs(slice, p.id))]].map(([label, val], k) => (
                         <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '7px 4px', textAlign: 'center' }}>
                           <div style={{ fontSize: 9, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase' }}>{label}</div>
                           <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, marginTop: 2 }}>{val}</div>
