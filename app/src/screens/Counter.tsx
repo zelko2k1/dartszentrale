@@ -4,7 +4,7 @@ import { Avatar } from '../components/Avatar';
 import { accentFg } from '../store/selectors';
 import {
   scores, progress, currentIdx, currentLeg, average, first9, lastThrow, scoreList,
-  countAtLeast, checkoutSuggestion, canCheckout, finishStats, first9Match, matchOver, winner, checkoutAchievement, type CounterSlice,
+  countAtLeast, checkoutSuggestion, canCheckout, finishStats, first9Match, avgCheckoutDarts, matchOver, winner, checkoutAchievement, type CounterSlice,
 } from '../store/counter';
 import { IconBack, IconUndo, IconRefresh, IconX } from '../lib/icons';
 import { useDevice } from '../lib/useIsPhone';
@@ -44,6 +44,8 @@ export function Counter() {
         else if (e.key === 'Escape' && st.bullMode) { e.preventDefault(); st.closeBullOff(); }
         return;
       }
+      // Finish-Dart-Abfrage hat eigene Tasten (1/2/3, Esc) und blockiert die Spieleingabe komplett.
+      if (st.finishPrompt) return;
       // Auto-Hinweis (Short-Leg-Feier): jeder Tastendruck blendet ihn sofort weg (und wird geschluckt);
       // ein blockierendes Modal-Hinweis (auto=false) schluckt Tasten wie bisher.
       if (st.hint) { if (st.hint.auto) st.closeHint(); return; }
@@ -323,6 +325,7 @@ export function Counter() {
       )}
       {/* win */}
       {over && <WinOverlay />}
+      {s.finishPrompt && <FinishPrompt />}
     </div>
     </BoardScale>
   );
@@ -831,6 +834,44 @@ function WhoStarts() {
   );
 }
 
+// Nach einem Checkout ohne bekannte Dartzahl (nicht via F10–F12): fragt, mit welchem Dart (1/2/3) das
+// Leg beendet wurde. Liegt über allem (auch dem Sieg-Overlay) und blockiert die Eingabe, bis geantwortet
+// ist – erst dann steht die exakte Leg-Dartzahl für Short-Leg-Erkennung & Statistik fest.
+function FinishPrompt() {
+  const s = useStore();
+  const tr = useT();
+  const accent = s.settings.accent;
+  // Optionen unter minDarts sind für diese Ausmache unmöglich (z. B. 100 mit 1 Dart) → gesperrt.
+  const min = s.finishPrompt?.minDarts ?? 1;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      // resolveFinish() ignoriert unmögliche Dartzahlen selbst, daher hier bewusst alle 1–3 durchreichen.
+      if (e.key === '1' || e.key === '2' || e.key === '3') { e.preventDefault(); s.resolveFinish(parseInt(e.key, 10)); }
+      else if (e.key === 'Escape') { e.preventDefault(); s.cancelFinish(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <Overlay z={55}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: '28px 32px', textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 18 }}>{tr.counter.finishPromptTitle}</div>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+          {[1, 2, 3].map((d) => {
+            const off = d < min;
+            return (
+              <button key={d} disabled={off} onClick={() => s.resolveFinish(d)}
+                style={{ width: 74, height: 74, borderRadius: 16, background: 'var(--surface-2)', border: `2px solid ${off ? 'var(--border-2)' : accent}`, color: off ? 'var(--text-5)' : 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, cursor: off ? 'not-allowed' : 'pointer', opacity: off ? 0.4 : 1 }}>{d}</button>
+            );
+          })}
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 16 }}>{tr.counter.finishPromptHint}</div>
+      </div>
+    </Overlay>
+  );
+}
+
 function WinOverlay() {
   const s = useStore();
   const tr = useT();
@@ -852,12 +893,15 @@ function WinOverlay() {
   const players = s.gamePlayers;
   const statsOpen = s.settings.matchStatsOpen === true;
   const fsAll = players.map((p) => finishStats(slice, p.id));
-  const statRows: { label: string; vals: number[]; fmt: (v: number) => string }[] = [
+  // hasData: v zählt als „echter Wert" (sonst „–" und nie grün). lowerBetter: niedriger = grün (Ø Darts/CO).
+  type StatRow = { label: string; vals: number[]; fmt: (v: number) => string; lowerBetter?: boolean; hasData?: (v: number) => boolean };
+  const statRows: StatRow[] = [
     { label: tr.common.avg3, vals: players.map((p) => average(slice, p.id)), fmt: (v) => v.toFixed(1) },
     { label: 'First 9', vals: players.map((p) => first9Match(slice, p.id)), fmt: (v) => v.toFixed(1) },
     { label: '180', vals: players.map((p) => countAtLeast(slice, p.id, 180, true)), fmt: (v) => String(v) },
     { label: '140+', vals: players.map((p) => countAtLeast(slice, p.id, 140)), fmt: (v) => String(v) },
     { label: 'CO %', vals: fsAll.map((f) => f.co), fmt: (v) => `${v}%` },
+    { label: 'Ø Darts/CO', vals: players.map((p) => avgCheckoutDarts(slice, p.id)), fmt: (v) => (v > 0 ? v.toFixed(2) : '–'), lowerBetter: true, hasData: (v) => v > 0 },
     { label: 'High Finish', vals: fsAll.map((f) => f.hf), fmt: (v) => (v > 0 ? String(v) : '–') },
   ];
   // Nach Spielende per Tastatur bedienbar (Desktop/Board): 1 = Dashboard, 2 = Neues Spiel, 3/Enter = Revanche,
@@ -865,6 +909,7 @@ function WinOverlay() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (useStore.getState().finishPrompt) return; // Finish-Dart-Abfrage liegt darüber und hat Vorrang
       if (e.key === '1') { e.preventDefault(); s.endGameTo('dashboard'); }
       else if (e.key === '2') { e.preventDefault(); s.endGameTo('setup'); }
       else if (e.key === '3' || e.key === 'Enter') { e.preventDefault(); s.rematch(); }
@@ -903,13 +948,16 @@ function WinOverlay() {
               <div />
               {players.map((p) => <div key={p.id} style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,.7)', textAlign: 'right', letterSpacing: '.04em' }}>{p.short}</div>)}
               {statRows.map((r) => {
-                const best = Math.max(...r.vals); const worst = Math.min(...r.vals); const hasWinner = best > worst;
+                const valid = r.vals.filter((v) => (r.hasData ? r.hasData(v) : true));
+                const best = valid.length ? (r.lowerBetter ? Math.min(...valid) : Math.max(...valid)) : null;
+                const hasWinner = valid.length >= 2 && Math.min(...valid) !== Math.max(...valid);
                 return (
                   <Fragment key={r.label}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.42)', textTransform: 'uppercase', letterSpacing: '.03em', textAlign: 'left' }}>{r.label}</div>
-                    {r.vals.map((v, i) => (
-                      <div key={i} style={{ fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, textAlign: 'right', color: hasWinner && v === best ? '#2BD377' : 'rgba(255,255,255,.85)' }}>{r.fmt(v)}</div>
-                    ))}
+                    {r.vals.map((v, i) => {
+                      const green = hasWinner && (r.hasData ? r.hasData(v) : true) && v === best;
+                      return <div key={i} style={{ fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, textAlign: 'right', color: green ? '#2BD377' : 'rgba(255,255,255,.85)' }}>{r.fmt(v)}</div>;
+                    })}
                   </Fragment>
                 );
               })}

@@ -10,7 +10,7 @@ import {
   scores as cScores, progress as cProgress, currentPlayer as cCurrentPlayer,
   matchOver as cMatchOver, average as cAverage, countAtLeast,
   finishStats as cFinishStats, shortLegs as cShortLegs, shortLegDarts as cShortLegDarts, first9Match as cFirst9Match,
-  checkoutCelebration as cCheckoutCelebration,
+  checkoutCelebration as cCheckoutCelebration, minCheckoutDarts as cMinCheckoutDarts,
   type CounterSlice,
 } from './counter';
 import {
@@ -249,6 +249,10 @@ export interface AppState {
   gameMode: 'single' | 'teams';
   setup: SetupState;
   hint: HintState | null;
+  // Nach einem Checkout OHNE bekannte Dartzahl (nicht via F10–F12): fragt, mit welchem Dart (1/2/3) das
+  // Leg beendet wurde. Blockiert Feier/Sieg-Overlay, bis geantwortet ist. playerId = wer ausgemacht hat;
+  // score = die Ausmache; minDarts = kleinste mögliche Dartzahl (canCheckout) → Optionen darunter sind gesperrt.
+  finishPrompt: { playerId: string | number; score: number; minDarts: number } | null;
 
   // PWA-Update (manueller Fluss): neue Version liegt bereit / Status des manuellen Checks
   updateReady: boolean;
@@ -480,6 +484,8 @@ export interface AppState {
   cancelNew: () => void;
   showHint: (hint: HintState) => void;
   closeHint: () => void;
+  resolveFinish: (dart: number) => void;
+  cancelFinish: () => void;
   applyUpdate: () => void;
   checkForUpdate: () => void;
 }
@@ -545,6 +551,7 @@ export const useStore = create<AppState>((set, get) => ({
   gameMode: 'single',
   setup: { mode: 'single', startScore: 501, bestOf: 5, bestOfSets: 3, unit: 'legs', doubleOut: true, outMode: 'double', doubleIn: false, p1: 0, p2: 1, teamA: 0, teamB: 1, p1Guest: '', p2Guest: '', freePlay: false, link: null },
   hint: null,
+  finishPrompt: null,
   updateReady: false,
   updateStatus: 'idle',
 
@@ -2111,7 +2118,7 @@ export const useStore = create<AppState>((set, get) => ({
     const settings = { ...st.settings, startScore: su.startScore, bestOf: su.bestOf, bestOfSets: su.bestOfSets, unit: su.unit, doubleOut: su.doubleOut, outMode: su.outMode, doubleIn: su.doubleIn };
     persistSettings(st, set, settings);
     try { localStorage.removeItem(LS.live); } catch { /* ignore */ }
-    set({ gamePlayers, gameMode: su.mode, allThrows: [], input: '', screen: 'counter', settings, startOffset: 0, pendingStart: true, bullMode: false, spinPick: null, matchSaved: false, freePlay: !!su.freePlay, gameLink: su.link || null, hint: null, abortConfirm: false });
+    set({ gamePlayers, gameMode: su.mode, allThrows: [], input: '', screen: 'counter', settings, startOffset: 0, pendingStart: true, bullMode: false, spinPick: null, matchSaved: false, freePlay: !!su.freePlay, gameLink: su.link || null, hint: null, finishPrompt: null, abortConfirm: false });
   },
   quickStart(preset) {
     // Schnellstart = normales, gewertetes Spiel: Gast-Namen, Freies-Spiel & Liga-Verknüpfung zurücksetzen.
@@ -2147,12 +2154,12 @@ export const useStore = create<AppState>((set, get) => ({
   rematch() { try { localStorage.removeItem(LS.live); } catch { /* ignore */ } set({ allThrows: [], input: '', matchSaved: false, pendingStart: true, bullMode: false, spinPick: null }); },
   endGameTo(target) {
     try { localStorage.removeItem(LS.live); } catch { /* ignore */ }
-    set({ allThrows: [], input: '', matchSaved: false, pendingStart: false, bullMode: false, spinPick: null, abortConfirm: false, hint: null });
+    set({ allThrows: [], input: '', matchSaved: false, pendingStart: false, bullMode: false, spinPick: null, abortConfirm: false, hint: null, finishPrompt: null });
     if (target === 'setup') get().goSetup();
     else set({ screen: 'dashboard' });
   },
   abortGame() { set({ abortConfirm: true }); },
-  confirmAbort() { try { localStorage.removeItem(LS.live); } catch { /* ignore */ } set({ abortConfirm: false, allThrows: [], input: '', matchSaved: false, screen: 'dashboard' }); },
+  confirmAbort() { try { localStorage.removeItem(LS.live); } catch { /* ignore */ } set({ abortConfirm: false, allThrows: [], input: '', matchSaved: false, screen: 'dashboard', hint: null, finishPrompt: null }); },
   cancelAbort() { set({ abortConfirm: false }); },
   apply(score, darts) {
     const st = get();
@@ -2169,23 +2176,35 @@ export const useStore = create<AppState>((set, get) => ({
     const t: Throw = { playerId: cp.id, score: bust ? 0 : score, raw: score, bust, checkout, leg, darts: usedDarts };
     const allThrows = [...st.allThrows, t];
     set({ allThrows, input: '' });
-    const after: CounterSlice = { ...slice, allThrows };
-    if (cMatchOver(after) && !st.matchSaved) saveMatch(get, set);
-    else {
-      persistLive(get);
-      // Live-Feier bei Checkout: High Finish (Ausmache ≥100) und/oder Short Leg (≤19 eigene Darts).
-      // Entscheidung in checkoutCelebration() (rein, getestet); trifft beides zu (z. B. 141er als
-      // 9-Darter), zeigt ein kombiniertes Overlay beides.
-      if (checkout) {
-        const cel = cCheckoutCelebration(after, cp.id);
-        if (cel) {
-          const c = dict().counter;
-          if (cel.highFinish && cel.shortLeg) get().showHint({ title: c.highFinishTitle, body: c.hfShortLegBody(cp.name, cel.score, cel.darts), auto: true });
-          else if (cel.highFinish) get().showHint({ title: c.highFinishTitle, body: c.highFinishBody(cp.name, cel.score), auto: true });
-          else get().showHint({ title: c.shortLegTitle, body: c.shortLegBody(cp.name, cel.darts), auto: true });
-        }
-      }
+    // Checkout OHNE explizite Dartzahl (also NICHT via F10–F12): erst den Finish-Dart abfragen, dann
+    // Feier/Sieg-Overlay – die exakte Dartzahl entscheidet über Short Leg & Statistik. ABER nur fragen,
+    // wenn ein Finish mit <3 Darts überhaupt möglich war (canCheckout, wie bei F10–F12). z. B. 141 geht
+    // nur mit 3 Darts → keine Frage, es bleibt bei 3. Der Abschluss läuft danach über completeCheckout().
+    if (checkout && !darts) {
+      const minDarts = cMinCheckoutDarts(st.settings, score);
+      if (minDarts < 3) { set({ finishPrompt: { playerId: cp.id, score, minDarts } }); persistLive(get); return; }
     }
+    completeCheckout(get, set, checkout ? cp.id : null);
+  },
+  resolveFinish(dart) {
+    const st = get();
+    if (!st.finishPrompt) return;
+    const pid = st.finishPrompt.playerId;
+    const d = Math.max(1, Math.min(3, Math.round(dart)));
+    if (d < st.finishPrompt.minDarts) return; // unmögliche Dartzahl ignorieren (z. B. 100 mit 1 Dart)
+    // die noch offene Checkout-Aufnahme dieses Spielers auf die gewählte Dartzahl setzen
+    const allThrows = st.allThrows.slice();
+    for (let i = allThrows.length - 1; i >= 0; i--) {
+      if (allThrows[i].playerId === pid && allThrows[i].checkout) { allThrows[i] = { ...allThrows[i], darts: d }; break; }
+    }
+    set({ allThrows, finishPrompt: null });
+    completeCheckout(get, set, pid);
+  },
+  cancelFinish() {
+    // Fehleingabe: Abfrage schließen und die Checkout-Aufnahme zurücknehmen (Spieler ist wieder am Wurf).
+    if (!get().finishPrompt) return;
+    set({ finishPrompt: null });
+    get().undo();
   },
   pressDigit(d) { set((st) => { const n = st.input + d; return { input: n.length <= 3 ? n : st.input }; }); },
   pressClear() { set({ input: '' }); },
@@ -2247,7 +2266,7 @@ export const useStore = create<AppState>((set, get) => ({
   },
   runNew(action) {
     try { localStorage.removeItem(LS.live); } catch { /* ignore */ }
-    set({ allThrows: [], input: '', matchSaved: false, pendingStart: false, bullMode: false, spinPick: null, restEntry: false, abortConfirm: false, newConfirm: false });
+    set({ allThrows: [], input: '', matchSaved: false, pendingStart: false, bullMode: false, spinPick: null, restEntry: false, abortConfirm: false, newConfirm: false, hint: null, finishPrompt: null });
     if (action.kind === 'preset') get().startPreset(action.preset);
     else get().goSetup(); // back to player selection; "Spiel starten" then asks who begins
   },
@@ -2463,6 +2482,22 @@ function scheduleReload(get: () => AppState, set: SetFn) {
 function persistLive(get: () => AppState) {
   const st = get();
   try { localStorage.setItem(LS.live, JSON.stringify({ players: st.gamePlayers, allThrows: st.allThrows, startOffset: st.startOffset, matchSaved: st.matchSaved })); } catch { /* ignore */ }
+}
+// Abschluss nach einem (fertig erfassten) Checkout: Match speichern (→ Sieg-Overlay) oder Live-Feier
+// zeigen. Aus apply() (F10–F12, Dart bekannt) und aus resolveFinish() (nach der Finish-Dart-Abfrage).
+function completeCheckout(get: () => AppState, set: (p: Partial<AppState>) => void, checkoutPid: string | number | null) {
+  const st = get();
+  const slice: CounterSlice = { gamePlayers: st.gamePlayers, allThrows: st.allThrows, startOffset: st.startOffset, settings: st.settings };
+  if (cMatchOver(slice) && !st.matchSaved) { saveMatch(get, set); return; }
+  persistLive(get);
+  if (checkoutPid == null) return;
+  const cel = cCheckoutCelebration(slice, checkoutPid);
+  if (!cel) return;
+  const name = st.gamePlayers.find((p) => p.id === checkoutPid)?.name || '';
+  const c = dict().counter;
+  if (cel.highFinish && cel.shortLeg) get().showHint({ title: c.highFinishTitle, body: c.hfShortLegBody(name, cel.score, cel.darts), auto: true });
+  else if (cel.highFinish) get().showHint({ title: c.highFinishTitle, body: c.highFinishBody(name, cel.score), auto: true });
+  else get().showHint({ title: c.shortLegTitle, body: c.shortLegBody(name, cel.darts), auto: true });
 }
 function saveMatch(get: () => AppState, set: (p: Partial<AppState>) => void) {
   const st = get();

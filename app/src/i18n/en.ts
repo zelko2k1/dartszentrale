@@ -780,6 +780,8 @@ export const en: Dict = {
     winFinishHf: (score: number) => `High finish ${score}`,
     winFinishSl: (darts: number) => `Short leg (${darts} darts)`,
     matchStats: 'Match stats',
+    finishPromptTitle: 'Finished with which dart?',
+    finishPromptHint: 'Key 1–3 · Esc = undo',
     abortTitle: 'Abort game?',
     abortBody: 'The current game will be discarded and will not appear in the statistics.',
     keepPlaying: 'Keep playing',
