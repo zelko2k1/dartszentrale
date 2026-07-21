@@ -860,13 +860,15 @@ function WinOverlay() {
     { label: 'CO %', vals: fsAll.map((f) => f.co), fmt: (v) => `${v}%` },
     { label: 'High Finish', vals: fsAll.map((f) => f.hf), fmt: (v) => (v > 0 ? String(v) : '–') },
   ];
-  // Nach Spielende per Tastatur bedienbar (Desktop/Board): 1 = Dashboard, 2 = Neues Spiel, 3/Enter = Revanche.
+  // Nach Spielende per Tastatur bedienbar (Desktop/Board): 1 = Dashboard, 2 = Neues Spiel, 3/Enter = Revanche,
+  // S = Match-Statistik auf-/zuklappen. Live-Wert aus dem Store lesen (nicht aus dem Closure), sonst wäre er stale.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === '1') { e.preventDefault(); s.endGameTo('dashboard'); }
       else if (e.key === '2') { e.preventDefault(); s.endGameTo('setup'); }
       else if (e.key === '3' || e.key === 'Enter') { e.preventDefault(); s.rematch(); }
+      else if (e.key.toLowerCase() === 's') { e.preventDefault(); const st = useStore.getState(); st.setSetting('matchStatsOpen', st.settings.matchStatsOpen !== true); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -892,6 +894,7 @@ function WinOverlay() {
           >
             {tr.counter.matchStats}
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ transform: statsOpen ? 'rotate(180deg)' : 'none', transition: 'transform .18s ease' }}><path d="M6 9l6 6 6-6" /></svg>
+            <span style={kbd}>S</span>
           </button>
         </div>
         {statsOpen && (
