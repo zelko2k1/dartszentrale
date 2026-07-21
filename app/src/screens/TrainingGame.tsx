@@ -4,7 +4,7 @@ import { CRICKET_TARGETS } from '../data/constants';
 import { Avatar } from '../components/Avatar';
 import { accentFg } from '../store/selectors';
 import {
-  standings, leaderboard, currentTarget, trainModeName,
+  standings, leaderboard, currentTarget, trainModeName, TRAIN_BEST,
   ATC_SEQ, BASEBALL_INNINGS, HALVEIT_TARGETS,
   type TrainGame, type TrainPlayer, type StandRow,
 } from '../store/training';
@@ -30,6 +30,12 @@ export function TrainingGame() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+  // Auto-Feier (Live-Feiern) blendet sich nach ~3 s selbst wieder aus — wie im Counter.
+  useEffect(() => {
+    if (!s.hint?.auto) return;
+    const id = window.setTimeout(() => useStore.getState().closeHint(), 3000);
+    return () => window.clearTimeout(id);
+  }, [s.hint]);
   const g = s.trainGame;
   if (!g) return null;
   const cfg = s.settings;
@@ -97,6 +103,16 @@ export function TrainingGame() {
       )}
 
       {g.over && <TrainWinOverlay game={g} accent={accent} />}
+
+      {/* Live-Feier: selbst-ausblendend, ganze Fläche zum Wegtippen (wie im Counter) */}
+      {s.hint?.auto && (
+        <div onClick={() => s.closeHint()} style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 45, cursor: 'pointer', padding: 24 }}>
+          <div style={{ background: 'var(--surface)', border: `2px solid ${accent}`, borderRadius: 22, padding: '30px 48px', textAlign: 'center', boxShadow: `0 24px 60px rgba(0,0,0,.5), 0 0 0 6px color-mix(in srgb, ${accent} 14%, transparent)` }}>
+            <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '.01em', color: accent, marginBottom: 6, lineHeight: 1.1 }}>{s.hint.title}</div>
+            <div style={{ fontSize: 22, fontWeight: 800 }}>{s.hint.body}</div>
+          </div>
+        </div>
+      )}
     </div>
     </BoardScale>
   );
@@ -565,7 +581,13 @@ function TrainWinOverlay({ game, accent }: { game: TrainGame; accent: string }) 
             return (
               <div key={r.player.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 12, background: isWin ? `color-mix(in srgb, ${accent} 12%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${isWin ? accent : 'var(--border-2)'}` }}>
                 <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: 'var(--text-4)', width: 20 }}>{solo ? '' : `${r.rank}.`}</span>
-                <span style={{ flex: 1, fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.player.name}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.player.name}</div>
+                  {s.trainBestFlash.includes(r.player.id) && (() => {
+                    const meta = TRAIN_BEST[game.modeId]; const v = meta?.value(game, r.player.id);
+                    return <div style={{ fontSize: 11, fontWeight: 800, color: accent, letterSpacing: '.02em', marginTop: 1 }}>🎯 {tr.trainingScr.newBest}{v != null && meta ? ` ${meta.format(v)}` : ''}</div>;
+                  })()}
+                </div>
                 <span style={{ fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 800, color: isWin ? accent : 'var(--text-2)' }}>{r.primary}</span>
                 {r.secondary && <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-4)' }}>{r.secondary}</span>}
               </div>

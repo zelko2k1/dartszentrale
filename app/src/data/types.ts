@@ -39,6 +39,11 @@ export interface SeasonSnapshot {
   meta: { generatedAt: string; matchCount: number; teamCount: number; leagueCount: number };
 }
 
+// Persönlicher Trainings-Bestwert je Spielmodus (am Spieler-Datensatz gespeichert → im Verein
+// board-übergreifend synchron, lokal im Browser). value = die Kopfkennzahl des Modus (z. B. Doppel-Quote %,
+// Höchstfinish, Darts, Punkte, Runs, Siege); date = ISO-Datum, an dem der Bestwert erzielt wurde.
+export interface TrainingBest { value: number; date: string; }
+
 export interface Player {
   id: string;
   name: string;
@@ -48,6 +53,8 @@ export interface Player {
   // Optionales Profilfoto (nur Vereinsmodus, PocketBase-File-Feld). Nach dem Laden eine fertige Bild-URL
   // (Thumbnail); fehlt → Anzeige fällt auf Farbe + Kürzel zurück. Siehe components/Avatar.tsx.
   photo?: string;
+  // Persönliche Trainings-Bestwerte je Modus (modeId → Bestwert). Siehe store/training.ts TRAIN_BEST.
+  trainingBests?: Record<string, TrainingBest>;
 }
 
 // Art der Mannschaft: 'league' = Liga-Mannschaft (Standard), 'cup' = Pokalmannschaft.
