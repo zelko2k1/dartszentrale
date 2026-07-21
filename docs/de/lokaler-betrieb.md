@@ -5,7 +5,8 @@
 Zwei Wege: **A) Lokaler Modus** (nur Browser, kein Server – am einfachsten) und
 **B) Vereinsmodus** (mit PocketBase + Test-Daten + echten Logins).
 
-Alle Pfade relativ zum Projekt `/mnt/Data/claudebase/dartszentrale`.
+Alle Pfade relativ zum Projektordner (unten als `~/dartszentrale` geschrieben;
+unter Windows z. B. `C:\dartszentrale`).
 
 ---
 
@@ -14,11 +15,13 @@ Alle Pfade relativ zum Projekt `/mnt/Data/claudebase/dartszentrale`.
 **Empfohlen:** das Repo per `git clone` holen → bringt allen Code + Skripte
 (`provision.mjs`, `demo-seed.mjs`, `season-*.mjs`, `pb_hooks/` …) automatisch mit.
 
-**Zusätzlich manuell** mitnehmen (diese sind **gitignored**, kommen nicht per git):
-- `docs/de/lokaler-betrieb.md` — dieses Runbook (⚠️ unbedingt)
-- `pocketbase/demo-seed.mjs` — Vereins-Import-Skript (falls gewünscht)
+**Zusätzlich manuell** mitnehmen — von den Betriebsdateien ist nur `pb_data/`
+**gitignored** und kommt *nicht* per git:
 - *(optional)* `pocketbase/pb_data/` — die echte DB; nur wenn du den exakten Datenstand
   übernehmen willst statt neu zu seeden (portables SQLite, OS-unabhängig)
+
+> Alles andere — dieses Runbook, alle `.mjs`-Skripte, `pb_hooks/` — ist im Repo
+> versioniert und kommt automatisch per `git clone` mit.
 
 **NICHT mitnehmen — auf dem Ziel neu erzeugen:**
 - PocketBase-Binary (`pocketbase` / `pocketbase.exe`) → plattformspezifisch, neu herunterladen
@@ -138,15 +141,17 @@ noch einen Ladevorgang lang). Details je Modus in den `admin-anleitung-*`-Dokume
 ### Linux: Vereinsmodus als Dienst (Autostart)
 
 Der Vereinsmodus-LAN läuft als **ein** Programm (PocketBase liefert App + API aus `pb_public/`) —
-**kein Node, kein Build.** Zwei Skripte im Projekt-Root übernehmen das:
+**kein Node, kein Build.** Zwei Skripte übernehmen das — im **Quell-Repo** liegen sie unter
+`scripts/`, in einem **fertigen Bundle** flach neben `app/` (dann das `scripts/`-Präfix
+weglassen, also z. B. nur `./start-club-lan.sh`):
 
 - **Manuell starten** (der Erststart lädt das Binary + legt die zwei Admin-Konten an; Strg+C beendet):
   ```bash
-  ./start-club-lan.sh
+  scripts/start-club-lan.sh
   ```
 - **Als Dienst einrichten** (systemd-User: Autostart beim Boot, Auto-Restart, journald-Logs):
   ```bash
-  ./autostart-club-lan.sh
+  scripts/autostart-club-lan.sh
   ```
   Verwaltung danach:
   ```bash
@@ -161,10 +166,11 @@ Vollständige Schritt-für-Schritt-Anleitung (auch Windows, Backups, Updates):
 
 ### Wichtigste Git-Befehle
 
-Repo ist **privat** → auf neuem Rechner zuerst anmelden, sonst geht kein clone/push.
+Repo ist **öffentlich** → `git clone` geht ohne Anmeldung. Nur **push** braucht eine
+Anmeldung — `gh auth login` ist also nur nötig, wenn du Änderungen hochladen willst.
 
 ```bash
-# einmalig auf neuem Rechner
+# einmalig auf neuem Rechner — nur nötig, wenn du pushen willst
 gh auth login && gh auth setup-git          # GitHub-Anmeldung (oder Token beim push)
 git config --global user.name  "Heiko Frenzel"
 git config --global user.email "hfrenzel2k1@gmail.com"
@@ -237,7 +243,7 @@ Prüfen: `node -v` (≥ 20), `npm -v`, `git --version`.
 ## 0c. Einmalig: Abhängigkeiten installieren
 
 ```bash
-cd /mnt/Data/claudebase/dartszentrale/app
+cd ~/dartszentrale/app
 npm install
 ```
 
@@ -249,7 +255,7 @@ Schnellster Weg für die eigene Nutzung auf einem Gerät. Daten liegen im Browse
 (localStorage), Beispieldaten werden beim ersten Start automatisch angelegt.
 
 ```bash
-cd /mnt/Data/claudebase/dartszentrale/app
+cd ~/dartszentrale/app
 # sicherstellen, dass NICHT auf einen Server gezeigt wird:
 #   app/.env.local löschen ODER VITE_PB_URL leer lassen
 npm run dev
@@ -272,7 +278,7 @@ Im **eigenen Terminal** (läuft im Vordergrund — offen lassen), aus dem `pocke
 
 ```bash
 # Linux / Git Bash
-cd /mnt/Data/claudebase/dartszentrale/pocketbase
+cd ~/dartszentrale/pocketbase
 ./pocketbase serve --automigrate=0 --http=127.0.0.1:8090 --dir ./pb_data
 ```
 ```powershell
@@ -295,7 +301,7 @@ Läuft auf http://127.0.0.1:8090 · Verwaltungs-Konsole: **http://127.0.0.1:8090
 ### 2. Schema + App-Admin anlegen (idempotent)
 In einem zweiten Terminal:
 ```bash
-cd /mnt/Data/claudebase/dartszentrale/pocketbase
+cd ~/dartszentrale/pocketbase
 node provision.mjs
 ```
 Legt alle Collections (inkl. `seasons`/`season_snapshots`) an und fragt — falls noch
@@ -334,7 +340,7 @@ node add-board-account.mjs         # rechtearmes Board-Konto für Kiosk-Tests
 
 ### 5. App starten
 ```bash
-cd /mnt/Data/claudebase/dartszentrale/app
+cd ~/dartszentrale/app
 npm run dev
 ```
 **http://localhost:5173** öffnen und anmelden.
@@ -391,7 +397,7 @@ Cloud `PB_URL`, `PB_SU_EMAIL`, `PB_SU_PASS` als Umgebungsvariablen voranstellen.
 4. Aus dem **`pocketbase/`-Verzeichnis** aufrufen (die relativen Pfade gehen davon aus).
 
 ```bash
-cd /mnt/Data/claudebase/dartszentrale/pocketbase
+cd ~/dartszentrale/pocketbase
 
 node provision.mjs                                   # einfacher Aufruf
 USER_EMAIL=chef@dartszentrale.local NEW_PW="abc12345" node reset-password.mjs   # mit Variablen
@@ -410,6 +416,7 @@ Mehrere einfach hintereinander (durch Leerzeichen getrennt) voranstellen.
 | **demo-seed.mjs** | **Import „Dartverein Demo".** Frische DB: Saison 2026/27 (Sept–Juli), 20 Mitglieder (als Spieler + Konten), 2 Mannschaften (je 8 + Kapitän), 2 Ligen à 10 Teams mit vollständigem Hin-/Rückrunden-Spielplan (ohne Ergebnisse, Termine über die Saison verteilt). | `node demo-seed.mjs` |
 | **add-board-account.mjs** | Legt ein **rechtearmes Board-Konto** (Rolle „board") für Kiosk-Rechner an (darf nur spielen, nichts verwalten). | `BOARD_EMAIL=board@… BOARD_PW=… node add-board-account.mjs` |
 | **reset-password.mjs** | **Passwort eines App-Kontos zurücksetzen** + Konto reaktivieren. Notfall, wenn man sich aus der App ausgesperrt hat (Superuser ist der Rettungsanker). | `USER_EMAIL=… NEW_PW=… node reset-password.mjs` |
+| **reset-2fa.mjs** | **Zwei-Faktor-Auth (TOTP) eines App-Kontos abschalten.** Letzter Notnagel, wenn Authenticator-Handy **und** Backup-Codes weg sind — danach meldet sich der Nutzer nur mit Passwort an und richtet 2FA neu ein. | `USER_EMAIL=… node reset-2fa.mjs` |
 | **season-export.mjs** | **Saison als JSON-Bundle sichern** (Ligen, Teams, Termine, Spiele, Snapshot). Wegsicherung / Re-Import-Grundlage / Grafana-Feed. | `SEASON_NAME="2024/25" node season-export.mjs` |
 | **season-offload.mjs** | **Saison auslagern**: löscht die (schweren) Spiele einer *archivierten* Saison aus der DB und setzt `offloaded=true` → gibt Platz frei. Tabellen/Kader/Termine bleiben. Vorher exportieren! | `SEASON_NAME="2024/25" node season-offload.mjs` |
 | **season-import.mjs** | **Bundle zurückspielen**: legt fehlende Datensätze wieder an und setzt `offloaded=false`. Macht ein Auslagern rückgängig. | `node season-import.mjs <bundle.json>` |
@@ -430,7 +437,7 @@ Mehrere einfach hintereinander (durch Leerzeichen getrennt) voranstellen.
 
 ## Production-Build prüfen
 ```bash
-cd /mnt/Data/claudebase/dartszentrale/app
+cd ~/dartszentrale/app
 npm run build      # tsc + vite build → dist/
 npm run preview    # statisches dist/ lokal testen
 ```
