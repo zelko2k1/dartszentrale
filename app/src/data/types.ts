@@ -240,6 +240,12 @@ export interface Settings {
   // Counter-Darstellung (gerätelokal): 'big' = große Restscore-Zahl (Standard), 'sheet' = voller
   // Aufschrieb im n01-Stil (beide Spieler, Dart-Zähler, Ton-Markierung) unter einer kompakten Score-Leiste.
   counterView?: 'big' | 'sheet';
+  // Aufschrieb-Box im Counter auf-/zugeklappt (nur counterView === 'sheet'). Standard: offen (undefined = offen).
+  sheetOpen?: boolean;
+  // Wurfanzeige-Box im Counter auf-/zugeklappt (nur counterView === 'big'). Standard: offen (undefined = offen).
+  historyOpen?: boolean;
+  // Statistik-Box im Counter auf-/zugeklappt (beide Ansichten). Standard: offen (undefined = offen).
+  statsOpen?: boolean;
   // Automatisches Backup (nur Lokalmodus, nur wenn die App über serve-dist.mjs läuft): bei jedem Start
   // + täglich zur eingestellten Uhrzeit (mit Nachholen beim nächsten Start). Ablage im festen Ordner
   // backup/ neben der App (Ordner nicht wählbar). Gerätelokal.

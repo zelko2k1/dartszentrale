@@ -91,7 +91,7 @@ du entscheidest. Deine Mitglieder­daten bleiben bei dir.
 - Eingabe per **Tablet-Ziffernfeld oder Tastatur**, frei belegbare Schnell-Scores (F1–F8), Checkout mit 1/2/3 Darts
 - **Checkout-Vorschläge** (Finish-Wege bis 170), **Rückgängig**, Bust-Erkennung
 - **Live-Werte** je Spieler: Ø 3-Dart, First 9, 180/140+, Checkout-Quote, High Finish
-- Zwei Ansichten: **„Große Zahl"** (fernlesbar am Board) oder **„Aufschrieb"** im klassischen Sheet-Stil
+- Zwei Ansichten: **„Restscore"** (fernlesbar am Board) oder **„Aufschrieb"** im klassischen Sheet-Stil
 - **Revanche** per Klick; fertige Spiele werden automatisch mit allen Einzelwerten gespeichert
 
 ### 🏋️ Trainingsspiele (9 Modi, vollständig)
