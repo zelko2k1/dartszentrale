@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { CounterSlice } from './counter';
-import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner, checkoutCelebration, checkoutAchievement, avgCheckoutDarts, minCheckoutDarts } from './counter';
+import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner, checkoutCelebration, checkoutAchievement, avgCheckoutDarts, minCheckoutDarts, totalDarts } from './counter';
 import type { GamePlayer, Settings, Throw } from '../data/types';
 
 // Minimal settings factory — only the fields the counter logic reads.
@@ -260,6 +260,16 @@ describe('avgCheckoutDarts — Ø Darts je Checkout', () => {
   });
   it('0, wenn (noch) kein Checkout', () => {
     expect(avgCheckoutDarts(slice({ allThrows: [turn('a', 60)] }), 'a')).toBe(0);
+  });
+});
+
+describe('totalDarts — Gesamtzahl geworfener Darts', () => {
+  it('summiert die Dartzahlen (Checkout mit weniger Darts zählt genau)', () => {
+    const s = slice({ allThrows: [turn('a', 60), turn('a', 100), turn('a', 40, { checkout: true, darts: 2 })] });
+    expect(totalDarts(s, 'a')).toBe(3 + 3 + 2); // 8
+  });
+  it('0 ohne Aufnahmen', () => {
+    expect(totalDarts(slice(), 'a')).toBe(0);
   });
 });
 

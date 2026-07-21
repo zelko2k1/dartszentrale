@@ -170,6 +170,11 @@ export function avgCheckoutDarts(s: CounterSlice, pid: string | number): number 
   return cos.reduce((a, t) => a + (t.darts || 3), 0) / cos.length;
 }
 
+/** Gesamtzahl geworfener Darts im Match (Fallback 3 je Aufnahme ohne erfasste Dartzahl). */
+export function totalDarts(s: CounterSlice, pid: string | number): number {
+  return s.allThrows.filter((t) => t.playerId === pid).reduce((a, t) => a + (t.darts || 3), 0);
+}
+
 export interface ScoreRow { round: number; scored: string | number; rest: number; bust: boolean; checkout: boolean; }
 export function scoreList(s: CounterSlice, pid: string | number): ScoreRow[] {
   let rest = s.settings.startScore; const rows: ScoreRow[] = [];
