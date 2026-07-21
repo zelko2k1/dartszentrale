@@ -1,0 +1,93 @@
+# „Release starten" — der Ein-Klick-Knopf.
+#
+# Über Actions → „Release starten" → „Run workflow" die neue Versionsnummer
+# eingeben (z. B. 1.0.4). Dieser Workflow erledigt dann ALLES:
+#   1. Version in app/package.json (+ package-lock.json) hochzählen
+#   2. CHANGELOG: den Abschnitt „Unveröffentlicht" auf die neue Version stempeln
+#   3. Commit auf main + Tag vX.Y.Z setzen
+#   4. Die drei Verteil-Bundles + Update-Paket bauen und als Release veröffentlichen
+#
+# Kein Terminal nötig. Der Tag wird bewusst per Standard-Token gesetzt, damit der
+# tag-getriggerte release.yml NICHT zusätzlich läuft (sonst doppeltes Release) —
+# deshalb baut und veröffentlicht dieser Workflow selbst.
+name: Release starten
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Neue Versionsnummer ohne v, z. B. 1.0.4'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Versionsnummer prüfen
+        run: |
+          VERSION="${{ inputs.version }}"
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Ungültige Version '$VERSION'. Erwartet: X.Y.Z (z. B. 1.0.4)."
+            exit 1
+          fi
+          if git rev-parse "v$VERSION" >/dev/null 2>&1; then
+            echo "::error::Tag v$VERSION existiert bereits. Bitte eine neue Nummer wählen."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Version hochzählen
+        working-directory: app
+        run: npm version "${{ inputs.version }}" --no-git-tag-version
+
+      - name: CHANGELOG stempeln
+        run: |
+          VERSION="${{ inputs.version }}"
+          DATE="$(date -u +%F)"
+          # „## [Unveröffentlicht]" bleibt oben stehen; darunter kommt die neue
+          # Versionsüberschrift, die alle bis dahin gesammelten Notizen aufnimmt.
+          perl -0pi -e "s/## \\[Unveröffentlicht\\]/## [Unveröffentlicht]\n\n## [$VERSION] – $DATE/" CHANGELOG.md
+
+      - name: Commit + Tag
+        run: |
+          VERSION="${{ inputs.version }}"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/package.json app/package-lock.json CHANGELOG.md
+          git commit -m "chore(release): v$VERSION"
+          git tag -a "v$VERSION" -m "DartsZentrale $VERSION"
+          git push origin HEAD:main
+          git push origin "v$VERSION"
+
+      - name: Abhängigkeiten installieren
+        run: npm ci
+        working-directory: app
+
+      - name: Verteil-Bundles bauen (01-single-board, 02-club-lan, 03-club-cloud + Update-Paket)
+        run: bash .claude/skills/copy2share/build.sh copy2share
+
+      - name: GitHub-Release mit Assets erstellen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="v${{ inputs.version }}"
+          gh release create "$TAG" \
+            copy2share/01-single-board.zip \
+            copy2share/02-club-lan.zip \
+            copy2share/03-club-cloud.zip \
+            copy2share/dartszentrale-update-*.tar.gz \
+            --title "DartsZentrale ${{ inputs.version }}" \
+            --generate-notes
