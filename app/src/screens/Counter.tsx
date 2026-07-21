@@ -4,7 +4,7 @@ import { Avatar } from '../components/Avatar';
 import { accentFg } from '../store/selectors';
 import {
   scores, progress, currentIdx, currentLeg, average, first9, lastThrow, scoreList,
-  countAtLeast, checkoutSuggestion, canCheckout, finishStats, matchOver, winner, type CounterSlice,
+  countAtLeast, checkoutSuggestion, canCheckout, finishStats, matchOver, winner, checkoutAchievement, type CounterSlice,
 } from '../store/counter';
 import { IconBack, IconUndo, IconRefresh, IconX } from '../lib/icons';
 import { useDevice } from '../lib/useIsPhone';
@@ -840,6 +840,14 @@ function WinOverlay() {
   const accent = s.settings.accent; const accFg = accentFg(accent);
   const legs = s.gamePlayers.map((p) => s.settings.unit === 'sets' ? (prog.setsWon[p.id] || 0) : (prog.legsSet[p.id] || 0)).join(':');
   const avg = w ? average(slice, w.id).toFixed(1) : '0.0';
+  // War der Siegwurf ein High Finish und/oder Short Leg? Zeigt das Sieg-Overlay an (respektiert die
+  // Feier-Schalter, damit „aus“ auch hier greift). Das Live-Feier-Overlay unterdrückt sich beim
+  // entscheidenden Leg selbst – hier holen wir die Auszeichnung nach.
+  const ach = w ? checkoutAchievement(slice, w.id) : null;
+  const finishParts: string[] = [];
+  if (ach?.highFinish && s.settings.highFinishHint !== false) finishParts.push(tr.counter.winFinishHf(ach.score));
+  if (ach?.shortLeg && s.settings.shortLegHint !== false) finishParts.push(tr.counter.winFinishSl(ach.darts));
+  const finishLine = finishParts.length ? `🎯 ${finishParts.join(' · ')}` : null;
   // Nach Spielende per Tastatur bedienbar (Desktop/Board): 1 = Dashboard, 2 = Neues Spiel, 3/Enter = Revanche.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -861,7 +869,8 @@ function WinOverlay() {
         <div style={{ fontSize: 13, color: '#F2B829', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 8 }}>{tr.counter.matchWon}</div>
         {/* Overlay liegt immer auf dunklem Schleier → Textfarben fest hell, unabhängig vom Hell/Dunkel-Modus. */}
         <div style={{ fontSize: 34, fontWeight: 800, marginBottom: 6, color: '#fff' }}>{w?.name}</div>
-        <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, color: 'rgba(255,255,255,.6)', marginBottom: 28 }}>{legs} · Ø {avg}</div>
+        <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, color: 'rgba(255,255,255,.6)', marginBottom: finishLine ? 12 : 28 }}>{legs} · Ø {avg}</div>
+        {finishLine && <div style={{ fontSize: 15, fontWeight: 800, color: '#F2B829', marginBottom: 28 }}>{finishLine}</div>}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
           <button onClick={() => s.endGameTo('dashboard')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.toDashboard}<span style={kbd}>1</span></button>
           <button onClick={() => s.endGameTo('setup')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.newGame}<span style={kbd}>2</span></button>
