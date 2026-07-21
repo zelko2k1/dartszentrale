@@ -959,6 +959,7 @@ export const de = {
     perMatch: 'pro Begegnung',
     singles: 'Einzel',
     doubles: 'Doppel',
+    gamesTotal: (n: number) => `${n} Spiele`,
     flow: 'Ablauf: ',
     teamsInLeague: 'Mannschaften in der Liga',
     addTeamsHint: 'Füge die teilnehmenden Mannschaften hinzu — auch gegnerische Vereine.',

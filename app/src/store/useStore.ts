@@ -376,7 +376,7 @@ export interface AppState {
   closeLeagueModal: () => void;
   setLeagueField: (key: 'name' | 'season' | 'kind' | 'nuligaUrl', val: string) => void;
   setLeagueCount: (key: 'singlesCount' | 'doublesCount', val: number) => void;
-  setLeagueFormatPreset: (key: 'BZ' | 'BL' | 'LL' | 'custom') => void;
+  setLeagueFormatPreset: (key: string) => void;
   addLeagueTeam: () => void;
   setLeagueTeamName: (id: string, val: string) => void;
   toggleLeagueTeamOwn: (id: string) => void;
@@ -1373,7 +1373,7 @@ export const useStore = create<AppState>((set, get) => ({
     set((st) => {
       if (!st.leagueModal) return {};
       if (key === 'custom') return { leagueModal: { ...st.leagueModal, format: null } };
-      const preset = LEAGUE_FORMAT_PRESETS[key];
+      const preset = LEAGUE_FORMAT_PRESETS.find((p) => p.key === key);
       return preset ? { leagueModal: { ...st.leagueModal, format: preset.segments.map((s) => ({ ...s })) } } : {};
     });
   },
