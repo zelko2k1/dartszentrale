@@ -443,7 +443,7 @@ function CricketPanel({ game, accent }: { game: TrainGame; accent: string }) {
     setDarts((d) => d + 1);
   };
   const reset = () => { setMarks({}); setDarts(0); };
-  const submit = () => { apply({ kind: 'marks', marks }); reset(); };
+  const submit = () => { apply({ kind: 'marks', marks, darts }); reset(); };
 
   // Tastatur: 5–9 = 15–19 · 0 = 20 · B = Bull · S/D/T = Feldwert · ⌫ Zurück · ↵ Aufnahme buchen.
   const cricketNum: Record<string, number> = { '5': 15, '6': 16, '7': 17, '8': 18, '9': 19, '0': 20 };

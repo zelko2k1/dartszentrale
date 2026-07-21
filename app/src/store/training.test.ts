@@ -48,6 +48,17 @@ describe('TRAIN_BEST value', () => {
     expect(TRAIN_BEST.bobs27.value(g, g.players[0].id)).toBe(29);
   });
 
+  it('cricket: MPR = 3 × marks / darts, via mitgezählte Darts', () => {
+    let g = newTrainGame('cricket', [tp(0, 'p1')]);
+    const id = g.players[0].id;
+    expect(TRAIN_BEST.cricket.value(g, id)).toBeNull(); // noch keine Darts
+    // jedes Feld mit einem Triple (3 Marks, 1 Dart) schließen → 7 Darts, 21 Marks → MPR 9.00
+    for (const num of [20, 19, 18, 17, 16, 15, 25]) { if (g.over) break; g = applyTurn(g, { kind: 'marks', marks: { [num]: 3 }, darts: 1 }); }
+    expect(g.over).toBe(true);
+    expect(TRAIN_BEST.cricket.value(g, id)).toBe(9);
+    expect(TRAIN_BEST.cricket.format(9)).toBe('9.00');
+  });
+
   it('elimination/killer are win-counters (0 for a loss this game)', () => {
     const g = newTrainGame('killer', [tp(0, 'p1'), tp(1, 'p2')]);
     // frisches Spiel, niemand hat gewonnen → 0
