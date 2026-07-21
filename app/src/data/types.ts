@@ -275,6 +275,9 @@ export interface Settings {
   newGameKey: string;
   quickBo5Key: string;
   quickBo3Key: string;
+  paletteKey: string;
+  undoKey: string;
+  abortKey: string;
   appMode: AppMode;
   appModeManual?: boolean;
   appModeDetected?: AppMode;

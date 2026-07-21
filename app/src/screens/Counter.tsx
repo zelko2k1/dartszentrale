@@ -7,7 +7,7 @@ import {
   countAtLeast, checkoutSuggestion, canCheckout, finishStats, first9Match, avgCheckoutDarts, bestShortLeg, matchOver, winner, checkoutAchievement, type CounterSlice,
 } from '../store/counter';
 import { IconBack, IconUndo, IconRefresh, IconX } from '../lib/icons';
-import { formatCombo } from '../lib/shortcut';
+import { formatCombo, comboFromEvent } from '../lib/shortcut';
 import { useDevice } from '../lib/useIsPhone';
 import { BoardScale } from '../components/BoardScale';
 import { useT } from '../i18n';
@@ -32,13 +32,14 @@ export function Counter() {
     const onKey = (e: KeyboardEvent) => {
       const st = useStore.getState();
       if (st.screen !== 'counter') return;
-      // Undo (Alt+Z) & Abbrechen (Alt+X) – Alt-basiert wie die übrigen Kürzel (Alt+N …). VOR der Modifier-
-      // Sperre; nur bei laufendem Spiel, nicht wenn ein Overlay/Dialog die Eingabe besitzt.
-      if (e.altKey && !e.metaKey && !e.shiftKey && ['z', 'x'].includes(e.key.toLowerCase())) {
+      // Undo (Default Alt+Z) & Abbrechen (Default Alt+X) – konfigurierbar wie die übrigen Kürzel. VOR der
+      // Modifier-Sperre; nur bei laufendem Spiel, nicht wenn ein Overlay/Dialog die Eingabe besitzt.
+      const combo = comboFromEvent(e);
+      if (combo) {
         const over = matchOver({ gamePlayers: st.gamePlayers, allThrows: st.allThrows, startOffset: st.startOffset, settings: st.settings });
         const busy = over || st.pendingStart || st.finishPrompt || st.hint || st.abortConfirm || st.newConfirm || st.restEntry;
-        if (!busy && e.key.toLowerCase() === 'z') { e.preventDefault(); st.undo(); return; }
-        if (!busy && e.key.toLowerCase() === 'x') { e.preventDefault(); st.abortGame(); return; }
+        if (!busy && combo === (st.settings.undoKey || 'alt+z')) { e.preventDefault(); st.undo(); return; }
+        if (!busy && combo === (st.settings.abortKey || 'alt+x')) { e.preventDefault(); st.abortGame(); return; }
       }
       // modifier combos (Strg/Alt/⌘ + …) are handled by global shortcuts, not score entry
       if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -147,9 +148,9 @@ export function Counter() {
           <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>{matchInfo}</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={(e) => { e.currentTarget.blur(); s.undo(); }} title={`Undo (${formatCombo('alt+z')})`} style={headBtn}><IconUndo size={15} />Undo{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo('alt+z')}</span>}</button>
+          <button onClick={(e) => { e.currentTarget.blur(); s.undo(); }} title={`Undo (${formatCombo(cfg.undoKey || 'alt+z')})`} style={headBtn}><IconUndo size={15} />Undo{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo(cfg.undoKey || 'alt+z')}</span>}</button>
           <button onClick={(e) => { e.currentTarget.blur(); s.newMatch(); }} title={`${tr.counter.newBtn} (${formatCombo(cfg.newGameKey || 'alt+n')})`} style={headBtn}><IconRefresh size={15} />{tr.counter.newBtn}{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo(cfg.newGameKey || 'alt+n')}</span>}</button>
-          <button onClick={(e) => { e.currentTarget.blur(); s.abortGame(); }} title={`${tr.counter.abort} (${formatCombo('alt+x')})`} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />{tr.counter.abort}{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo('alt+x')}</span>}</button>
+          <button onClick={(e) => { e.currentTarget.blur(); s.abortGame(); }} title={`${tr.counter.abort} (${formatCombo(cfg.abortKey || 'alt+x')})`} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />{tr.counter.abort}{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo(cfg.abortKey || 'alt+x')}</span>}</button>
         </div>
       </div>
 

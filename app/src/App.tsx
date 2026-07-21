@@ -84,10 +84,10 @@ export default function App() {
       const st = useStore.getState(); const cfg = st.settings;
       const tgt = e.target as HTMLElement | null;
       const typing = !!tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT' || tgt.isContentEditable);
-      // Befehls-Palette: Alt+K (auch beim Tippen, um sie zu schließen) – Alt-basiert wie die übrigen Kürzel.
-      if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); setPaletteOpen((v) => !v); return; }
       // Alt-Kürzel feuern bewusst AUCH im Suchfeld (Alt+Taste erzeugt keinen Text) – Setup ist tastatur-first.
       const combo = comboFromEvent(e);
+      // Befehls-Palette (konfigurierbar, Default Alt+K): toggelt auch beim Tippen, um sie zu schließen.
+      if (combo && combo === (cfg.paletteKey || 'alt+k')) { e.preventDefault(); setPaletteOpen((v) => !v); return; }
       // Kiosk-Tabs: Alt+S Spiel · Alt+T Training · Alt+E Einstellungen (nicht im laufenden Spiel).
       const me = st.accounts.find((a) => a.id === st.session) || null;
       const inKiosk = cfg.appMode === 'verein' && !!st.session && !!me?.isBoard && me?.boardNumber != null && !st.kioskUnlocked;
