@@ -102,25 +102,6 @@ export function Counter() {
   // dito für die Wurfanzeige-Box im „Restscore"-Modus.
   const historyOpen = cfg.historyOpen !== false;
 
-  // resizable score area (score band vs throws band)
-  const startResize = (e: React.PointerEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const board = e.currentTarget.parentElement;
-    const h = board ? board.getBoundingClientRect().height : window.innerHeight * 0.55;
-    const startY = e.clientY;
-    const startArea = useStore.getState().settings.scoreArea || 58;
-    const move = (ev: PointerEvent) => {
-      const area = startArea + ((ev.clientY - startY) / h) * 100;
-      useStore.getState().setSetting('scoreArea', Math.round(Math.max(35, Math.min(85, area))));
-    };
-    const up = () => {
-      window.removeEventListener('pointermove', move);
-      window.removeEventListener('pointerup', up);
-    };
-    window.addEventListener('pointermove', move);
-    window.addEventListener('pointerup', up);
-  };
-
   const outLabel = cfg.outMode === 'master' ? 'Master Out' : cfg.outMode === 'single' ? 'Single Out' : 'Double Out';
   const gameTitle = `X01 · ${cfg.startScore} · ${outLabel}`;
   const matchInfo = cfg.unit === 'sets' ? tr.counter.matchInfoSets(cfg.bestOfSets) : tr.counter.matchInfoLegs(leg, cfg.bestOf);
@@ -228,13 +209,7 @@ export function Counter() {
             integriertem Klapp-Pfeil; die Statistik-Box bleibt separat über „showStats" schaltbar. */}
         {!sheetMode && (cfg.showHistory || cfg.showStats) && (
           <>
-            {/* Ziehgriff zum Verschieben der Trennung Score-Leiste ↔ Wurfanzeige — nur wenn aufgeklappt */}
-            {cfg.showHistory && historyOpen && (
-              <div onPointerDown={startResize} style={{ height: 18, margin: '8px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexShrink: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 9, cursor: 'row-resize', touchAction: 'none', userSelect: 'none' }}>
-                <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border-strong)' }} />
-              </div>
-            )}
-            <div style={{ flex: cfg.showHistory && historyOpen ? `${100 - cfg.scoreArea} 1 0` : '0 0 auto', display: 'flex', flexDirection: 'column', gap: 8, minHeight: 0, marginTop: cfg.showHistory && historyOpen ? 0 : 8 }}>
+            <div style={{ flex: cfg.showHistory && historyOpen ? `${100 - cfg.scoreArea} 1 0` : '0 0 auto', display: 'flex', flexDirection: 'column', gap: 8, minHeight: 0, marginTop: 8 }}>
               {cfg.showHistory && <HistoryBox open={historyOpen} onToggle={() => s.setSetting('historyOpen', !historyOpen)} />}
               {cfg.showStats && <SheetStats />}
             </div>
