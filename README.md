@@ -80,7 +80,7 @@ du entscheidest. Deine Mitglieder­daten bleiben bei dir.
 
 ---
 
-## Was die App alles kann
+## Funktionsumfang
 
 ### 🎯 Spielen & Zählen (Darts Counter)
 - **X01-Spiele** mit Startpunkten 301 / 501 / 701 / 1001
