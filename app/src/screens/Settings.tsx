@@ -660,6 +660,28 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
           </Row>
         </>
       )}
+      <Row label={tr.settings.scTitle} sub={tr.settings.scSub} top>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+          {([
+            [tr.settings.newGameShortcut, formatCombo(cfg.newGameKey || 'alt+n')],
+            [tr.settings.quickBo5Short, formatCombo(cfg.quickBo5Key || 'alt+5')],
+            [tr.settings.quickBo3Short, formatCombo(cfg.quickBo3Key || 'alt+3')],
+            [tr.settings.scPalette, formatCombo('ctrl+k')],
+            [tr.settings.scQuick, 'F1–F8'],
+            [tr.settings.scRest, 'F9'],
+            [tr.settings.scCheckout, 'F10 · F11 · F12'],
+            [tr.settings.scUndo, formatCombo('alt+z')],
+            [tr.settings.scAbort, formatCombo('alt+x')],
+            [tr.settings.scWinNav, '1 · 2 · 3'],
+            [tr.settings.scWinStats, 'S'],
+          ] as const).map(([label, keys]) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 13, color: 'var(--text-3)', textAlign: 'right' }}>{label}</span>
+              <kbd style={{ flexShrink: 0, fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 700, color: accent, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '4px 10px', whiteSpace: 'nowrap' }}>{keys}</kbd>
+            </div>
+          ))}
+        </div>
+      </Row>
     </Section>
   );
 

@@ -32,9 +32,9 @@ export function Counter() {
     const onKey = (e: KeyboardEvent) => {
       const st = useStore.getState();
       if (st.screen !== 'counter') return;
-      // Undo (Ctrl/⌘+Z) & Abbrechen (Ctrl/⌘+X) – VOR der Modifier-Sperre; nur bei laufendem Spiel,
-      // nicht wenn ein Overlay/Dialog die Eingabe besitzt (dann greift wie bisher die Modifier-Sperre).
-      if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && ['z', 'x'].includes(e.key.toLowerCase())) {
+      // Undo (Alt+Z) & Abbrechen (Alt+X) – Alt-basiert wie die übrigen Kürzel (Alt+N …). VOR der Modifier-
+      // Sperre; nur bei laufendem Spiel, nicht wenn ein Overlay/Dialog die Eingabe besitzt.
+      if (e.altKey && !e.metaKey && !e.shiftKey && ['z', 'x'].includes(e.key.toLowerCase())) {
         const over = matchOver({ gamePlayers: st.gamePlayers, allThrows: st.allThrows, startOffset: st.startOffset, settings: st.settings });
         const busy = over || st.pendingStart || st.finishPrompt || st.hint || st.abortConfirm || st.newConfirm || st.restEntry;
         if (!busy && e.key.toLowerCase() === 'z') { e.preventDefault(); st.undo(); return; }
@@ -166,9 +166,9 @@ export function Counter() {
           <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>{matchInfo}</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={(e) => { e.currentTarget.blur(); s.undo(); }} title={`Undo (${formatCombo('ctrl+z')})`} style={headBtn}><IconUndo size={15} />Undo<span style={hintKbd}>{formatCombo('ctrl+z')}</span></button>
-          <button onClick={(e) => { e.currentTarget.blur(); s.newMatch(); }} title={`${tr.counter.newBtn} (${formatCombo(cfg.newGameKey || 'alt+n')})`} style={headBtn}><IconRefresh size={15} />{tr.counter.newBtn}<span style={hintKbd}>{formatCombo(cfg.newGameKey || 'alt+n')}</span></button>
-          <button onClick={(e) => { e.currentTarget.blur(); s.abortGame(); }} title={`${tr.counter.abort} (${formatCombo('ctrl+x')})`} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />{tr.counter.abort}<span style={hintKbd}>{formatCombo('ctrl+x')}</span></button>
+          <button onClick={(e) => { e.currentTarget.blur(); s.undo(); }} title={`Undo (${formatCombo('alt+z')})`} style={headBtn}><IconUndo size={15} />Undo{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo('alt+z')}</span>}</button>
+          <button onClick={(e) => { e.currentTarget.blur(); s.newMatch(); }} title={`${tr.counter.newBtn} (${formatCombo(cfg.newGameKey || 'alt+n')})`} style={headBtn}><IconRefresh size={15} />{tr.counter.newBtn}{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo(cfg.newGameKey || 'alt+n')}</span>}</button>
+          <button onClick={(e) => { e.currentTarget.blur(); s.abortGame(); }} title={`${tr.counter.abort} (${formatCombo('alt+x')})`} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />{tr.counter.abort}{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo('alt+x')}</span>}</button>
         </div>
       </div>
 
