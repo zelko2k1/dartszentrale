@@ -10,20 +10,37 @@ import {
 } from '../store/training';
 import { IconBack, IconUndo, IconX } from '../lib/icons';
 import { BoardScale } from '../components/BoardScale';
+import { comboFromEvent, formatCombo } from '../lib/shortcut';
 import { useT, dict } from '../i18n';
 
 export function TrainingGame() {
   const s = useStore();
   const tr = useT();
+  // Globale Aktionen per Tastatur (wie im Counter): Undo (Default Alt+Z) & Abbrechen/Beenden (Default Alt+X),
+  // konfigurierbar über dieselben Kürzel. Vor dem Early-Return, damit die Hook-Reihenfolge stabil bleibt.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const st = useStore.getState();
+      if (st.screen !== 'trainGame' || !st.trainGame) return;
+      const combo = comboFromEvent(e);
+      if (!combo) return;
+      if (combo === (st.settings.undoKey || 'alt+z')) { if (st.trainUndo.length) { e.preventDefault(); st.trainUndoTurn(); } return; }
+      if (combo === (st.settings.abortKey || 'alt+x')) { e.preventDefault(); st.trainExit(); return; }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   const g = s.trainGame;
   if (!g) return null;
-  const accent = s.settings.accent;
+  const cfg = s.settings;
+  const accent = cfg.accent;
   const rows = standings(g);
   const cur = g.players[g.turnIdx];
   const tgt = currentTarget(g);
   const canUndo = s.trainUndo.length > 0;
 
   const headBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 13px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' };
+  const hintKbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.6, background: 'rgba(0,0,0,.18)', borderRadius: 4, padding: '1px 5px', marginLeft: 1 };
 
   const roundLabel = g.modeId === 'baseball' ? tr.trainingScr.inningOf(g.round)
     : g.modeId === 'halveit' ? tr.trainingScr.roundOf9(g.round)
@@ -36,14 +53,14 @@ export function TrainingGame() {
     <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: s.settings.mode === 'light' ? 'var(--bg)' : '#0c0e11', fontFamily: 'inherit' }}>
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)', flexShrink: 0 }}>
-        <button onClick={() => s.trainExit()} style={headBtn}><IconBack size={15} sw={2} />{tr.trainingScr.quit}</button>
+        <button onClick={() => s.trainExit()} title={`${tr.trainingScr.quit} (${formatCombo(cfg.abortKey || 'alt+x')})`} style={headBtn}><IconBack size={15} sw={2} />{tr.trainingScr.quit}</button>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '.02em' }}>{trainModeName(g.modeId)}</div>
           <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>{roundLabel}</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => s.trainUndoTurn()} disabled={!canUndo} style={{ ...headBtn, opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default' }}><IconUndo size={15} />Undo</button>
-          <button onClick={() => s.trainExit()} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />{tr.trainingScr.cancel}</button>
+          <button onClick={() => s.trainUndoTurn()} disabled={!canUndo} title={`Undo (${formatCombo(cfg.undoKey || 'alt+z')})`} style={{ ...headBtn, opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default' }}><IconUndo size={15} />Undo{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo(cfg.undoKey || 'alt+z')}</span>}</button>
+          <button onClick={() => s.trainExit()} title={`${tr.trainingScr.cancel} (${formatCombo(cfg.abortKey || 'alt+x')})`} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />{tr.trainingScr.cancel}{cfg.device === 'desktop' && <span style={{ ...hintKbd, background: 'rgba(224,75,67,.16)' }}>{formatCombo(cfg.abortKey || 'alt+x')}</span>}</button>
         </div>
       </div>
 
@@ -354,14 +371,18 @@ function HalvePanel({ accent }: { accent: string }) {
   const v = parseInt(val, 10);
   const valid = !isNaN(v) && v > 0 && v <= 180;
   const submit = () => { if (valid) { apply({ kind: 'halve', scored: v }); setVal(''); } };
+  const miss = () => { apply({ kind: 'halve', scored: 0 }); setVal(''); };
   return (
-    <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-      <input autoFocus type="text" inputMode="numeric" value={val} placeholder={tr.trainingScr.pointsPlaceholder}
-        onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
-        onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
-        style={{ flex: 1, minWidth: 120, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '13px 16px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
-      <button onClick={submit} disabled={!valid} style={{ ...primaryBtn(accent), opacity: valid ? 1 : 0.4, cursor: valid ? 'pointer' : 'default', padding: '15px 24px' }}>{tr.trainingScr.enter}</button>
-      <button onClick={() => { apply({ kind: 'halve', scored: 0 }); setVal(''); }} style={{ background: 'rgba(224,89,75,.12)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', borderRadius: 12, padding: '15px 22px', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.missHalve}</button>
+    <div>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <input autoFocus type="text" inputMode="numeric" value={val} placeholder={tr.trainingScr.pointsPlaceholder}
+          onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
+          onKeyDown={(e) => { if (e.key === 'Enter') { if (val === '') miss(); else submit(); } }}
+          style={{ flex: 1, minWidth: 120, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '13px 16px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
+        <button onClick={submit} disabled={!valid} style={{ ...primaryBtn(accent), opacity: valid ? 1 : 0.4, cursor: valid ? 'pointer' : 'default', padding: '15px 24px' }}>{tr.trainingScr.enter}</button>
+        <button onClick={miss} style={{ background: 'rgba(224,89,75,.12)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', borderRadius: 12, padding: '15px 22px', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.missHalve}</button>
+      </div>
+      <div style={{ fontSize: 11, color: 'var(--text-5)', fontWeight: 600, marginTop: 8 }}>{tr.trainingScr.halveKeysHint}</div>
     </div>
   );
 }
@@ -408,6 +429,20 @@ function CricketPanel({ game, accent }: { game: TrainGame; accent: string }) {
   const reset = () => { setMarks({}); setDarts(0); };
   const submit = () => { apply({ kind: 'marks', marks }); reset(); };
 
+  // Tastatur: 5–9 = 15–19 · 0 = 20 · B = Bull · S/D/T = Feldwert · ⌫ Zurück · ↵ Aufnahme buchen.
+  const cricketNum: Record<string, number> = { '5': 15, '6': 16, '7': 17, '8': 18, '9': 19, '0': 20 };
+  useTrainKeys((k) => {
+    const kl = k.toLowerCase();
+    if (kl === 's') { setMult(1); return true; }
+    if (kl === 'd') { setMult(2); return true; }
+    if (kl === 't') { setMult(3); return true; }
+    if (kl === 'b') { addDart(25); return true; }
+    if (kl in cricketNum) { addDart(cricketNum[kl]); return true; }
+    if (k === 'Backspace') { reset(); return true; }
+    if (k === 'Enter') { submit(); return true; }
+    return false;
+  });
+
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
@@ -417,6 +452,7 @@ function CricketPanel({ game, accent }: { game: TrainGame; accent: string }) {
         ))}
         <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>Darts: {darts}/3</span>
       </div>
+      <div style={{ fontSize: 11, color: 'var(--text-5)', fontWeight: 600, marginBottom: 10 }}>{tr.trainingScr.cricketKeys}</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8, marginBottom: 10 }}>
         {CRICKET_TARGETS.map((num) => {
           const closed = myMarks[num] >= 3;
@@ -451,6 +487,19 @@ function KillerPanel({ game, accent }: { game: TrainGame; accent: string }) {
   const reset = () => setDarts([]);
   const submit = () => { apply({ kind: 'killer', darts }); reset(); };
 
+  // Tastatur: 1–8 = Spieler (in Kachel-Reihenfolge, tote übersprungen) · 0/M = daneben · ⌫ Zurück · ↵ buchen.
+  useTrainKeys((k) => {
+    if (k === 'Enter') { submit(); return true; }
+    if (k === 'Backspace') { reset(); return true; }
+    if (k === '0' || k.toLowerCase() === 'm') { addDart(null); return true; }
+    if (k >= '1' && k <= '9') {
+      const p = game.players[+k - 1];
+      if (p && lives[p.id] > 0) addDart(p.id);
+      return true;
+    }
+    return false;
+  });
+
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
@@ -459,6 +508,7 @@ function KillerPanel({ game, accent }: { game: TrainGame; accent: string }) {
         </span>
         <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>Darts: {darts.length}/3</span>
       </div>
+      <div style={{ fontSize: 11, color: 'var(--text-5)', fontWeight: 600, marginBottom: 10 }}>{tr.trainingScr.killerKeys}</div>
       <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(110px, 1fr))`, gap: 8, marginBottom: 10 }}>
         {game.players.map((p) => {
           const dead = lives[p.id] <= 0;
@@ -488,6 +538,17 @@ function TrainWinOverlay({ game, accent }: { game: TrainGame; accent: string }) 
   const solo = game.players.length === 1;
   const winners = game.winnerIds.map((id) => game.players.find((p) => p.id === id)?.name).filter(Boolean);
   const title = solo ? tr.trainingScr.trainingDone : winners.length > 1 ? tr.trainingScr.draw : tr.trainingScr.won;
+  // Nach Spielende per Tastatur bedienbar (Desktop/Board): 1/Esc = Beenden, 2/Enter = Nochmal.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === '1' || e.key === 'Escape') { e.preventDefault(); s.trainExit(); }
+      else if (e.key === '2' || e.key === 'Enter') { e.preventDefault(); s.trainRematch(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const kbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.7, background: 'rgba(0,0,0,.22)', borderRadius: 4, padding: '1px 6px', marginLeft: 7 };
   return (
     <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,10,12,.86)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 40, padding: 24 }}>
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 20, padding: 28, width: 460, maxWidth: '94vw', boxShadow: '0 30px 70px rgba(0,0,0,.55)' }}>
@@ -512,8 +573,8 @@ function TrainWinOverlay({ game, accent }: { game: TrainGame; accent: string }) 
           })}
         </div>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button onClick={() => s.trainExit()} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.quit}</button>
-          <button onClick={() => s.trainRematch()} style={{ background: accent, border: 'none', color: accentFg(accent), padding: '13px 28px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.again}</button>
+          <button onClick={() => s.trainExit()} style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.quit}<span style={kbd}>Esc</span></button>
+          <button onClick={() => s.trainRematch()} style={{ display: 'inline-flex', alignItems: 'center', background: accent, border: 'none', color: accentFg(accent), padding: '13px 28px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.again}<span style={{ ...kbd, background: 'rgba(255,255,255,.22)' }}>↵</span></button>
         </div>
       </div>
     </div>
