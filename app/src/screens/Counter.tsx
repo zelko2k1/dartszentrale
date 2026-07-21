@@ -4,7 +4,7 @@ import { Avatar } from '../components/Avatar';
 import { accentFg } from '../store/selectors';
 import {
   scores, progress, currentIdx, currentLeg, average, first9, lastThrow, scoreList,
-  countAtLeast, checkoutSuggestion, canCheckout, finishStats, first9Match, avgCheckoutDarts, totalDarts, shortLegs, matchOver, winner, checkoutAchievement, type CounterSlice,
+  countAtLeast, checkoutSuggestion, canCheckout, finishStats, first9Match, avgCheckoutDarts, bestShortLeg, matchOver, winner, checkoutAchievement, type CounterSlice,
 } from '../store/counter';
 import { IconBack, IconUndo, IconRefresh, IconX } from '../lib/icons';
 import { formatCombo } from '../lib/shortcut';
@@ -101,25 +101,6 @@ export function Counter() {
   const sheetOpen = cfg.sheetOpen !== false;
   // dito für die Wurfanzeige-Box im „Restscore"-Modus.
   const historyOpen = cfg.historyOpen !== false;
-
-  // resizable score area (score band vs throws band)
-  const startResize = (e: React.PointerEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const board = e.currentTarget.parentElement;
-    const h = board ? board.getBoundingClientRect().height : window.innerHeight * 0.55;
-    const startY = e.clientY;
-    const startArea = useStore.getState().settings.scoreArea || 58;
-    const move = (ev: PointerEvent) => {
-      const area = startArea + ((ev.clientY - startY) / h) * 100;
-      useStore.getState().setSetting('scoreArea', Math.round(Math.max(35, Math.min(85, area))));
-    };
-    const up = () => {
-      window.removeEventListener('pointermove', move);
-      window.removeEventListener('pointerup', up);
-    };
-    window.addEventListener('pointermove', move);
-    window.addEventListener('pointerup', up);
-  };
 
   const outLabel = cfg.outMode === 'master' ? 'Master Out' : cfg.outMode === 'single' ? 'Single Out' : 'Double Out';
   const gameTitle = `X01 · ${cfg.startScore} · ${outLabel}`;
@@ -228,13 +209,7 @@ export function Counter() {
             integriertem Klapp-Pfeil; die Statistik-Box bleibt separat über „showStats" schaltbar. */}
         {!sheetMode && (cfg.showHistory || cfg.showStats) && (
           <>
-            {/* Ziehgriff zum Verschieben der Trennung Score-Leiste ↔ Wurfanzeige — nur wenn aufgeklappt */}
-            {cfg.showHistory && historyOpen && (
-              <div onPointerDown={startResize} style={{ height: 18, margin: '8px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexShrink: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 9, cursor: 'row-resize', touchAction: 'none', userSelect: 'none' }}>
-                <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border-strong)' }} />
-              </div>
-            )}
-            <div style={{ flex: cfg.showHistory && historyOpen ? `${100 - cfg.scoreArea} 1 0` : '0 0 auto', display: 'flex', flexDirection: 'column', gap: 8, minHeight: 0, marginTop: cfg.showHistory && historyOpen ? 0 : 8 }}>
+            <div style={{ flex: cfg.showHistory && historyOpen ? `${100 - cfg.scoreArea} 1 0` : '0 0 auto', display: 'flex', flexDirection: 'column', gap: 8, minHeight: 0, marginTop: 8 }}>
               {cfg.showHistory && <HistoryBox open={historyOpen} onToggle={() => s.setSetting('historyOpen', !historyOpen)} />}
               {cfg.showStats && <SheetStats />}
             </div>
@@ -250,7 +225,7 @@ export function Counter() {
               <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', paddingLeft: 2, flexShrink: 0 }}>{tr.counter.quickScore}</div>
               <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gridAutoRows: '1fr', gap: 8, minHeight: 0 }}>
                 {quickChips.map((q, i) => (
-                  <button key={i} onClick={() => s.quick(q)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 14, fontFamily: 'var(--font-num)', fontSize: 'clamp(15px,2.8vh,23px)', fontWeight: 800, cursor: 'pointer', minHeight: 0 }}>{q}</button>
+                  <button key={i} onClick={(e) => { e.currentTarget.blur(); s.quick(q); }} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 14, fontFamily: 'var(--font-num)', fontSize: 'clamp(15px,2.8vh,23px)', fontWeight: 800, cursor: 'pointer', minHeight: 0 }}>{q}</button>
                 ))}
               </div>
             </div>
@@ -417,7 +392,7 @@ function FKeyLegend() {
   return (
     <div style={{ flexShrink: 0, display: 'flex', flexWrap: 'wrap', gap: 6, padding: '0 12px 10px' }}>
       {items.map((it) => (
-        <button key={it.k} onClick={it.onClick} disabled={!it.enabled} title={`${it.k} · ${it.label}`} style={{ flex: '1 1 60px', minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '5px 4px', cursor: it.enabled ? 'pointer' : 'default', opacity: it.enabled ? 1 : 0.4, fontFamily: 'inherit' }}>
+        <button key={it.k} onClick={(e) => { e.currentTarget.blur(); it.onClick(); }} disabled={!it.enabled} title={`${it.k} · ${it.label}`} style={{ flex: '1 1 60px', minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '5px 4px', cursor: it.enabled ? 'pointer' : 'default', opacity: it.enabled ? 1 : 0.4, fontFamily: 'inherit' }}>
           <span style={{ fontSize: 9, fontWeight: 800, color: accentInk, letterSpacing: '.04em' }}>{it.k}</span>
           <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{it.label}</span>
         </button>
@@ -535,7 +510,7 @@ function SheetStats() {
             const fs = finishStats(slice, p.id);
             return (
               <div key={p.id} style={{ flex: 1, display: 'flex', gap: 1, background: 'var(--border)', minWidth: 0, borderLeft: pi > 0 ? '2px solid var(--border-strong)' : 'none' }}>
-                {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], [tr.counter.statLast, lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180', String(countAtLeast(slice, p.id, 180, true))], ['SL', String(shortLegs(slice, p.id))], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
+                {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], [tr.counter.statLast, lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180', String(countAtLeast(slice, p.id, 180, true))], ['SL', bestShortLeg(slice, p.id) > 0 ? String(bestShortLeg(slice, p.id)) : '–'], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
                   <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '8px 3px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, textAlign: 'center', minWidth: 0 }}>
                     <div style={{ fontSize: Math.round(9 * cfg.statsSize / 100), color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
                     <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(13 * cfg.statsSize / 100), fontWeight: 700, lineHeight: 1 }}>{val}</div>
@@ -692,7 +667,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
       {cfg.showQuick && (
         <div style={{ flexShrink: 0, display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 7 }}>
           {[180, 140, 100].map((q) => (
-            <button key={q} onClick={() => s.quick(q)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, padding: fill ? '8px 0' : '11px 0', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>{q}</button>
+            <button key={q} onClick={(e) => { e.currentTarget.blur(); s.quick(q); }} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, padding: fill ? '8px 0' : '11px 0', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>{q}</button>
           ))}
         </div>
       )}
@@ -754,7 +729,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
                       <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: accentInk }}>{sc[p.id]}</span>
                     </div>
                     <div style={{ display: 'flex', gap: 1, background: 'var(--border)' }}>
-                      {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['180', String(countAtLeast(slice, p.id, 180, true))], ['SL', String(shortLegs(slice, p.id))]].map(([label, val], k) => (
+                      {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['180', String(countAtLeast(slice, p.id, 180, true))], ['SL', bestShortLeg(slice, p.id) > 0 ? String(bestShortLeg(slice, p.id)) : '–']].map(([label, val], k) => (
                         <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '7px 4px', textAlign: 'center' }}>
                           <div style={{ fontSize: 9, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase' }}>{label}</div>
                           <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, marginTop: 2 }}>{val}</div>
@@ -904,16 +879,15 @@ function WinOverlay() {
   const statsOpen = s.settings.matchStatsOpen === true;
   const fsAll = players.map((p) => finishStats(slice, p.id));
   // hasData: v zählt als „echter Wert" (sonst „–" und nie grün). lowerBetter: niedriger = grün (Ø Darts/CO).
-  // noWinner: rein informativ, nie grün (Darts-Gesamtzahl ist kein „besser/schlechter"-Vergleich).
-  type StatRow = { label: string; vals: number[]; fmt: (v: number) => string; lowerBetter?: boolean; hasData?: (v: number) => boolean; noWinner?: boolean };
+  type StatRow = { label: string; vals: number[]; fmt: (v: number) => string; lowerBetter?: boolean; hasData?: (v: number) => boolean };
   const statRows: StatRow[] = [
     { label: tr.common.avg3, vals: players.map((p) => average(slice, p.id)), fmt: (v) => v.toFixed(1) },
     { label: 'First 9', vals: players.map((p) => first9Match(slice, p.id)), fmt: (v) => v.toFixed(1) },
     { label: '180', vals: players.map((p) => countAtLeast(slice, p.id, 180, true)), fmt: (v) => String(v) },
-    { label: 'Darts', vals: players.map((p) => totalDarts(slice, p.id)), fmt: (v) => String(v), noWinner: true },
     { label: 'CO %', vals: fsAll.map((f) => f.co), fmt: (v) => `${v}%` },
     { label: 'Ø Darts/CO', vals: players.map((p) => avgCheckoutDarts(slice, p.id)), fmt: (v) => (v > 0 ? v.toFixed(2) : '–'), lowerBetter: true, hasData: (v) => v > 0 },
     { label: 'High Finish', vals: fsAll.map((f) => f.hf), fmt: (v) => (v > 0 ? String(v) : '–') },
+    { label: 'Short Leg', vals: players.map((p) => bestShortLeg(slice, p.id)), fmt: (v) => (v > 0 ? String(v) : '–'), lowerBetter: true, hasData: (v) => v > 0 },
   ];
   // Nach Spielende per Tastatur bedienbar (Desktop/Board): 1 = Dashboard, 2 = Neues Spiel, 3/Enter = Revanche,
   // S = Match-Statistik auf-/zuklappen. Live-Wert aus dem Store lesen (nicht aus dem Closure), sonst wäre er stale.
@@ -961,7 +935,7 @@ function WinOverlay() {
               {statRows.map((r) => {
                 const valid = r.vals.filter((v) => (r.hasData ? r.hasData(v) : true));
                 const best = valid.length ? (r.lowerBetter ? Math.min(...valid) : Math.max(...valid)) : null;
-                const hasWinner = !r.noWinner && valid.length >= 2 && Math.min(...valid) !== Math.max(...valid);
+                const hasWinner = valid.length >= 2 && Math.min(...valid) !== Math.max(...valid);
                 return (
                   <Fragment key={r.label}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.42)', textTransform: 'uppercase', letterSpacing: '.03em', textAlign: 'left' }}>{r.label}</div>

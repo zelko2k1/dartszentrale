@@ -666,7 +666,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
             [tr.settings.newGameShortcut, formatCombo(cfg.newGameKey || 'alt+n')],
             [tr.settings.quickBo5Short, formatCombo(cfg.quickBo5Key || 'alt+5')],
             [tr.settings.quickBo3Short, formatCombo(cfg.quickBo3Key || 'alt+3')],
-            [tr.settings.scPalette, formatCombo('ctrl+k')],
+            [tr.settings.scPalette, formatCombo('alt+k')],
             [tr.settings.scQuick, 'F1–F8'],
             [tr.settings.scRest, 'F9'],
             [tr.settings.scCheckout, 'F10 · F11 · F12'],
