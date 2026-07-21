@@ -314,6 +314,7 @@ const phoneIconBtn: React.CSSProperties = { display: 'flex', alignItems: 'center
 function AbortConfirm() {
   const s = useStore();
   const tr = useT();
+  const cfg = s.settings;
   const [sel, setSel] = useState<0 | 1>(0); // 0 = Weiterspielen · 1 = Abbrechen
   const keepRef = useRef<HTMLButtonElement>(null);
   const abortRef = useRef<HTMLButtonElement>(null);
@@ -333,9 +334,22 @@ function AbortConfirm() {
           <button ref={keepRef} onClick={() => s.cancelAbort()} onMouseEnter={() => setSel(0)} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 0, 'var(--text)') }}>{tr.counter.keepPlaying}</button>
           <button ref={abortRef} onClick={() => s.confirmAbort()} onMouseEnter={() => setSel(1)} style={{ flex: 1, background: '#E0594B', border: 'none', color: '#fff', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 1, '#E0594B') }}>{tr.counter.abort}</button>
         </div>
+        {/* Tastatur-Hinweis (nur Desktop, wo eine Tastatur da ist) – analog „Wer beginnt?": Badges + kurze Labels. */}
+        {cfg.device === 'desktop' && (
+          <div style={{ marginTop: 18, display: 'flex', gap: 16, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', fontSize: 12, color: 'var(--text-4)', fontWeight: 600 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Kbd>←</Kbd><Kbd>→</Kbd> {tr.counter.abortKbdSelect}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Kbd>⏎</Kbd> {tr.counter.abortKbdConfirm}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Kbd>Esc</Kbd> {tr.counter.abortKbdKeep}</span>
+          </div>
+        )}
       </div>
     </Overlay>
   );
+}
+
+// Kleine Tasten-Badge (Stil wie im „Wer beginnt?"-Dialog).
+function Kbd({ children }: { children: React.ReactNode }) {
+  return <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px', lineHeight: 1.4 }}>{children}</kbd>;
 }
 
 // Integrierter, beschriftungsloser Klapp-Pfeil (rechtsbündig) als schmale Kopfleiste einer auf-/zuklappbaren
