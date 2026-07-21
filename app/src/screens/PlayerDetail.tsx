@@ -47,7 +47,7 @@ export function PlayerDetail() {
   const slMin = slDarts.length ? Math.min(...slDarts) : null;
   const slBuckets = new Map<number, number>();
   slDarts.forEach((d) => slBuckets.set(d, (slBuckets.get(d) || 0) + 1));
-  const slSorted = [...slBuckets.entries()].sort((a, b) => a[0] - b[0]); // aufsteigend (bestes zuerst)
+  const slSorted = [...slBuckets.entries()].sort((a, b) => b[0] - a[0]); // absteigend 19→9 (bestes zuletzt/rechts)
 
   return (
     <div style={{ padding: '28px 32px', maxWidth: 1080, margin: '0 auto' }}>
@@ -104,11 +104,12 @@ export function PlayerDetail() {
             <span style={{ width: 8, height: 36, borderRadius: 4, background: '#2bd3c0', flexShrink: 0 }} />
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontFamily: 'var(--font-num)', fontSize: 24, fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>
-                {slMin != null ? slMin : (agg.shortLegs || '–')}
+                {slMin != null ? slMin : '–'}
                 {slMin != null && <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-4)', marginLeft: 4 }}>{tr.playerDetail.darts}</span>}
               </div>
+              {/* Nur das BESTE Short Leg (Dartzahl) – keine Anzahl mehr (verwirrend). Die Verteilung darunter zeigt die Aufschlüsselung. */}
               <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, marginTop: 5 }}>
-                {slMin != null ? tr.playerDetail.bestShortLeg : tr.playerDetail.shortLegs}{agg.shortLegs ? ` · ${agg.shortLegs}×` : ''}
+                {tr.playerDetail.bestShortLeg}
               </div>
             </div>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-4)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transform: slOpen ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}><path d="M6 9l6 6 6-6" /></svg>
