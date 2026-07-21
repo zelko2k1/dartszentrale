@@ -1,4 +1,4 @@
-import { useEffect, useState, Fragment } from 'react';
+import { useEffect, useState, useRef, Fragment } from 'react';
 import { useStore } from '../store/useStore';
 import { Avatar } from '../components/Avatar';
 import { accentFg } from '../store/selectors';
@@ -296,18 +296,7 @@ export function Counter() {
         </Overlay>
       )}
       {/* abort */}
-      {s.abortConfirm && (
-        <Overlay z={40}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 28, maxWidth: 400, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
-            <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{tr.counter.abortTitle}</div>
-            <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>{tr.counter.abortBody}</div>
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-              <button onClick={() => s.cancelAbort()} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.keepPlaying}</button>
-              <button onClick={() => s.confirmAbort()} style={{ flex: 1, background: '#E0594B', border: 'none', color: '#fff', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.abort}</button>
-            </div>
-          </div>
-        </Overlay>
-      )}
+      {s.abortConfirm && <AbortConfirm />}
       {/* win */}
       {over && <WinOverlay />}
       {s.finishPrompt && <FinishPrompt />}
@@ -317,6 +306,37 @@ export function Counter() {
 }
 
 const phoneIconBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, cursor: 'pointer' };
+
+// „Spiel abbrechen?" – vollständig per Tastatur bedienbar: ◄ ► (bzw. ▲ ▼ / Tab) wechseln die Auswahl,
+// Enter/Leertaste bestätigt die markierte Schaltfläche, Esc = weiterspielen. Der Fokus steht anfangs sicher
+// auf „Weiterspielen", damit ein versehentliches Enter das Spiel NICHT abbricht. Die Auswahl ist zusätzlich
+// per Ring sichtbar und bleibt mit der Maus (Hover) synchron.
+function AbortConfirm() {
+  const s = useStore();
+  const tr = useT();
+  const [sel, setSel] = useState<0 | 1>(0); // 0 = Weiterspielen · 1 = Abbrechen
+  const keepRef = useRef<HTMLButtonElement>(null);
+  const abortRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => { (sel === 0 ? keepRef : abortRef).current?.focus(); }, [sel]);
+  const onKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') { e.preventDefault(); s.cancelAbort(); }
+    else if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'].includes(e.key)) { e.preventDefault(); setSel((v) => (v === 0 ? 1 : 0)); }
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (sel === 0) s.cancelAbort(); else s.confirmAbort(); }
+  };
+  const ring = (on: boolean, color: string): React.CSSProperties => (on ? { boxShadow: `0 0 0 3px color-mix(in srgb, ${color} 55%, transparent)` } : {});
+  return (
+    <Overlay z={40}>
+      <div onKeyDown={onKey} style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 28, maxWidth: 400, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+        <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{tr.counter.abortTitle}</div>
+        <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>{tr.counter.abortBody}</div>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+          <button ref={keepRef} onClick={() => s.cancelAbort()} onMouseEnter={() => setSel(0)} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 0, 'var(--text)') }}>{tr.counter.keepPlaying}</button>
+          <button ref={abortRef} onClick={() => s.confirmAbort()} onMouseEnter={() => setSel(1)} style={{ flex: 1, background: '#E0594B', border: 'none', color: '#fff', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 1, '#E0594B') }}>{tr.counter.abort}</button>
+        </div>
+      </div>
+    </Overlay>
+  );
+}
 
 // Integrierter, beschriftungsloser Klapp-Pfeil (rechtsbündig) als schmale Kopfleiste einer auf-/zuklappbaren
 // Box (Aufschrieb, Wurfanzeige, Statistik). Klick schaltet um; die Leiste bleibt auch zugeklappt sichtbar,
