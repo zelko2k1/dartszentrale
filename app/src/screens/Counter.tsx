@@ -841,9 +841,12 @@ function FinishPrompt() {
   const s = useStore();
   const tr = useT();
   const accent = s.settings.accent;
+  // Optionen unter minDarts sind für diese Ausmache unmöglich (z. B. 100 mit 1 Dart) → gesperrt.
+  const min = s.finishPrompt?.minDarts ?? 1;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
+      // resolveFinish() ignoriert unmögliche Dartzahlen selbst, daher hier bewusst alle 1–3 durchreichen.
       if (e.key === '1' || e.key === '2' || e.key === '3') { e.preventDefault(); s.resolveFinish(parseInt(e.key, 10)); }
       else if (e.key === 'Escape') { e.preventDefault(); s.cancelFinish(); }
     };
@@ -855,9 +858,13 @@ function FinishPrompt() {
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: '28px 32px', textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
         <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 18 }}>{tr.counter.finishPromptTitle}</div>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-          {[1, 2, 3].map((d) => (
-            <button key={d} onClick={() => s.resolveFinish(d)} style={{ width: 74, height: 74, borderRadius: 16, background: 'var(--surface-2)', border: `2px solid ${accent}`, color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, cursor: 'pointer' }}>{d}</button>
-          ))}
+          {[1, 2, 3].map((d) => {
+            const off = d < min;
+            return (
+              <button key={d} disabled={off} onClick={() => s.resolveFinish(d)}
+                style={{ width: 74, height: 74, borderRadius: 16, background: 'var(--surface-2)', border: `2px solid ${off ? 'var(--border-2)' : accent}`, color: off ? 'var(--text-5)' : 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, cursor: off ? 'not-allowed' : 'pointer', opacity: off ? 0.4 : 1 }}>{d}</button>
+            );
+          })}
         </div>
         <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 16 }}>{tr.counter.finishPromptHint}</div>
       </div>

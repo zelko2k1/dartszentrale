@@ -10,7 +10,7 @@ import {
   scores as cScores, progress as cProgress, currentPlayer as cCurrentPlayer,
   matchOver as cMatchOver, average as cAverage, countAtLeast,
   finishStats as cFinishStats, shortLegs as cShortLegs, shortLegDarts as cShortLegDarts, first9Match as cFirst9Match,
-  checkoutCelebration as cCheckoutCelebration,
+  checkoutCelebration as cCheckoutCelebration, minCheckoutDarts as cMinCheckoutDarts,
   type CounterSlice,
 } from './counter';
 import {
@@ -250,8 +250,9 @@ export interface AppState {
   setup: SetupState;
   hint: HintState | null;
   // Nach einem Checkout OHNE bekannte Dartzahl (nicht via F10–F12): fragt, mit welchem Dart (1/2/3) das
-  // Leg beendet wurde. Blockiert Feier/Sieg-Overlay, bis geantwortet ist. playerId = wer ausgemacht hat.
-  finishPrompt: { playerId: string | number } | null;
+  // Leg beendet wurde. Blockiert Feier/Sieg-Overlay, bis geantwortet ist. playerId = wer ausgemacht hat;
+  // score = die Ausmache; minDarts = kleinste mögliche Dartzahl (canCheckout) → Optionen darunter sind gesperrt.
+  finishPrompt: { playerId: string | number; score: number; minDarts: number } | null;
 
   // PWA-Update (manueller Fluss): neue Version liegt bereit / Status des manuellen Checks
   updateReady: boolean;
@@ -2176,9 +2177,13 @@ export const useStore = create<AppState>((set, get) => ({
     const allThrows = [...st.allThrows, t];
     set({ allThrows, input: '' });
     // Checkout OHNE explizite Dartzahl (also NICHT via F10–F12): erst den Finish-Dart abfragen, dann
-    // Feier/Sieg-Overlay – die exakte Dartzahl entscheidet über Short Leg & Statistik. Der Abschluss
-    // (Speichern bzw. Feier) läuft danach in resolveFinish() → completeCheckout().
-    if (checkout && !darts) { set({ finishPrompt: { playerId: cp.id } }); persistLive(get); return; }
+    // Feier/Sieg-Overlay – die exakte Dartzahl entscheidet über Short Leg & Statistik. ABER nur fragen,
+    // wenn ein Finish mit <3 Darts überhaupt möglich war (canCheckout, wie bei F10–F12). z. B. 141 geht
+    // nur mit 3 Darts → keine Frage, es bleibt bei 3. Der Abschluss läuft danach über completeCheckout().
+    if (checkout && !darts) {
+      const minDarts = cMinCheckoutDarts(st.settings, score);
+      if (minDarts < 3) { set({ finishPrompt: { playerId: cp.id, score, minDarts } }); persistLive(get); return; }
+    }
     completeCheckout(get, set, checkout ? cp.id : null);
   },
   resolveFinish(dart) {
@@ -2186,6 +2191,7 @@ export const useStore = create<AppState>((set, get) => ({
     if (!st.finishPrompt) return;
     const pid = st.finishPrompt.playerId;
     const d = Math.max(1, Math.min(3, Math.round(dart)));
+    if (d < st.finishPrompt.minDarts) return; // unmögliche Dartzahl ignorieren (z. B. 100 mit 1 Dart)
     // die noch offene Checkout-Aufnahme dieses Spielers auf die gewählte Dartzahl setzen
     const allThrows = st.allThrows.slice();
     for (let i = allThrows.length - 1; i >= 0; i--) {

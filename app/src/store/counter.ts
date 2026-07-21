@@ -185,6 +185,12 @@ export function outMode(settings: Settings): 'single' | 'double' | 'master' {
 }
 
 export interface CheckoutResult { ok: boolean; reason: string; max: number; }
+/** Kleinste Dartzahl (1–3), mit der `score` unter den aktuellen Regeln ausgemacht werden kann:
+ *  z. B. 141 → 3, 100 → 2, 40 → 1. Basis für die Finish-Dart-Abfrage (Optionen darunter sind gesperrt,
+ *  und wenn nur 3 möglich ist, wird gar nicht gefragt). */
+export function minCheckoutDarts(settings: Settings, score: number): number {
+  return canCheckout(settings, score, 1).ok ? 1 : canCheckout(settings, score, 2).ok ? 2 : 3;
+}
 export function canCheckout(settings: Settings, rem: number, darts: number): CheckoutResult {
   const mode = outMode(settings);
   if (rem <= 0) return { ok: false, reason: 'empty', max: 0 };

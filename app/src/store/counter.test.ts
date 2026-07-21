@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { CounterSlice } from './counter';
-import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner, checkoutCelebration, checkoutAchievement, avgCheckoutDarts } from './counter';
+import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner, checkoutCelebration, checkoutAchievement, avgCheckoutDarts, minCheckoutDarts } from './counter';
 import type { GamePlayer, Settings, Throw } from '../data/types';
 
 // Minimal settings factory — only the fields the counter logic reads.
@@ -261,4 +261,13 @@ describe('avgCheckoutDarts — Ø Darts je Checkout', () => {
   it('0, wenn (noch) kein Checkout', () => {
     expect(avgCheckoutDarts(slice({ allThrows: [turn('a', 60)] }), 'a')).toBe(0);
   });
+});
+
+describe('minCheckoutDarts — kleinste mögliche Finish-Dartzahl (Double Out)', () => {
+  const s = settings({ outMode: 'double' });
+  it('141 nur mit 3 Darts', () => { expect(minCheckoutDarts(s, 141)).toBe(3); });
+  it('170 nur mit 3 Darts', () => { expect(minCheckoutDarts(s, 170)).toBe(3); });
+  it('100 erst ab 2 Darts', () => { expect(minCheckoutDarts(s, 100)).toBe(2); });
+  it('40 (D20) schon mit 1 Dart', () => { expect(minCheckoutDarts(s, 40)).toBe(1); });
+  it('50 (Bull) schon mit 1 Dart', () => { expect(minCheckoutDarts(s, 50)).toBe(1); });
 });
