@@ -2,7 +2,7 @@ import { useStore } from '../store/useStore';
 import { Modal, ModalTitle, FieldLabel, ModalFooter } from '../components/Modal';
 import { LEAGUE_FORMAT_PRESETS, TEAM_KINDS } from '../data/constants';
 import { TeamKindIcon } from './TeamModal';
-import type { TeamKind } from '../data/types';
+import type { TeamKind, LineupSegment } from '../data/types';
 import { useT } from '../i18n';
 
 export function LeagueModal() {
@@ -13,17 +13,15 @@ export function LeagueModal() {
   const canSave = m.name.trim().length > 0;
 
   const fmtKey = JSON.stringify(m.format);
-  const activePreset = m.format == null ? 'custom'
-    : (Object.keys(LEAGUE_FORMAT_PRESETS).find((k) => JSON.stringify(LEAGUE_FORMAT_PRESETS[k].segments) === fmtKey) || 'preset');
-  const presetBtn = (key: string, label: string, sub: string) => {
-    const on = activePreset === key;
-    return (
-      <button key={key} onClick={() => s.setLeagueFormatPreset(key as 'BZ' | 'BL' | 'LL' | 'custom')} style={{ flex: 1, minWidth: 140, textAlign: 'left', background: on ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1.5px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 11, padding: '10px 13px', cursor: 'pointer', fontFamily: 'inherit' }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: on ? 'var(--accent)' : 'var(--text)' }}>{label}</div>
-        <div style={{ fontSize: 11, color: 'var(--text-4)', marginTop: 2 }}>{sub}</div>
-      </button>
-    );
-  };
+  // Anzeige-Text einer Vorlage aus den Segmenten (z. B. „8 Einzel · 4 Doppel"), plus Gesamtzahl der Spiele.
+  const segLabel = (segs: LineupSegment[]) => segs.map((seg) => `${seg.count} ${seg.kind === 'singles' ? tr.modals.singles : tr.modals.doubles}`).join(' · ');
+  const totalGames = (segs: LineupSegment[]) => segs.reduce((n, seg) => n + seg.count, 0);
+  const presetBtn = (key: string, main: string, sub: string, on: boolean) => (
+    <button key={key} onClick={() => s.setLeagueFormatPreset(key)} style={{ flex: 1, minWidth: 150, textAlign: 'left', background: on ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1.5px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 11, padding: '10px 13px', cursor: 'pointer', fontFamily: 'inherit' }}>
+      <div style={{ fontSize: 13, fontWeight: 800, color: on ? 'var(--accent)' : 'var(--text)' }}>{main}</div>
+      <div style={{ fontSize: 11, color: 'var(--text-4)', marginTop: 2 }}>{sub}</div>
+    </button>
+  );
 
   return (
     <Modal onClose={() => s.closeLeagueModal()} width={540} z={62} style={{ maxHeight: '88vh', overflow: 'auto' }}>
@@ -55,10 +53,8 @@ export function LeagueModal() {
 
       <FieldLabel>{tr.modals.gameFormat}</FieldLabel>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-        {presetBtn('BZ', LEAGUE_FORMAT_PRESETS.BZ.label, LEAGUE_FORMAT_PRESETS.BZ.short)}
-        {presetBtn('BL', LEAGUE_FORMAT_PRESETS.BL.label, LEAGUE_FORMAT_PRESETS.BL.short)}
-        {presetBtn('LL', LEAGUE_FORMAT_PRESETS.LL.label, LEAGUE_FORMAT_PRESETS.LL.short)}
-        {presetBtn('custom', tr.modals.custom, tr.modals.customSub)}
+        {LEAGUE_FORMAT_PRESETS.map((p) => presetBtn(p.key, segLabel(p.segments), tr.modals.gamesTotal(totalGames(p.segments)), fmtKey === JSON.stringify(p.segments)))}
+        {presetBtn('custom', tr.modals.custom, tr.modals.customSub, m.format == null)}
       </div>
 
       {m.format == null ? (

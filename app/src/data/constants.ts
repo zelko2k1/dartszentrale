@@ -19,13 +19,18 @@ export const TEAM_KINDS: Record<TeamKind, { label: string; short: string; color:
 // Robuster Zugriff inkl. Altdaten ohne kind-Feld → Standard 'league'.
 export const teamKind = (t: { kind?: TeamKind }): TeamKind => (t.kind === 'cup' ? 'cup' : t.kind === 'friendly' ? 'friendly' : 'league');
 
-// Spielformat-Vorlagen laut Wettkampfordnung. Reihenfolge der Segmente = realer Spielablauf.
-// Liga-Namen sind Eigennamen (bleiben deutsch); die Kurzbeschreibung kommt aus dem Sprachpaket.
-export const LEAGUE_FORMAT_PRESETS: Record<string, { label: string; short: string; segments: LineupSegment[] }> = {
-  BZ: { label: 'Bezirksliga', get short() { return dict().leagueFormats.f84; }, segments: [{ kind: 'singles', count: 8 }, { kind: 'doubles', count: 4 }] },
-  BL: { label: 'Bayernliga', get short() { return dict().leagueFormats.f84; }, segments: [{ kind: 'singles', count: 8 }, { kind: 'doubles', count: 4 }] },
-  LL: { label: 'Landesliga', get short() { return dict().leagueFormats.f636; }, segments: [{ kind: 'singles', count: 6 }, { kind: 'doubles', count: 3 }, { kind: 'singles', count: 6 }] },
-};
+// Spielformat-Vorlagen. Reihenfolge der Segmente = realer Spielablauf; die Anzeige (z. B. „8 Einzel · 4 Doppel")
+// wird im LeagueModal aus den Segmenten generiert, damit keine festen Überschriften/Liga-Namen nötig sind.
+export const LEAGUE_FORMAT_PRESETS: { key: string; segments: LineupSegment[] }[] = [
+  { key: 's8s8', segments: [{ kind: 'singles', count: 8 }, { kind: 'singles', count: 8 }] },
+  { key: 's8d4', segments: [{ kind: 'singles', count: 8 }, { kind: 'doubles', count: 4 }] },
+  { key: 's8d2s8', segments: [{ kind: 'singles', count: 8 }, { kind: 'doubles', count: 2 }, { kind: 'singles', count: 8 }] },
+  { key: 's6d3s6', segments: [{ kind: 'singles', count: 6 }, { kind: 'doubles', count: 3 }, { kind: 'singles', count: 6 }] },
+  { key: 's4s4d2', segments: [{ kind: 'singles', count: 4 }, { kind: 'singles', count: 4 }, { kind: 'doubles', count: 2 }] },
+  { key: 's4d2s4d2', segments: [{ kind: 'singles', count: 4 }, { kind: 'doubles', count: 2 }, { kind: 'singles', count: 4 }, { kind: 'doubles', count: 2 }] },
+  { key: 's4d2s4d2s4', segments: [{ kind: 'singles', count: 4 }, { kind: 'doubles', count: 2 }, { kind: 'singles', count: 4 }, { kind: 'doubles', count: 2 }, { kind: 'singles', count: 4 }] },
+  { key: 's4s4d2s4s4', segments: [{ kind: 'singles', count: 4 }, { kind: 'singles', count: 4 }, { kind: 'doubles', count: 2 }, { kind: 'singles', count: 4 }, { kind: 'singles', count: 4 }] },
+];
 
 // Einstellungen, die NICHT vereinsweit zentral gelten, sondern an Gerät/Login gebunden bleiben:
 // Verbindung (pbUrl), Betriebsmodus & Geräteart (hardwareabhängig) sowie der Dashboard-Zeitraum

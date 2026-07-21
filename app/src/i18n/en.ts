@@ -917,6 +917,7 @@ export const en: Dict = {
     perMatch: 'per match',
     singles: 'Singles',
     doubles: 'Doubles',
+    gamesTotal: (n: number) => `${n} games`,
     flow: 'Order: ',
     teamsInLeague: 'Teams in the league',
     addTeamsHint: 'Add the participating teams — including opposing clubs.',
