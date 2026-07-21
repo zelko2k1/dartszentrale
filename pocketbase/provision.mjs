@@ -220,6 +220,61 @@ async function main() {
   if (mfaCur) { await pb.collections.update(mfaCur.id, mfaDef); console.log('✓ aktualisiert: user_mfa'); }
   else { await pb.collections.create(mfaDef); console.log('✓ angelegt:     user_mfa'); }
 
+  // 3.6) live_sessions + live_commands (Remote & Live — Plan docs/plan-remote.md)
+  //      live_sessions: View-State je Board (Host schreibt, Mitglieder lesen).
+  //      live_commands: Befehls-Postfach (nur gekoppelter Remote legt an, Host liest/löscht).
+  //      Kopplung (remoteUser/pendingRemote) läuft über pb_hooks/live_hooks.pb.js.
+  //      Spiegelbild der Migration pb_migrations/1784300000_live_collections.js (Docker/Arcane-Weg).
+  const rel = (name, collectionId, opt = {}) => ({ name, type: 'relation', required: false, maxSelect: 1, minSelect: 0, collectionId, cascadeDelete: false, ...opt });
+  const LIVE_SESSION_CREATE = '@request.auth.id != "" && @request.body.host = @request.auth.id';
+  const sessDef = {
+    name: 'live_sessions', type: 'base',
+    listRule: LOGGED_IN, viewRule: LOGGED_IN,
+    createRule: LIVE_SESSION_CREATE, updateRule: '@request.auth.id = host',
+    deleteRule: '@request.auth.id = host || @request.auth.role = "admin"',
+    fields: [
+      rel('host', usersId, { required: true, cascadeDelete: true }),
+      text('boardName'), text('code'),
+      rel('remoteUser', usersId), rel('pendingRemote', usersId),
+      text('status'), json('state'),
+      { name: 'lastAppliedSeq', type: 'number', required: false, onlyInt: true },
+      text('heartbeat'),
+    ],
+  };
+  const sessCur = byName.get('live_sessions');
+  let liveSessId;
+  if (sessCur) { await pb.collections.update(sessCur.id, sessDef); liveSessId = sessCur.id; console.log('✓ aktualisiert: live_sessions'); }
+  else { const c = await pb.collections.create(sessDef); liveSessId = c.id; byName.set('live_sessions', c); console.log('✓ angelegt:     live_sessions'); }
+
+  const cmdDef = {
+    name: 'live_commands', type: 'base',
+    listRule: '@request.auth.id = session.host', viewRule: '@request.auth.id = session.host',
+    createRule: '@request.auth.id != "" && @request.body.createdBy = @request.auth.id',
+    updateRule: null, deleteRule: '@request.auth.id = session.host',
+    fields: [
+      rel('session', liveSessId, { required: true, cascadeDelete: true }),
+      { name: 'seq', type: 'number', required: false, onlyInt: true },
+      text('type'), json('payload'),
+      rel('createdBy', usersId, { required: true }),
+    ],
+    indexes: ['CREATE INDEX `idx_live_commands_session` ON `live_commands` (`session`, `seq`)'],
+  };
+  const cmdCur = byName.get('live_commands');
+  if (cmdCur) { await pb.collections.update(cmdCur.id, cmdDef); console.log('✓ aktualisiert: live_commands'); }
+  else { await pb.collections.create(cmdDef); console.log('✓ angelegt:     live_commands'); }
+
+  // 3.7) watch_config (login-freier Zuschauer-TV) — ABGESCHOTTET: alle Rules null → nur Superuser/pb_hooks.
+  //      watchEnabled = Kill-Switch (Default AUS), watchToken = geheimer Link-Token. Verwaltung + öffentlicher
+  //      Abruf laufen über pb_hooks/watch_hooks.pb.js. Spiegelbild der Migration 1784300001_watch_config.js.
+  const watchDef = {
+    name: 'watch_config', type: 'base',
+    listRule: null, viewRule: null, createRule: null, updateRule: null, deleteRule: null,
+    fields: [bool('watchEnabled'), text('watchToken')],
+  };
+  const watchCur = byName.get('watch_config');
+  if (watchCur) { await pb.collections.update(watchCur.id, watchDef); console.log('✓ aktualisiert: watch_config'); }
+  else { await pb.collections.create(watchDef); console.log('✓ angelegt:     watch_config'); }
+
   // 4) Ersten App-Admin anlegen — NUR wenn noch gar kein Admin existiert.
   //    Kein hartcodiertes Konto mehr: E-Mail/Passwort werden interaktiv abgefragt
   //    (oder per APP_ADMIN_EMAIL/APP_ADMIN_PASS gesetzt — z. B. Cloud/CI ohne Terminal).

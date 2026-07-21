@@ -124,6 +124,7 @@ export const de = {
     all: 'Alle',
     openCalendar: 'Kalender öffnen →',
     noEventsInRange: 'Keine Termine in diesem Zeitraum.',
+    nextEventHint: (d: string) => `Nächster Termin: ${d} · alle anzeigen →`,
     // Lokales Dashboard
     quickstart: 'Schnellstart',
     x01Match: 'X01 Match',
@@ -361,6 +362,8 @@ export const de = {
     toUsers: 'Zu den Benutzern →',
     boardWindowRow: 'Spiele am Board anzeigen',
     boardWindowSub: 'Wie viele Tage um den Spieltag ein Board die zugeordnete Begegnung automatisch zeigt. Manuell überschreibbar in der Aufstellung (an die Boards senden) oder direkt am Board (jetzt anzeigen). Vereinsweit.',
+    remoteRow: 'Handy als Fernbedienung',
+    remoteSub: 'Erlaubt, ein Smartphone per QR-Code an ein Board zu koppeln und Eingabe/Navigation vom Handy zu übernehmen (Notfall bei defekter Maus/Tastatur oder als bequeme Bedienung). Nur im Board-/Vereinsmodus. Vereinsweit.',
     matchdayOnly: 'Nur Spieltag',
     plusDay: (n: number) => `±${n} Tag${n === 1 ? '' : 'e'}`,
     secAccount: 'Mein Konto',
@@ -427,6 +430,7 @@ export const de = {
     addEvent: 'Termin',
     moreCount: (n: number) => `+${n} weitere`,
     noEventsMonth: 'Keine Termine in diesem Monat.',
+    nextEventHint: (d: string) => `Nächster Termin: ${d} →`,
   },
 
   // ── Texte der zentralen Konstanten (data/constants.ts liest sie per Getter live) ──
@@ -1057,7 +1061,8 @@ export const de = {
     chooseFile: 'Datei wählen',
     pasteClose: 'Einfügen schließen',
     pasteText: 'Text einfügen',
-    downloadTemplate: 'Vorlage herunterladen',
+    downloadTemplateDe: 'Vorlage (DE) herunterladen',
+    downloadTemplateEn: 'Vorlage (EN) herunterladen',
     pastePh: 'CSV-Inhalt hier einfügen…',
     pastedName: 'Eingefügt',
     fileLabel: 'Datei: ',

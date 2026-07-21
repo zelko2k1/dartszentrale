@@ -7,7 +7,15 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
-_Noch nichts._
+### Hinzugefügt
+- **Remote & Live:** Ein Smartphone lässt sich per QR-Code als **Fernbedienung** an ein Board koppeln —
+  Score-Eingabe **und** Navigation vom Handy (Notfall bei defekter Maus/Tastatur oder einfach als bequeme
+  Bedienung). Genau ein „Anschreiber" pro Board; Übernahme durch ein anderes Handy muss bestätigt werden.
+- **Login-freier Zuschauer-TV:** ein dauerhafter, geheimer Link (`#/watch/<token>`) zeigt auf einem
+  Bildschirm im Nebenraum das laufende Spiel (mehrere Boards als Kachel-Übersicht, sonst Vollbild).
+  Vereinsweit ein-/ausschaltbar (**Standard aus** im Internet-Betrieb), Token rotierbar, zeigt nur
+  Boardname + Spielstand. Beides nur im Vereins-/Board-Modus (PocketBase als Kanal).
+  Plan/Details: [`docs/plan-remote.md`](docs/plan-remote.md).
 
 ## [1.0.2] – 2026-07-16
 

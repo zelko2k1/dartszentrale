@@ -45,6 +45,40 @@ export interface TwoFactorStatus { enabled: boolean; pending: boolean; }
 /** Rückgabe von /api/2fa/setup: Base32-Secret + fertige otpauth://-URI für den QR-Code. */
 export interface TwoFactorSetup { secret: string; otpauthUri: string; account: string; }
 
+// ── Remote & Live (Handy als Eingabe + Live-Mitverfolgen) — Plan docs/plan-remote.md ──
+/** Kompakter, gerenderter Spielstand — Quelle für Remote-Handy UND Zuschauer (ohne eigene Spiellogik). */
+export interface LiveViewState {
+  phase: 'idle' | 'whoBegins' | 'playing' | 'bust' | 'won';
+  format?: { startScore: number; unit: string; bestOf: number; bestOfSets?: number; doubleOut: boolean };
+  players: { name: string; short?: string; score: number; legs: number; sets: number }[];
+  currentIdx: number;
+  input: string;                                  // aktueller Tipp-Puffer (Live-Feedback aufs Handy)
+  checkout: string[];                             // Checkout-Vorschlag des aktuellen Spielers
+  lastThrow?: { player: number; value: number } | null;
+  winner?: string | null;                         // bei phase="won"
+}
+/** Eine Live-Session (ein Board). remoteUser = aktuell gekoppeltes Handy, pendingRemote = Übernahme-Anfrage. */
+export interface LiveSession {
+  id: string;
+  host: string;
+  boardName: string;
+  code: string;
+  remoteUser: string;
+  pendingRemote: string;
+  status: 'idle' | 'active' | 'ended';
+  state: LiveViewState | null;
+  lastAppliedSeq: number;
+}
+/** Ein Befehl aus dem Postfach (vom Remote erzeugt, vom Host abgespielt). */
+export interface LiveCommand {
+  id: string;
+  session: string;
+  seq: number;
+  type: string;
+  payload: unknown;
+  createdBy: string;
+}
+
 export type ProviderRecord = Record<string, unknown>;
 
 export interface DataProvider {
@@ -113,4 +147,48 @@ export interface DataProvider {
 
   // ── Realtime (Verein optional); Lokal: gibt eine leere Unsubscribe-Funktion zurück ──
   subscribe(onChange: () => void): () => void;
+
+  // ── Remote & Live (Verein optional); Lokal: nicht verfügbar ──
+  /** Ob dieser Provider Remote/Live unterstützt (nur Vereins-/Server-Modus). */
+  readonly liveSupported: boolean;
+  /** Host: Session anlegen und ersten View-State veröffentlichen. Liefert die Session-ID. */
+  livePublish(input: { boardName: string; code: string; state: LiveViewState }): Promise<string>;
+  /** Host: aktuellen View-State schreiben (Aufrufer debounced); heartbeat=true erneuert das Lebenszeichen. */
+  liveUpdateState(sessionId: string, state: LiveViewState, heartbeat?: boolean): Promise<void>;
+  /** Host: Befehl bestätigen — lastAppliedSeq + neuen View-State schreiben. */
+  liveAck(sessionId: string, lastAppliedSeq: number, state: LiveViewState): Promise<void>;
+  /** Host: Session beenden (status=ended). */
+  liveEnd(sessionId: string): Promise<void>;
+  /** Host: Realtime-Abo auf eingehende Befehle der eigenen Session. */
+  liveConsume(sessionId: string, onCmd: (cmd: LiveCommand) => void): () => void;
+  /** Host: verarbeiteten Befehl löschen. */
+  liveDeleteCommand(commandId: string): Promise<void>;
+  /** Remote/Zuschauer: eine Session live beobachten (null = gelöscht). */
+  liveWatch(sessionId: string, onChange: (s: LiveSession | null) => void): () => void;
+  /** Zuschauer: aktive Sessions auflisten (für die Auswahl). */
+  liveListActive(): Promise<LiveSession[]>;
+  /** Zuschauer: Änderungen an der Session-Liste abonnieren. */
+  liveSubscribeList(onChange: () => void): () => void;
+  /** Remote: koppeln (Code prüfen). claimed=sofort gekoppelt, pending=Übernahme angefragt. */
+  liveClaim(sessionId: string, code: string): Promise<{ claimed: boolean; pending: boolean }>;
+  /** Remote: koppeln NUR über den Code (manuelle Eingabe ohne QR) — findet die Session, liefert ihre ID. */
+  liveClaimByCode(code: string): Promise<{ claimed: boolean; pending: boolean; sessionId: string }>;
+  /** Remote (aktueller): Übernahme durch ein anderes Handy bestätigen. */
+  liveClaimApprove(sessionId: string): Promise<void>;
+  /** Remote (aktueller): Übernahme ablehnen. */
+  liveClaimDeny(sessionId: string): Promise<void>;
+  /** Remote: eigenen Schreiber-/Anfrage-Platz freigeben. */
+  liveRelease(sessionId: string): Promise<void>;
+  /** Remote: Befehl senden (monoton steigende seq). */
+  liveSend(sessionId: string, seq: number, type: string, payload: unknown): Promise<void>;
+
+  // ── Öffentlicher Zuschauer-TV (login-frei, verein-/abendweit); Lokal: nicht verfügbar ──
+  /** Admin: Kanal-Konfig lesen (Kill-Switch + geheimer Token; legt Default an, falls fehlt). */
+  watchGetConfig(): Promise<{ enabled: boolean; token: string }>;
+  /** Admin: öffentliches Zuschauen ein-/ausschalten (echter Kill-Switch). */
+  watchSetEnabled(enabled: boolean): Promise<{ enabled: boolean; token: string }>;
+  /** Admin: neuen Token erzeugen — alte Links werden sofort ungültig. */
+  watchRotate(): Promise<{ enabled: boolean; token: string }>;
+  /** Öffentlich (ohne Login): aktive Boards zu einem Watch-Token — nur Boardname + Spielstand. */
+  watchPublic(token: string): Promise<{ boards: { boardName: string; state: LiveViewState | null }[] }>;
 }

@@ -33,7 +33,7 @@ Die passende Schritt-für-Schritt-Anleitung liegt **im Paket** und weiter unten 
 
 ---
 
-## Was ist das hier — in einfachen Worten?
+## Was ist DartsZentrale ?
 
 DartsZentrale ist eine App, mit der ein Darts-Verein seinen kompletten Alltag abbilden kann:
 

@@ -293,6 +293,9 @@ export interface Settings {
   // boardName = Bezeichnung dieses Board-Rechners (z. B. "Board 3"), für die spätere Aufstellung.
   kiosk?: boolean;
   boardName?: string;
+  // Remote & Live (Plan docs/plan-remote.md): erlaubt das Koppeln eines Handys als Fernbedienung
+  // an ein Board (nur Vereins-/Board-Modus). Vereinsweit; Default an. Aus = kein Host, kein QR.
+  remoteEnabled?: boolean;
 }
 
 export type Screen =
