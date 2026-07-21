@@ -129,6 +129,13 @@ export function shortLegDarts(s: CounterSlice, pid: string | number, maxDarts = 
   return out;
 }
 
+/** Bestes Short Leg im Match: die NIEDRIGSTE Dartzahl einer gewonnenen Aufnahme ≤ maxDarts (über alle
+ *  Legs von Best-of-N hinweg). 0 = kein Short Leg. Niedriger = besser → für die „SL"-Anzeige im Counter. */
+export function bestShortLeg(s: CounterSlice, pid: string | number, maxDarts = 19): number {
+  const d = shortLegDarts(s, pid, maxDarts);
+  return d.length ? Math.min(...d) : 0;
+}
+
 /** Live-Feier nach einem Checkout: High Finish (Ausmache ≥100) und/oder Short Leg (≤19 eigene Darts).
  *  Rein aus dem Slice NACH der Aufnahme abgeleitet (letzte Aufnahme des Spielers muss ein Checkout sein).
  *  Feiert nur, solange das Match weiterläuft (beim entscheidenden Leg hat das Sieg-Overlay Vorrang) und

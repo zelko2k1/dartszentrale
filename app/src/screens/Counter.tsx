@@ -4,7 +4,7 @@ import { Avatar } from '../components/Avatar';
 import { accentFg } from '../store/selectors';
 import {
   scores, progress, currentIdx, currentLeg, average, first9, lastThrow, scoreList,
-  countAtLeast, checkoutSuggestion, canCheckout, finishStats, first9Match, avgCheckoutDarts, shortLegs, matchOver, winner, checkoutAchievement, type CounterSlice,
+  countAtLeast, checkoutSuggestion, canCheckout, finishStats, first9Match, avgCheckoutDarts, bestShortLeg, matchOver, winner, checkoutAchievement, type CounterSlice,
 } from '../store/counter';
 import { IconBack, IconUndo, IconRefresh, IconX } from '../lib/icons';
 import { formatCombo } from '../lib/shortcut';
@@ -535,7 +535,7 @@ function SheetStats() {
             const fs = finishStats(slice, p.id);
             return (
               <div key={p.id} style={{ flex: 1, display: 'flex', gap: 1, background: 'var(--border)', minWidth: 0, borderLeft: pi > 0 ? '2px solid var(--border-strong)' : 'none' }}>
-                {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], [tr.counter.statLast, lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180', String(countAtLeast(slice, p.id, 180, true))], ['SL', String(shortLegs(slice, p.id))], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
+                {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], [tr.counter.statLast, lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180', String(countAtLeast(slice, p.id, 180, true))], ['SL', bestShortLeg(slice, p.id) > 0 ? String(bestShortLeg(slice, p.id)) : '–'], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
                   <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '8px 3px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, textAlign: 'center', minWidth: 0 }}>
                     <div style={{ fontSize: Math.round(9 * cfg.statsSize / 100), color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
                     <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(13 * cfg.statsSize / 100), fontWeight: 700, lineHeight: 1 }}>{val}</div>
@@ -754,7 +754,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
                       <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: accentInk }}>{sc[p.id]}</span>
                     </div>
                     <div style={{ display: 'flex', gap: 1, background: 'var(--border)' }}>
-                      {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['180', String(countAtLeast(slice, p.id, 180, true))], ['SL', String(shortLegs(slice, p.id))]].map(([label, val], k) => (
+                      {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['180', String(countAtLeast(slice, p.id, 180, true))], ['SL', bestShortLeg(slice, p.id) > 0 ? String(bestShortLeg(slice, p.id)) : '–']].map(([label, val], k) => (
                         <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '7px 4px', textAlign: 'center' }}>
                           <div style={{ fontSize: 9, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase' }}>{label}</div>
                           <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, marginTop: 2 }}>{val}</div>
@@ -912,7 +912,7 @@ function WinOverlay() {
     { label: 'CO %', vals: fsAll.map((f) => f.co), fmt: (v) => `${v}%` },
     { label: 'Ø Darts/CO', vals: players.map((p) => avgCheckoutDarts(slice, p.id)), fmt: (v) => (v > 0 ? v.toFixed(2) : '–'), lowerBetter: true, hasData: (v) => v > 0 },
     { label: 'High Finish', vals: fsAll.map((f) => f.hf), fmt: (v) => (v > 0 ? String(v) : '–') },
-    { label: 'Short Leg', vals: players.map((p) => shortLegs(slice, p.id)), fmt: (v) => String(v) },
+    { label: 'Short Leg', vals: players.map((p) => bestShortLeg(slice, p.id)), fmt: (v) => (v > 0 ? String(v) : '–'), lowerBetter: true, hasData: (v) => v > 0 },
   ];
   // Nach Spielende per Tastatur bedienbar (Desktop/Board): 1 = Dashboard, 2 = Neues Spiel, 3/Enter = Revanche,
   // S = Match-Statistik auf-/zuklappen. Live-Wert aus dem Store lesen (nicht aus dem Closure), sonst wäre er stale.

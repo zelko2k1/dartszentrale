@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { CounterSlice } from './counter';
-import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner, checkoutCelebration, checkoutAchievement, avgCheckoutDarts, minCheckoutDarts, totalDarts } from './counter';
+import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner, checkoutCelebration, checkoutAchievement, avgCheckoutDarts, minCheckoutDarts, totalDarts, bestShortLeg } from './counter';
 import type { GamePlayer, Settings, Throw } from '../data/types';
 
 // Minimal settings factory — only the fields the counter logic reads.
@@ -270,6 +270,20 @@ describe('totalDarts — Gesamtzahl geworfener Darts', () => {
   });
   it('0 ohne Aufnahmen', () => {
     expect(totalDarts(slice(), 'a')).toBe(0);
+  });
+});
+
+describe('bestShortLeg — niedrigstes Short Leg (Dartzahl) über alle Legs', () => {
+  const leg = (n: number, raws: number[]) => raws.map((r, i) =>
+    turn('a', r, i === raws.length - 1 ? { leg: n, checkout: true } : { leg: n }));
+  it('liefert die kleinste Dartzahl über mehrere gewonnene Short Legs', () => {
+    // Leg 1 = 9 Darts (180,180,141), Leg 2 = 15 Darts (100·4,101) → min 9
+    const s = slice({ allThrows: [...leg(1, [180, 180, 141]), ...leg(2, [100, 100, 100, 100, 101])] });
+    expect(bestShortLeg(s, 'a')).toBe(9);
+  });
+  it('0, wenn kein Short Leg (Leg > 19 Darts)', () => {
+    const s = slice({ allThrows: leg(1, [80, 80, 80, 80, 80, 80, 21]) }); // 21 Darts
+    expect(bestShortLeg(s, 'a')).toBe(0);
   });
 });
 
