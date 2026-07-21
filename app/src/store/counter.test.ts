@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { CounterSlice } from './counter';
-import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner, checkoutCelebration, checkoutAchievement } from './counter';
+import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner, checkoutCelebration, checkoutAchievement, avgCheckoutDarts } from './counter';
 import type { GamePlayer, Settings, Throw } from '../data/types';
 
 // Minimal settings factory — only the fields the counter logic reads.
@@ -249,5 +249,16 @@ describe('checkoutAchievement — reine Auszeichnung fürs Sieg-Overlay', () => 
 
   it('null, wenn weder High Finish noch Short Leg', () => {
     expect(checkoutAchievement(slice({ allThrows: leg([80, 80, 80, 80, 80, 80, 21]) }), 'a')).toBeNull();
+  });
+});
+
+describe('avgCheckoutDarts — Ø Darts je Checkout', () => {
+  const co = (leg: number, darts: number) => turn('a', 40, { checkout: true, leg, darts });
+  it('mittelt die Finish-Dartzahl der gewonnenen Legs', () => {
+    const s = slice({ allThrows: [co(1, 1), co(2, 3), co(3, 2)] }); // (1+3+2)/3 = 2
+    expect(avgCheckoutDarts(s, 'a')).toBeCloseTo(2, 5);
+  });
+  it('0, wenn (noch) kein Checkout', () => {
+    expect(avgCheckoutDarts(slice({ allThrows: [turn('a', 60)] }), 'a')).toBe(0);
   });
 });

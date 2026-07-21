@@ -161,6 +161,15 @@ export function checkoutCelebration(s: CounterSlice, pid: string | number): Chec
   return { highFinish, shortLeg, score: a.score, darts: a.darts };
 }
 
+/** Ø Darts der Schluss-Aufnahme je gewonnenem Leg (Checkout). NIEDRIGER = besser (cleaner gefinisht).
+ *  0 = (noch) kein Checkout → in der Anzeige als „–" behandeln. Nutzt die per Finish-Dart-Abfrage
+ *  erfasste Dartzahl der Checkout-Aufnahme (Fallback 3, wenn unbekannt). */
+export function avgCheckoutDarts(s: CounterSlice, pid: string | number): number {
+  const cos = s.allThrows.filter((t) => t.playerId === pid && t.checkout);
+  if (!cos.length) return 0;
+  return cos.reduce((a, t) => a + (t.darts || 3), 0) / cos.length;
+}
+
 export interface ScoreRow { round: number; scored: string | number; rest: number; bust: boolean; checkout: boolean; }
 export function scoreList(s: CounterSlice, pid: string | number): ScoreRow[] {
   let rest = s.settings.startScore; const rows: ScoreRow[] = [];

@@ -818,6 +818,8 @@ export const de = {
     winFinishHf: (score: number) => `High Finish ${score}`,
     winFinishSl: (darts: number) => `Short Leg (${darts} Darts)`,
     matchStats: 'Match-Statistik',
+    finishPromptTitle: 'Mit welchem Dart beendet?',
+    finishPromptHint: 'Taste 1–3 · Esc = zurück',
     abortTitle: 'Spiel abbrechen?',
     abortBody: 'Das laufende Spiel wird verworfen und erscheint nicht in der Statistik.',
     keepPlaying: 'Weiter spielen',
