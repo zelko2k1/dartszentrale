@@ -1,5 +1,6 @@
 import { useStore } from '../store/useStore';
 import { TRAIN_MODES, MODE_RULES, type TrainMode } from '../data/constants';
+import { TRAIN_BEST } from '../store/training';
 import { useT, type Dict } from '../i18n';
 
 function tagText(m: TrainMode, tr: Dict) {
@@ -8,9 +9,21 @@ function tagText(m: TrainMode, tr: Dict) {
   return tr.trainingScr.tagSolo;
 }
 
+// Bester Wert aller Spieler für einen Modus (oder null) — als „Rekord" auf der Kachel.
+function overallBest(modeId: string, players: { trainingBests?: Record<string, { value: number }> }[]): number | null {
+  const bm = TRAIN_BEST[modeId]; if (!bm) return null;
+  let best: number | null = null;
+  for (const p of players) {
+    const v = p.trainingBests?.[modeId]?.value; if (v == null) continue;
+    best = best == null ? v : (bm.kind === 'min' ? Math.min(best, v) : Math.max(best, v));
+  }
+  return best;
+}
+
 function Grid({ modes }: { modes: TrainMode[] }) {
   const openRules = useStore((s) => s.openRules);
   const openTrainSetup = useStore((s) => s.openTrainSetup);
+  const players = useStore((s) => s.players);
   const tr = useT();
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 28 }}>
@@ -25,7 +38,9 @@ function Grid({ modes }: { modes: TrainMode[] }) {
             <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, whiteSpace: 'nowrap' }}>{tagText(m, tr)}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <button onClick={(e) => { e.stopPropagation(); openRules(m.id); }} title={tr.trainingScr.rules} className="dh-btn" style={{ width: 24, height: 24, borderRadius: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800 }}>?</button>
-              <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: m.color }}>{m.metric}</span>
+              {(() => { const bv = overallBest(m.id, players); const bm = TRAIN_BEST[m.id]; return (
+                <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: m.color }}>{m.metric}{bv != null && bm ? ` ${bm.format(bv)}` : ''}</span>
+              ); })()}
             </div>
           </div>
         </div>

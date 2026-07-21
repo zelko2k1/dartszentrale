@@ -61,7 +61,8 @@ const editorRules = {
 const BASE_COLLECTIONS = [
   {
     name: 'players', type: 'base', ...editorRules,
-    fields: [text('name'), text('short', { max: 3 }), num('avi'), bool('locked'), photo()],
+    // trainingBests: persönliche Trainings-Bestwerte je Modus (json-Map modeId→{value,date}). Board-übergreifend.
+    fields: [text('name'), text('short', { max: 3 }), num('avi'), bool('locked'), photo(), json('trainingBests')],
   },
   {
     // Saison-Klammer: status = 'active' (genau eine) | 'archived' (abgeschlossen, in der App nur lesbar).

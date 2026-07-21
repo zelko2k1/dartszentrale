@@ -4,7 +4,8 @@
 import { TRAIN_MODES, CRICKET_TARGETS, CHECKOUTS } from '../data/constants';
 import { dict } from '../i18n';
 
-export interface TrainPlayer { id: string; name: string; short: string; av: number; photo?: string; }
+// id = spielinterne Slot-ID (t{slot}_{pid}); pid = echte Spieler-ID (für persönliche Bestwerte am Spieler-Datensatz).
+export interface TrainPlayer { id: string; pid: string; name: string; short: string; av: number; photo?: string; }
 
 export interface TrainLog { round: number; playerId: string; text: string; }
 
@@ -26,6 +27,8 @@ export interface TrainData {
   score?: Record<string, number>;      // Bob's 27, Halve It, Elimination
   marks?: Record<string, Record<number, number>>; // Cricket
   points?: Record<string, number>;     // Cricket
+  cmarks?: Record<string, number>;     // Cricket: kumulierte Marks (alle Treffer) — für MPR
+  cdarts?: Record<string, number>;     // Cricket: kumulierte geworfene Darts — für MPR
   num?: Record<string, number>;        // Killer: eigene Zahl
   lives?: Record<string, number>;      // Killer
   isKiller?: Record<string, boolean>;  // Killer
@@ -49,7 +52,7 @@ export type TurnInput =
   | { kind: 'advance'; advance: number }              // atc
   | { kind: 'runs'; runs: number }                    // baseball
   | { kind: 'halve'; scored: number }                 // halveit (0 = verfehlt → halbieren)
-  | { kind: 'marks'; marks: Record<number, number> }  // cricket
+  | { kind: 'marks'; marks: Record<number, number>; darts: number }  // cricket (darts = geworfene Darts dieser Aufnahme, für MPR)
   | { kind: 'score'; score: number }                  // elimination
   | { kind: 'killer'; darts: (string | null)[] };     // killer: je Dart getroffene Spieler-Zahl oder null
 
@@ -104,7 +107,7 @@ export function initData(modeId: string, players: TrainPlayer[]): TrainData {
     case 'halveit': return { score: Object.fromEntries(ids.map((id) => [id, HALVEIT_START])), rounds: Object.fromEntries(ids.map((id) => [id, []])) };
     case 'cricket': return {
       marks: Object.fromEntries(ids.map((id) => [id, Object.fromEntries(CRICKET_TARGETS.map((n) => [n, 0]))])),
-      points: zero(),
+      points: zero(), cmarks: zero(), cdarts: zero(),
     };
     case 'elimination': return { score: zero() };
     case 'killer': {
@@ -222,6 +225,9 @@ export function applyTurn(g: TrainGame, input: TurnInput): TrainGame {
         myMarks[num] = mk;
         parts.push(`${num === 25 ? 'Bull' : num}×${m}`);
       }
+      // MPR-Rohdaten mitzählen: alle gelandeten Marks + tatsächlich geworfene Darts dieser Aufnahme.
+      data.cmarks![cur.id] = (data.cmarks![cur.id] || 0) + added;
+      data.cdarts![cur.id] = (data.cdarts![cur.id] || 0) + input.darts;
       pushLog(`${parts.join(' ') || dict().trainingScr.logNoHits}${added ? '' : ''}`);
       // Sieg-/Ende-Prüfung
       const allClosed = (pid: string) => CRICKET_TARGETS.every((num) => data.marks![pid][num] >= 3);
@@ -353,4 +359,76 @@ export function leaderboard(g: TrainGame): StandRow[] {
 
 export function trainModeName(modeId: string): string {
   return TRAIN_MODES.find((m) => m.id === modeId)?.name || modeId;
+}
+
+// ── Persönliche Bestwerte ─────────────────────────────────────────────────────
+// Je Modus die „Kopfkennzahl" (dieselbe wie auf der Kachel: Quote/HF/Darts/Punkte/Runs/Siege).
+//  kind 'max'  → höher ist besser (Quote, Punkte, Runs, HF)
+//  kind 'min'  → weniger ist besser (Darts bis fertig)
+//  kind 'wins' → kumulierter Sieg-Zähler (Elimination/Killer)
+// value(g,id) liefert den Rohwert des Spielers (id = TrainPlayer.id) am Spielende, oder null wenn nicht
+// wertbar (z. B. ATC nicht durchgespielt). Cricket hat bewusst keinen Bestwert (MPR wird nicht erfasst).
+export type BestKind = 'max' | 'min' | 'wins';
+export interface BestMeta { kind: BestKind; value: (g: TrainGame, id: string) => number | null; format: (v: number) => string; }
+export const TRAIN_BEST: Record<string, BestMeta> = {
+  doubles:     { kind: 'max', value: (g) => (g.data.throws ? Math.round(((g.data.hits || 0) / g.data.throws) * 100) : null), format: (v) => `${v}%` },
+  cricket:     { kind: 'max', value: (g, id) => { const d = g.data.cdarts?.[id] ?? 0; return d > 0 ? Math.round(((3 * (g.data.cmarks?.[id] ?? 0)) / d) * 100) / 100 : null; }, format: (v) => v.toFixed(2) },
+  checkout121: { kind: 'max', value: (g) => ((g.data.best || 0) > 0 ? g.data.best! : null), format: (v) => String(v) },
+  atc:         { kind: 'min', value: (g, id) => ((g.data.pos?.[id] ?? 0) >= ATC_SEQ.length ? (g.data.darts?.[id] ?? 0) : null), format: (v) => String(v) },
+  bobs27:      { kind: 'max', value: (g, id) => (g.data.score?.[id] ?? null), format: (v) => String(v) },
+  baseball:    { kind: 'max', value: (g, id) => (g.data.runs?.[id] ?? null), format: (v) => String(v) },
+  halveit:     { kind: 'max', value: (g, id) => (g.data.score?.[id] ?? null), format: (v) => String(v) },
+  elimination: { kind: 'wins', value: (g, id) => (g.winnerIds.includes(id) ? 1 : 0), format: (v) => String(v) },
+  killer:      { kind: 'wins', value: (g, id) => (g.winnerIds.includes(id) ? 1 : 0), format: (v) => String(v) },
+};
+
+// Ist newV besser als der bisherige Bestwert prev (undefined = noch keiner)? Für 'wins' immer akkumulieren.
+export function isBetterBest(kind: BestKind, newV: number, prev: number | undefined): boolean {
+  if (prev === undefined) return kind === 'wins' ? newV > 0 : true;
+  if (kind === 'min') return newV < prev;
+  return newV > prev; // 'max' und 'wins' (wins: newV=1 nur bei Sieg)
+}
+
+// ── Live-Feiern ────────────────────────────────────────────────────────────────
+// Reine Funktion: liefert bei einer bemerkenswerten Aufnahme {title, body} zum Einblenden als auto-Hint.
+// Nur für laufende Spiele gedacht (bei Spielende übernimmt das Sieg-Overlay + „Neuer Bestwert").
+export function trainCelebration(prev: TrainGame, next: TrainGame, input: TurnInput): { title: string; body: string } | null {
+  const t = dict().trainingScr;
+  const who = prev.players[prev.turnIdx];
+  const name = who?.name || '';
+  switch (prev.modeId) {
+    case 'doubles': case 'bobs27':
+      if (input.kind === 'hits' && input.hits === 3) return { title: t.celAllThreeTitle, body: t.celAllThreeBody(name) };
+      break;
+    case 'atc':
+      if (input.kind === 'advance' && input.advance === 3) return { title: t.celThreeTargetsTitle, body: t.celThreeTargetsBody(name) };
+      break;
+    case 'checkout121':
+      if (input.kind === 'made' && input.made && input.darts === 1) return { title: t.celOneDartTitle, body: t.celOneDartBody(name) };
+      break;
+    case 'baseball':
+      if (input.kind === 'runs' && input.runs >= 3) return { title: t.celHomerunTitle, body: t.celHomerunBody(name, input.runs) };
+      break;
+    case 'halveit':
+      if (input.kind === 'halve' && input.scored >= 60) return { title: t.celBigRoundTitle, body: t.celBigRoundBody(name, input.scored) };
+      break;
+    case 'cricket':
+      if (input.kind === 'marks') {
+        const marks = Object.values(input.marks).reduce((a, b) => a + (b || 0), 0);
+        if (marks >= 5) return { title: t.celManyMarksTitle, body: t.celManyMarksBody(name, marks) };
+      }
+      break;
+    case 'killer': {
+      if (!prev.data.isKiller?.[who.id] && next.data.isKiller?.[who.id]) return { title: t.celKillerTitle, body: t.celKillerBody(name) };
+      const out = next.players.find((p) => (prev.data.lives?.[p.id] ?? 0) > 0 && (next.data.lives?.[p.id] ?? 0) <= 0);
+      if (out) return { title: t.celEliminatedTitle, body: t.celEliminatedBody(out.name) };
+      break;
+    }
+    case 'elimination': {
+      const back = next.players.find((p) => p.id !== who.id && (prev.data.score?.[p.id] ?? 0) > 0 && (next.data.score?.[p.id] ?? 0) === 0);
+      if (back) return { title: t.celKnockbackTitle, body: t.celKnockbackBody(back.name) };
+      break;
+    }
+  }
+  return null;
 }

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type {
   Player, Team, Account, League, Fixture, EventItem, Match, Season, SeasonSnapshot, Settings, Screen,
-  GamePlayer, Throw, Role, MatchPlayerStat, LineupPosition, FixtureLineup, LineupSegment, TeamKind,
+  GamePlayer, Throw, Role, MatchPlayerStat, LineupPosition, FixtureLineup, LineupSegment, TeamKind, TrainingBest,
 } from '../data/types';
 import { AVATARS, DEVICE_LOCAL_SETTING_KEYS, DEVICE_UI_KEYS, LEAGUE_FORMAT_PRESETS } from '../data/constants';
 import { uid, firstName, lastName, initials } from '../lib/format';
@@ -19,6 +19,7 @@ import {
 import { activeSeason as pickActiveSeason, computeStandings, aggregateFor, inSeason } from './selectors';
 import {
   newTrainGame, applyTurn as tApplyTurn, trainMeta,
+  TRAIN_BEST, isBetterBest, trainCelebration,
   type TrainGame, type TrainPlayer, type TurnInput,
 } from './training';
 import { createProvider, type DataProvider } from '../data/dataProvider';
@@ -267,6 +268,8 @@ export interface AppState {
   trainGame: TrainGame | null;
   trainUndo: TrainGame[];
   trainingPlays: Record<string, number>;
+  // TrainPlayer-IDs, die im gerade beendeten Spiel einen neuen persönlichen Bestwert erzielt haben (Sieg-Overlay-Badge).
+  trainBestFlash: string[];
 
   // counter: "enter remaining score" box (F9)
   restEntry: boolean;
@@ -563,6 +566,7 @@ export const useStore = create<AppState>((set, get) => ({
   trainGame: null,
   trainUndo: [],
   trainingPlays: {},
+  trainBestFlash: [],
   restEntry: false,
   newConfirm: false,
   pendingNew: { kind: 'setup' },
@@ -2065,17 +2069,20 @@ export const useStore = create<AppState>((set, get) => ({
       // Doppelte vermeiden (Mehrspieler): nächsten freien Spieler nehmen
       if (count > 1 && used.has(p.id)) { p = pool.find((q) => !used.has(q.id)) || p; }
       used.add(p.id);
-      players.push({ id: `t${i}_${p.id}`, name: p.name, short: p.short, av: p.avi, photo: p.photo });
+      players.push({ id: `t${i}_${p.id}`, pid: p.id, name: p.name, short: p.short, av: p.avi, photo: p.photo });
     }
     const trainingPlays = { ...st.trainingPlays, [su.modeId]: (st.trainingPlays[su.modeId] || 0) + 1 };
     if (st.provider.mode === 'verein') void st.provider.saveTrainingPlays(trainingPlays).catch((e) => { console.error('[sync]', e); });
     else write(LS.trainplays, trainingPlays);
-    set({ trainGame: newTrainGame(su.modeId, players), trainUndo: [], trainingPlays, screen: 'trainGame' });
+    set({ trainGame: newTrainGame(su.modeId, players), trainUndo: [], trainingPlays, trainBestFlash: [], screen: 'trainGame' });
   },
   trainApply(input) {
     const st = get(); const g = st.trainGame; if (!g || g.over) return;
     const next = tApplyTurn(g, input);
     set({ trainGame: next, trainUndo: [...st.trainUndo, g].slice(-50) });
+    // Spielende → persönliche Bestwerte verbuchen (Badge im Sieg-Overlay). Sonst laufende Feier einblenden.
+    if (next.over) recordTrainingResult(get, set, next);
+    else { const cel = trainCelebration(g, next, input); if (cel) get().showHint({ ...cel, auto: true }); }
   },
   trainUndoTurn() {
     set((st) => {
@@ -2086,9 +2093,9 @@ export const useStore = create<AppState>((set, get) => ({
   },
   trainRematch() {
     const g = get().trainGame; if (!g) return;
-    set({ trainGame: newTrainGame(g.modeId, g.players), trainUndo: [] });
+    set({ trainGame: newTrainGame(g.modeId, g.players), trainUndo: [], trainBestFlash: [], hint: null });
   },
-  trainExit() { set({ trainGame: null, trainUndo: [], trainSetup: null, screen: 'training' }); },
+  trainExit() { set({ trainGame: null, trainUndo: [], trainSetup: null, trainBestFlash: [], hint: null, screen: 'training' }); },
 
   // ── counter ──
   goSetup(preset) { set((st) => ({ screen: 'setup', setup: { ...st.setup, ...(preset || {}) } })); },
@@ -2300,6 +2307,45 @@ function persist(st: AppState, set: SetFn, lsKey: string, fullArray: unknown, ve
     void verein(st.provider).catch((e) => { console.error('[sync]', e); set({ syncError: dict().storeMsg.errChangeSave }); });
   } else {
     write(lsKey, fullArray);
+  }
+}
+// Persönliche Trainings-Bestwerte am Spieler-Datensatz verbuchen (nach Spielende). Aktualisiert je Spieler
+// den Bestwert seiner Modus-Kennzahl (falls verbessert), persistiert die geänderten Spieler und markiert die
+// Verbesserer (TrainPlayer-IDs) für das Sieg-Overlay. Modi ohne TRAIN_BEST-Eintrag (z. B. Cricket) → übersprungen.
+function recordTrainingResult(get: () => AppState, set: SetFn, g: TrainGame) {
+  const meta = TRAIN_BEST[g.modeId];
+  if (!meta) { set({ trainBestFlash: [] }); return; }
+  const st = get();
+  const today = new Date().toISOString().slice(0, 10);
+  const flash: string[] = [];
+  const nextBest = new Map<string, TrainingBest>(); // pid → neuer Bestwert
+  for (const tp of g.players) {
+    const raw = meta.value(g, tp.id);
+    if (raw == null) continue;
+    const player = st.players.find((p) => p.id === tp.pid);
+    const prev = player?.trainingBests?.[g.modeId]?.value;
+    if (meta.kind === 'wins') {
+      // Siege immer akkumulieren (kein „Rekord"-Badge), aber nur bei tatsächlichem Sieg fortschreiben.
+      if (raw > 0) nextBest.set(tp.pid, { value: (prev || 0) + 1, date: today });
+    } else if (isBetterBest(meta.kind, raw, prev)) {
+      nextBest.set(tp.pid, { value: raw, date: today });
+      flash.push(tp.id); // echter neuer Bestwert → im Overlay feiern
+    }
+  }
+  if (nextBest.size === 0) { set({ trainBestFlash: flash }); return; }
+  const players = st.players.map((p) => {
+    const nb = nextBest.get(p.id);
+    return nb ? { ...p, trainingBests: { ...(p.trainingBests || {}), [g.modeId]: nb } } : p;
+  });
+  set({ players, trainBestFlash: flash });
+  if (st.provider.mode === 'verein') {
+    for (const pid of nextBest.keys()) {
+      const updated = players.find((p) => p.id === pid)!;
+      void st.provider.updateRecord('players', pid, { trainingBests: updated.trainingBests } as unknown as ProviderRecord)
+        .catch((e) => { console.error('[sync]', e); set({ syncError: dict().storeMsg.errChangeSave }); });
+    }
+  } else {
+    write(LS.players, players);
   }
 }
 function persistSettings(st: AppState, set: SetFn, settings: Settings) {

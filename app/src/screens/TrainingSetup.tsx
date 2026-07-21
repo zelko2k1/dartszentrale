@@ -1,7 +1,7 @@
 import { useStore } from '../store/useStore';
 import { TRAIN_MODES, MODE_RULES } from '../data/constants';
 import { Avatar } from '../components/Avatar';
-import { trainMeta } from '../store/training';
+import { trainMeta, TRAIN_BEST } from '../store/training';
 import { useIsPhone } from '../lib/useIsPhone';
 import { useT } from '../i18n';
 
@@ -92,6 +92,11 @@ export function TrainingSetup() {
                   <select value={su.picks[i]} onChange={(e) => s.setTrainPick(i, Number(e.target.value))} style={{ width: '100%', background: 'transparent', color: 'var(--text)', border: 'none', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', outline: 'none', padding: 0 }}>
                     {players.map((p, idx) => <option key={p.id} value={idx} style={{ background: 'var(--surface)' }}>{p.name}</option>)}
                   </select>
+                  {(() => {
+                    const b = sel?.trainingBests?.[su.modeId]; const bm = TRAIN_BEST[su.modeId];
+                    if (!b || !bm) return null;
+                    return <div style={{ fontSize: 11, color: mode.color, fontWeight: 800, marginTop: 2 }}>{tr.trainingScr.bestLabel}: {bm.format(b.value)}</div>;
+                  })()}
                 </div>
               </div>
             );
