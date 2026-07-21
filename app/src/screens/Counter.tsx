@@ -4,7 +4,7 @@ import { Avatar } from '../components/Avatar';
 import { accentFg } from '../store/selectors';
 import {
   scores, progress, currentIdx, currentLeg, average, first9, lastThrow, scoreList,
-  countAtLeast, checkoutSuggestion, canCheckout, finishStats, first9Match, avgCheckoutDarts, matchOver, winner, checkoutAchievement, type CounterSlice,
+  countAtLeast, checkoutSuggestion, canCheckout, finishStats, first9Match, avgCheckoutDarts, totalDarts, shortLegs, matchOver, winner, checkoutAchievement, type CounterSlice,
 } from '../store/counter';
 import { IconBack, IconUndo, IconRefresh, IconX } from '../lib/icons';
 import { useDevice } from '../lib/useIsPhone';
@@ -525,7 +525,7 @@ function SheetStats() {
             const fs = finishStats(slice, p.id);
             return (
               <div key={p.id} style={{ flex: 1, display: 'flex', gap: 1, background: 'var(--border)', minWidth: 0, borderLeft: pi > 0 ? '2px solid var(--border-strong)' : 'none' }}>
-                {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], [tr.counter.statLast, lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180·140+', `${countAtLeast(slice, p.id, 180, true)}·${countAtLeast(slice, p.id, 140)}`], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
+                {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], [tr.counter.statLast, lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180', String(countAtLeast(slice, p.id, 180, true))], ['SL', String(shortLegs(slice, p.id))], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
                   <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '8px 3px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, textAlign: 'center', minWidth: 0 }}>
                     <div style={{ fontSize: Math.round(9 * cfg.statsSize / 100), color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
                     <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(13 * cfg.statsSize / 100), fontWeight: 700, lineHeight: 1 }}>{val}</div>
@@ -894,12 +894,13 @@ function WinOverlay() {
   const statsOpen = s.settings.matchStatsOpen === true;
   const fsAll = players.map((p) => finishStats(slice, p.id));
   // hasData: v zählt als „echter Wert" (sonst „–" und nie grün). lowerBetter: niedriger = grün (Ø Darts/CO).
-  type StatRow = { label: string; vals: number[]; fmt: (v: number) => string; lowerBetter?: boolean; hasData?: (v: number) => boolean };
+  // noWinner: rein informativ, nie grün (Darts-Gesamtzahl ist kein „besser/schlechter"-Vergleich).
+  type StatRow = { label: string; vals: number[]; fmt: (v: number) => string; lowerBetter?: boolean; hasData?: (v: number) => boolean; noWinner?: boolean };
   const statRows: StatRow[] = [
     { label: tr.common.avg3, vals: players.map((p) => average(slice, p.id)), fmt: (v) => v.toFixed(1) },
     { label: 'First 9', vals: players.map((p) => first9Match(slice, p.id)), fmt: (v) => v.toFixed(1) },
     { label: '180', vals: players.map((p) => countAtLeast(slice, p.id, 180, true)), fmt: (v) => String(v) },
-    { label: '140+', vals: players.map((p) => countAtLeast(slice, p.id, 140)), fmt: (v) => String(v) },
+    { label: 'Darts', vals: players.map((p) => totalDarts(slice, p.id)), fmt: (v) => String(v), noWinner: true },
     { label: 'CO %', vals: fsAll.map((f) => f.co), fmt: (v) => `${v}%` },
     { label: 'Ø Darts/CO', vals: players.map((p) => avgCheckoutDarts(slice, p.id)), fmt: (v) => (v > 0 ? v.toFixed(2) : '–'), lowerBetter: true, hasData: (v) => v > 0 },
     { label: 'High Finish', vals: fsAll.map((f) => f.hf), fmt: (v) => (v > 0 ? String(v) : '–') },
@@ -950,7 +951,7 @@ function WinOverlay() {
               {statRows.map((r) => {
                 const valid = r.vals.filter((v) => (r.hasData ? r.hasData(v) : true));
                 const best = valid.length ? (r.lowerBetter ? Math.min(...valid) : Math.max(...valid)) : null;
-                const hasWinner = valid.length >= 2 && Math.min(...valid) !== Math.max(...valid);
+                const hasWinner = !r.noWinner && valid.length >= 2 && Math.min(...valid) !== Math.max(...valid);
                 return (
                   <Fragment key={r.label}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.42)', textTransform: 'uppercase', letterSpacing: '.03em', textAlign: 'left' }}>{r.label}</div>
