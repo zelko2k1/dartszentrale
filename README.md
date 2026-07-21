@@ -153,7 +153,7 @@ Macht aus einem PC am Board einen **selbstständigen Spiel-Rechner** — ideal f
 
 ---
 
-## Die zwei Betriebsmodi
+## Betriebsmodi
 
 DartsZentrale kann auf zwei Arten laufen. Beim ersten Start wählst du aus:
 
