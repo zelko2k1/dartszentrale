@@ -817,6 +817,7 @@ export const de = {
     hfShortLegBody: (name: string, score: number, darts: number) => `${name} · ${score} · Short Leg (${darts} Darts)`,
     winFinishHf: (score: number) => `High Finish ${score}`,
     winFinishSl: (darts: number) => `Short Leg (${darts} Darts)`,
+    matchStats: 'Match-Statistik',
     abortTitle: 'Spiel abbrechen?',
     abortBody: 'Das laufende Spiel wird verworfen und erscheint nicht in der Statistik.',
     keepPlaying: 'Weiter spielen',

@@ -779,6 +779,7 @@ export const en: Dict = {
     hfShortLegBody: (name: string, score: number, darts: number) => `${name} · ${score} · short leg (${darts} darts)`,
     winFinishHf: (score: number) => `High finish ${score}`,
     winFinishSl: (darts: number) => `Short leg (${darts} darts)`,
+    matchStats: 'Match stats',
     abortTitle: 'Abort game?',
     abortBody: 'The current game will be discarded and will not appear in the statistics.',
     keepPlaying: 'Keep playing',

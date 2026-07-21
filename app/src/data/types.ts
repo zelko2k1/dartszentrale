@@ -269,6 +269,8 @@ export interface Settings {
   shortLegHint?: boolean;
   // Live-Feier beim High Finish (Checkout ≥100). Standard: an (undefined = an).
   highFinishHint?: boolean;
+  // Match-Statistik im Sieg-Overlay auf-/zugeklappt. Standard: ZU (undefined/false = zu).
+  matchStatsOpen?: boolean;
   fkeys: number[];
   newGameKey: string;
   quickBo5Key: string;

@@ -36,7 +36,7 @@ export const DEVICE_LOCAL_SETTING_KEYS: (keyof Settings)[] = [
   'kiosk', 'boardName', 'nameOrder',
   // Geräteklassen-Mischbetrieb (PC ↔ Tablet): Eingabe-Modus, Hell/Dunkel, alle Größen & die
   // Counter-Ansicht (Restscore vs. Aufschrieb) pro Gerät.
-  'mode', 'scoreArea', 'scoreScale', 'statsSize', 'headerSize', 'deckSize', 'legSize', 'boardScale', 'counterView', 'sheetOpen', 'historyOpen', 'statsOpen',
+  'mode', 'scoreArea', 'scoreScale', 'statsSize', 'headerSize', 'deckSize', 'legSize', 'boardScale', 'counterView', 'sheetOpen', 'historyOpen', 'statsOpen', 'matchStatsOpen',
   // Auto-Backup ist pro Installation (dieses Gerät liefert die App via serve-dist aus) → gerätelokal.
   'autoBackup', 'backupTime',
 ];
@@ -45,7 +45,7 @@ export const DEVICE_LOCAL_SETTING_KEYS: (keyof Settings)[] = [
 // für sich, unabhängig von den vereinsweiten club_config-Settings. (pbUrl/appMode haben eigene Keys; kiosk/
 // boardName/nameOrder liegen in LS.device – siehe useStore.)
 export const DEVICE_UI_KEYS: (keyof Settings)[] = [
-  'device', 'dashRange', 'mode', 'scoreArea', 'scoreScale', 'statsSize', 'headerSize', 'deckSize', 'legSize', 'boardScale', 'counterView', 'sheetOpen', 'historyOpen', 'statsOpen',
+  'device', 'dashRange', 'mode', 'scoreArea', 'scoreScale', 'statsSize', 'headerSize', 'deckSize', 'legSize', 'boardScale', 'counterView', 'sheetOpen', 'historyOpen', 'statsOpen', 'matchStatsOpen',
 ];
 
 export const AVATARS: { bg: string; fg: string }[] = [

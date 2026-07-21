@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import { useStore } from '../store/useStore';
 import { Avatar } from '../components/Avatar';
 import { accentFg } from '../store/selectors';
 import {
   scores, progress, currentIdx, currentLeg, average, first9, lastThrow, scoreList,
-  countAtLeast, checkoutSuggestion, canCheckout, finishStats, matchOver, winner, checkoutAchievement, type CounterSlice,
+  countAtLeast, checkoutSuggestion, canCheckout, finishStats, first9Match, matchOver, winner, checkoutAchievement, type CounterSlice,
 } from '../store/counter';
 import { IconBack, IconUndo, IconRefresh, IconX } from '../lib/icons';
 import { useDevice } from '../lib/useIsPhone';
@@ -848,6 +848,18 @@ function WinOverlay() {
   if (ach?.highFinish && s.settings.highFinishHint !== false) finishParts.push(tr.counter.winFinishHf(ach.score));
   if (ach?.shortLeg && s.settings.shortLegHint !== false) finishParts.push(tr.counter.winFinishSl(ach.darts));
   const finishLine = finishParts.length ? `🎯 ${finishParts.join(' · ')}` : null;
+  // Einklappbare Match-Statistik (Standard: zu). Je Kennzahl = höher besser → besserer Wert grün.
+  const players = s.gamePlayers;
+  const statsOpen = s.settings.matchStatsOpen === true;
+  const fsAll = players.map((p) => finishStats(slice, p.id));
+  const statRows: { label: string; vals: number[]; fmt: (v: number) => string }[] = [
+    { label: tr.common.avg3, vals: players.map((p) => average(slice, p.id)), fmt: (v) => v.toFixed(1) },
+    { label: 'First 9', vals: players.map((p) => first9Match(slice, p.id)), fmt: (v) => v.toFixed(1) },
+    { label: '180', vals: players.map((p) => countAtLeast(slice, p.id, 180, true)), fmt: (v) => String(v) },
+    { label: '140+', vals: players.map((p) => countAtLeast(slice, p.id, 140)), fmt: (v) => String(v) },
+    { label: 'CO %', vals: fsAll.map((f) => f.co), fmt: (v) => `${v}%` },
+    { label: 'High Finish', vals: fsAll.map((f) => f.hf), fmt: (v) => (v > 0 ? String(v) : '–') },
+  ];
   // Nach Spielende per Tastatur bedienbar (Desktop/Board): 1 = Dashboard, 2 = Neues Spiel, 3/Enter = Revanche.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -869,8 +881,38 @@ function WinOverlay() {
         <div style={{ fontSize: 13, color: '#F2B829', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 8 }}>{tr.counter.matchWon}</div>
         {/* Overlay liegt immer auf dunklem Schleier → Textfarben fest hell, unabhängig vom Hell/Dunkel-Modus. */}
         <div style={{ fontSize: 34, fontWeight: 800, marginBottom: 6, color: '#fff' }}>{w?.name}</div>
-        <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, color: 'rgba(255,255,255,.6)', marginBottom: finishLine ? 12 : 28 }}>{legs} · Ø {avg}</div>
-        {finishLine && <div style={{ fontSize: 15, fontWeight: 800, color: '#F2B829', marginBottom: 28 }}>{finishLine}</div>}
+        <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, color: 'rgba(255,255,255,.6)', marginBottom: finishLine ? 10 : 16 }}>{legs} · Ø {avg}</div>
+        {finishLine && <div style={{ fontSize: 15, fontWeight: 800, color: '#F2B829', marginBottom: 16 }}>{finishLine}</div>}
+        {/* einklappbare Match-Statistik: pro Kennzahl der bessere Wert grün beim jeweiligen Spieler */}
+        <div>
+          <button
+            onClick={() => s.setSetting('matchStatsOpen', !statsOpen)}
+            title={tr.counter.matchStats}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.15)', color: 'rgba(255,255,255,.75)', padding: '8px 16px', borderRadius: 10, fontSize: 12, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', marginBottom: statsOpen ? 14 : 26 }}
+          >
+            {tr.counter.matchStats}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ transform: statsOpen ? 'rotate(180deg)' : 'none', transition: 'transform .18s ease' }}><path d="M6 9l6 6 6-6" /></svg>
+          </button>
+        </div>
+        {statsOpen && (
+          <div style={{ margin: '0 auto 26px', maxWidth: 360, border: '1px solid rgba(255,255,255,.12)', borderRadius: 14, background: 'rgba(255,255,255,.04)', padding: '12px 14px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: `1.15fr repeat(${players.length}, 1fr)`, columnGap: 10, rowGap: 7, alignItems: 'center' }}>
+              <div />
+              {players.map((p) => <div key={p.id} style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,.7)', textAlign: 'right', letterSpacing: '.04em' }}>{p.short}</div>)}
+              {statRows.map((r) => {
+                const best = Math.max(...r.vals); const worst = Math.min(...r.vals); const hasWinner = best > worst;
+                return (
+                  <Fragment key={r.label}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.42)', textTransform: 'uppercase', letterSpacing: '.03em', textAlign: 'left' }}>{r.label}</div>
+                    {r.vals.map((v, i) => (
+                      <div key={i} style={{ fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, textAlign: 'right', color: hasWinner && v === best ? '#2BD377' : 'rgba(255,255,255,.85)' }}>{r.fmt(v)}</div>
+                    ))}
+                  </Fragment>
+                );
+              })}
+            </div>
+          </div>
+        )}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
           <button onClick={() => s.endGameTo('dashboard')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.toDashboard}<span style={kbd}>1</span></button>
           <button onClick={() => s.endGameTo('setup')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.newGame}<span style={kbd}>2</span></button>
