@@ -7,6 +7,7 @@ import {
   countAtLeast, checkoutSuggestion, canCheckout, finishStats, first9Match, avgCheckoutDarts, totalDarts, shortLegs, matchOver, winner, checkoutAchievement, type CounterSlice,
 } from '../store/counter';
 import { IconBack, IconUndo, IconRefresh, IconX } from '../lib/icons';
+import { formatCombo } from '../lib/shortcut';
 import { useDevice } from '../lib/useIsPhone';
 import { BoardScale } from '../components/BoardScale';
 import { useT } from '../i18n';
@@ -165,9 +166,9 @@ export function Counter() {
           <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>{matchInfo}</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={(e) => { e.currentTarget.blur(); s.undo(); }} title="Undo (Ctrl+Z)" style={headBtn}><IconUndo size={15} />Undo<span style={hintKbd}>Ctrl+Z</span></button>
-          <button onClick={(e) => { e.currentTarget.blur(); s.newMatch(); }} style={headBtn}><IconRefresh size={15} />{tr.counter.newBtn}</button>
-          <button onClick={(e) => { e.currentTarget.blur(); s.abortGame(); }} title={`${tr.counter.abort} (Ctrl+X)`} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />{tr.counter.abort}<span style={hintKbd}>Ctrl+X</span></button>
+          <button onClick={(e) => { e.currentTarget.blur(); s.undo(); }} title={`Undo (${formatCombo('ctrl+z')})`} style={headBtn}><IconUndo size={15} />Undo<span style={hintKbd}>{formatCombo('ctrl+z')}</span></button>
+          <button onClick={(e) => { e.currentTarget.blur(); s.newMatch(); }} title={`${tr.counter.newBtn} (${formatCombo(cfg.newGameKey || 'alt+n')})`} style={headBtn}><IconRefresh size={15} />{tr.counter.newBtn}<span style={hintKbd}>{formatCombo(cfg.newGameKey || 'alt+n')}</span></button>
+          <button onClick={(e) => { e.currentTarget.blur(); s.abortGame(); }} title={`${tr.counter.abort} (${formatCombo('ctrl+x')})`} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />{tr.counter.abort}<span style={hintKbd}>{formatCombo('ctrl+x')}</span></button>
         </div>
       </div>
 
