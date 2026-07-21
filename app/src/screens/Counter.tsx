@@ -4,7 +4,7 @@ import { Avatar } from '../components/Avatar';
 import { accentFg } from '../store/selectors';
 import {
   scores, progress, currentIdx, currentLeg, average, first9, lastThrow, scoreList,
-  countAtLeast, checkoutSuggestion, canCheckout, finishStats, first9Match, avgCheckoutDarts, totalDarts, shortLegs, matchOver, winner, checkoutAchievement, type CounterSlice,
+  countAtLeast, checkoutSuggestion, canCheckout, finishStats, first9Match, avgCheckoutDarts, shortLegs, matchOver, winner, checkoutAchievement, type CounterSlice,
 } from '../store/counter';
 import { IconBack, IconUndo, IconRefresh, IconX } from '../lib/icons';
 import { formatCombo } from '../lib/shortcut';
@@ -904,16 +904,15 @@ function WinOverlay() {
   const statsOpen = s.settings.matchStatsOpen === true;
   const fsAll = players.map((p) => finishStats(slice, p.id));
   // hasData: v zählt als „echter Wert" (sonst „–" und nie grün). lowerBetter: niedriger = grün (Ø Darts/CO).
-  // noWinner: rein informativ, nie grün (Darts-Gesamtzahl ist kein „besser/schlechter"-Vergleich).
-  type StatRow = { label: string; vals: number[]; fmt: (v: number) => string; lowerBetter?: boolean; hasData?: (v: number) => boolean; noWinner?: boolean };
+  type StatRow = { label: string; vals: number[]; fmt: (v: number) => string; lowerBetter?: boolean; hasData?: (v: number) => boolean };
   const statRows: StatRow[] = [
     { label: tr.common.avg3, vals: players.map((p) => average(slice, p.id)), fmt: (v) => v.toFixed(1) },
     { label: 'First 9', vals: players.map((p) => first9Match(slice, p.id)), fmt: (v) => v.toFixed(1) },
     { label: '180', vals: players.map((p) => countAtLeast(slice, p.id, 180, true)), fmt: (v) => String(v) },
-    { label: 'Darts', vals: players.map((p) => totalDarts(slice, p.id)), fmt: (v) => String(v), noWinner: true },
     { label: 'CO %', vals: fsAll.map((f) => f.co), fmt: (v) => `${v}%` },
     { label: 'Ø Darts/CO', vals: players.map((p) => avgCheckoutDarts(slice, p.id)), fmt: (v) => (v > 0 ? v.toFixed(2) : '–'), lowerBetter: true, hasData: (v) => v > 0 },
     { label: 'High Finish', vals: fsAll.map((f) => f.hf), fmt: (v) => (v > 0 ? String(v) : '–') },
+    { label: 'Short Leg', vals: players.map((p) => shortLegs(slice, p.id)), fmt: (v) => String(v) },
   ];
   // Nach Spielende per Tastatur bedienbar (Desktop/Board): 1 = Dashboard, 2 = Neues Spiel, 3/Enter = Revanche,
   // S = Match-Statistik auf-/zuklappen. Live-Wert aus dem Store lesen (nicht aus dem Closure), sonst wäre er stale.
@@ -961,7 +960,7 @@ function WinOverlay() {
               {statRows.map((r) => {
                 const valid = r.vals.filter((v) => (r.hasData ? r.hasData(v) : true));
                 const best = valid.length ? (r.lowerBetter ? Math.min(...valid) : Math.max(...valid)) : null;
-                const hasWinner = !r.noWinner && valid.length >= 2 && Math.min(...valid) !== Math.max(...valid);
+                const hasWinner = valid.length >= 2 && Math.min(...valid) !== Math.max(...valid);
                 return (
                   <Fragment key={r.label}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.42)', textTransform: 'uppercase', letterSpacing: '.03em', textAlign: 'left' }}>{r.label}</div>

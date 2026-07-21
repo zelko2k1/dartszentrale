@@ -7,7 +7,7 @@ import { useT } from '../i18n';
 
 interface Cmd { label: string; hint?: string; run: () => void; }
 
-// Befehls-Palette (Strg+K): tippen → springen. Im Kiosk auf die erlaubten Ziele beschränkt.
+// Befehls-Palette (Alt+K): tippen → springen. Im Kiosk auf die erlaubten Ziele beschränkt.
 export function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void }) {
   const s = useStore();
   const tr = useT();

@@ -84,8 +84,8 @@ export default function App() {
       const st = useStore.getState(); const cfg = st.settings;
       const tgt = e.target as HTMLElement | null;
       const typing = !!tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT' || tgt.isContentEditable);
-      // Befehls-Palette: Strg+K (auch beim Tippen, um sie zu schließen).
-      if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); setPaletteOpen((v) => !v); return; }
+      // Befehls-Palette: Alt+K (auch beim Tippen, um sie zu schließen) – Alt-basiert wie die übrigen Kürzel.
+      if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'k' || e.key === 'K')) { e.preventDefault(); setPaletteOpen((v) => !v); return; }
       // Alt-Kürzel feuern bewusst AUCH im Suchfeld (Alt+Taste erzeugt keinen Text) – Setup ist tastatur-first.
       const combo = comboFromEvent(e);
       // Kiosk-Tabs: Alt+S Spiel · Alt+T Training · Alt+E Einstellungen (nicht im laufenden Spiel).
