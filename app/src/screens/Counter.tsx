@@ -250,7 +250,7 @@ export function Counter() {
               <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', paddingLeft: 2, flexShrink: 0 }}>{tr.counter.quickScore}</div>
               <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gridAutoRows: '1fr', gap: 8, minHeight: 0 }}>
                 {quickChips.map((q, i) => (
-                  <button key={i} onClick={() => s.quick(q)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 14, fontFamily: 'var(--font-num)', fontSize: 'clamp(15px,2.8vh,23px)', fontWeight: 800, cursor: 'pointer', minHeight: 0 }}>{q}</button>
+                  <button key={i} onClick={(e) => { e.currentTarget.blur(); s.quick(q); }} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 14, fontFamily: 'var(--font-num)', fontSize: 'clamp(15px,2.8vh,23px)', fontWeight: 800, cursor: 'pointer', minHeight: 0 }}>{q}</button>
                 ))}
               </div>
             </div>
@@ -417,7 +417,7 @@ function FKeyLegend() {
   return (
     <div style={{ flexShrink: 0, display: 'flex', flexWrap: 'wrap', gap: 6, padding: '0 12px 10px' }}>
       {items.map((it) => (
-        <button key={it.k} onClick={it.onClick} disabled={!it.enabled} title={`${it.k} · ${it.label}`} style={{ flex: '1 1 60px', minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '5px 4px', cursor: it.enabled ? 'pointer' : 'default', opacity: it.enabled ? 1 : 0.4, fontFamily: 'inherit' }}>
+        <button key={it.k} onClick={(e) => { e.currentTarget.blur(); it.onClick(); }} disabled={!it.enabled} title={`${it.k} · ${it.label}`} style={{ flex: '1 1 60px', minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '5px 4px', cursor: it.enabled ? 'pointer' : 'default', opacity: it.enabled ? 1 : 0.4, fontFamily: 'inherit' }}>
           <span style={{ fontSize: 9, fontWeight: 800, color: accentInk, letterSpacing: '.04em' }}>{it.k}</span>
           <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{it.label}</span>
         </button>
@@ -692,7 +692,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
       {cfg.showQuick && (
         <div style={{ flexShrink: 0, display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 7 }}>
           {[180, 140, 100].map((q) => (
-            <button key={q} onClick={() => s.quick(q)} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, padding: fill ? '8px 0' : '11px 0', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>{q}</button>
+            <button key={q} onClick={(e) => { e.currentTarget.blur(); s.quick(q); }} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, padding: fill ? '8px 0' : '11px 0', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>{q}</button>
           ))}
         </div>
       )}
