@@ -515,11 +515,13 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     );
   };
 
-  const toggles: { key: 'showCheckout' | 'showQuick' | 'showHistory' | 'showStats'; label: string; sub: string }[] = [
+  const toggles: { key: 'showCheckout' | 'showQuick' | 'showHistory' | 'showStats' | 'shortLegHint' | 'highFinishHint'; label: string; sub: string }[] = [
     { key: 'showCheckout', label: tr.settings.tglCheckout, sub: tr.settings.tglCheckoutSub },
     { key: 'showQuick', label: tr.settings.tglQuick, sub: tr.settings.tglQuickSub },
     { key: 'showHistory', label: tr.settings.tglHistory, sub: tr.settings.tglHistorySub },
     { key: 'showStats', label: tr.settings.tglStats, sub: tr.settings.tglStatsSub },
+    { key: 'shortLegHint', label: tr.settings.tglShortLeg, sub: tr.settings.tglShortLegSub },
+    { key: 'highFinishHint', label: tr.settings.tglHighFinish, sub: tr.settings.tglHighFinishSub },
   ];
 
   // Read-only-Dimmen für zentrale (vereinsweite) Einstellungen, wenn der Benutzer nicht bearbeiten darf.
@@ -718,7 +720,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const hilfenNode = (
     <Section title={tr.settings.secHelpers}>
       {toggles.map((t) => {
-        const on = cfg[t.key];
+        const on = cfg[t.key] !== false; // Default-an-Schalter: „an", solange nicht ausdrücklich aus
         return (
           <Row key={t.key} label={t.label} sub={t.sub}>
             <button onClick={() => set(t.key, !on)} style={{ position: 'relative', width: 46, height: 26, borderRadius: 999, background: on ? accent : 'var(--btn)', border: on ? 'none' : '1px solid var(--border-2)', cursor: 'pointer', flexShrink: 0, transition: 'background .15s ease', padding: 0 }}>

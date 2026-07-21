@@ -10,6 +10,7 @@ import {
   scores as cScores, progress as cProgress, currentPlayer as cCurrentPlayer,
   matchOver as cMatchOver, average as cAverage, countAtLeast,
   finishStats as cFinishStats, shortLegs as cShortLegs, shortLegDarts as cShortLegDarts, first9Match as cFirst9Match,
+  checkoutCelebration as cCheckoutCelebration,
   type CounterSlice,
 } from './counter';
 import {
@@ -175,7 +176,8 @@ export interface SetupState {
   freePlay?: boolean;                  // Freies Spiel → wird nicht als Match gespeichert
   link?: { leagueId: string; fixtureId: string; positionId: string } | null; // Board-Spiel → Liga-Position
 }
-export interface HintState { title: string; body: string; }
+// auto = selbst-ausblendende Feier (z. B. Short Leg) statt blockierendem Modal mit „Verstanden"-Knopf.
+export interface HintState { title: string; body: string; auto?: boolean; }
 export interface TrainSetupState { modeId: string; count: number; picks: number[]; }
 export type NewAction = { kind: 'setup' } | { kind: 'preset'; preset: Partial<SetupState> };
 
@@ -2169,7 +2171,21 @@ export const useStore = create<AppState>((set, get) => ({
     set({ allThrows, input: '' });
     const after: CounterSlice = { ...slice, allThrows };
     if (cMatchOver(after) && !st.matchSaved) saveMatch(get, set);
-    else persistLive(get);
+    else {
+      persistLive(get);
+      // Live-Feier bei Checkout: High Finish (Ausmache ≥100) und/oder Short Leg (≤19 eigene Darts).
+      // Entscheidung in checkoutCelebration() (rein, getestet); trifft beides zu (z. B. 141er als
+      // 9-Darter), zeigt ein kombiniertes Overlay beides.
+      if (checkout) {
+        const cel = cCheckoutCelebration(after, cp.id);
+        if (cel) {
+          const c = dict().counter;
+          if (cel.highFinish && cel.shortLeg) get().showHint({ title: c.highFinishTitle, body: c.hfShortLegBody(cp.name, cel.score, cel.darts), auto: true });
+          else if (cel.highFinish) get().showHint({ title: c.highFinishTitle, body: c.highFinishBody(cp.name, cel.score), auto: true });
+          else get().showHint({ title: c.shortLegTitle, body: c.shortLegBody(cp.name, cel.darts), auto: true });
+        }
+      }
+    }
   },
   pressDigit(d) { set((st) => { const n = st.input + d; return { input: n.length <= 3 ? n : st.input }; }); },
   pressClear() { set({ input: '' }); },
