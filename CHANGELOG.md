@@ -7,15 +7,28 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.0.3] – 2026-07-21
+
 ### Hinzugefügt
-- **Remote & Live:** Ein Smartphone lässt sich per QR-Code als **Fernbedienung** an ein Board koppeln —
-  Score-Eingabe **und** Navigation vom Handy (Notfall bei defekter Maus/Tastatur oder einfach als bequeme
-  Bedienung). Genau ein „Anschreiber" pro Board; Übernahme durch ein anderes Handy muss bestätigt werden.
+- **Remote & Live:** Ein Smartphone lässt sich per QR-Code (oder manueller Code-Eingabe) als
+  **Fernbedienung** an ein Board koppeln — Score-Eingabe **und** Navigation vom Handy (Notfall bei
+  defekter Maus/Tastatur oder einfach als bequeme Bedienung). Genau ein „Anschreiber" pro Board;
+  Übernahme durch ein anderes Handy muss bestätigt werden. Koppeln auch über die Einstellungen.
 - **Login-freier Zuschauer-TV:** ein dauerhafter, geheimer Link (`#/watch/<token>`) zeigt auf einem
   Bildschirm im Nebenraum das laufende Spiel (mehrere Boards als Kachel-Übersicht, sonst Vollbild).
   Vereinsweit ein-/ausschaltbar (**Standard aus** im Internet-Betrieb), Token rotierbar, zeigt nur
   Boardname + Spielstand. Beides nur im Vereins-/Board-Modus (PocketBase als Kanal).
   Plan/Details: [`docs/plan-remote.md`](docs/plan-remote.md).
+- **Counter – Match-Statistik:** einklappbare Match-Statistik im Sieg-Overlay, eigene Statistik-Box
+  (Darts/Short Legs statt „140+"), Kennzahl **Ø Darts/CO** und eine Finish-Dart-Abfrage (1/2/3) für
+  eine korrekte Checkout-Quote. Das Sieg-Overlay zeigt die Ausmache (High Finish / Short Leg).
+- **Counter – Live-Feier** bei Short Leg (≤ 19 Darts) und High Finish (≥ 100).
+- **Tastenkürzel:** Übersicht aller Kürzel, Befehlspalette auf **Alt+K**, Undo/Abbrechen auf **Alt+Z/Alt+X**
+  (alle drei in den Einstellungen konfigurierbar), zusätzlich Ctrl+Z / Ctrl+X. Header-Hinweise nur am Desktop.
+- **Liga:** acht **Spielformat-Vorlagen** zur schnellen Auswahl.
+- **Import:** englische CSV-Vorlage und zweisprachige Spalten-Erkennung.
+- **Erststart:** Browser-Sprache wird übernommen (Deutsch → DE, sonst EN).
+- **Kalender/Dashboard:** Hinweis auf den nächsten Termin, wenn der gewählte Zeitraum leer ist.
 
 ## [1.0.2] – 2026-07-16
 
