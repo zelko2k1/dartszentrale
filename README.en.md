@@ -38,7 +38,7 @@ The matching step-by-step guide is **inside the package** (English and German) a
 
 ---
 
-## What is this — in plain words?
+## What is DartsZentrale ?
 
 DartsZentrale is an app that covers a darts club's entire everyday life:
 
@@ -84,7 +84,7 @@ Your members' data stays with you.
 
 ---
 
-## What the app can do
+## Features
 
 ### 🎯 Play & score (Darts Counter)
 - **X01 games** with starting scores 301 / 501 / 701 / 1001
