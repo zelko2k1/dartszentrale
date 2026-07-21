@@ -31,6 +31,14 @@ export function Counter() {
     const onKey = (e: KeyboardEvent) => {
       const st = useStore.getState();
       if (st.screen !== 'counter') return;
+      // Undo (Ctrl/⌘+Z) & Abbrechen (Ctrl/⌘+X) – VOR der Modifier-Sperre; nur bei laufendem Spiel,
+      // nicht wenn ein Overlay/Dialog die Eingabe besitzt (dann greift wie bisher die Modifier-Sperre).
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && ['z', 'x'].includes(e.key.toLowerCase())) {
+        const over = matchOver({ gamePlayers: st.gamePlayers, allThrows: st.allThrows, startOffset: st.startOffset, settings: st.settings });
+        const busy = over || st.pendingStart || st.finishPrompt || st.hint || st.abortConfirm || st.newConfirm || st.restEntry;
+        if (!busy && e.key.toLowerCase() === 'z') { e.preventDefault(); st.undo(); return; }
+        if (!busy && e.key.toLowerCase() === 'x') { e.preventDefault(); st.abortGame(); return; }
+      }
       // modifier combos (Strg/Alt/⌘ + …) are handled by global shortcuts, not score entry
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (st.newConfirm) return; // confirm dialog owns the keyboard (Esc handled globally)
@@ -122,6 +130,7 @@ export function Counter() {
   const inputDisplay = s.input === '' ? '—' : s.input;
 
   const headBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 13px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' };
+  const hintKbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.6, background: 'rgba(0,0,0,.18)', borderRadius: 4, padding: '1px 5px', marginLeft: 1 };
 
   // colours are chosen per light/dark mode (cfg.accent / scoreColor / legColor are already the
   // effective values for the active mode), so we use them directly.
@@ -156,9 +165,9 @@ export function Counter() {
           <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>{matchInfo}</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => s.undo()} style={headBtn}><IconUndo size={15} />Undo</button>
-          <button onClick={() => s.newMatch()} style={headBtn}><IconRefresh size={15} />{tr.counter.newBtn}</button>
-          <button onClick={() => s.abortGame()} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />{tr.counter.abort}</button>
+          <button onClick={(e) => { e.currentTarget.blur(); s.undo(); }} title="Undo (Ctrl+Z)" style={headBtn}><IconUndo size={15} />Undo<span style={hintKbd}>Ctrl+Z</span></button>
+          <button onClick={(e) => { e.currentTarget.blur(); s.newMatch(); }} style={headBtn}><IconRefresh size={15} />{tr.counter.newBtn}</button>
+          <button onClick={(e) => { e.currentTarget.blur(); s.abortGame(); }} title={`${tr.counter.abort} (Ctrl+X)`} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />{tr.counter.abort}<span style={hintKbd}>Ctrl+X</span></button>
         </div>
       </div>
 
@@ -695,8 +704,8 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
       <button onClick={() => s.go('dashboard')} style={phoneIconBtn} aria-label={tr.counter.back}><IconBack size={18} sw={2} /></button>
       <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>{matchInfo}</div>
       <div style={{ display: 'flex', gap: 6 }}>
-        <button onClick={() => s.undo()} style={phoneIconBtn} aria-label="Undo"><IconUndo size={18} /></button>
-        <button onClick={() => s.abortGame()} style={{ ...phoneIconBtn, color: '#E0594B' }} aria-label={tr.counter.abort}><IconX size={18} sw={2} /></button>
+        <button onClick={(e) => { e.currentTarget.blur(); s.undo(); }} style={phoneIconBtn} aria-label="Undo"><IconUndo size={18} /></button>
+        <button onClick={(e) => { e.currentTarget.blur(); s.abortGame(); }} style={{ ...phoneIconBtn, color: '#E0594B' }} aria-label={tr.counter.abort}><IconX size={18} sw={2} /></button>
       </div>
     </div>
   );
