@@ -30,8 +30,10 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Tests (game logic)
-        run: npm test
+      # test:ci = wie `npm test`, schlägt zusätzlich fehl, sobald ein Test übersprungen wurde
+      # (vergessenes it.skip o. Ä.) — sonst meldet der Lauf "grün", obwohl weniger abgesichert ist.
+      - name: Tests (game logic, keine übersprungenen)
+        run: npm run test:ci
 
       - name: Build
         run: npm run build

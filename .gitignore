@@ -66,3 +66,6 @@ pb_data/
 /pocketbase/pb_migrations/*_created_*.js
 /pocketbase/pb_migrations/*_updated_*.js
 /pocketbase/pb_migrations/*_deleted_*.js
+
+# Testbericht des CI-Waechters (npm run test:ci) - nur lokal, gehoert nicht ins Repo
+app/vitest-report.json

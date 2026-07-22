@@ -11,6 +11,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:ci": "vitest run --reporter=default --reporter=json --outputFile.json=vitest-report.json && node scripts/check-no-skipped-tests.mjs",
     "preview": "vite preview",
     "serve": "node serve-dist.mjs"
   },
