@@ -7,6 +7,17 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+### Geändert
+- **Fernbedienung am Handy:** Die Bedienoberfläche passt sich jetzt auf jedes Handy ein — sie füllt
+  genau den Bildschirm, ohne zu scrollen. Vorher rutschten „Enter" und „Undo" auf kleineren Geräten
+  unter den sichtbaren Bereich. Neu außerdem: Querformat als Zwei-Spalten-Ansicht (Stand links,
+  Tastenfeld rechts), Druck-Feedback und kurze Vibration beim Tippen, kein versehentliches Zoomen
+  oder Textmarkieren mehr, Rand-Freihaltung für Geräte mit Kamera-Aussparung, Wurf-Anzeige und
+  Checkout-Vorschlag in einer Zeile, kompakte Spielerliste ab drei Spielern (der Spieler am Wurf
+  bleibt immer sichtbar).
+- Der Update-Hinweis („Neue Version verfügbar") erscheint nicht mehr auf Fernbedienung und
+  Zuschauer-TV — er schwebte dort über den Tasten.
+
 ## [1.0.3] – 2026-07-21
 
 ### Hinzugefügt
