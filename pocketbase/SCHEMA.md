@@ -14,7 +14,8 @@
 ## Collections
 
 ### `players` (Base)
-`name` · `short` (text, max 3) · `avi` (number) · `locked` (bool) · `photo` (file, 160×160-Thumb)
+`name` · `short` (text, max 3) · `avi` (number) · `locked` (bool) · `photo` (file, 160×160-Thumb) ·
+`trainingBests` (json: Map `modeId` → `{value, date}`, persönliche Trainings-Bestwerte, board-übergreifend)
 
 ### `seasons` (Base) — Saison-Klammer
 `name` · `status` (`active` | `archived`) · `startDate` · `endDate` · `offloaded` (bool)
@@ -71,7 +72,7 @@ diese Rule blockt PocketBase E-Mail-Änderungen für Nicht-Superuser).
 
 | Collection | List/View | Create | Update | Delete |
 |---|---|---|---|---|
-| `players` | authed | admin \|\| cap | admin \|\| cap | admin \|\| cap |
+| `players` | authed | admin \|\| cap | admin \|\| cap \|\| **authed, wenn NUR `trainingBests` im Body** | admin \|\| cap |
 | `events` | authed | admin \|\| cap | admin \|\| cap | admin \|\| cap |
 | `teams` | authed | admin \|\| cap | **admin \|\| (cap && `captainId = auth.playerId`)** | **admin** |
 | `leagues` | authed | **admin** | admin \|\| cap | **admin** |

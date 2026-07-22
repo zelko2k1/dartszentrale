@@ -57,10 +57,25 @@ const editorRules = {
   listRule: LOGGED_IN, viewRule: LOGGED_IN,
   createRule: ADMIN_OR_CAPTAIN, updateRule: ADMIN_OR_CAPTAIN, deleteRule: ADMIN_OR_CAPTAIN,
 };
+// Ausnahme für players: Trainings-Bestwerte verbucht die App nach jedem Trainingsspiel am
+// Spieler-Datensatz — das läuft am BOARD-Konto bzw. unter normalen Mitgliedern, nicht als Admin.
+// Darum darf jedes angemeldete Konto `players` ändern, solange AUSSCHLIESSLICH `trainingBests` im
+// Änderungswunsch steht; sobald Stammdaten (name/short/avi/locked/photo) mitkommen, gilt wieder
+// Admin/Kapitän. Gespiegelt in pb_migrations/1784300003_players_training_bests_rule.js.
+const TRAINING_BESTS_ONLY = [
+  LOGGED_IN,
+  '@request.body.trainingBests:isset = true',
+  '@request.body.name:isset = false',
+  '@request.body.short:isset = false',
+  '@request.body.avi:isset = false',
+  '@request.body.locked:isset = false',
+  '@request.body.photo:isset = false',
+].join(' && ');
 
 const BASE_COLLECTIONS = [
   {
     name: 'players', type: 'base', ...editorRules,
+    updateRule: `${ADMIN_OR_CAPTAIN} || (${TRAINING_BESTS_ONLY})`,
     // trainingBests: persönliche Trainings-Bestwerte je Modus (json-Map modeId→{value,date}). Board-übergreifend.
     fields: [text('name'), text('short', { max: 3 }), num('avi'), bool('locked'), photo(), json('trainingBests')],
   },
