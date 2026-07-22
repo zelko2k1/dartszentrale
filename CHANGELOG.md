@@ -7,6 +7,15 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+### Behoben
+- **Trainings-Bestwerte im Vereinsmodus** ließen sich nicht speichern — nach jedem Trainingsspiel
+  erschien „Änderung konnte nicht gespeichert werden". Ursache: Der Bestwert wird am Spieler-Datensatz
+  verbucht, Schreibrechte auf Spieler hatten aber nur Admin und Kapitän — am **Board-Rechner**, also
+  genau dort, wo trainiert wird, schlug es immer fehl. Jetzt darf jedes angemeldete Konto Bestwerte
+  speichern, **aber nur diese**: Name, Kürzel, Foto und Sperre bleiben Admin/Kapitän vorbehalten.
+  ⚠ **Erfordert ein Server-Update** (neue Migration) — im lokalen Einzelboard-Modus trat der Fehler
+  nicht auf.
+
 ### Geändert
 - **Fernbedienung am Handy:** Die Bedienoberfläche passt sich jetzt auf jedes Handy ein — sie füllt
   genau den Bildschirm, ohne zu scrollen. Vorher rutschten „Enter" und „Undo" auf kleineren Geräten
