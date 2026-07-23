@@ -98,10 +98,9 @@ function normalizeShortcuts(s: Settings) {
   if (s.newGameKey === 'ctrl+alt+n') s.newGameKey = 'alt+n';
   if (s.quickBo5Key === 'ctrl+alt+5') s.quickBo5Key = 'alt+5';
   if (s.quickBo3Key === 'ctrl+alt+3') s.quickBo3Key = 'alt+3';
-  // Undo-Standard von alt+z auf alt+u umgezogen: Kürzel gehen über die PHYSISCHE Taste (e.code, layout-
-  // unabhängig), und auf deutschen QWERTZ-Tastaturen liegt „Z" physisch auf KeyY → alt+z war dort nicht
-  // erreichbar. alt+u (Undo) ist auf QWERTY und QWERTZ lagegleich. Alten Standard entsprechend heben.
-  if (s.undoKey === 'alt+z') s.undoKey = 'alt+u';
+  // Hinweis: KEIN Zwangs-Umbiegen von alt+z → das Kürzel ist frei wählbar und bindet an die PHYSISCHE
+  // Taste (e.code). Nur der VORBELEGTE Standard ist von alt+z auf alt+u gewandert (QWERTZ-tauglich, s.
+  // seed.ts). Ein bewusst gewähltes alt+z bleibt bestehen und wirkt auf der jeweils aufgezeichneten Taste.
 }
 
 // Schreibt die gerätelokalen UI-Vorlieben (DEVICE_UI_KEYS) in den eigenen localStorage-Key – diese Settings

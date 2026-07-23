@@ -39,10 +39,11 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
   Einzelboard-Betrieb gibt es keine Saisons.
 
 ### Behoben
-- **Undo-Tastenkürzel auf deutschen Tastaturen.** Das Rückgängig-Kürzel lag auf **Alt+Z** — Kürzel gehen
-  aber über die physische Taste, und auf einer QWERTZ-Tastatur liegt „Z" dort, wo QWERTY sein „Y" hat.
-  Die „Z"-Taste löste das Undo also nicht aus. Der Standard ist jetzt **Alt+U** („Undo") — auf allen
-  Layouts an derselben Stelle. Ein bestehendes Alt+Z wird automatisch auf Alt+U gehoben.
+- **Undo-Tastenkürzel-Standard auf deutschen Tastaturen.** Das Rückgängig-Kürzel war auf **Alt+Z**
+  vorbelegt — Kürzel binden aber an die physische Taste, und auf einer QWERTZ-Tastatur liegt „Z" dort,
+  wo QWERTY sein „Y" hat. Die „Z"-Taste löste das Undo also nicht aus. Die Vorbelegung ist jetzt
+  **Alt+U** („Undo") — auf allen Layouts an derselben Stelle. Das Kürzel bleibt frei wählbar
+  (Einstellungen → Tastenkürzel); ein bestehender Verein stellt es dort einmalig auf Alt+U um.
 - **Trainings-Bestwerte im Vereinsmodus** ließen sich nicht speichern — nach jedem Trainingsspiel
   erschien „Änderung konnte nicht gespeichert werden". Ursache: Der Bestwert wird am Spieler-Datensatz
   verbucht, Schreibrechte auf Spieler hatten aber nur Admin und Kapitän — am **Board-Rechner**, also
