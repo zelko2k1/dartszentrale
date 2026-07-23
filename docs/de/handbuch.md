@@ -323,7 +323,49 @@ Spiel(e) zeigt — ein Board im Vollbild, mehrere als Kacheln.
 
 ---
 
-## 12. Einstellungen
+## 12. X01-Turnier („Jeder gegen Jeden")
+
+Ein **Trainingsspiel** für einen ganzen Vereinsabend: Ein X01-Turnier im **Round-Robin-Modus**
+(jeder gegen jeden) für **3 bis 8 Spieler** mit **Abschlusstabelle**. Zu finden im Reiter
+**Training** ganz oben — die goldene Kachel **„X01 – Jeder gegen Jeden"**.
+
+**Turnier anlegen (Setup):**
+
+1. **Name** vergeben (z. B. „Vereinsabend").
+2. **Teilnehmer** wählen: **3–8** Spieler.
+3. **Spielmodus** einstellen: Startpunkte **301/501/701/1001**, **Auscheck-Modus** (Single /
+   Double / Master Out), **Double In** (nur Hinweis), **Legs je Partie** (Best of 1/3/5/7).
+4. **Boards**: an wie vielen Brettern gleichzeitig gespielt wird (bis zu ⌊Spielerzahl ÷ 2⌋).
+5. **„Turnier starten"** erzeugt automatisch den kompletten **Spielplan** (jeder gegen jeden,
+   in Runden aufgeteilt).
+
+**Das Turnier-Dashboard** zeigt drei Dinge nebeneinander:
+
+- **Spielplan** nach Runden — jede Partie mit „Spielen"-Knopf, laufendem Stand oder Ergebnis.
+- **Tabelle** — sortiert nach **Siegen**, dann Leg-Differenz (2 Punkte je Sieg).
+- **Highlights** — **180er**, **Short Legs** und **High Finishes** aller Partien.
+
+Eine Partie wird ganz normal im **Darts Counter** gespielt (mit Checkout-Vorschlägen, Statistik
+usw.); danach geht es automatisch zurück ins Turnier, das Ergebnis wird **verbucht** und die
+Tabelle aktualisiert sich. Sind alle Partien gespielt, kürt das Dashboard den **Sieger** 🏆.
+
+**Mehrere Boards gleichzeitig (Vereinsmodus):** Ist die Board-Zahl > 1 und stehen entsprechend
+viele **Board-PCs** bereit (siehe *Board-/Kiosk-Modus*), laufen mehrere Partien **parallel**:
+
+- Jeder Board-PC zeigt von selbst seine **zugewiesene nächste Partie** („Partie starten") — die
+  beiden Bretter bekommen automatisch **verschiedene** Paarungen ohne gemeinsame Spieler.
+- Die Partie erscheint dabei wie ein Ligaspiel **am Board** (und auf **Handy-Fernbedienung** /
+  **Zuschauer-TV**).
+- Nach dem Ende schaltet das Board von selbst zur **nächsten** freien Partie weiter, und das
+  Dashboard des Organisators **aktualisiert sich laufend** — ohne Neuladen.
+
+> Turnier-Ergebnisse bleiben **im Turnier** (wie die anderen Trainingsspiele) und landen **nicht**
+> in der allgemeinen Spiel-Statistik. Frühere/laufende Turniere erreichst du über die goldene
+> Kachel → **„Turniere"**.
+
+---
+
+## 13. Einstellungen
 
 Die Einstellungen sind in Reiter gegliedert (u. a. **Nutzungsart · Eingabe & Tasten ·
 Darstellung · Hilfen & Anzeige · Listen · Daten**):
@@ -344,7 +386,7 @@ Darstellung · Hilfen & Anzeige · Listen · Daten**):
 
 ---
 
-## 13. Betrieb: Backups, Passwörter, Updates
+## 14. Betrieb: Backups, Passwörter, Updates
 
 Als Self-Hoster bist du auch der Betreiber. Drei Dinge regelmäßig im Blick behalten:
 
@@ -374,7 +416,7 @@ kontrolliert aktualisieren (feste Version statt `:latest`).
 
 ---
 
-## 14. Kleine FAQ
+## 15. Kleine FAQ
 
 **Ich sehe „Ligen/Mannschaften/Benutzer" nicht.** Du bist im **lokalen Modus** oder hast
 nicht die nötige Rolle. Modus in den Einstellungen prüfen; Verwaltung brauchen Admin

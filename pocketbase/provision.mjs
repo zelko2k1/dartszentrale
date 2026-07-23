@@ -125,6 +125,19 @@ const BASE_COLLECTIONS = [
     ],
   },
   {
+    // Trainingsspiel „X01 – Jeder gegen Jeden": ein Datensatz = ein Round-Robin-Turnier (kompletter
+    // Zustand als JSON — Konfiguration, Teilnehmer, Spielplan + Ergebnisse). Ändern darf JEDES angemeldete
+    // Mitglied, damit Board-Konten Partie-Ergebnisse zurückschreiben können; anlegen an den Ersteller
+    // gebunden; löschen nur der Ersteller oder ein Admin. Deckungsgleich mit der Migration (Docker-Pfad).
+    name: 'tournaments', type: 'base',
+    listRule: LOGGED_IN, viewRule: LOGGED_IN,
+    createRule: MATCH_CREATE, updateRule: LOGGED_IN, deleteRule: '@request.auth.id = createdBy || @request.auth.role = "admin"',
+    fields: [
+      text('name'), text('createdAt'), json('config'), num('boardCount'),
+      json('participants'), json('matches'), text('status'), text('seasonId'), text('createdBy'),
+    ],
+  },
+  {
     // Öffentlich LESBAR (PUBLIC), damit die Login-Seite Vereinsname/Logo sowie die Rechtstexte
     // (Impressum §5 DDG, Datenschutz Art. 13 DSGVO) auch ohne Anmeldung zeigen kann. Enthält nur
     // Anzeige-/Konfig-Werte, nichts Personenbezogenes. Schreiben bleibt Admin-only.

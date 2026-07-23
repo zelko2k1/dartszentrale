@@ -922,6 +922,8 @@ function WinOverlay() {
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (useStore.getState().finishPrompt) return; // Finish-Dart-Abfrage liegt darüber und hat Vorrang
+      // Turnierpartie: nur „Zurück zum Turnier" (Enter/1).
+      if (useStore.getState().gameTournament) { if (e.key === 'Enter' || e.key === '1') { e.preventDefault(); s.leaveTournamentMatch(); } return; }
       if (e.key === '1') { e.preventDefault(); s.endGameTo('dashboard'); }
       else if (e.key === '2') { e.preventDefault(); s.endGameTo('setup'); }
       else if (e.key === '3' || e.key === 'Enter') { e.preventDefault(); s.rematch(); }
@@ -977,9 +979,15 @@ function WinOverlay() {
           </div>
         )}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
-          <button onClick={() => s.endGameTo('dashboard')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.toDashboard}<span style={kbd}>1</span></button>
-          <button onClick={() => s.endGameTo('setup')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.newGame}<span style={kbd}>2</span></button>
-          <button onClick={() => s.rematch()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 28px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.rematch}<span style={{ ...kbd, background: 'rgba(0,0,0,.28)' }}>3</span></button>
+          {s.gameTournament ? (
+            <button onClick={() => s.leaveTournamentMatch()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 30px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.tournament.backToTournament}<span style={{ ...kbd, background: 'rgba(0,0,0,.28)' }}>↵</span></button>
+          ) : (
+            <>
+              <button onClick={() => s.endGameTo('dashboard')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.toDashboard}<span style={kbd}>1</span></button>
+              <button onClick={() => s.endGameTo('setup')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.newGame}<span style={kbd}>2</span></button>
+              <button onClick={() => s.rematch()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 28px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.rematch}<span style={{ ...kbd, background: 'rgba(0,0,0,.28)' }}>3</span></button>
+            </>
+          )}
         </div>
       </div>
     </div>

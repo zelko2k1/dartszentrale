@@ -1,10 +1,10 @@
 // Datenschicht-Abstraktion (Phase-1-Vorbereitung).
 // Zwei Implementierungen: LocalProvider (localStorage, synchron) und PocketBaseProvider (API, async).
 // Noch NICHT in den Store eingebunden — rein additiv, ändert das bestehende Verhalten nicht.
-import type { Player, Team, Account, League, EventItem, Match, Season, SeasonSnapshot, Settings, Role } from './types';
+import type { Player, Team, Account, League, EventItem, Match, Season, SeasonSnapshot, Tournament, Settings, Role } from './types';
 import type { NuligaResponse } from '../lib/nuligaImport';
 
-export type CollectionName = 'players' | 'teams' | 'accounts' | 'leagues' | 'events' | 'matches' | 'seasons' | 'season_snapshots';
+export type CollectionName = 'players' | 'teams' | 'accounts' | 'leagues' | 'events' | 'matches' | 'seasons' | 'season_snapshots' | 'tournaments';
 
 /** Vollständiger Datenbestand, wie ihn der Store beim Start lädt. */
 export interface Snapshot {
@@ -16,6 +16,7 @@ export interface Snapshot {
   matches: Match[];
   seasons: Season[];
   seasonSnapshots: SeasonSnapshot[];
+  tournaments: Tournament[];
   settings: Partial<Settings> | null;
   trainingPlays: Record<string, number>;
   clubName?: string;
@@ -98,6 +99,9 @@ export interface DataProvider {
   createRecord(coll: CollectionName, record: ProviderRecord): Promise<ProviderRecord>;
   updateRecord(coll: CollectionName, id: string, patch: ProviderRecord): Promise<ProviderRecord>;
   deleteRecord(coll: CollectionName, id: string): Promise<void>;
+  // Einen frischen Datensatz vom Server lesen (für Read-Modify-Write bei nebenläufigen Schreibern,
+  // z. B. mehrere Board-PCs, die dasselbe Turnier aktualisieren). Lokal: aus dem localStorage-Array.
+  getRecord(coll: CollectionName, id: string): Promise<ProviderRecord | null>;
 
   // ── Profilfoto (nur 'players' | 'accounts'); PocketBase-File-Feld. Lokal: nicht unterstützt. ──
   uploadPhoto(coll: CollectionName, id: string, file: Blob): Promise<void>;

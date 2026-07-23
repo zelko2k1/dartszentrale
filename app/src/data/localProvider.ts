@@ -13,6 +13,7 @@ const COLL_KEY: Record<CollectionName, string> = {
   matches: STORAGE_KEYS.matches,
   seasons: STORAGE_KEYS.seasons,
   season_snapshots: STORAGE_KEYS.seasonSnapshots,
+  tournaments: STORAGE_KEYS.tournaments,
 };
 
 function read<T>(key: string, fallback: T): T {
@@ -37,6 +38,7 @@ export class LocalProvider implements DataProvider {
       matches: read(STORAGE_KEYS.matches, []),
       seasons: read(STORAGE_KEYS.seasons, []),
       seasonSnapshots: read(STORAGE_KEYS.seasonSnapshots, []),
+      tournaments: read(STORAGE_KEYS.tournaments, []),
       settings,
       trainingPlays: read(STORAGE_KEYS.trainplays, {}),
       clubName: settings?.clubName,
@@ -70,6 +72,10 @@ export class LocalProvider implements DataProvider {
     const key = COLL_KEY[coll];
     const arr = read<ProviderRecord[]>(key, []);
     write(key, arr.filter((r) => r.id !== id));
+  }
+
+  async getRecord(coll: CollectionName, id: string): Promise<ProviderRecord | null> {
+    return read<ProviderRecord[]>(COLL_KEY[coll], []).find((r) => r.id === id) || null;
   }
 
   // Profilfotos gibt es nur im Vereinsmodus (PocketBase-File-Feld).

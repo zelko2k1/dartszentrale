@@ -14,4 +14,5 @@ export const STORAGE_KEYS = {
   leagues: 'darts_leagues',
   seasons: 'darts_seasons',
   seasonSnapshots: 'darts_season_snapshots',
+  tournaments: 'darts_tournaments',
 } as const;

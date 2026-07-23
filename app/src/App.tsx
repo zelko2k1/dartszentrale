@@ -19,6 +19,8 @@ import { Settings } from './screens/Settings';
 import { Training } from './screens/Training';
 import { TrainingSetup } from './screens/TrainingSetup';
 import { TrainingGame } from './screens/TrainingGame';
+import { TournamentSetup } from './screens/TournamentSetup';
+import { Tournament } from './screens/Tournament';
 import { Counter } from './screens/Counter';
 import { CounterSetup } from './screens/CounterSetup';
 import { LiveEntry } from './screens/LiveEntry';
@@ -26,6 +28,7 @@ import { parseLiveRoute } from './lib/deepLink';
 import { useLiveHost } from './lib/useLiveHost';
 import { BoardPanel } from './components/BoardPanel';
 import { NextGameOverlay } from './components/NextGameOverlay';
+import { TournamentBoardOverlay } from './components/TournamentBoardOverlay';
 import { CommandPalette } from './components/CommandPalette';
 import { LiveClock } from './components/LiveClock';
 import { Modals } from './modals/Modals';
@@ -45,6 +48,8 @@ function ScreenView() {
     case 'settings': return <Settings />;
     case 'training': return <Training />;
     case 'trainSetup': return <TrainingSetup />;
+    case 'tournamentSetup': return <TournamentSetup />;
+    case 'tournament': return <Tournament />;
     case 'setup': return <CounterSetup />;
     default: return <Dashboard />;
   }
@@ -146,7 +151,7 @@ export default function App() {
     });
   };
 
-  const kioskInTraining = s.screen === 'training' || s.screen === 'trainSetup' || s.screen === 'trainGame';
+  const kioskInTraining = s.screen === 'training' || s.screen === 'trainSetup' || s.screen === 'trainGame' || s.screen === 'tournamentSetup' || s.screen === 'tournament';
   const kioskInSettings = s.screen === 'settings';
   const kioskTab = (label: string, active: boolean, onClick: () => void, hint?: string) => (
     <button onClick={onClick} title={hint ? `${label} (${hint})` : label} style={{ display: 'flex', alignItems: 'center', gap: 7, background: active ? 'var(--accent)' : 'var(--surface-3)', color: active ? 'var(--accent-fg)' : 'var(--text-3)', border: `1px solid ${active ? 'var(--accent)' : 'var(--border-2)'}`, padding: '7px 14px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -264,8 +269,10 @@ export default function App() {
             <main style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: rootBg(s.settings), position: 'relative' }}>
               {s.screen === 'training' ? <Training />
                 : s.screen === 'trainSetup' ? <TrainingSetup />
+                : s.screen === 'tournamentSetup' ? <TournamentSetup />
+                : s.screen === 'tournament' ? <Tournament />
                 : s.screen === 'settings' ? <Settings kiosk />
-                : <><BoardPanel /><CounterSetup /><NextGameOverlay /></>}
+                : <><BoardPanel /><CounterSetup /><NextGameOverlay /><TournamentBoardOverlay /></>}
             </main>
           </div>
         )

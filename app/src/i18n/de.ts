@@ -498,6 +498,62 @@ export const de = {
     killer: { goal: 'Werde Killer und nimm den Gegnern alle Leben.', lines: ['Jeder hat eine eigene Zahl und 3 Leben.', 'Triff zuerst deine eigene Zahl, um Killer zu werden.', 'Als Killer nimmst du pro Treffer auf gegnerische Zahlen ein Leben.', 'Wer als Letzter Leben übrig hat, gewinnt.'] },
   },
 
+  tournament: {
+    // Kachel / Modus
+    tileName: 'X01 – Jeder gegen Jeden',
+    tileDesc: 'Round-Robin: 3–8 Spieler, jeder gegen jeden, Abschlusstabelle',
+    defaultName: 'X01-Turnier',
+    // Setup
+    setupTitle: 'X01-Turnier – Jeder gegen Jeden',
+    nameLabel: 'Turniername',
+    namePlaceholder: 'z. B. Vereinsabend',
+    playersLabel: 'Teilnehmer',
+    startScoreLabel: 'Startpunkte',
+    outModeLabel: 'Ausspielen',
+    outSingle: 'Single Out', outDouble: 'Double Out', outMaster: 'Master Out',
+    doubleInLabel: 'Double In',
+    doubleInHint: 'Nur Hinweis – bei reiner Punkteingabe nicht automatisch geprüft.',
+    bestOfLabel: 'Legs je Partie',
+    bestOfValue: (n: number) => `Best of ${n}`,
+    boardsLabel: 'Boards',
+    boardsHint: (n: number) => n > 1 ? `Bis zu ${n} Partien gleichzeitig` : 'Eine Partie nach der anderen',
+    tooFewPlayers: 'Zu wenige Spieler im Verein – lege zuerst Spieler an.',
+    create: 'Turnier starten',
+    cancel: 'Abbrechen',
+    // Dashboard
+    schedule: 'Spielplan',
+    standings: 'Tabelle',
+    highlights: 'Highlights',
+    round: (n: number) => `Runde ${n}`,
+    progress: (done: number, total: number) => `${done}/${total} Partien`,
+    statusPending: 'Ausstehend', statusLive: 'Läuft', statusDone: 'Fertig',
+    play: 'Spielen',
+    board: (n: number) => `Board ${n}`,
+    vs: 'gegen',
+    doneTitle: 'Turnier beendet',
+    champion: (name: string) => `🏆 ${name} gewinnt!`,
+    backToTournament: 'Zurück zum Turnier',
+    exit: 'Verlassen',
+    // Tabelle
+    colRank: '#', colPlayer: 'Spieler', colPlayed: 'Sp', colWins: 'S', colLosses: 'N', colLegs: 'Legs', colDiff: '+/−', colPoints: 'Pkt',
+    noResults: 'Noch keine Ergebnisse.',
+    // Highlights
+    hl180: (name: string, n: number) => n > 1 ? `${name} – ${n}× 180!` : `${name} – 180!`,
+    hlShortLeg: (name: string, darts: number) => `${name} – Short Leg (${darts} Darts)`,
+    hlHighFinish: (name: string, score: number) => `${name} – High Finish ${score}`,
+    noHighlights: 'Noch keine Highlights.',
+    // Board-Overlay
+    boardWaiting: 'Warte auf die nächste Partie …',
+    boardNextMatch: 'Nächste Partie an diesem Board',
+    boardStart: 'Partie starten',
+    // Liste / Löschen
+    newTournament: 'Neues Turnier',
+    delete: 'Löschen',
+    deleteConfirm: 'Dieses Turnier wirklich löschen?',
+    empty: 'Noch kein Turnier angelegt.',
+    listTitle: 'Turniere',
+  },
+
   teams: {
     addTeam: 'Mannschaft',
     emptyTitle: 'Noch keine Mannschaft',
