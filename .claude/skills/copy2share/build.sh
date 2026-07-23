@@ -42,12 +42,14 @@ copy_pb(){ local d="$1/pocketbase"; mkdir -p "$d"
 # Nur 01 (lokal, ein Board): lokaler Start + Autostart + Update fürs Kiosk-Board — NUR Frontend, kein PocketBase
 copy_lokal(){ for f in start-local.sh start-local.bat autostart-local.sh autostart-local.bat update-local.sh update-local.bat; do cpf "$REPO/scripts/$f" "$1/"; done; }
 
-# Nur 02 (Vereinsmodus LAN, Single-Binary): Start + Update + Autostart (Server) für den Einfach-Betrieb,
-# plus Board-Kiosk-Autostart (öffnet den Browser im Vollbild auf die App-URL) für Windows/Linux × Chrome/Firefox.
+# Nur 02 (Vereinsmodus LAN, Single-Binary): Start + Update + Autostart (Server) für den Einfach-Betrieb.
 copy_verein_lan(){ for f in start-club-lan.sh start-club-lan.ps1 start-club-lan.bat \
   update-club-lan.sh update-club-lan.ps1 update-club-lan.bat \
-  autostart-club-lan.sh autostart-club-lan.bat \
-  board-kiosk-chrome.bat board-kiosk-firefox.bat board-kiosk-chrome.sh board-kiosk-firefox.sh; do cpf "$REPO/scripts/$f" "$1/"; done; }
+  autostart-club-lan.sh autostart-club-lan.bat; do cpf "$REPO/scripts/$f" "$1/"; done; }
+
+# Board-Kiosk-Autostart (öffnet den Browser im Vollbild auf die App-URL) — Windows/Linux × Chrome/Firefox.
+# Für JEDEN Vereinsmodus-Betrieb sinnvoll (LAN + Cloud), daher eigene Funktion für beide Bundles.
+copy_board_kiosk(){ for f in board-kiosk-chrome.bat board-kiosk-firefox.bat board-kiosk-chrome.sh board-kiosk-firefox.sh; do cpf "$REPO/scripts/$f" "$1/"; done; }
 
 # Docs kopieren; Pfade mit de/-Präfix landen in docs/de/ (deutsche Fassungen neben den englischen).
 copy_docs(){ local d="$1/docs"; mkdir -p "$d" "$d/de"; shift; for f in "$@"; do
@@ -116,6 +118,7 @@ B="$TARGET/02-club-lan"; mkdir -p "$B"
 if build_pubdir "$B"; then
   cp -r "$REPO/pocketbase/pb_migrations" "$REPO/pocketbase/pb_hooks" "$B/"
   copy_verein_lan "$B"
+  copy_board_kiosk "$B"
   copy_docs "$B" admin-guide-lan-linux.md admin-guide-lan-windows.md manual.md security-audit.md \
     de/admin-anleitung-lan-linux.md de/admin-anleitung-lan-windows.md de/handbuch.md
   cat > "$B/LIESMICH.txt" <<'TXT'
@@ -168,6 +171,7 @@ C="$TARGET/03-club-cloud"; mkdir -p "$C"
 copy_app "$C" 0
 copy_pb "$C" 0
 copy_cloud "$C"
+copy_board_kiosk "$C"
 cpf "$REPO/scripts/update-server.sh" "$C/"
 copy_docs "$C" admin-guide-cloud.md go-live-checklist-cloud.md manual.md \
   de/admin-anleitung-cloud.md de/go-live-checkliste-cloud.md de/handbuch.md
@@ -182,6 +186,13 @@ laeuft bis alles steht (PocketBase laden, App bauen, systemd-Dienste, Caddy/HTTP
 Voraussetzung: ein Linux-Server (Ubuntu/Debian) und die DNS-A-Records app.* / db.*
 zeigen auf die Server-IP. Details + Sicherheit: docs/de/admin-anleitung-cloud.md
 (English: docs/admin-guide-cloud.md), Go-live-Checkliste: docs/de/go-live-checkliste-cloud.md.
+
+BOARD-KIOSK (jeder Board-PC oeffnet die App beim Anmelden automatisch im Vollbild):
+  Auf jedem Board-PC EINMAL ausfuehren (fragt nach der App-Adresse, z. B. https://app.dein-verein.de):
+    Windows -> Doppelklick board-kiosk-chrome.bat   ODER  board-kiosk-firefox.bat
+    Linux   -> ./board-kiosk-chrome.sh              ODER  ./board-kiosk-firefox.sh
+  Danach EINMAL mit dem BOARD-Konto anmelden - es bleibt ueber Neustarts angemeldet
+  (andere Konten muessen sich jedes Mal neu anmelden). Kiosk verlassen: Alt+F4.
 
 UPDATE spaeter — einfachster Weg (In-App):
   dartszentrale-update-*.tar.gz in den Ordner 'updates' der Installation legen, dann in der App

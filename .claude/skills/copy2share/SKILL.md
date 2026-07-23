@@ -12,7 +12,7 @@ einen USB-Stick, einen Netzwerkshare oder in die Cloud kopieren kann:
 |---|---|
 | `01-single-board` | Ein Board lokal: starten & loslegen, **kein Server, kein Login** (Daten im Browser, mit Auto-Backup nach `backup/`). Node/serve-dist. |
 | `02-club-lan` | Vereinsmodus im eigenen Netz — **EINFACH**: ein Binary (PocketBase liefert die App aus `pb_public/` selbst aus), **kein Node, kein Build** (`start-club-lan.*`, `update-club-lan.*`, `autostart-club-lan.*`, plus `board-kiosk-{chrome,firefox}.{bat,sh}` = Board-PC öffnet die App beim Anmelden im Vollbild-Kiosk) |
-| `03-club-cloud` | Vereinsmodus in der Cloud (schlank per Caddy, `setup-cloud.sh`) |
+| `03-club-cloud` | Vereinsmodus in der Cloud (schlank per Caddy, `setup-cloud.sh`); enthält ebenfalls die `board-kiosk-*`-Skripte für Board-PCs |
 
 Jeder Ordner enthält **nur die nötigen** Dateien + eine `LIESMICH.txt`. Bewusst ausgeschlossen:
 `node_modules`, `dist`, `.env.local`, `pb_data`, das PocketBase-Binary, die `demo-*.mjs` (Testdaten)
