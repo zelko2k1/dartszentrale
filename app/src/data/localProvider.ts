@@ -80,7 +80,7 @@ export class LocalProvider implements DataProvider {
   async saveTrainingPlays(plays: Record<string, number>): Promise<void> { write(STORAGE_KEYS.trainplays, plays); }
 
   // Lokal: keine echte Anmeldung — voller Zugriff.
-  async login(): Promise<LoginResult> { return { ok: true, user: { id: 'local', name: 'Lokal', role: 'admin', active: true } }; }
+  async login(): Promise<LoginResult> { return { ok: true, user: { id: 'local', name: 'Lokal', role: 'admin', active: true, isBoard: false } }; }
   // 2FA gibt es nur im Vereinsmodus (serverseitig). Lokal: aus / nicht verfügbar.
   async twoFactorStatus(): Promise<TwoFactorStatus> { return { enabled: false, pending: false }; }
   async twoFactorSetup(): Promise<TwoFactorSetup> { throw new Error('2-Faktor-Authentifizierung gibt es nur im Vereinsmodus.'); }
@@ -90,7 +90,7 @@ export class LocalProvider implements DataProvider {
   async twoFactorAdminList(): Promise<string[]> { return []; }
   async twoFactorAdminReset(): Promise<{ wasEnabled: boolean }> { return { wasEnabled: false }; }
   // Lokal gibt es keine echte Anmeldung — der Kiosk-Ausstieg wird im Store vor dem Provider abgehandelt.
-  async kioskExitAuth(): Promise<AuthUser | null> { return { id: 'local', name: 'Lokal', role: 'admin', active: true }; }
+  async kioskExitAuth(): Promise<AuthUser | null> { return { id: 'local', name: 'Lokal', role: 'admin', active: true, isBoard: false }; }
   async logout(): Promise<void> { /* noop */ }
   currentUser(): AuthUser | null { return null; }
   async setPassword(): Promise<void> { /* lokaler Modus hat keine Anmeldung/Passwörter */ }

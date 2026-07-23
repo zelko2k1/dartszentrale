@@ -642,10 +642,14 @@ export const useStore = create<AppState>((set, get) => ({
     const provider = createProvider(settings.appMode, pbUrl);
     if (provider.mode === 'verein') {
       // Echter PocketBase-Pfad: Daten vom Server, echte Auth, Schreiben & Realtime.
-      // Eine wiederhergestellte Session eines zwischenzeitlich deaktivierten Kontos verwerfen.
+      // Persistente Anmeldung NUR für Board-Konten (Kiosk-Rechner sollen nach einem Neustart weiter
+      // eingeloggt sein). Alle anderen Konten (Admin/Kapitän/Spieler) werden beim App-Start NICHT
+      // wiederhergestellt — ein Admin-Login soll auf einem geteilten Board-PC nicht „hängen bleiben".
+      // Ebenso eine Session eines zwischenzeitlich deaktivierten Kontos verwerfen.
       const restored = provider.currentUser();
-      if (restored && !restored.active) { void provider.logout(); }
-      const session = restored && restored.active ? restored.id : null;
+      const keepSession = !!restored && restored.active && restored.isBoard;
+      if (restored && !keepSession) { void provider.logout(); }
+      const session = keepSession ? restored.id : null;
       set({ settings, provider, pbMode: true, session, needsModeChoice: showModeChoice });
       // Öffentliche Vereins-Infos (Name, Logo, Impressum, Datenschutz) unabhängig vom Login laden,
       // damit die Login-Seite sie auch beim allerersten Aufruf (noch nicht angemeldet) zeigt. Für

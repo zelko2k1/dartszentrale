@@ -31,7 +31,7 @@ function clean<T extends ProviderRecord>(rec: ProviderRecord): T {
 
 function toAuthUser(m: ProviderRecord | null): AuthUser | null {
   if (!m) return null;
-  return { id: String(m.id), name: String(m.name ?? ''), role: ((m.role as Role) ?? 'viewer'), active: m.active !== false };
+  return { id: String(m.id), name: String(m.name ?? ''), role: ((m.role as Role) ?? 'viewer'), active: m.active !== false, isBoard: m.isBoard === true };
 }
 
 export class PocketBaseProvider implements DataProvider {

@@ -33,7 +33,7 @@ export interface PublicConfig {
   datenschutz?: string;
 }
 
-export interface AuthUser { id: string; name: string; role: Role; active: boolean; }
+export interface AuthUser { id: string; name: string; role: Role; active: boolean; isBoard: boolean; }
 
 /** Ergebnis eines Login-Versuchs: erfolgreich, oder 2FA-Code erforderlich (kein Token vergeben). */
 export type LoginResult =

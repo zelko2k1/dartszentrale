@@ -20,6 +20,10 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
   Fernbedienung (1/2/3, unterhalb der möglichen Mindestzahl gesperrt, „Zurück" nimmt zurück).
 
 ### Geändert
+- **Angemeldet bleiben nur noch Board-Konten.** Über einen Rechner-Neustart hinweg bleibt jetzt nur
+  ein **Board-Konto** eingeloggt (Kiosk-Rechner sollen sofort weiterlaufen). Alle anderen Konten
+  (Admin, Kapitän, Spieler …) müssen sich nach jedem App-Start neu anmelden — so bleibt ein
+  Admin-Login auf einem geteilten Board-PC nicht ungewollt „hängen". Nur im Vereinsmodus relevant.
 - **Fernbedienung, kleinere Verbesserungen:** „Neues Spiel starten" heißt im Startmenü jetzt kurz
   „Spiel starten"; die Knöpfe „Neues Spiel" und „Abbruch" während des Spiels sind größer und besser
   lesbar. Der Knopf „Zum Dashboard" nach Spielende heißt überall nur noch „Dashboard".
