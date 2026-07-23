@@ -7,6 +7,8 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.0.5] – 2026-07-23
+
 ### Hinzugefügt
 - **Neues Trainingsspiel „X01 – Jeder gegen Jeden" (Round-Robin-Turnier).** Ein X01-Turnier für
   **3–8 Spieler**, jeder gegen jeden, mit **Abschlusstabelle** (nach Siegen, dann Leg-Differenz) und
