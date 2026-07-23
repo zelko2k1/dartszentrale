@@ -49,6 +49,33 @@ function Grid({ modes }: { modes: TrainMode[] }) {
   );
 }
 
+function TournamentTile() {
+  const openTournamentSetup = useStore((s) => s.openTournamentSetup);
+  const openTournamentList = useStore((s) => s.openTournamentList);
+  const tournaments = useStore((s) => s.tournaments);
+  const tr = useT();
+  const t = tr.tournament;
+  const ACCENT = '#F2B829';
+  const running = tournaments.filter((x) => x.status === 'running');
+  return (
+    <div className="dh-hover-border" onClick={() => openTournamentSetup()} style={{ background: `linear-gradient(135deg, color-mix(in srgb, ${ACCENT} 12%, var(--surface)), var(--surface))`, border: `1px solid color-mix(in srgb, ${ACCENT} 40%, var(--border))`, borderRadius: 16, padding: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 18, marginBottom: 28 }}>
+      <div style={{ width: 52, height: 52, borderRadius: 14, background: `color-mix(in srgb, ${ACCENT} 18%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke={ACCENT} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9a6 6 0 0 0 12 0M6 9V4h12v5M9 21h6M12 15v6M4 4h2M18 4h2" /></svg>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 17, fontWeight: 800 }}>{t.tileName}</div>
+        <div style={{ fontSize: 12.5, color: 'var(--text-4)', marginTop: 3, lineHeight: 1.4 }}>{t.tileDesc}</div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+        {tournaments.length > 0 && (
+          <button onClick={(e) => { e.stopPropagation(); openTournamentList(); }} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{t.listTitle}{running.length > 0 ? ` · ${running.length} ${t.statusLive}` : ''}</button>
+        )}
+        <div style={{ background: ACCENT, color: '#06160d', padding: '9px 16px', borderRadius: 10, fontSize: 14, fontWeight: 800, whiteSpace: 'nowrap' }}>{t.newTournament}</div>
+      </div>
+    </div>
+  );
+}
+
 export function Training() {
   const tr = useT();
   const training = TRAIN_MODES.filter((m) => m.cat === 'training');
@@ -57,6 +84,7 @@ export function Training() {
     <div style={{ padding: '28px 32px', maxWidth: 1100, margin: '0 auto' }}>
       <div style={{ marginBottom: 6, fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>{tr.trainingScr.kicker}</div>
       <h1 style={{ margin: '0 0 22px', fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{tr.nav.training}</h1>
+      <TournamentTile />
       <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', margin: '4px 0 14px' }}>{tr.trainingScr.soloSection}</div>
       <Grid modes={training} />
       <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', margin: '4px 0 14px' }}>{tr.trainingScr.multiSection}</div>

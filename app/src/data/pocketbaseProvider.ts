@@ -19,6 +19,7 @@ const PB_COLLECTION: Record<CollectionName, string> = {
   matches: 'matches',
   seasons: 'seasons',
   season_snapshots: 'season_snapshots',
+  tournaments: 'tournaments',
 };
 
 // PocketBase liefert pro Record Systemfelder mit, die wir aus den App-Objekten heraushalten.
@@ -51,7 +52,7 @@ export class PocketBaseProvider implements DataProvider {
 
   async loadAll(): Promise<Snapshot> {
     const opt = { requestKey: null as null };
-    const [players, teams, accounts, leagues, events, matches, seasons, seasonSnapshots] = await Promise.all([
+    const [players, teams, accounts, leagues, events, matches, seasons, seasonSnapshots, tournaments] = await Promise.all([
       this.pb.collection('players').getFullList(opt),
       this.pb.collection('teams').getFullList(opt),
       this.pb.collection('users').getFullList(opt),
@@ -61,6 +62,8 @@ export class PocketBaseProvider implements DataProvider {
       // Saisons/Snapshots sind neu (provision.mjs) — fehlt die Collection noch, nicht den ganzen Ladevorgang kippen.
       this.pb.collection('seasons').getFullList(opt).catch(() => [] as ProviderRecord[]),
       this.pb.collection('season_snapshots').getFullList(opt).catch(() => [] as ProviderRecord[]),
+      // Turniere (Trainingsspiel „jeder gegen jeden") sind neu — Collection fehlt evtl. noch → leere Liste.
+      this.pb.collection('tournaments').getFullList(opt).catch(() => [] as ProviderRecord[]),
     ]);
 
     // Vereinsweite Einstellungen (ein Datensatz) — Name, Logo UND die zentrale UI-/Counter-Konfiguration,
@@ -108,6 +111,7 @@ export class PocketBaseProvider implements DataProvider {
       matches: as<Snapshot['matches']>(matches),
       seasons: as<Snapshot['seasons']>(seasons),
       seasonSnapshots: as<Snapshot['seasonSnapshots']>(seasonSnapshots),
+      tournaments: as<Snapshot['tournaments']>(tournaments),
       settings,
       trainingPlays,
       clubName,
@@ -157,6 +161,11 @@ export class PocketBaseProvider implements DataProvider {
 
   async deleteRecord(coll: CollectionName, id: string): Promise<void> {
     await this.pb.collection(PB_COLLECTION[coll]).delete(id);
+  }
+
+  async getRecord(coll: CollectionName, id: string): Promise<ProviderRecord | null> {
+    try { return clean(await this.pb.collection(PB_COLLECTION[coll]).getOne(id, { requestKey: null }) as unknown as ProviderRecord); }
+    catch { return null; }
   }
 
   // Profilfoto hochladen (File-Feld). PocketBase erzeugt Thumbnails on-demand.
@@ -271,7 +280,7 @@ export class PocketBaseProvider implements DataProvider {
   }
 
   subscribe(onChange: () => void): () => void {
-    const colls = ['players', 'teams', 'users', 'leagues', 'events', 'matches', 'seasons', 'season_snapshots', 'club_config'];
+    const colls = ['players', 'teams', 'users', 'leagues', 'events', 'matches', 'seasons', 'season_snapshots', 'tournaments', 'club_config'];
     const unsubs = colls.map((c) => this.pb.collection(c).subscribe('*', () => onChange()).catch(() => () => {}));
     return () => { unsubs.forEach((p) => { void p.then((fn) => fn()).catch(() => {}); }); };
   }

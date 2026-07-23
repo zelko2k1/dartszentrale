@@ -39,6 +39,11 @@
 `bestOf` (number) · `bestOfSets` (number) · `gameLabel` · `winnerName` · `scoreLine` ·
 `perPlayer` (json) · `seasonId` · **`createdBy`** (Ersteller; serverseitige Owner-Bindung)
 
+### `tournaments` (Base) — Trainingsspiel „X01 – Jeder gegen Jeden"
+`name` · `createdAt` · `config` (json: Startpunkte/Out/Double-In/Best-of) · `boardCount` (number) ·
+`participants` (json) · `matches` (json: Round-Robin-Spielplan + Ergebnisse je Partie) · `status` ·
+`seasonId` · **`createdBy`**. Ändern darf jedes Mitglied (Board-Konten schreiben Ergebnisse zurück).
+
 ### `club_config` (Base) — ein einziger Datensatz
 `clubName` · `clubLogo` (Daten-URL oder Link)
 
@@ -79,6 +84,7 @@ diese Rule blockt PocketBase E-Mail-Änderungen für Nicht-Superuser).
 | `seasons` | authed | **admin** | admin \|\| cap | **admin** |
 | `season_snapshots` | authed | admin | admin | admin |
 | `matches` | authed | **`createdBy = @request.auth.id`** (eigener Stempel) | **admin \|\| `createdBy = @request.auth.id`** | admin |
+| `tournaments` | authed | **`createdBy = @request.auth.id`** (eigener Stempel) | **authed** (Board-Konten schreiben Ergebnisse) | `createdBy = auth.id` \|\| admin |
 | `users` | authed | admin | admin | admin |
 | `club_config` | authed | admin | admin | admin |
 | `user_prefs` | `auth.id = user` | `auth.id = user` | `auth.id = user` | `auth.id = user` |

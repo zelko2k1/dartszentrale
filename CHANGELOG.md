@@ -7,6 +7,18 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+### Hinzugefügt
+- **Neues Trainingsspiel „X01 – Jeder gegen Jeden" (Round-Robin-Turnier).** Ein X01-Turnier für
+  **3–8 Spieler**, jeder gegen jeden, mit **Abschlusstabelle** (nach Siegen, dann Leg-Differenz) und
+  **Highlights** (180er, Short Legs, High Finishes). Im Reiter **Training** über die goldene Kachel.
+  Setup mit Startpunkten (301/501/701/1001), Auscheck-Modus, Double-In-Hinweis, Legs je Partie und
+  **Board-Anzahl**. Jede Partie wird ganz normal im **Counter** gespielt; das Ergebnis fließt automatisch
+  zurück ins Turnier. Bei **mehreren Boards** laufen Partien **parallel**: jeder Board-PC zeigt von selbst
+  seine zugewiesene Paarung („Partie starten"), spielt sie wie ein Ligaspiel (inkl. Board-Anzeige,
+  Handy-Fernbedienung, Zuschauer-TV), schaltet danach automatisch zur nächsten freien Partie weiter, und
+  das Organisator-Dashboard aktualisiert sich laufend. Server-seitig über eine neue `tournaments`-Collection
+  synchronisiert (Multi-Board-fähig). Ergebnisse bleiben im Turnier (nicht in der allgemeinen Statistik).
+
 ## [1.0.4] – 2026-07-23
 
 ### Hinzugefügt

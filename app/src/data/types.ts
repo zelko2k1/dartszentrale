@@ -163,6 +163,63 @@ export interface League {
   order?: number;
 }
 
+// ── Round-Robin-X01-Turnier (Trainingsspiel „jeder gegen jeden") ──
+// Ein Turnier ist ein eigenständiger Datensatz (wie League/Match): Konfiguration + Teilnehmer + fertiger
+// Spielplan + Ergebnisse. Jede Partie wird auf der Counter-Engine gespielt; die Logik/Auswertung liegt in
+// store/tournament.ts. Im Vereinsmodus liegt es serverseitig (tournaments-Collection) → Multi-Board-Sync.
+export interface TournamentConfig {
+  startScore: number;                     // 301 / 501 / 701 / 1001
+  outMode: 'single' | 'double' | 'master';// Single / Double / Master Out
+  doubleIn: boolean;                      // wie im Rest der App nur Hinweis (nicht erzwungen)
+  bestOf: number;                         // Legs, Best-of-N je Partie (ungerade)
+}
+export interface TournamentParticipant {
+  id: string;      // Turnier-Slot-Id (stabil)
+  pid: string;     // echte Player.id
+  name: string;
+  short: string;
+  av?: number;
+  photo?: string;
+}
+export interface TournamentPlayerStat {
+  legsWon: number;
+  avg3: number;
+  c180: number;
+  c140: number;
+  c100: number;
+  highFinish: number;      // höchste Ausmache (0 = keine)
+  co: number;              // Checkout-Quote %
+  shortLegDarts: number[]; // Dart-Zahlen gewonnener Short Legs (≤19)
+}
+export interface TournamentMatchResult {
+  homeLegs: number;
+  awayLegs: number;
+  winnerId: string;                              // Teilnehmer-Id des Siegers
+  stats: Record<string, TournamentPlayerStat>;   // je Teilnehmer-Id
+}
+export type TournamentMatchStatus = 'pending' | 'live' | 'done';
+export interface TournamentMatch {
+  id: string;
+  round: number;        // 1-basierte Runde (Kreismethode)
+  homeId: string;       // Teilnehmer-Id
+  awayId: string;
+  board?: number;       // zugewiesene Board-Nummer (wenn live/erledigt)
+  status: TournamentMatchStatus;
+  result?: TournamentMatchResult;
+}
+export interface Tournament {
+  id: string;
+  name: string;
+  createdAt: string;
+  config: TournamentConfig;
+  boardCount: number;
+  participants: TournamentParticipant[];
+  matches: TournamentMatch[];
+  status: 'running' | 'done';
+  seasonId?: string;
+  createdBy?: string;  // → users.id des Erstellers (Vereinsmodus)
+}
+
 export interface EventItem {
   id: string;
   scope: 'local' | 'verein';
@@ -317,7 +374,8 @@ export interface Settings {
 export type Screen =
   | 'dashboard' | 'counter' | 'training' | 'calendar' | 'leagues'
   | 'teams' | 'players' | 'playerDetail' | 'stats' | 'users' | 'settings' | 'setup'
-  | 'trainSetup' | 'trainGame';
+  | 'trainSetup' | 'trainGame'
+  | 'tournamentSetup' | 'tournament';
 
 // Counter throw
 export interface Throw {

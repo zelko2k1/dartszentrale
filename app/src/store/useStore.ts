@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type {
   Player, Team, Account, League, Fixture, EventItem, Match, Season, SeasonSnapshot, Settings, Screen,
   GamePlayer, Throw, Role, MatchPlayerStat, LineupPosition, FixtureLineup, LineupSegment, TeamKind, TrainingBest,
+  Tournament, TournamentConfig, TournamentParticipant, TournamentMatch, TournamentMatchResult, TournamentPlayerStat,
 } from '../data/types';
 import { AVATARS, DEVICE_LOCAL_SETTING_KEYS, DEVICE_UI_KEYS, LEAGUE_FORMAT_PRESETS } from '../data/constants';
 import { uid, firstName, lastName, initials } from '../lib/format';
@@ -22,6 +23,11 @@ import {
   TRAIN_BEST, isBetterBest, trainCelebration,
   type TrainGame, type TrainPlayer, type TurnInput,
 } from './training';
+import {
+  newTournament, setMatchLive as tSetMatchLive, setMatchResult as tSetMatchResult,
+  assignBoards as tAssignBoards, matchById as tMatchById, maxBoards as tMaxBoards,
+  TOURNAMENT_MIN_PLAYERS, TOURNAMENT_MAX_PLAYERS,
+} from './tournament';
 import { createProvider, type DataProvider } from '../data/dataProvider';
 import type { ProviderRecord } from '../data/provider';
 import { mergeSchedule, deriveOwnTeams, seasonKey, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
@@ -44,6 +50,7 @@ const LS = {
   leagues: 'darts_leagues',
   seasons: 'darts_seasons',
   seasonSnapshots: 'darts_season_snapshots',
+  tournaments: 'darts_tournaments',
   pburl: 'darts_pburl',
   device: 'darts_device', // gerätelokale Konfiguration (Board-/Kiosk-Modus, Board-Bezeichnung)
   devui: 'darts_devui', // gerätelokale UI-Vorlieben (Eingabe-Modus, Hell/Dunkel, Größen) – Mischbetrieb PC/Tablet
@@ -193,6 +200,15 @@ export interface RemoteStartSelection {
 // auto = selbst-ausblendende Feier (z. B. Short Leg) statt blockierendem Modal mit „Verstanden"-Knopf.
 export interface HintState { title: string; body: string; auto?: boolean; }
 export interface TrainSetupState { modeId: string; count: number; picks: number[]; }
+// Setup eines Round-Robin-X01-Turniers: Name, Teilnehmerzahl (3–8), Spielerauswahl (picks = Pool-Indizes),
+// X01-Optionen und Board-Anzahl.
+export interface TournamentSetupState {
+  name: string;
+  count: number;
+  picks: number[];
+  config: TournamentConfig;
+  boardCount: number;
+}
 export type NewAction = { kind: 'setup' } | { kind: 'preset'; preset: Partial<SetupState> };
 
 export interface AppState {
@@ -229,6 +245,11 @@ export interface AppState {
   seasonSnapshots: SeasonSnapshot[];
   activeSeasonId: string | null;
   viewSeasonId: string | null;
+  // Round-Robin-X01-Turniere (Trainingsspiel „jeder gegen jeden"). activeTournamentId = aktuell
+  // im Dashboard/am Board betrachtetes Turnier.
+  tournaments: Tournament[];
+  activeTournamentId: string | null;
+  tournamentSetup: TournamentSetupState | null;
 
   selectedLeague: number;
   selectedTeam: number;
@@ -260,6 +281,9 @@ export interface AppState {
   matchSaved: boolean;
   freePlay: boolean;        // laufendes Spiel ist „Freies Spiel" → kein Speichern
   gameLink: { leagueId: string; fixtureId: string; positionId: string } | null; // Liga-Position des laufenden Spiels
+  // Turnier-Partie des laufenden Spiels (statt Liga-Position). Bei Match-Ende wird das Ergebnis ins Turnier
+  // zurückgeschrieben (kein globaler Match-Eintrag), dann zurück ins Turnier-Dashboard/Board.
+  gameTournament: { tournamentId: string; matchId: string; homeId: string; awayId: string } | null;
   gameMode: 'single' | 'teams';
   setup: SetupState;
   hint: HintState | null;
@@ -465,6 +489,18 @@ export interface AppState {
   trainRematch: () => void;
   trainExit: () => void;
 
+  // Turnier (Round-Robin X01)
+  openTournamentSetup: () => void;
+  setTournamentSetup: (patch: Partial<TournamentSetupState>) => void;
+  setTournamentPick: (slot: number, playerIdx: number) => void;
+  createTournament: () => void;
+  openTournament: (id: string) => void;
+  startTournamentMatch: (matchId: string, board?: number, tournamentId?: string) => void;
+  leaveTournamentMatch: () => void;
+  deleteTournament: (id: string) => void;
+  openTournamentList: () => void;
+  tournamentExit: () => void;
+
   // counter
   goSetup: (preset?: Partial<SetupState>) => void;
   setSetup: <K extends keyof SetupState>(key: K, val: SetupState[K]) => void;
@@ -532,6 +568,9 @@ export const useStore = create<AppState>((set, get) => ({
   seasonSnapshots: [],
   activeSeasonId: null,
   viewSeasonId: null,
+  tournaments: [],
+  activeTournamentId: null,
+  tournamentSetup: null,
 
   selectedLeague: 0,
   selectedTeam: 0,
@@ -564,6 +603,7 @@ export const useStore = create<AppState>((set, get) => ({
   matchSaved: false,
   freePlay: false,
   gameLink: null,
+  gameTournament: null,
   gameMode: 'single',
   setup: { mode: 'single', startScore: 501, bestOf: 5, bestOfSets: 3, unit: 'legs', doubleOut: true, outMode: 'double', doubleIn: false, p1: 0, p2: 1, teamA: 0, teamB: 1, p1Guest: '', p2Guest: '', freePlay: false, link: null },
   hint: null,
@@ -709,8 +749,9 @@ export const useStore = create<AppState>((set, get) => ({
     if (mig.ec) { events = mig.events; write(LS.events, events); }
     if (mig.mc) { matches = mig.matches; write(LS.matches, matches); }
     const seasonSnapshots = read<SeasonSnapshot[]>(LS.seasonSnapshots, []);
+    const tournaments = read<Tournament[]>(LS.tournaments, []);
 
-    set({ settings, provider, pbMode: false, players, teams, accounts, leagues, events, matches, seasons, seasonSnapshots, activeSeasonId, viewSeasonId: activeSeasonId, session, trainingPlays, lastBackupAt: read<string | null>(LS.lastBackup, null), needsModeChoice: showModeChoice });
+    set({ settings, provider, pbMode: false, players, teams, accounts, leagues, events, matches, seasons, seasonSnapshots, tournaments, activeSeasonId, viewSeasonId: activeSeasonId, session, trainingPlays, lastBackupAt: read<string | null>(LS.lastBackup, null), needsModeChoice: showModeChoice });
   },
 
   reloadFromProvider() { void applySnapshot(get, set); },
@@ -2120,6 +2161,121 @@ export const useStore = create<AppState>((set, get) => ({
   },
   trainExit() { set({ trainGame: null, trainUndo: [], trainSetup: null, trainBestFlash: [], hint: null, screen: 'training' }); },
 
+  // ── Turnier (Round-Robin X01) ──
+  openTournamentSetup() {
+    const pool = get().players;
+    // Vorauswahl: echte Mitglieder zuerst, die Standard-Platzhalter „Spieler 1/2" ans Ende.
+    const order = pool.map((_, i) => i).sort((a, b) => (isSeedPlayer(pool[a].id) ? 1 : 0) - (isSeedPlayer(pool[b].id) ? 1 : 0));
+    const picks: number[] = [];
+    for (let i = 0; i < TOURNAMENT_MAX_PLAYERS; i++) picks.push(order[i] ?? order[0] ?? 0);
+    const config: TournamentConfig = { startScore: 501, outMode: 'double', doubleIn: false, bestOf: 3 };
+    set({ tournamentSetup: { name: '', count: TOURNAMENT_MIN_PLAYERS, picks, config, boardCount: 1 }, screen: 'tournamentSetup' });
+  },
+  setTournamentSetup(patch) {
+    set((st) => {
+      if (!st.tournamentSetup) return {};
+      const su = { ...st.tournamentSetup, ...patch };
+      if (patch.config) su.config = { ...st.tournamentSetup.config, ...patch.config };
+      su.count = Math.max(TOURNAMENT_MIN_PLAYERS, Math.min(TOURNAMENT_MAX_PLAYERS, su.count));
+      su.boardCount = Math.max(1, Math.min(tMaxBoards(su.count), su.boardCount));
+      return { tournamentSetup: su };
+    });
+  },
+  setTournamentPick(slot, playerIdx) {
+    set((st) => {
+      if (!st.tournamentSetup) return {};
+      const picks = [...st.tournamentSetup.picks];
+      picks[slot] = playerIdx;
+      return { tournamentSetup: { ...st.tournamentSetup, picks } };
+    });
+  },
+  createTournament() {
+    const st = get(); const su = st.tournamentSetup; if (!su) return;
+    const pool = st.players; if (!pool.length) return;
+    const count = Math.max(TOURNAMENT_MIN_PLAYERS, Math.min(TOURNAMENT_MAX_PLAYERS, su.count));
+    const participants: TournamentParticipant[] = [];
+    const used = new Set<string>();
+    for (let i = 0; i < count; i++) {
+      const idx = Math.max(0, Math.min(pool.length - 1, su.picks[i] ?? i));
+      let p = pool[idx];
+      // Doppelte vermeiden: nächsten freien Spieler nehmen.
+      if (used.has(p.id)) p = pool.find((q) => !used.has(q.id)) || p;
+      used.add(p.id);
+      participants.push({ id: `p${i}_${p.id}`, pid: p.id, name: p.name, short: p.short, av: p.avi, ...(p.photo ? { photo: p.photo } : {}) });
+    }
+    const name = (su.name || '').trim() || dict().tournament.defaultName;
+    const t = newTournament(uid(), name, su.config, participants, su.boardCount, new Date().toISOString());
+    if (st.activeSeasonId) t.seasonId = st.activeSeasonId;
+    if (st.session) t.createdBy = st.session;
+    const tournaments = [...st.tournaments, t];
+    persist(st, set, LS.tournaments, tournaments, (p) => p.createRecord('tournaments', t as unknown as ProviderRecord));
+    set({ tournaments, activeTournamentId: t.id, tournamentSetup: null, screen: 'tournament' });
+  },
+  openTournament(id) { set({ activeTournamentId: id, screen: 'tournament' }); },
+  openTournamentList() { set({ activeTournamentId: null, screen: 'tournament' }); },
+  startTournamentMatch(matchId, board, tournamentId) {
+    const st = get();
+    // Turnier eindeutig bestimmen: bevorzugt die übergebene Id (Match-Ids m0..m5 sind je Turnier gleich und
+    // würden sonst bei mehreren laufenden Turnieren kollidieren), sonst das aktive, sonst das erste passende.
+    const t = (tournamentId && st.tournaments.find((x) => x.id === tournamentId))
+      || st.tournaments.find((x) => x.id === st.activeTournamentId && tMatchById(x, matchId))
+      || st.tournaments.find((x) => tMatchById(x, matchId));
+    if (!t) return;
+    const m = tMatchById(t, matchId);
+    if (!m || m.status === 'done') return;
+    const home = t.participants.find((p) => p.id === m.homeId);
+    const away = t.participants.find((p) => p.id === m.awayId);
+    if (!home || !away) return;
+    // Board bestimmen: explizit > Greedy-Zuteilung > vorhandene/1.
+    let brd = board;
+    if (brd == null) { const a = tAssignBoards(t).find((x) => x.matchId === matchId); brd = a ? a.board : (m.board ?? 1); }
+    const t2 = tSetMatchLive(t, matchId, brd);
+    const tournaments = st.tournaments.map((x) => x.id === t.id ? t2 : x); // optimistisch; Server-Merge folgt
+    const gamePlayers: GamePlayer[] = [
+      { id: 1, name: home.name, short: home.short, av: home.av || 0, ...(home.photo ? { photo: home.photo } : {}) },
+      { id: 2, name: away.name, short: away.short, av: away.av || 0, ...(away.photo ? { photo: away.photo } : {}) },
+    ];
+    const cfg = t.config;
+    // Turnier-Konfiguration NICHT in die geteilten Server-Settings schreiben (kein persistSettings) — sie ist
+    // pro Partie und würde sonst den Standard des Board-Kontos verändern und einen Realtime-Echo auslösen.
+    // applySnapshot schützt diese Felder während der laufenden Partie zusätzlich vor Überschreiben.
+    const settings = { ...st.settings, startScore: cfg.startScore, bestOf: cfg.bestOf, unit: 'legs' as const, doubleOut: cfg.outMode !== 'single', outMode: cfg.outMode, doubleIn: cfg.doubleIn };
+    try { localStorage.removeItem(LS.live); } catch { /* ignore */ }
+    set({ tournaments, activeTournamentId: t.id, gamePlayers, gameMode: 'single', allThrows: [], input: '', screen: 'counter', settings, startOffset: 0, pendingStart: true, bullMode: false, spinPick: null, matchSaved: false, freePlay: false, gameLink: null, gameTournament: { tournamentId: t.id, matchId, homeId: m.homeId, awayId: m.awayId }, hint: null, finishPrompt: null, abortConfirm: false });
+    // Server robust aktualisieren (mehrere Boards gleichzeitig): frisch lesen → nur diese Partie live setzen.
+    void syncTournamentMatch(get, set, t.id, matchId, (mm) => ({ ...mm, status: 'live' as const, board: brd }));
+  },
+  leaveTournamentMatch() {
+    const st = get();
+    const link = st.gameTournament;
+    let tournaments = st.tournaments;
+    // NUR bei echtem Abbruch (kein Ergebnis gespeichert) die Partie zurück auf „pending" — NICHT anhand des
+    // lokalen Status, der durch einen Realtime-Reload verfälscht sein könnte. matchSaved ist die verlässliche
+    // Quelle: bei Sieg hat saveMatch das Ergebnis verbucht (matchSaved=true) → hier niemals zurücksetzen.
+    if (link && !st.matchSaved) {
+      const t = st.tournaments.find((x) => x.id === link.tournamentId);
+      const m = t ? tMatchById(t, link.matchId) : undefined;
+      if (t && m && m.status !== 'done') {
+        const t2: Tournament = { ...t, matches: t.matches.map((x) => x.id === m.id ? { ...x, status: 'pending' as const, board: undefined } : x) };
+        tournaments = st.tournaments.map((x) => x.id === t.id ? t2 : x); // optimistisch
+        void syncTournamentMatch(get, set, t.id, m.id, (mm) => ({ ...mm, status: 'pending' as const, board: undefined }));
+      }
+    }
+    try { localStorage.removeItem(LS.live); } catch { /* ignore */ }
+    // Board-Konto → zurück in die Board-Ansicht (dort blendet das Overlay die nächste zugewiesene Partie ein);
+    // alle anderen (Operator/Lokal) → Turnier-Dashboard.
+    const me = st.accounts.find((a) => a.id === st.session) || null;
+    const isBoardAcct = st.settings.appMode === 'verein' && !!me?.isBoard && me?.boardNumber != null;
+    set({ tournaments, allThrows: [], input: '', matchSaved: false, pendingStart: false, bullMode: false, spinPick: null, abortConfirm: false, hint: null, finishPrompt: null, gameTournament: null, screen: isBoardAcct ? 'setup' : 'tournament', activeTournamentId: link ? link.tournamentId : st.activeTournamentId });
+  },
+  deleteTournament(id) {
+    const st = get();
+    const tournaments = st.tournaments.filter((t) => t.id !== id);
+    persist(st, set, LS.tournaments, tournaments, (p) => p.deleteRecord('tournaments', id));
+    set({ tournaments, activeTournamentId: st.activeTournamentId === id ? null : st.activeTournamentId });
+  },
+  tournamentExit() { set({ tournamentSetup: null, screen: 'training' }); },
+
   // ── counter ──
   goSetup(preset) { set((st) => ({ screen: 'setup', setup: { ...st.setup, ...(preset || {}) } })); },
   setSetup(key, val) {
@@ -2151,7 +2307,7 @@ export const useStore = create<AppState>((set, get) => ({
     const settings = { ...st.settings, startScore: su.startScore, bestOf: su.bestOf, bestOfSets: su.bestOfSets, unit: su.unit, doubleOut: su.doubleOut, outMode: su.outMode, doubleIn: su.doubleIn };
     persistSettings(st, set, settings);
     try { localStorage.removeItem(LS.live); } catch { /* ignore */ }
-    set({ gamePlayers, gameMode: su.mode, allThrows: [], input: '', screen: 'counter', settings, startOffset: 0, pendingStart: true, bullMode: false, spinPick: null, matchSaved: false, freePlay: !!su.freePlay, gameLink: su.link || null, hint: null, finishPrompt: null, abortConfirm: false });
+    set({ gamePlayers, gameMode: su.mode, allThrows: [], input: '', screen: 'counter', settings, startOffset: 0, pendingStart: true, bullMode: false, spinPick: null, matchSaved: false, freePlay: !!su.freePlay, gameLink: su.link || null, gameTournament: null, hint: null, finishPrompt: null, abortConfirm: false });
   },
   quickStart(preset) {
     // Schnellstart = normales, gewertetes Spiel: Gast-Namen, Freies-Spiel & Liga-Verknüpfung zurücksetzen.
@@ -2199,7 +2355,12 @@ export const useStore = create<AppState>((set, get) => ({
     else set({ screen: 'dashboard' });
   },
   abortGame() { set({ abortConfirm: true }); },
-  confirmAbort() { try { localStorage.removeItem(LS.live); } catch { /* ignore */ } set({ abortConfirm: false, allThrows: [], input: '', matchSaved: false, screen: 'dashboard', hint: null, finishPrompt: null }); },
+  confirmAbort() {
+    // Turnierpartie abgebrochen → Partie zurück auf „pending" und zurück ins Turnier (statt Dashboard).
+    if (get().gameTournament) { get().leaveTournamentMatch(); return; }
+    try { localStorage.removeItem(LS.live); } catch { /* ignore */ }
+    set({ abortConfirm: false, allThrows: [], input: '', matchSaved: false, screen: 'dashboard', hint: null, finishPrompt: null });
+  },
   cancelAbort() { set({ abortConfirm: false }); },
   apply(score, darts) {
     const st = get();
@@ -2296,7 +2457,11 @@ export const useStore = create<AppState>((set, get) => ({
     set({ allThrows, input: '' });
     persistLive(get);
   },
-  newMatch() { get().requestNew({ kind: 'setup' }); },
+  newMatch() {
+    // In einer Turnierpartie führt „Neu" zurück ins Turnier (kein freies Neu-Spiel mitten im Spielplan).
+    if (get().gameTournament) { get().leaveTournamentMatch(); return; }
+    get().requestNew({ kind: 'setup' });
+  },
   requestNew(action) {
     const st = get();
     const slice: CounterSlice = { gamePlayers: st.gamePlayers, allThrows: st.allThrows, startOffset: st.startOffset, settings: st.settings };
@@ -2377,6 +2542,67 @@ function recordTrainingResult(get: () => AppState, set: SetFn, g: TrainGame) {
     }
   } else {
     write(LS.players, players);
+  }
+}
+// Turnier-Partie ist zu Ende → Ergebnis (Legs, Sieger, Statistik) aus der Counter-Engine ableiten und
+// ins Turnier zurückschreiben. Kein globaler Match-Eintrag (wie beim Training); die Auswertung lebt im Turnier.
+function recordTournamentResult(get: () => AppState, set: SetFn) {
+  const st = get();
+  const link = st.gameTournament; if (!link) return;
+  const t = st.tournaments.find((x) => x.id === link.tournamentId); if (!t) return;
+  const slice: CounterSlice = { gamePlayers: st.gamePlayers, allThrows: st.allThrows, startOffset: st.startOffset, settings: st.settings };
+  const prog = cProgress(slice);
+  const homeLegs = prog.legsSet[1] || 0;
+  const awayLegs = prog.legsSet[2] || 0;
+  const winnerId = prog.winnerId === 1 ? link.homeId : link.awayId;
+  const mkStat = (slot: 1 | 2): TournamentPlayerStat => {
+    const fs = cFinishStats(slice, slot);
+    return {
+      legsWon: prog.legsSet[slot] || 0,
+      avg3: cAverage(slice, slot),
+      c180: countAtLeast(slice, slot, 180, true),
+      c140: countAtLeast(slice, slot, 140),
+      c100: countAtLeast(slice, slot, 100),
+      highFinish: fs.hf,
+      co: fs.co,
+      shortLegDarts: cShortLegDarts(slice, slot),
+    };
+  };
+  const result: TournamentMatchResult = {
+    homeLegs, awayLegs, winnerId,
+    stats: { [link.homeId]: mkStat(1), [link.awayId]: mkStat(2) },
+  };
+  const t2 = tSetMatchResult(t, link.matchId, result);
+  set({ tournaments: st.tournaments.map((x) => x.id === t.id ? t2 : x) }); // optimistisch für sofortige UI
+  // Server robust (mehrere Boards): frisch lesen → nur diese Partie als erledigt mit Ergebnis mergen.
+  void syncTournamentMatch(get, set, t.id, link.matchId, (mm) => ({ ...mm, status: 'done' as const, result }));
+}
+// Aktualisiert EINE Turnier-Partie robust auch bei mehreren gleichzeitigen Board-PCs: im Vereinsmodus wird
+// der Datensatz FRISCH vom Server gelesen, nur die eine Partie gemergt und zurückgeschrieben — statt den ganzen
+// (evtl. veralteten) lokalen Blob zu überschreiben. Sonst könnte ein Board das gerade erst geschriebene
+// Ergebnis eines anderen Boards wieder überschreiben. Lokal: direkt im localStorage-Array.
+async function syncTournamentMatch(
+  get: () => AppState, set: SetFn, tournamentId: string, matchId: string,
+  update: (m: TournamentMatch) => TournamentMatch,
+) {
+  const st = get();
+  const applyTo = (t: Tournament): Tournament => {
+    const matches = t.matches.map((m) => (m.id === matchId ? update(m) : m));
+    return { ...t, matches, status: matches.every((m) => m.status === 'done') ? 'done' : 'running' };
+  };
+  if (st.provider.mode === 'verein') {
+    try {
+      const fresh = await st.provider.getRecord('tournaments', tournamentId);
+      if (!fresh) return;
+      const t2 = applyTo(fresh as unknown as Tournament);
+      await st.provider.updateRecord('tournaments', tournamentId, t2 as unknown as ProviderRecord);
+      // frischen Server-Stand lokal übernehmen (get() erneut lesen, da zwischenzeitlich ein Reload lief).
+      set({ tournaments: get().tournaments.map((x) => (x.id === tournamentId ? t2 : x)) });
+    } catch (e) { console.error('[sync]', e); set({ syncError: dict().storeMsg.errChangeSave }); }
+  } else {
+    const tournaments = get().tournaments.map((t) => (t.id === tournamentId ? applyTo(t) : t));
+    write(LS.tournaments, tournaments);
+    set({ tournaments });
   }
 }
 function persistSettings(st: AppState, set: SetFn, settings: Settings) {
@@ -2523,6 +2749,12 @@ async function applySnapshot(get: () => AppState, set: SetFn) {
     const curRec = cur as unknown as Record<string, unknown>;
     const mergedRec = merged as unknown as Record<string, unknown>;
     for (const k of DEVICE_LOCAL_SETTING_KEYS) mergedRec[k as string] = curRec[k as string];
+    // Läuft gerade eine Partie (Counter)? Dann die SPIELENTSCHEIDENDEN Einstellungen nicht vom Server
+    // übernehmen — sonst kippt z. B. Best-of/Startpunkte mitten im Spiel (Turnier- oder Board-Partie,
+    // ausgelöst durch einen Realtime-Reload eines anderen Geräts).
+    if (get().screen === 'counter') {
+      for (const k of ['startScore', 'bestOf', 'bestOfSets', 'unit', 'outMode', 'doubleOut', 'doubleIn']) mergedRec[k] = curRec[k];
+    }
     merged.appMode = 'verein';
     // Live-Farben passend zum (gerätelokalen) Hell/Dunkel-Modus ableiten.
     const lightMode = merged.mode === 'light';
@@ -2545,7 +2777,7 @@ async function applySnapshot(get: () => AppState, set: SetFn) {
       players: withDefaultPlayers(snap.players), teams: snap.teams, accounts: snap.accounts,
       leagues: sortLeaguesByOrder(snap.leagues), events: snap.events, matches: snap.matches,
       seasons, seasonSnapshots: snap.seasonSnapshots || [], activeSeasonId, viewSeasonId,
-      trainingPlays: snap.trainingPlays, syncError: null,
+      tournaments: snap.tournaments || [], trainingPlays: snap.trainingPlays, syncError: null,
     });
   } catch (e) {
     console.error('[load]', e);
@@ -2581,6 +2813,13 @@ function completeCheckout(get: () => AppState, set: (p: Partial<AppState>) => vo
 }
 function saveMatch(get: () => AppState, set: (p: Partial<AppState>) => void) {
   const st = get();
+  // Turnier-Partie: Ergebnis ins Turnier zurückschreiben (kein globaler Match-Eintrag, wie beim Training).
+  if (st.gameTournament) {
+    recordTournamentResult(get, set);
+    try { localStorage.removeItem(LS.live); } catch { /* ignore */ }
+    set({ matchSaved: true });
+    return;
+  }
   // Freies Spiel: nichts speichern, nur den laufenden Spielstand verwerfen und als „erledigt" markieren.
   if (st.freePlay) {
     try { localStorage.removeItem(LS.live); } catch { /* ignore */ }

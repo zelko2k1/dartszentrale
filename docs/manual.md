@@ -328,7 +328,47 @@ current match(es) — one board full-screen, several as tiles.
 
 ---
 
-## 12. Settings
+## 12. X01 Tournament ("Round Robin")
+
+A **training game** for a whole club night: an X01 tournament in **round-robin** format
+(everyone vs everyone) for **3 to 8 players**, with a **final table**. Found in the **Training**
+tab at the very top — the golden tile **"X01 – Jeder gegen Jeden"** (X01 Round Robin).
+
+**Creating a tournament (setup):**
+
+1. Give it a **name** (e.g. "Club night").
+2. Pick the **players**: **3–8**.
+3. Set the **game mode**: start score **301/501/701/1001**, **checkout mode** (Single / Double /
+   Master Out), **Double In** (hint only), **legs per match** (Best of 1/3/5/7).
+4. **Boards**: how many boards play at the same time (up to ⌊players ÷ 2⌋).
+5. **"Start tournament"** generates the full **schedule** automatically (everyone vs everyone,
+   split into rounds).
+
+**The tournament dashboard** shows three things side by side:
+
+- **Schedule** by rounds — each match with a "Play" button, live score, or result.
+- **Table** — sorted by **wins**, then leg difference (2 points per win).
+- **Highlights** — **180s**, **short legs** and **high finishes** across all matches.
+
+A match is played in the normal **Darts Counter** (checkout suggestions, stats, etc.); afterwards
+you return to the tournament automatically, the result is **recorded**, and the table updates.
+Once all matches are played, the dashboard crowns the **winner** 🏆.
+
+**Multiple boards at once (club mode):** With more than one board and enough **board PCs** ready
+(see *Board/Kiosk Mode*), matches run **in parallel**:
+
+- Each board PC shows its **assigned next match** by itself ("Start match") — the boards
+  automatically get **different** pairings with no shared player.
+- The match appears at the board like a league match (and on the **phone remote** / **spectator TV**).
+- When it ends, the board advances to the **next** free match on its own, and the organiser's
+  dashboard **updates live** — no reload needed.
+
+> Tournament results stay **inside the tournament** (like the other training games) and do **not**
+> feed the general match statistics. Reach past/running tournaments via the golden tile → **"Turniere"**.
+
+---
+
+## 13. Settings
 
 The settings are organized into tabs (including **Usage mode · Input & Keys ·
 Appearance · Aids & Display · Lists · Data**):
@@ -350,7 +390,7 @@ Appearance · Aids & Display · Lists · Data**):
 
 ---
 
-## 13. Operations: Backups, Passwords, Updates
+## 14. Operations: Backups, Passwords, Updates
 
 As a self-hoster you're also the operator. Keep an eye on three things regularly:
 
@@ -380,7 +420,7 @@ PocketBase version deliberately (pin a fixed version instead of `:latest`).
 
 ---
 
-## 14. Small FAQ
+## 15. Small FAQ
 
 **I can't see "Leagues/Teams/Users".** You're in **local mode** or don't have
 the required role. Check the mode in Settings; administration requires admin
