@@ -22,11 +22,12 @@ g.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListen
 // dynamisch (nach dem Shim) geladen
 let useStore: typeof import('../store/useStore')['useStore'];
 let applyRemoteCommand: typeof import('./liveHost')['applyRemoteCommand'];
+let projectLiveState: typeof import('./liveHost')['projectLiveState'];
 let DEFAULT_SETTINGS: typeof import('../data/seed')['DEFAULT_SETTINGS'];
 
 beforeAll(async () => {
   ({ useStore } = await import('../store/useStore'));
-  ({ applyRemoteCommand } = await import('./liveHost'));
+  ({ applyRemoteCommand, projectLiveState } = await import('./liveHost'));
   ({ DEFAULT_SETTINGS } = await import('../data/seed'));
 });
 
@@ -88,6 +89,25 @@ describe('applyRemoteCommand → echte Store-Mutation', () => {
     applyRemoteCommand(cmd('starter', { idx: 1 }));
     expect(useStore.getState().startOffset).toBe(1);
     expect(useStore.getState().pendingStart).toBe(false);
+  });
+
+  it('startGame: startet vom Leerlauf aus ein Spiel → Phase whoBegins (Handy kann Anwurf wählen)', () => {
+    // Board im Leerlauf: Spielerpool vorhanden, aber kein laufendes Spiel (screen ≠ counter).
+    useStore.setState({
+      players: [
+        { id: 'p1', name: 'Alice', short: 'AL', avi: 0 },
+        { id: 'p2', name: 'Bob', short: 'BO', avi: 0 },
+      ],
+      setup: { ...useStore.getState().setup, mode: 'single', p1: 0, p2: 1, p1Guest: '', p2Guest: '', link: null },
+      screen: 'dashboard', gamePlayers: [], allThrows: [], pendingStart: false,
+    } as Partial<ReturnType<typeof useStore.getState>>);
+    applyRemoteCommand(cmd('startGame'));
+    const st = useStore.getState();
+    expect(st.screen).toBe('counter');
+    expect(st.pendingStart).toBe(true);
+    expect(st.gamePlayers.length).toBe(2);
+    // Die Live-Projektion muss whoBegins liefern — nur dann zeigt das Handy die Anwurf-Auswahl.
+    expect(projectLiveState(st).phase).toBe('whoBegins');
   });
 
   it('unbekannter Befehl: wird ignoriert (kein Wurf)', () => {

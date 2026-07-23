@@ -20,6 +20,11 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
   gibt es nur gerätelokal (kein Datensatz auf dem Server), der Bestwert wurde aber trotzdem an den
   Server geschickt und lief ins Leere. Ihre Bestwerte werden jetzt korrekt nur lokal geführt; die
   Meldung bleibt aus. Betrifft ebenso das Bearbeiten dieser beiden Spieler.
+- **Fernbedienung: „Neues Spiel starten" wirkte im Leerlauf nicht.** Lief am Board gerade kein Spiel,
+  zeigte das Handy zwar den Knopf „Neues Spiel starten", ein Tippen schickte das Board aber nur zur
+  Spieler-Auswahl — es startete kein Spiel, und das Handy blieb im Leerlauf hängen. Jetzt beginnt der
+  Knopf direkt ein Spiel mit der aktuellen Aufstellung; das Board fragt „Wer beginnt?", was am Handy
+  ausgewählt und dann gespielt werden kann. Ganz ohne das Board anzufassen.
 
 ### Geändert
 - **Fernbedienung am Handy:** Die Bedienoberfläche passt sich jetzt auf jedes Handy ein — sie füllt

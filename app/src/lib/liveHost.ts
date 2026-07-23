@@ -50,6 +50,10 @@ export function applyRemoteCommand(cmd: LiveCommand): void {
       break;
     case 'nav': if (typeof p.to === 'string') st.go(p.to as MainState['screen']); break;
     case 'newGame': st.newMatch(); break;
+    // Vom Handy im Leerlauf „Neues Spiel starten": direkt ein Spiel mit der aktuellen Board-Aufstellung
+    // beginnen (Board → Phase whoBegins, die das Handy bedienen kann). newMatch() würde nur zur
+    // Spieler-Auswahl am Board navigieren und das Handy im Leerlauf hängen lassen.
+    case 'startGame': st.startGame(); break;
     case 'startPreset': st.startPreset((p.preset ?? {}) as Parameters<MainState['startPreset']>[0]); break;
     case 'confirmNew': st.confirmNew(); break;
     case 'cancelNew': st.cancelNew(); break;

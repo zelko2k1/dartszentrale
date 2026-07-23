@@ -296,7 +296,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
       {phase === 'idle' && (
         <>
           <div style={{ textAlign: 'center', color: '#9aa4ad', fontSize: 14, lineHeight: 1.5 }}>Am Board läuft gerade kein Spiel.</div>
-          <button className="rc-primary" style={{ padding: '15px 18px' }} onClick={() => send('newGame')}>Neues Spiel starten</button>
+          <button className="rc-primary" style={{ padding: '15px 18px' }} onClick={() => send('startGame')}>Neues Spiel starten</button>
         </>
       )}
     </div>
