@@ -888,7 +888,7 @@ export const de = {
     closerBull: 'war näher am Bull',
     backArrow: '← Zurück',
     matchWon: 'Match gewonnen',
-    toDashboard: 'Zum Dashboard',
+    toDashboard: 'Dashboard',
     rematch: 'Revanche',
   },
 

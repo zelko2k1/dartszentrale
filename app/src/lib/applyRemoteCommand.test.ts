@@ -147,6 +147,17 @@ describe('applyRemoteCommand → echte Store-Mutation', () => {
     expect(names[1]).not.toBe('Anna');
   });
 
+  it('finishPrompt wird ans Handy projiziert (Finish-Dart-Abfrage sichtbar machen)', () => {
+    newGameState({ finishPrompt: { playerId: 'a', score: 40, minDarts: 2 } });
+    expect(projectLiveState(useStore.getState()).finish).toEqual({ minDarts: 2 });
+  });
+
+  it('finishCancel: nimmt die Finish-Dart-Abfrage zurück (Aktion greift vom Handy)', () => {
+    newGameState({ finishPrompt: { playerId: 'a', score: 40, minDarts: 1 } });
+    applyRemoteCommand(cmd('finishCancel'));
+    expect(useStore.getState().finishPrompt).toBeNull();
+  });
+
   it('unbekannter Befehl: wird ignoriert (kein Wurf)', () => {
     applyRemoteCommand(cmd('bogus'));
     expect(useStore.getState().allThrows.length).toBe(0);

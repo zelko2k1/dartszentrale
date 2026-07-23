@@ -280,13 +280,28 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
   );
 
   const footer = (
-    <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', gap: 18 }}>
-      <button onClick={() => send('newGame')} style={{ background: 'none', border: 'none', color: '#6b747c', fontSize: 12 }}>Neues Spiel</button>
-      <button onClick={() => send('abort')} style={{ background: 'none', border: 'none', color: '#6b747c', fontSize: 12 }}>Abbruch</button>
+    <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', gap: 10, height: 'clamp(38px,5.5vh,48px)' }}>
+      <button className="rc-ghost" style={{ flex: 1, maxWidth: 200, fontSize: 14, fontWeight: 700 }} onClick={() => send('newGame')}>Neues Spiel</button>
+      <button className="rc-ghost" style={{ flex: 1, maxWidth: 200, fontSize: 14, fontWeight: 700 }} onClick={() => send('abort')}>Abbruch</button>
     </div>
   );
 
   const errLine = err && <div style={{ flexShrink: 0, color: ACCENT, fontWeight: 700, textAlign: 'center', fontSize: 13 }}>{err}</div>;
+
+  // Finish-Dart-Abfrage: erscheint auch am Handy (nicht mehr nur am Board), sobald der Checkout ohne
+  // bekannte Dartzahl fällt. Deckt die Konsole als Modal ab; 1/2/3 unterhalb der Mindestzahl gesperrt.
+  const finishOverlay = st?.finish && (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.92)', backdropFilter: 'blur(3px)', zIndex: 50, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18, padding: 24, textAlign: 'center' }}>
+      <div style={{ fontSize: 19, fontWeight: 800, color: '#e9edf1' }}>Mit welchem Dart beendet?</div>
+      <div style={{ display: 'flex', gap: 12 }}>
+        {[1, 2, 3].map((d) => {
+          const off = d < (st.finish?.minDarts ?? 1);
+          return <button key={d} className="rc-key" disabled={off} style={{ width: 80, height: 80, fontSize: 32, opacity: off ? 0.3 : 1 }} onClick={() => !off && send('finishDart', { d })}>{d}</button>;
+        })}
+      </div>
+      <button className="rc-ghost" style={{ padding: '11px 22px' }} onClick={() => send('finishCancel')}>Zurück</button>
+    </div>
+  );
 
   // Nicht-Spiel-Phasen (Starterwahl, Sieg, Leerlauf): mittig, scrollt notfalls.
   const phasePanel = (
@@ -300,7 +315,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
           ))}
           <div style={{ display: 'flex', gap: 10 }}>
             <button className="rc-ghost" style={{ flex: 1, padding: '12px 0' }} onClick={() => send('starter', { mode: 'bull' })}>Bull-Off</button>
-            <button className="rc-ghost" style={{ flex: 1, padding: '12px 0' }} onClick={() => send('starter', { mode: 'draw' })}>Losen</button>
+            <button className="rc-ghost" style={{ flex: 1, padding: '12px 0' }} onClick={() => send('starter', { mode: 'draw' })}>Zufall</button>
           </div>
         </>
       )}
@@ -345,6 +360,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
             {actionRow}
           </div>
         </div>
+        {finishOverlay}
       </div>
     );
   }
@@ -353,6 +369,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
     <div className="rc-root">{style}
       {header}
       {takeoverBar}
+      {finishOverlay}
       {playing ? (
         <>
           {scorePanel}
@@ -433,7 +450,7 @@ function StartMenu({ onStart }: { onStart: (sel: RemoteStartSelection) => void }
           </div>
           {chevron}
         </button>
-        <button className="rc-primary" style={{ padding: '15px 18px', marginTop: 4 }} onClick={start}>Neues Spiel starten</button>
+        <button className="rc-primary" style={{ padding: '15px 18px', marginTop: 4 }} onClick={start}>Spiel starten</button>
       </div>
 
       {(picker === 'p1' || picker === 'p2') && (

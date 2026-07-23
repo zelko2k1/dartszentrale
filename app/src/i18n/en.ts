@@ -850,7 +850,7 @@ export const en: Dict = {
     closerBull: 'was closer to the bull',
     backArrow: '← Back',
     matchWon: 'Match won',
-    toDashboard: 'To dashboard',
+    toDashboard: 'Dashboard',
     rematch: 'Rematch',
   },
 

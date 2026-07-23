@@ -56,6 +56,7 @@ export interface LiveViewState {
   checkout: string[];                             // Checkout-Vorschlag des aktuellen Spielers
   lastThrow?: { player: number; value: number } | null;
   winner?: string | null;                         // bei phase="won"
+  finish?: { minDarts: number } | null;           // Finish-Dart-Abfrage offen → Handy zeigt 1/2/3
 }
 /** Eine Live-Session (ein Board). remoteUser = aktuell gekoppeltes Handy, pendingRemote = Übernahme-Anfrage. */
 export interface LiveSession {

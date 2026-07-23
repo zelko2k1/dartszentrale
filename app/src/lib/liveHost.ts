@@ -43,6 +43,8 @@ export function applyRemoteCommand(cmd: LiveCommand): void {
     case 'restClose': st.closeRestEntry(); break;
     case 'restSubmit': st.submitRestEntry(String(p.rem ?? '')); break;
     case 'undo': st.undo(); break;
+    case 'finishDart': st.resolveFinish(num(p.d)); break;   // Finish-Dart-Abfrage am Handy: 1/2/3
+    case 'finishCancel': st.cancelFinish(); break;          // Fehleingabe → Abfrage zurücknehmen
     case 'starter':
       if (p.mode === 'bull') st.openBullOff();
       else if (p.mode === 'draw') st.spinStarter();

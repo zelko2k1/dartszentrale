@@ -13,6 +13,7 @@ export interface ProjectableState {
   screen: Screen;
   input: string;
   pendingStart: boolean;
+  finishPrompt?: { playerId: string | number; score: number; minDarts: number } | null;
 }
 
 export function projectLiveState(st: ProjectableState): LiveViewState {
@@ -49,5 +50,6 @@ export function projectLiveState(st: ProjectableState): LiveViewState {
     checkout: co ? co.split(/\s+/).filter(Boolean) : [],
     lastThrow: null,
     winner: w?.name ?? null,
+    finish: st.finishPrompt ? { minDarts: st.finishPrompt.minDarts } : null,
   };
 }

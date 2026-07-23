@@ -14,6 +14,16 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
   Startpunkte 301/501/701/1001, Out-Modus Double/Master/Single, Double-In, Best of Legs/Sets). „Neues
   Spiel starten" beginnt damit direkt; den Anwurf („Wer beginnt?", inkl. Ausbullen) wählt man wie
   gehabt am Handy. Damit verschwinden auch die früheren Demo-Platzhalter aus der Leerlauf-Ansicht.
+- **Finish-Dart-Abfrage auch am Handy.** Fällt ein Checkout, bei dem die Dartzahl mehrdeutig ist
+  („Mit welchem Dart beendet?"), erschien die Abfrage bisher nur am Board — ohne Tastatur am Board
+  ließ sich das Spiel vom Handy nicht sauber abschließen. Jetzt erscheint sie auch auf der
+  Fernbedienung (1/2/3, unterhalb der möglichen Mindestzahl gesperrt, „Zurück" nimmt zurück).
+
+### Geändert
+- **Fernbedienung, kleinere Verbesserungen:** „Neues Spiel starten" heißt im Startmenü jetzt kurz
+  „Spiel starten"; die Anwurf-Option „Losen" heißt „Zufall" (einheitlich zum Board); die Knöpfe
+  „Neues Spiel" und „Abbruch" während des Spiels sind größer und besser lesbar. Der Knopf „Zum
+  Dashboard" nach Spielende heißt überall nur noch „Dashboard".
 
 ### Behoben
 - **Trainings-Bestwerte im Vereinsmodus** ließen sich nicht speichern — nach jedem Trainingsspiel
