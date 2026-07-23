@@ -254,6 +254,11 @@ locally on `127.0.0.1:8090`). `PB_SU_EMAIL`/`PB_SU_PASS` = the superuser account
   PB_URL=http://127.0.0.1:8090 PB_SU_EMAIL=<su-email> PB_SU_PASS=<su-pw> \
   node add-board-account.mjs
   ```
+- **Launch a board PC as a kiosk:** the club packages include `board-kiosk-chrome` /
+  `board-kiosk-firefox` scripts (Windows `.bat`, Linux `.sh`) that open the browser on the board in
+  **full-screen kiosk** on the app address (`https://app.yourdomain.com`) and set up **autostart at
+  sign-in** (run once per board PC, the script asks for the address). Since board accounts stay signed
+  in across restarts: **power on → ready to play**. Leave the kiosk with Alt+F4.
 - **Reset an app password** (someone locked themselves out):
   ```bash
   USER_EMAIL=<email> NEW_PW=<min-8-chars> \

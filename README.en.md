@@ -130,6 +130,12 @@ Turns a PC at the board into a **self-sufficient match computer** — ideal for 
 - **When it is shown:** within a configurable **window** around the matchday (matchday only up to ±3 days) — or immediately via **“send to the boards now”**.
 - **Readable from a distance:** dedicated **board zoom** for long viewing distances.
 - **Add devices via QR:** a QR code shows the **server address** — tablets/phones scan it, a board PC saves it as a kiosk bookmark; then sign in on the device with its **board account**.
+- **Board kiosk autostart:** ready-made scripts (`board-kiosk-chrome` / `board-kiosk-firefox`, Windows & Linux) open the app in **full-screen kiosk** automatically at sign-in. Since **board accounts stay signed in across restarts** (other accounts don't), that means: **power on → ready to play**.
+
+### 📲 Phone remote & live TV (club mode only)
+
+- **Phone as a remote control:** pair a smartphone to a board via **QR code** (or a manual code) and take over **score entry and navigation** from there — including a **start menu** (pick players from the roster + game mode and **start the game**), the throw-off (who starts · bull-off) and the **finish-dart prompt** on the phone. Exactly one “scorer” per board; a takeover by another phone must be confirmed.
+- **Login-free live TV:** a secret link (`#/watch/<token>`) shows the running match on a screen in the next room — several boards as a tiled overview, otherwise full-screen. Shows **only board name + score**, club-wide on/off (**off by default** for internet operation), link rotatable.
 
 ### 📅 Calendar
 - Monthly view with colour-coded event types (training, league match, club, cup, friendly, other)

@@ -279,6 +279,48 @@ Einstellungen**, keine Verwaltung.
 > Board-Passwörter regelmäßig wechseln (Skript erneut ausführen) und nie an den Brettern
 > notieren.
 
+**Board startet von selbst (optional):** Damit ein Board-PC beim Einschalten direkt spielbereit ist,
+liegen in den Vereins-Paketen Autostart-Skripte, die den Browser im **Vollbild-Kiosk** auf die
+App-Adresse öffnen — `board-kiosk-chrome` / `board-kiosk-firefox` (Windows als `.bat`, Linux als `.sh`).
+Einmal pro Board-PC ausführen (das Skript fragt die App-Adresse). Zusammen mit der **dauerhaften
+Board-Anmeldung** (nur Board-Konten bleiben über einen Neustart eingeloggt — Admin-/Spieler-Logins
+**nicht**) heißt das: **einschalten → sofort spielbereit**, ohne erneutes Anmelden. Kiosk verlassen:
+Alt+F4.
+
+### Handy als Fernbedienung
+
+Läuft ein Board im Kiosk-Modus, lässt es sich von einem **Handy** steuern — praktisch, wenn Maus/
+Tastatur am Board ausfallen, oder einfach als bequeme Bedienung vom Sitzplatz.
+
+- Am Board **Einstellungen** öffnen (Kiosk-Tab): Das Panel **„Handy als Fernbedienung koppeln"** zeigt
+  einen **QR-Code** und einen kurzen **Kopplungscode**.
+- Ein Vereinsmitglied **scannt den QR** oder öffnet **`<board-adresse>/#/remote`** am Handy und **tippt
+  den Code** → das Handy wird zum **Anschreiber**: Zifferntastatur, Schnellscores, Undo und Navigation.
+  Dabei meldet man sich mit einem **Vereinskonto** an (nur ein Vereinskonto darf ein Board steuern).
+- **Startmenü:** Läuft gerade kein Spiel, zeigt das Handy ein kompaktes **„Neues Spiel"-Menü** — Spieler
+  aus dem Kader wählen und den **Spielmodus** einstellen (Startpunkte 301/501/701/1001, Out-Modus, Best
+  of), dann **„Spiel starten"**. Den Anwurf („Wer beginnt?", inkl. Ausbullen) wählt man ebenfalls am
+  Handy. Ein Spiel muss also **nicht** erst am Board gestartet werden.
+- **Finish-Dart-Abfrage:** Fällt ein Checkout mit mehrdeutiger Dartzahl, erscheint „Mit welchem Dart
+  beendet?" (1/2/3) auch am Handy — so lässt sich ein Spiel ganz ohne Board-Tastatur sauber abschließen.
+- Immer nur **ein** Handy steuert ein Board. Will ein zweites übernehmen, muss das **aktuelle** Handy
+  bestätigen. (Der QR bleibt gültig, auch wenn das Board zwischendurch neu geladen hat.)
+- Die ganze Funktion an-/ausschalten unter **Einstellungen → Board-Rechner → „Handy als Fernbedienung"**
+  (vereinsweit, standardmäßig an). Nur im Board-/Vereinsmodus.
+
+### Öffentlicher Zuschauer-TV (ohne Anmeldung)
+
+Für einen Bildschirm im Nebenraum gibt es einen **login-freien** Zuschauer-Link, der das/die laufende(n)
+Spiel(e) zeigt — ein Board im Vollbild, mehrere als Kacheln.
+
+- Einschalten unter **Einstellungen → Board-Rechner → „Öffentlicher Zuschauer-TV"** (**standardmäßig
+  aus** — bewusst, damit im Internet nichts öffentlich ist, solange du es nicht aktivierst). Du bekommst
+  einen **geheimen Link + QR** für den TV/Nebenraum-Bildschirm.
+- Der Link zeigt **nur** Boardname und Spielstand — keine persönlichen Daten, und der Kopplungscode
+  eines Boards wird nie preisgegeben.
+- **„Neu generieren"** rotiert den Link (alte Links sind sofort ungültig). Den Schalter auszuschalten
+  ist ein sofortiger Not-Aus. Im Internet HTTPS verwenden.
+
 ---
 
 ## 12. Einstellungen

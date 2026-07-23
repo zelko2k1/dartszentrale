@@ -254,6 +254,11 @@ lokal auf `127.0.0.1:8090`). `PB_SU_EMAIL`/`PB_SU_PASS` = das beim Setup gewähl
   PB_URL=http://127.0.0.1:8090 PB_SU_EMAIL=<su-mail> PB_SU_PASS=<su-pw> \
   node add-board-account.mjs
   ```
+- **Board-PC als Kiosk starten:** In den Vereins-Paketen liegen Skripte `board-kiosk-chrome` /
+  `board-kiosk-firefox` (Windows `.bat`, Linux `.sh`), die den Browser am Board im **Vollbild-Kiosk**
+  auf die App-Adresse (`https://app.deinedomain.de`) öffnen und **Autostart beim Anmelden** einrichten
+  (einmal pro Board-PC ausführen, das Skript fragt die Adresse). Da Board-Konten über Neustarts
+  angemeldet bleiben: **einschalten → sofort spielbereit**. Kiosk verlassen: Alt+F4.
 - **App-Passwort zurücksetzen** (jemand hat sich ausgesperrt):
   ```bash
   USER_EMAIL=<mail> NEW_PW=<min-8-zeichen> \

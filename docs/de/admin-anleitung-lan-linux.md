@@ -60,7 +60,7 @@ ersten Mal**. **Fenster offen lassen; beenden mit Strg+C.**
 ## 2. Andere Bretter & Tablets anbinden
 
 Die App ist im Netz unter **`http://<server-ip>:8090`** erreichbar.
-- **Board-PC:** diese Adresse als **Lesezeichen / Kiosk-Verknüpfung** anlegen.
+- **Board-PC:** diese Adresse als **Lesezeichen** anlegen — oder bequem mit den mitgelieferten Skripten **`./board-kiosk-chrome.sh`** bzw. **`./board-kiosk-firefox.sh`** öffnen: sie starten den Browser im **Vollbild-Kiosk** auf die App-Adresse und richten **Autostart beim Anmelden** ein (einmal pro Board-PC ausführen, das Skript fragt die Adresse). Da Board-Konten angemeldet bleiben, heißt das **einschalten → sofort spielbereit**. Kiosk verlassen: Alt+F4.
 - **Tablet/Handy:** in der App unter *Einstellungen* den **Beitritts-QR** scannen.
 
 Mit dem jeweiligen Konto anmelden.

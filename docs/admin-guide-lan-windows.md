@@ -54,7 +54,7 @@ Every subsequent time, double-clicking `start-club-lan.bat` is all you need — 
 ## 2. Connecting other boards & tablets
 
 The app is reachable on the network at **`http://<server-ip>:8090`**.
-- **Board PC:** save this address as a **bookmark / kiosk shortcut**.
+- **Board PC:** save this address as a **bookmark** — or open it with the bundled **`board-kiosk-chrome.bat`** / **`board-kiosk-firefox.bat`** scripts: they launch the browser in **full-screen kiosk** on the app address and set up **autostart at sign-in** (double-click once per board PC, the script asks for the address). Since board accounts stay signed in, this means **power on → ready to play**. Leave the kiosk with Alt+F4.
 - **Tablet/phone:** in the app, go to *Settings* and scan the **join QR code**.
 
 Sign in with the appropriate account.

@@ -280,6 +280,14 @@ Settings**, no administration.
 > Rotate board passwords regularly (run the script again) and never write them
 > down at the boards.
 
+**Board starts on its own (optional):** so a board PC is ready to play the moment
+it powers on, the club packages include autostart scripts that open the browser in
+**full-screen kiosk** on the app address — `board-kiosk-chrome` / `board-kiosk-firefox`
+(Windows `.bat`, Linux `.sh`). Run once per board PC (it asks for the app address).
+Together with the **persistent board login** (only board accounts stay signed in
+across a restart — admin/player logins do **not**) this means: **power on → ready to
+play**, no signing in again. Leave the kiosk with Alt+F4.
+
 ### Phone as a Remote Control
 
 When a board runs in kiosk mode, it can be controlled from a **phone** — handy if
@@ -289,10 +297,19 @@ a board's mouse/keyboard fails, or simply because standing at the PC is awkward.
   Fernbedienung koppeln"** panel shows a **QR code** and a short **pairing code**.
 - A club member either **scans the QR**, or opens **`<board-address>/#/remote`** on
   the phone and **types the code** → the phone becomes the **scorer**: number pad,
-  quick scores, undo, and match navigation (pick starter, new game, etc.). The board
-  keeps showing everything. (Pair first, then start the match.)
+  quick scores, undo, and match navigation. Sign in with a **club account** (only a
+  club account may control a board).
+- **Start menu:** when no game is running, the phone shows a compact **"new game"
+  menu** — pick players from the roster and set the **game mode** (starting score,
+  out mode, best of), then **"Start game"**. The throw-off ("who starts?", incl.
+  bull-off) is chosen on the phone too. So a game does **not** have to be started at
+  the board first.
+- **Finish-dart prompt:** when a checkout has an ambiguous dart count, "finished with
+  which dart?" (1/2/3) appears on the phone as well — so a game can be closed cleanly
+  without a keyboard at the board.
 - Only **one** phone controls a board at a time. If a second phone wants to take
-  over, the **current** phone must confirm.
+  over, the **current** phone must confirm. (The QR stays valid even if the board
+  reloaded in the meantime.)
 - Toggle the whole feature under **Settings → Board computers → "Handy als
   Fernbedienung"** (club-wide, on by default). Board/club mode only.
 

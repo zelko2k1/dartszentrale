@@ -126,6 +126,12 @@ Macht aus einem PC am Board einen **selbstständigen Spiel-Rechner** — ideal f
 - **Wann es angezeigt wird:** in einem einstellbaren **Zeitfenster** um den Spieltag (nur Spieltag bis ±3 Tage) — oder sofort per **„Jetzt an die Boards senden"** (bzw. lokal „Jetzt anzeigen").
 - **Gut lesbar aus Distanz:** eigener **Board-Zoom** für große Leseabstände am Monitor.
 - **Geräte per QR hinzufügen:** Ein QR-Code zeigt die **Server-Adresse** — Tablet/Handy scannt ihn, der Board-PC legt sie als Kiosk-Lesezeichen an; danach meldet man sich am Gerät mit dem jeweiligen **Board-Konto** an.
+- **Board-Kiosk-Autostart:** Fertige Skripte (`board-kiosk-chrome` / `board-kiosk-firefox`, Windows & Linux) öffnen die App beim Anmelden automatisch im **Vollbild-Kiosk**. Da **Board-Konten über Neustarts angemeldet bleiben** (andere Konten nicht), gilt: **einschalten → sofort spielbereit**.
+
+### 📲 Handy-Fernbedienung & Zuschauer-TV (nur im Vereinsmodus)
+
+- **Handy als Fernbedienung:** Ein Smartphone per **QR-Code** (oder manuellem Code) an ein Board koppeln und von dort **Score-Eingabe und Navigation** übernehmen — inklusive **Startmenü** (Spieler aus dem Kader + Spielmodus wählen und **Spiel starten**), Anwurf-Wahl (wer beginnt · Ausbullen) und **Finish-Dart-Abfrage** am Handy. Genau ein „Anschreiber" pro Board; die Übernahme durch ein anderes Handy muss bestätigt werden.
+- **Login-freier Zuschauer-TV:** ein geheimer Link (`#/watch/<token>`) zeigt das laufende Spiel auf einem Bildschirm im Nebenraum — mehrere Boards als Kachel-Übersicht, sonst Vollbild. Zeigt nur **Boardname + Spielstand**, vereinsweit ein-/ausschaltbar (**Standard aus** im Internet-Betrieb), Link rotierbar.
 
 ### 📅 Kalender
 - Monatsansicht mit farbigen Termintypen (Training, Ligaspiel, Verein, Pokal, Freundschaft, Sonstiges)
