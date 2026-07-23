@@ -93,11 +93,15 @@ function normalizeShortcuts(s: Settings) {
   if (!re.test(s.quickBo5Key || '')) s.quickBo5Key = 'alt+5';
   if (!re.test(s.quickBo3Key || '')) s.quickBo3Key = 'alt+3';
   if (!re.test(s.paletteKey || '')) s.paletteKey = 'alt+k';
-  if (!re.test(s.undoKey || '')) s.undoKey = 'alt+z';
+  if (!re.test(s.undoKey || '')) s.undoKey = 'alt+u';
   if (!re.test(s.abortKey || '')) s.abortKey = 'alt+x';
   if (s.newGameKey === 'ctrl+alt+n') s.newGameKey = 'alt+n';
   if (s.quickBo5Key === 'ctrl+alt+5') s.quickBo5Key = 'alt+5';
   if (s.quickBo3Key === 'ctrl+alt+3') s.quickBo3Key = 'alt+3';
+  // Undo-Standard von alt+z auf alt+u umgezogen: Kürzel gehen über die PHYSISCHE Taste (e.code, layout-
+  // unabhängig), und auf deutschen QWERTZ-Tastaturen liegt „Z" physisch auf KeyY → alt+z war dort nicht
+  // erreichbar. alt+u (Undo) ist auf QWERTY und QWERTZ lagegleich. Alten Standard entsprechend heben.
+  if (s.undoKey === 'alt+z') s.undoKey = 'alt+u';
 }
 
 // Schreibt die gerätelokalen UI-Vorlieben (DEVICE_UI_KEYS) in den eigenen localStorage-Key – diese Settings

@@ -30,12 +30,19 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 - **Anwurf-Auswahl „Zufall" entfernt.** Bei zwei Spielern brachte das Auslosen des Anwurfs keinen
   Mehrwert (man wählt ohnehin direkt Spieler 1/2 oder Ausbullen) — die Option ist am Board und auf der
   Fernbedienung entfallen.
+- Das **„Neues Spiel starten?"-Overlay** ist jetzt vollständig per Tastatur bedienbar (wie „Spiel
+  abbrechen?"): ← → wechseln die Auswahl, Enter bestätigt die markierte Schaltfläche, Esc = weiterspielen.
+  Der Fokus steht anfangs auf „Weiterspielen", damit ein versehentliches Enter das Spiel nicht verwirft.
 - Im „Wer beginnt?"-Overlay am Board waren die **Spielernamen schwer lesbar** (dunkle Schrift auf
   dunklem Knopf) — sie erscheinen jetzt in heller Schrift wie die übrigen Knöpfe.
 - Die **Saison-Auswahl in der Spieler-Statistik** erscheint nur noch im Vereinsmodus — im lokalen
   Einzelboard-Betrieb gibt es keine Saisons.
 
 ### Behoben
+- **Undo-Tastenkürzel auf deutschen Tastaturen.** Das Rückgängig-Kürzel lag auf **Alt+Z** — Kürzel gehen
+  aber über die physische Taste, und auf einer QWERTZ-Tastatur liegt „Z" dort, wo QWERTY sein „Y" hat.
+  Die „Z"-Taste löste das Undo also nicht aus. Der Standard ist jetzt **Alt+U** („Undo") — auf allen
+  Layouts an derselben Stelle. Ein bestehendes Alt+Z wird automatisch auf Alt+U gehoben.
 - **Trainings-Bestwerte im Vereinsmodus** ließen sich nicht speichern — nach jedem Trainingsspiel
   erschien „Änderung konnte nicht gespeichert werden". Ursache: Der Bestwert wird am Spieler-Datensatz
   verbucht, Schreibrechte auf Spieler hatten aber nur Admin und Kapitän — am **Board-Rechner**, also

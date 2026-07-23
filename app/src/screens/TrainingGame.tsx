@@ -16,7 +16,7 @@ import { useT, dict } from '../i18n';
 export function TrainingGame() {
   const s = useStore();
   const tr = useT();
-  // Globale Aktionen per Tastatur (wie im Counter): Undo (Default Alt+Z) & Abbrechen/Beenden (Default Alt+X),
+  // Globale Aktionen per Tastatur (wie im Counter): Undo (Default Alt+U) & Abbrechen/Beenden (Default Alt+X),
   // konfigurierbar über dieselben Kürzel. Vor dem Early-Return, damit die Hook-Reihenfolge stabil bleibt.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -24,7 +24,7 @@ export function TrainingGame() {
       if (st.screen !== 'trainGame' || !st.trainGame) return;
       const combo = comboFromEvent(e);
       if (!combo) return;
-      if (combo === (st.settings.undoKey || 'alt+z')) { if (st.trainUndo.length) { e.preventDefault(); st.trainUndoTurn(); } return; }
+      if (combo === (st.settings.undoKey || 'alt+u')) { if (st.trainUndo.length) { e.preventDefault(); st.trainUndoTurn(); } return; }
       if (combo === (st.settings.abortKey || 'alt+x')) { e.preventDefault(); st.trainExit(); return; }
     };
     window.addEventListener('keydown', onKey);
@@ -65,7 +65,7 @@ export function TrainingGame() {
           <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>{roundLabel}</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => s.trainUndoTurn()} disabled={!canUndo} title={`Undo (${formatCombo(cfg.undoKey || 'alt+z')})`} style={{ ...headBtn, opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default' }}><IconUndo size={15} />Undo{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo(cfg.undoKey || 'alt+z')}</span>}</button>
+          <button onClick={() => s.trainUndoTurn()} disabled={!canUndo} title={`Undo (${formatCombo(cfg.undoKey || 'alt+u')})`} style={{ ...headBtn, opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default' }}><IconUndo size={15} />Undo{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo(cfg.undoKey || 'alt+u')}</span>}</button>
           <button onClick={() => s.trainExit()} title={`${tr.trainingScr.cancel} (${formatCombo(cfg.abortKey || 'alt+x')})`} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />{tr.trainingScr.cancel}{cfg.device === 'desktop' && <span style={{ ...hintKbd, background: 'rgba(224,75,67,.16)' }}>{formatCombo(cfg.abortKey || 'alt+x')}</span>}</button>
         </div>
       </div>

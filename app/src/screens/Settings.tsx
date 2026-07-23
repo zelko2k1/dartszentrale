@@ -662,7 +662,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
             {ed('paletteKey', <ShortcutRecorder value={cfg.paletteKey || 'alt+k'} accent={accent} fallback="alt+k" onChange={(combo) => set('paletteKey', combo)} />)}
           </Row>
           <Row label={tr.settings.undoKeyRow} sub={tr.settings.undoKeySub}>
-            {ed('undoKey', <ShortcutRecorder value={cfg.undoKey || 'alt+z'} accent={accent} fallback="alt+z" onChange={(combo) => set('undoKey', combo)} />)}
+            {ed('undoKey', <ShortcutRecorder value={cfg.undoKey || 'alt+u'} accent={accent} fallback="alt+u" onChange={(combo) => set('undoKey', combo)} />)}
           </Row>
           <Row label={tr.settings.abortKeyRow} sub={tr.settings.abortKeySub}>
             {ed('abortKey', <ShortcutRecorder value={cfg.abortKey || 'alt+x'} accent={accent} fallback="alt+x" onChange={(combo) => set('abortKey', combo)} />)}
@@ -679,7 +679,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
             [tr.settings.scQuick, 'F1–F8'],
             [tr.settings.scRest, 'F9'],
             [tr.settings.scCheckout, 'F10 · F11 · F12'],
-            [tr.settings.scUndo, formatCombo(cfg.undoKey || 'alt+z')],
+            [tr.settings.scUndo, formatCombo(cfg.undoKey || 'alt+u')],
             [tr.settings.scAbort, formatCombo(cfg.abortKey || 'alt+x')],
             [tr.settings.scWinNav, '1 · 2 · 3'],
             [tr.settings.scWinStats, 'S'],

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useStore } from './store/useStore';
 import { rootBg, fontFam, accentFg } from './store/selectors';
 import { useDevice } from './lib/useIsPhone';
@@ -82,8 +82,6 @@ export default function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const st = useStore.getState(); const cfg = st.settings;
-      const tgt = e.target as HTMLElement | null;
-      const typing = !!tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT' || tgt.isContentEditable);
       // Alt-Kürzel feuern bewusst AUCH im Suchfeld (Alt+Taste erzeugt keinen Text) – Setup ist tastatur-first.
       const combo = comboFromEvent(e);
       // Befehls-Palette (konfigurierbar, Default Alt+K): toggelt auch beim Tippen, um sie zu schließen.
@@ -104,8 +102,7 @@ export default function App() {
         if (cfg.quickBo5Key && combo === cfg.quickBo5Key) { e.preventDefault(); st.requestNew({ kind: 'preset', preset: { startScore: 501, unit: 'legs', bestOf: 5, outMode: 'double', doubleOut: true, doubleIn: false } }); return; }
         if (cfg.quickBo3Key && combo === cfg.quickBo3Key) { e.preventDefault(); st.requestNew({ kind: 'preset', preset: { startScore: 501, unit: 'legs', bestOf: 3, outMode: 'double', doubleOut: true, doubleIn: false } }); return; }
       }
-      if (st.newConfirm && e.key === 'Escape') { e.preventDefault(); st.cancelNew(); }
-      else if (st.newConfirm && e.key === 'Enter' && !typing) { e.preventDefault(); st.confirmNew(); }
+      // „Neues Spiel starten?" besitzt seine eigene Tastatursteuerung (NewGameConfirm, wie „Spiel abbrechen?").
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -321,18 +318,7 @@ export default function App() {
           <span style={{ opacity: .7, fontSize: 11 }}>{tr.app.tapToClose}</span>
         </div>
       )}
-      {s.newConfirm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.82)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 90 }}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 28, width: '92vw', maxWidth: 400, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
-            <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{tr.app.newGameConfirmTitle}</div>
-            <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>{tr.counter.abortBody}</div>
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-              <button onClick={() => s.cancelNew()} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.keepPlaying}</button>
-              <button onClick={() => s.confirmNew()} style={{ flex: 1, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.newGame}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {s.newConfirm && <NewGameConfirm />}
 
       {kioskUnlocked && (
         <button
@@ -362,4 +348,45 @@ export default function App() {
       )}
     </div>
   );
+}
+
+// „Neues Spiel starten?" – vollständig per Tastatur bedienbar (wie „Spiel abbrechen?"): ◄ ► (bzw. ▲ ▼ /
+// Tab) wechseln die Auswahl, Enter/Leertaste bestätigt die markierte Schaltfläche, Esc = weiterspielen.
+// Der Fokus steht anfangs auf „Weiterspielen", damit ein versehentliches Enter das Spiel NICHT verwirft.
+function NewGameConfirm() {
+  const s = useStore();
+  const tr = useT();
+  const [sel, setSel] = useState<0 | 1>(0); // 0 = Weiterspielen · 1 = Neues Spiel
+  const keepRef = useRef<HTMLButtonElement>(null);
+  const newRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => { (sel === 0 ? keepRef : newRef).current?.focus(); }, [sel]);
+  const onKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') { e.preventDefault(); s.cancelNew(); }
+    else if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'].includes(e.key)) { e.preventDefault(); setSel((v) => (v === 0 ? 1 : 0)); }
+    else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (sel === 0) s.cancelNew(); else s.confirmNew(); }
+  };
+  const ring = (on: boolean, color: string): React.CSSProperties => (on ? { boxShadow: `0 0 0 3px color-mix(in srgb, ${color} 55%, transparent)` } : {});
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.82)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 90 }}>
+      <div onKeyDown={onKey} style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 28, width: '92vw', maxWidth: 400, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+        <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{tr.app.newGameConfirmTitle}</div>
+        <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>{tr.counter.abortBody}</div>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+          <button ref={keepRef} onClick={() => s.cancelNew()} onMouseEnter={() => setSel(0)} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 0, 'var(--text)') }}>{tr.counter.keepPlaying}</button>
+          <button ref={newRef} onClick={() => s.confirmNew()} onMouseEnter={() => setSel(1)} style={{ flex: 1, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 1, 'var(--accent)') }}>{tr.counter.newGame}</button>
+        </div>
+        {/* Tastatur-Hinweis (nur Desktop, wo eine Tastatur da ist) – analog „Spiel abbrechen?". */}
+        {s.settings.device === 'desktop' && (
+          <div style={{ marginTop: 18, display: 'flex', gap: 16, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', fontSize: 12, color: 'var(--text-4)', fontWeight: 600 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><NewKbd>←</NewKbd><NewKbd>→</NewKbd> {tr.counter.abortKbdSelect}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><NewKbd>⏎</NewKbd> {tr.counter.abortKbdConfirm}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><NewKbd>Esc</NewKbd> {tr.counter.abortKbdKeep}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+function NewKbd({ children }: { children: React.ReactNode }) {
+  return <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px', lineHeight: 1.4 }}>{children}</kbd>;
 }

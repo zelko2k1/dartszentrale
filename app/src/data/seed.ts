@@ -55,7 +55,7 @@ export const DEFAULT_SETTINGS: Settings = {
   quickBo5Key: 'ctrl+alt+5',
   quickBo3Key: 'ctrl+alt+3',
   paletteKey: 'alt+k',
-  undoKey: 'alt+z',
+  undoKey: 'alt+u',
   abortKey: 'alt+x',
   appMode: 'verein',
   remoteEnabled: true,
