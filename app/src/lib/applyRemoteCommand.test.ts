@@ -110,6 +110,43 @@ describe('applyRemoteCommand → echte Store-Mutation', () => {
     expect(projectLiveState(st).phase).toBe('whoBegins');
   });
 
+  it('startCustom: startet mit gewählten Spielern (per ID) + Format → Phase whoBegins', () => {
+    useStore.setState({
+      players: [
+        { id: 'pa', name: 'Anna', short: 'AN', avi: 0 },
+        { id: 'pb', name: 'Ben', short: 'BE', avi: 0 },
+        { id: 'pc', name: 'Cara', short: 'CA', avi: 0 },
+      ],
+      setup: { ...useStore.getState().setup, mode: 'single', p1: 0, p2: 1, p1Guest: '', p2Guest: '', link: null },
+      screen: 'dashboard', gamePlayers: [], allThrows: [], pendingStart: false,
+    } as Partial<ReturnType<typeof useStore.getState>>);
+    applyRemoteCommand(cmd('startCustom', { p1Id: 'pc', p2Id: 'pa', startScore: 301, outMode: 'master', doubleIn: true, unit: 'legs', bestOf: 7 }));
+    const st = useStore.getState();
+    expect(st.screen).toBe('counter');
+    expect(st.pendingStart).toBe(true);
+    expect(st.gamePlayers.map((p) => p.name)).toEqual(['Cara', 'Anna']); // per ID gewählt, nicht per Index
+    expect(st.settings.startScore).toBe(301);
+    expect(st.settings.outMode).toBe('master');
+    expect(st.settings.doubleIn).toBe(true);
+    expect(st.settings.bestOf).toBe(7);
+    expect(projectLiveState(st).phase).toBe('whoBegins');
+  });
+
+  it('startCustom: gleicher Spieler in beiden Slots → Board wählt einen zweiten (nie doppelt)', () => {
+    useStore.setState({
+      players: [
+        { id: 'pa', name: 'Anna', short: 'AN', avi: 0 },
+        { id: 'pb', name: 'Ben', short: 'BE', avi: 0 },
+      ],
+      setup: { ...useStore.getState().setup, mode: 'single', p1: 0, p2: 1, p1Guest: '', p2Guest: '', link: null },
+      screen: 'dashboard', gamePlayers: [], allThrows: [], pendingStart: false,
+    } as Partial<ReturnType<typeof useStore.getState>>);
+    applyRemoteCommand(cmd('startCustom', { p1Id: 'pa', p2Id: 'pa' }));
+    const names = useStore.getState().gamePlayers.map((p) => p.name);
+    expect(names[0]).toBe('Anna');
+    expect(names[1]).not.toBe('Anna');
+  });
+
   it('unbekannter Befehl: wird ignoriert (kein Wurf)', () => {
     applyRemoteCommand(cmd('bogus'));
     expect(useStore.getState().allThrows.length).toBe(0);

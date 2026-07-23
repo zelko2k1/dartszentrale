@@ -54,6 +54,17 @@ export function applyRemoteCommand(cmd: LiveCommand): void {
     // beginnen (Board → Phase whoBegins, die das Handy bedienen kann). newMatch() würde nur zur
     // Spieler-Auswahl am Board navigieren und das Handy im Leerlauf hängen lassen.
     case 'startGame': st.startGame(); break;
+    // Startmenü am Handy: gewählte Spieler (per ID) + Format → Board bildet es ab und startet (whoBegins).
+    case 'startCustom': st.startRemoteGame({
+      p1Id: p.p1Id != null ? String(p.p1Id) : undefined,
+      p2Id: p.p2Id != null ? String(p.p2Id) : undefined,
+      startScore: p.startScore != null ? num(p.startScore) : undefined,
+      outMode: p.outMode === 'single' || p.outMode === 'double' || p.outMode === 'master' ? p.outMode : undefined,
+      doubleIn: typeof p.doubleIn === 'boolean' ? p.doubleIn : undefined,
+      unit: p.unit === 'legs' || p.unit === 'sets' ? p.unit : undefined,
+      bestOf: p.bestOf != null ? num(p.bestOf) : undefined,
+      bestOfSets: p.bestOfSets != null ? num(p.bestOfSets) : undefined,
+    }); break;
     case 'startPreset': st.startPreset((p.preset ?? {}) as Parameters<MainState['startPreset']>[0]); break;
     case 'confirmNew': st.confirmNew(); break;
     case 'cancelNew': st.cancelNew(); break;
