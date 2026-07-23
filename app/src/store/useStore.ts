@@ -473,7 +473,6 @@ export interface AppState {
   chooseStarter: (idx: number) => void;
   openBullOff: () => void;
   closeBullOff: () => void;
-  spinStarter: () => void;
   rematch: () => void;
   endGameTo: (target: 'dashboard' | 'setup') => void;
   abortGame: () => void;
@@ -2185,17 +2184,6 @@ export const useStore = create<AppState>((set, get) => ({
   chooseStarter(idx) { set({ startOffset: idx, pendingStart: false, bullMode: false, spinPick: null }); },
   openBullOff() { set({ bullMode: true }); },
   closeBullOff() { set({ bullMode: false }); },
-  spinStarter() {
-    const n = get().gamePlayers.length;
-    const final = Math.floor(Math.random() * n);
-    let ticks = 0; const total = 14 + final;
-    const tick = () => {
-      set({ spinPick: ticks % n }); ticks++;
-      if (ticks <= total) { const delay = 60 + Math.pow(ticks / total, 2) * 220; setTimeout(tick, delay); }
-      else { setTimeout(() => get().chooseStarter(final), 480); }
-    };
-    tick();
-  },
   rematch() { try { localStorage.removeItem(LS.live); } catch { /* ignore */ } set({ allThrows: [], input: '', matchSaved: false, pendingStart: true, bullMode: false, spinPick: null }); },
   endGameTo(target) {
     try { localStorage.removeItem(LS.live); } catch { /* ignore */ }

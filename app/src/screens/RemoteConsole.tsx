@@ -313,10 +313,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
           {players.map((p, i) => (
             <button key={i} className="rc-primary" style={{ padding: '14px 18px' }} onClick={() => send('starter', { idx: i })}>{p.name} beginnt</button>
           ))}
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button className="rc-ghost" style={{ flex: 1, padding: '12px 0' }} onClick={() => send('starter', { mode: 'bull' })}>Bull-Off</button>
-            <button className="rc-ghost" style={{ flex: 1, padding: '12px 0' }} onClick={() => send('starter', { mode: 'draw' })}>Zufall</button>
-          </div>
+          <button className="rc-ghost" style={{ padding: '12px 0' }} onClick={() => send('starter', { mode: 'bull' })}>Bull-Off</button>
         </>
       )}
       {phase === 'won' && (

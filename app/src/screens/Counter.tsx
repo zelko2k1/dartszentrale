@@ -50,7 +50,6 @@ export function Counter() {
         const n = st.gamePlayers.length;
         if (e.key >= '1' && e.key <= String(n)) { e.preventDefault(); st.chooseStarter(parseInt(e.key, 10) - 1); }
         else if (e.key.toLowerCase() === 'b') { e.preventDefault(); st.openBullOff(); }
-        else if (e.key.toLowerCase() === 'z') { e.preventDefault(); st.spinStarter(); }
         else if (e.key === 'Escape' && st.bullMode) { e.preventDefault(); st.closeBullOff(); }
         return;
       }
@@ -809,25 +808,18 @@ function WhoStarts() {
               <div style={{ fontSize: 14, color: 'var(--text-3)' }}>{tr.counter.whoStartsSub}</div>
             </div>
             <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
-              {s.gamePlayers.map((p, i) => {
-                const picked = s.spinPick === i;
-                return (
-                  <button key={p.id} className="dh-hover-border" onClick={() => s.chooseStarter(i)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, background: 'var(--btn)', border: `2px solid ${picked ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 15, padding: '20px 12px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                    <Avatar photo={p.photo} short={p.short} avi={p.av} size={54} circle />
-                    <div style={{ fontSize: 15, fontWeight: 700, textAlign: 'center', lineHeight: 1.25 }}>{p.name}</div>
-                    <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 7, padding: '3px 10px' }}>{i + 1}</kbd>
-                  </button>
-                );
-              })}
+              {s.gamePlayers.map((p, i) => (
+                <button key={p.id} className="dh-hover-border" onClick={() => s.chooseStarter(i)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, background: 'var(--btn)', color: 'var(--text)', border: '2px solid var(--border-2)', borderRadius: 15, padding: '20px 12px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <Avatar photo={p.photo} short={p.short} avi={p.av} size={54} circle />
+                  <div style={{ fontSize: 15, fontWeight: 700, textAlign: 'center', lineHeight: 1.25 }}>{p.name}</div>
+                  <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 7, padding: '3px 10px' }}>{i + 1}</kbd>
+                </button>
+              ))}
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
               <button className="dh-hover-border" onClick={() => s.openBullOff()} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 13, padding: 14, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
                 <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#E0594B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#19A463' }} /></span>
                 {tr.counter.bullOff} <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px' }}>B</kbd>
-              </button>
-              <button className="dh-hover-border" onClick={() => s.spinStarter()} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 13, padding: 14, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F2B829" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" /></svg>
-                {tr.counter.random} <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px' }}>Z</kbd>
               </button>
             </div>
           </>
@@ -838,7 +830,7 @@ function WhoStarts() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {s.gamePlayers.map((p, i) => {
                 return (
-                  <button key={p.id} className="dh-hover-border" onClick={() => s.chooseStarter(i)} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 13, padding: '14px 18px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                  <button key={p.id} className="dh-hover-border" onClick={() => s.chooseStarter(i)} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--btn)', color: 'var(--text)', border: '1px solid var(--border-2)', borderRadius: 13, padding: '14px 18px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
                     <Avatar photo={p.photo} short={p.short} avi={p.av} size={42} circle />
                     <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 16, fontWeight: 700 }}>{p.name}</div><div style={{ fontSize: 12, color: 'var(--text-4)' }}>{tr.counter.closerBull}</div></div>
                     <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 7, padding: '4px 9px' }}>{i + 1}</kbd>

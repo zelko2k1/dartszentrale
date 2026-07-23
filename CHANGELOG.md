@@ -21,9 +21,15 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Geändert
 - **Fernbedienung, kleinere Verbesserungen:** „Neues Spiel starten" heißt im Startmenü jetzt kurz
-  „Spiel starten"; die Anwurf-Option „Losen" heißt „Zufall" (einheitlich zum Board); die Knöpfe
-  „Neues Spiel" und „Abbruch" während des Spiels sind größer und besser lesbar. Der Knopf „Zum
-  Dashboard" nach Spielende heißt überall nur noch „Dashboard".
+  „Spiel starten"; die Knöpfe „Neues Spiel" und „Abbruch" während des Spiels sind größer und besser
+  lesbar. Der Knopf „Zum Dashboard" nach Spielende heißt überall nur noch „Dashboard".
+- **Anwurf-Auswahl „Zufall" entfernt.** Bei zwei Spielern brachte das Auslosen des Anwurfs keinen
+  Mehrwert (man wählt ohnehin direkt Spieler 1/2 oder Ausbullen) — die Option ist am Board und auf der
+  Fernbedienung entfallen.
+- Im „Wer beginnt?"-Overlay am Board waren die **Spielernamen schwer lesbar** (dunkle Schrift auf
+  dunklem Knopf) — sie erscheinen jetzt in heller Schrift wie die übrigen Knöpfe.
+- Die **Saison-Auswahl in der Spieler-Statistik** erscheint nur noch im Vereinsmodus — im lokalen
+  Einzelboard-Betrieb gibt es keine Saisons.
 
 ### Behoben
 - **Trainings-Bestwerte im Vereinsmodus** ließen sich nicht speichern — nach jedem Trainingsspiel

@@ -56,7 +56,8 @@ export function PlayerDetail() {
           <IconBack size={15} />
           {tr.playerDetail.allPlayers}
         </button>
-        {s.seasons.length > 0 && (
+        {/* Saison-Filter nur im Vereinsmodus — im Einzelboard-/Lokalmodus gibt es keine Saisons. */}
+        {s.settings.appMode === 'verein' && s.seasons.length > 0 && (
           <select value={seasonId} onChange={(e) => setSeasonId(e.target.value)} title={tr.playerDetail.statsPeriod}
             style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '8px 12px', color: 'var(--text)', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', outline: 'none' }}>
             <option value="all">{tr.playerDetail.allSeasons}</option>

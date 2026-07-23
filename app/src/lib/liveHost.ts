@@ -47,7 +47,6 @@ export function applyRemoteCommand(cmd: LiveCommand): void {
     case 'finishCancel': st.cancelFinish(); break;          // Fehleingabe → Abfrage zurücknehmen
     case 'starter':
       if (p.mode === 'bull') st.openBullOff();
-      else if (p.mode === 'draw') st.spinStarter();
       else st.chooseStarter(num(p.idx));
       break;
     case 'nav': if (typeof p.to === 'string') st.go(p.to as MainState['screen']); break;
