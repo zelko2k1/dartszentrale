@@ -57,11 +57,31 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
   const seqRef = useRef(0);
   const [pendingSeq, setPendingSeq] = useState(0);
   const activeRowRef = useRef<HTMLDivElement | null>(null);
+  // Zuletzt bekannter Kopplungscode (aus QR-Deep-Link oder manueller Eingabe) — Basis für die
+  // Selbstheilung, wenn die beobachtete Session-ID nach einem Board-Neuladen veraltet ist.
+  const codeRef = useRef((route.code || '').trim().toUpperCase());
+  const triedFallback = useRef(false);
 
   useEffect(() => {
+    triedFallback.current = false;                // je Session-ID einen Heilungsversuch erlauben
     if (!sessionId) return;                       // noch keine Session (manuelle Eingabe offen)
     if (!provider.liveSupported) { setStatus('gone'); return; }
-    const unsub = provider.liveWatch(sessionId, (s) => { setSession(s); setStatus(s ? 'ok' : 'gone'); });
+    const unsub = provider.liveWatch(sessionId, (s) => {
+      setSession(s);
+      if (s) { setStatus('ok'); return; }
+      // Session weg: nach einem Board-Neuladen zeigt die im QR eingebettete ID ins Leere. Kennen wir
+      // den Code, lösen wir die jetzt aktive Session dazu auf und beobachten sie (QR-Selbstheilung).
+      const code = codeRef.current;
+      if (code && !triedFallback.current) {
+        triedFallback.current = true;
+        void provider.liveFindByCode(code).then((id) => {
+          if (id && id !== sessionId) setSessionId(id); // löst den Effekt neu aus → neue Session
+          else setStatus('gone');
+        }).catch(() => setStatus('gone'));
+        return;
+      }
+      setStatus('gone');
+    });
     return () => { unsub(); void provider.liveRelease(sessionId).catch(() => {}); };
   }, [provider, sessionId]);
 
@@ -86,6 +106,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
   async function pairByCode() {
     const code = manualCode.trim().toUpperCase();
     if (code.length < 4) return;
+    codeRef.current = code;                        // für die Selbstheilung merken (auch ohne QR)
     setErr(''); setBusy(true);
     try {
       const r = await provider.liveClaimByCode(code);

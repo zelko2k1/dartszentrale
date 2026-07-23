@@ -362,6 +362,15 @@ export class PocketBaseProvider implements DataProvider {
     const r = await this.pb.send('/api/live/claim', { method: 'POST', body: { code } }) as { claimed?: boolean; pending?: boolean; sessionId?: string };
     return { claimed: !!r?.claimed, pending: !!r?.pending, sessionId: String(r?.sessionId ?? '') };
   }
+  async liveFindByCode(code: string): Promise<string> {
+    // Code besteht nur aus A–Z0–9 (genPairCode) → auf dieses Alphabet säubern, dann sicher einsetzen.
+    const c = code.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (!c) return '';
+    try {
+      const r = await this.pb.collection('live_sessions').getFirstListItem(`status="active" && code="${c}"`, { requestKey: null });
+      return String(r.id);
+    } catch { return ''; }
+  }
   async liveClaimApprove(sessionId: string): Promise<void> {
     await this.pb.send('/api/live/claim/approve', { method: 'POST', body: { sessionId } });
   }

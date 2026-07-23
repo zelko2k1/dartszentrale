@@ -25,6 +25,11 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
   Spieler-Auswahl — es startete kein Spiel, und das Handy blieb im Leerlauf hängen. Jetzt beginnt der
   Knopf direkt ein Spiel mit der aktuellen Aufstellung; das Board fragt „Wer beginnt?", was am Handy
   ausgewählt und dann gespielt werden kann. Ganz ohne das Board anzufassen.
+- **Fernbedienung: veralteter QR-Code („Session nicht gefunden").** Lud die Board-App neu (App-Update,
+  Neustart, manuelles Aktualisieren), zeigte ein zuvor erstellter QR-Code ins Leere — das Handy meldete
+  „Session nicht gefunden". Der QR enthält den Kopplungscode aber ohnehin; das Handy sucht bei veralteter
+  ID jetzt automatisch die aktuell aktive Sitzung zu diesem Code und verbindet sich damit. Der QR bleibt
+  also gültig, auch wenn sich das Board zwischendurch neu geladen hat.
 
 ### Geändert
 - **Fernbedienung am Handy:** Die Bedienoberfläche passt sich jetzt auf jedes Handy ein — sie füllt

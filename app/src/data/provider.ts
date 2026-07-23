@@ -173,6 +173,9 @@ export interface DataProvider {
   liveClaim(sessionId: string, code: string): Promise<{ claimed: boolean; pending: boolean }>;
   /** Remote: koppeln NUR über den Code (manuelle Eingabe ohne QR) — findet die Session, liefert ihre ID. */
   liveClaimByCode(code: string): Promise<{ claimed: boolean; pending: boolean; sessionId: string }>;
+  /** Remote: aktive Session-ID zu einem Code finden (read-only, ohne zu koppeln); '' = keine. Für die
+   *  QR-Selbstheilung, wenn die im QR eingebettete ID nach einem Board-Neuladen veraltet ist. */
+  liveFindByCode(code: string): Promise<string>;
   /** Remote (aktueller): Übernahme durch ein anderes Handy bestätigen. */
   liveClaimApprove(sessionId: string): Promise<void>;
   /** Remote (aktueller): Übernahme ablehnen. */
