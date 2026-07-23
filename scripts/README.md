@@ -33,7 +33,8 @@ the `.bat` often just calls the `.ps1`. Naming scheme:
 | File | Purpose |
 |---|---|
 | `autostart-local.sh` / `.bat` | Board starts **automatically when powered on** (ideal for a kiosk PC). |
-| `autostart-club-lan.sh` / `.bat` | LAN server starts **automatically when powered on**. |
+| `autostart-club-lan.sh` / `.bat` | LAN **server** starts **automatically when powered on**. |
+| `board-kiosk-chrome.{bat,sh}` · `board-kiosk-firefox.{bat,sh}` | Turns a **board PC** into a kiosk display: opens the browser fullscreen on the app URL and relaunches it at every sign-in. Run once per board PC (asks for the app address). Uses the normal browser profile so the **board account stays signed in**; exit with `Alt+F4`. Windows + Linux, Chrome/Chromium or Firefox. |
 
 ## Setup (one-time)
 | File | Purpose |

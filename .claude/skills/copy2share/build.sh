@@ -42,10 +42,12 @@ copy_pb(){ local d="$1/pocketbase"; mkdir -p "$d"
 # Nur 01 (lokal, ein Board): lokaler Start + Autostart + Update fürs Kiosk-Board — NUR Frontend, kein PocketBase
 copy_lokal(){ for f in start-local.sh start-local.bat autostart-local.sh autostart-local.bat update-local.sh update-local.bat; do cpf "$REPO/scripts/$f" "$1/"; done; }
 
-# Nur 02 (Vereinsmodus LAN, Single-Binary): Start + Update + Autostart für den Einfach-Betrieb
+# Nur 02 (Vereinsmodus LAN, Single-Binary): Start + Update + Autostart (Server) für den Einfach-Betrieb,
+# plus Board-Kiosk-Autostart (öffnet den Browser im Vollbild auf die App-URL) für Windows/Linux × Chrome/Firefox.
 copy_verein_lan(){ for f in start-club-lan.sh start-club-lan.ps1 start-club-lan.bat \
   update-club-lan.sh update-club-lan.ps1 update-club-lan.bat \
-  autostart-club-lan.sh autostart-club-lan.bat; do cpf "$REPO/scripts/$f" "$1/"; done; }
+  autostart-club-lan.sh autostart-club-lan.bat \
+  board-kiosk-chrome.bat board-kiosk-firefox.bat board-kiosk-chrome.sh board-kiosk-firefox.sh; do cpf "$REPO/scripts/$f" "$1/"; done; }
 
 # Docs kopieren; Pfade mit de/-Präfix landen in docs/de/ (deutsche Fassungen neben den englischen).
 copy_docs(){ local d="$1/docs"; mkdir -p "$d" "$d/de"; shift; for f in "$@"; do
@@ -127,13 +129,20 @@ Beim ERSTEN Start werden zwei Admin-Konten angelegt (PocketBase-Konsole + App-Ad
 Passwort). Die Passwoerter werden NICHT gespeichert — sicher notieren (Passwortmanager)!
 Voraussetzung: einmal Internet beim ersten Start (laedt das ~15 MB PocketBase-Binary). Node NICHT noetig.
 
-AUTOSTART (Board startet beim Hochfahren von selbst):
+AUTOSTART SERVER (dieser Rechner startet PocketBase beim Hochfahren von selbst):
   Linux/Pi -> ./autostart-club-lan.sh    Windows -> Doppelklick autostart-club-lan.bat
+
+BOARD-KIOSK (jeder Board-PC oeffnet die App beim Anmelden automatisch im Vollbild):
+  Auf jedem Board-PC EINMAL ausfuehren (fragt nach der App-Adresse, z. B. http://<server-ip>:8090):
+    Windows -> Doppelklick board-kiosk-chrome.bat   ODER  board-kiosk-firefox.bat
+    Linux   -> ./board-kiosk-chrome.sh              ODER  ./board-kiosk-firefox.sh
+  Danach EINMAL mit dem BOARD-Konto anmelden - es bleibt ueber Neustarts angemeldet
+  (andere Konten, z. B. Admin, muessen sich jedes Mal neu anmelden). Kiosk verlassen: Alt+F4.
 
 BEDIENUNG:
   Dieser Rechner : http://127.0.0.1:8090   (oeffnet sich automatisch im Browser)
   Andere Bretter/Tablets im gleichen Netz: die angezeigte Adresse http://<server-ip>:8090
-    - Board-PC : als Lesezeichen / Kiosk-Verknuepfung anlegen
+    - Board-PC : mit board-kiosk-chrome/firefox einrichten (Vollbild + Autostart, s. o.)
     - Tablet/Handy : in der App unter Einstellungen den Beitritts-QR scannen
   Mit dem jeweiligen Konto anmelden.
 
