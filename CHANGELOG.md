@@ -15,6 +15,11 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
   speichern, **aber nur diese**: Name, Kürzel, Foto und Sperre bleiben Admin/Kapitän vorbehalten.
   ⚠ **Erfordert ein Server-Update** (neue Migration) — im lokalen Einzelboard-Modus trat der Fehler
   nicht auf.
+- **Standardspieler „Spieler 1/2" im Vereinsmodus:** Ein Trainingsspiel mit den beiden immer
+  vorhandenen Standardspielern meldete „Änderung konnte nicht gespeichert werden". Diese Spieler
+  gibt es nur gerätelokal (kein Datensatz auf dem Server), der Bestwert wurde aber trotzdem an den
+  Server geschickt und lief ins Leere. Ihre Bestwerte werden jetzt korrekt nur lokal geführt; die
+  Meldung bleibt aus. Betrifft ebenso das Bearbeiten dieser beiden Spieler.
 
 ### Geändert
 - **Fernbedienung am Handy:** Die Bedienoberfläche passt sich jetzt auf jedes Handy ein — sie füllt

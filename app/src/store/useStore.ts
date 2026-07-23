@@ -14,7 +14,7 @@ import {
   type CounterSlice,
 } from './counter';
 import {
-  DEFAULT_SETTINGS, seedPlayers, seedTeams, seedAccounts, seedLeagues, seedEvents, seedSeasons, withDefaultPlayers,
+  DEFAULT_SETTINGS, seedPlayers, seedTeams, seedAccounts, seedLeagues, seedEvents, seedSeasons, withDefaultPlayers, isSeedPlayer,
 } from '../data/seed';
 import { activeSeason as pickActiveSeason, computeStandings, aggregateFor, inSeason } from './selectors';
 import {
@@ -1062,7 +1062,9 @@ export const useStore = create<AppState>((set, get) => ({
       } else {
         const rec: Player = { id: m.id!, name, short, avi: m.avi };
         players = st.players.map((p) => p.id === m.id ? { ...p, ...rec } : p);
-        persist(st, set, LS.players, players, (p) => p.updateRecord('players', m.id!, rec as unknown as ProviderRecord));
+        // Seed-Spieler existieren nur lokal → keinen Server-Datensatz aktualisieren (sonst 404).
+        if (isSeedPlayer(m.id!)) write(LS.players, players);
+        else persist(st, set, LS.players, players, (p) => p.updateRecord('players', m.id!, rec as unknown as ProviderRecord));
       }
       return { players, playerModal: null };
     });
@@ -2340,6 +2342,7 @@ function recordTrainingResult(get: () => AppState, set: SetFn, g: TrainGame) {
   set({ players, trainBestFlash: flash });
   if (st.provider.mode === 'verein') {
     for (const pid of nextBest.keys()) {
+      if (isSeedPlayer(pid)) continue; // lokale Standard-Spieler haben keinen Server-Datensatz → nicht syncen
       const updated = players.find((p) => p.id === pid)!;
       void st.provider.updateRecord('players', pid, { trainingBests: updated.trainingBests } as unknown as ProviderRecord)
         .catch((e) => { console.error('[sync]', e); set({ syncError: dict().storeMsg.errChangeSave }); });

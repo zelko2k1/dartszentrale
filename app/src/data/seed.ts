@@ -78,6 +78,11 @@ export function seedPlayers(): Player[] {
   ];
 }
 
+// Standard-Spieler „Spieler 1/2" existieren NUR lokal (per withDefaultPlayers eingefügt), auch im
+// Vereinsmodus – sie sind kein PocketBase-Datensatz. Server-Schreibvorgänge für sie überspringen,
+// sonst läuft z. B. das Speichern eines Trainings-Bestwerts in einen 404 („Datensatz nicht gefunden").
+export const isSeedPlayer = (id: string): boolean => id === 'p_seed1' || id === 'p_seed2';
+
 // Garantiert, dass die zwei Standard-Spieler ("Spieler 1/2", locked = nicht löschbar) immer vorhanden
 // sind – in BEIDEN Modi (lokal & Verein). Fehlende werden vorangestellt; vorhandene werden als locked markiert.
 export function withDefaultPlayers(players: Player[]): Player[] {
