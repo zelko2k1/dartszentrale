@@ -181,6 +181,12 @@ export interface SetupState {
   freePlay?: boolean;                  // Freies Spiel → wird nicht als Match gespeichert
   link?: { leagueId: string; fixtureId: string; positionId: string } | null; // Board-Spiel → Liga-Position
 }
+// Auswahl der Fernbedienung fürs Startmenü (Spieler-IDs + Format) → Board startet ein Spiel damit.
+export interface RemoteStartSelection {
+  p1Id?: string; p2Id?: string;
+  startScore?: number; outMode?: 'single' | 'double' | 'master'; doubleIn?: boolean;
+  unit?: 'legs' | 'sets'; bestOf?: number; bestOfSets?: number;
+}
 // auto = selbst-ausblendende Feier (z. B. Short Leg) statt blockierendem Modal mit „Verstanden"-Knopf.
 export interface HintState { title: string; body: string; auto?: boolean; }
 export interface TrainSetupState { modeId: string; count: number; picks: number[]; }
@@ -487,6 +493,7 @@ export interface AppState {
   requestNew: (action: NewAction) => void;
   runNew: (action: NewAction) => void;
   startPreset: (preset: Partial<SetupState>) => void;
+  startRemoteGame: (sel: RemoteStartSelection) => void;
   confirmNew: () => void;
   cancelNew: () => void;
   showHint: (hint: HintState) => void;
@@ -2143,6 +2150,24 @@ export const useStore = create<AppState>((set, get) => ({
   quickStart(preset) {
     // Schnellstart = normales, gewertetes Spiel: Gast-Namen, Freies-Spiel & Liga-Verknüpfung zurücksetzen.
     set((st) => ({ setup: { ...st.setup, mode: 'single', p1: 0, p2: 1, p1Guest: '', p2Guest: '', freePlay: false, link: null, ...(preset || {}) } }));
+    get().startGame();
+  },
+  // Fernbedienungs-Startmenü: Spieler (per ID) + Format kommen vom Handy → hier auf die Board-Aufstellung
+  // abbilden und starten. Nur gültige Werte übernehmen (der Rest bleibt beim aktuellen Setup-Standard).
+  startRemoteGame(sel) {
+    const pool = get().players;
+    const idxOf = (id: string | undefined, fb: number) => { const i = id ? pool.findIndex((p) => p.id === id) : -1; return i >= 0 ? i : fb; };
+    const p1 = idxOf(sel.p1Id, 0);
+    let p2 = idxOf(sel.p2Id, 1);
+    if (p2 === p1 && pool.length > 1) p2 = p1 === 0 ? 1 : 0; // nie zweimal denselben Spieler
+    const preset: Partial<SetupState> = { mode: 'single', p1, p2, p1Guest: '', p2Guest: '', freePlay: false, link: null };
+    if ([301, 501, 701, 1001].includes(Number(sel.startScore))) preset.startScore = Number(sel.startScore);
+    if (sel.outMode === 'single' || sel.outMode === 'double' || sel.outMode === 'master') { preset.outMode = sel.outMode; preset.doubleOut = sel.outMode !== 'single'; }
+    if (typeof sel.doubleIn === 'boolean') preset.doubleIn = sel.doubleIn;
+    if (sel.unit === 'legs' || sel.unit === 'sets') preset.unit = sel.unit;
+    if (Number.isFinite(Number(sel.bestOf)) && Number(sel.bestOf) > 0) preset.bestOf = Number(sel.bestOf);
+    if (Number.isFinite(Number(sel.bestOfSets)) && Number(sel.bestOfSets) > 0) preset.bestOfSets = Number(sel.bestOfSets);
+    set((st) => ({ setup: { ...st.setup, ...preset } }));
     get().startGame();
   },
   // Startet ein konkretes Ligaspiel vom Board: eigener Spieler als Slot 0, Gegner als Gast, mit Positions-Verknüpfung.

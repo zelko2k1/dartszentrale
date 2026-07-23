@@ -7,6 +7,14 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+### Hinzugefügt
+- **Startmenü auf der Fernbedienung.** Läuft am Board kein Spiel, zeigt das Handy jetzt ein kompaktes
+  „Neues Spiel"-Menü statt nur eines Start-Knopfes: zwei Zeilen für die Spieler (antippen → aus dem
+  Vereinskader wählen, vorbelegt mit „Spieler 1/2") und eine Zeile für den Spielmodus (antippen →
+  Startpunkte 301/501/701/1001, Out-Modus Double/Master/Single, Double-In, Best of Legs/Sets). „Neues
+  Spiel starten" beginnt damit direkt; den Anwurf („Wer beginnt?", inkl. Ausbullen) wählt man wie
+  gehabt am Handy. Damit verschwinden auch die früheren Demo-Platzhalter aus der Leerlauf-Ansicht.
+
 ### Behoben
 - **Trainings-Bestwerte im Vereinsmodus** ließen sich nicht speichern — nach jedem Trainingsspiel
   erschien „Änderung konnte nicht gespeichert werden". Ursache: Der Bestwert wird am Spieler-Datensatz

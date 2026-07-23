@@ -6,7 +6,7 @@
 // Alles zwischen Kopfzeile und Fußzeile teilt sich die verbleibende Höhe über Flex-Anteile, damit die
 // Tasten auf kleinen Handys schrumpfen statt aus dem Bild zu rutschen. Querformat = zwei Spalten.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useStore } from '../store/useStore';
+import { useStore, type RemoteStartSelection } from '../store/useStore';
 import { useDevice } from '../lib/useIsPhone';
 import type { LiveRoute } from '../lib/deepLink';
 import type { LiveSession } from '../data/provider';
@@ -314,12 +314,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
           </div>
         </>
       )}
-      {phase === 'idle' && (
-        <>
-          <div style={{ textAlign: 'center', color: '#9aa4ad', fontSize: 14, lineHeight: 1.5 }}>Am Board läuft gerade kein Spiel.</div>
-          <button className="rc-primary" style={{ padding: '15px 18px' }} onClick={() => send('startGame')}>Neues Spiel starten</button>
-        </>
-      )}
+      {phase === 'idle' && <StartMenu onStart={(sel) => send('startCustom', sel as unknown as Record<string, unknown>)} />}
     </div>
   );
 
@@ -372,10 +367,148 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
         </>
       ) : (
         <>
-          {scorePanel}
+          {/* Im Leerlauf KEIN Score-Panel — sonst zeigten die Board-Platzhalter (gamePlayers) oben mit.
+              Das Startmenü bringt seine eigene Spielerwahl mit. */}
+          {phase !== 'idle' && scorePanel}
           {phasePanel}
         </>
       )}
     </div>
+  );
+}
+
+// ── Startmenü der Fernbedienung (Leerlauf) ──
+// Kompaktes „neues Spiel"-Menü: zwei Spieler-Zeilen (antippen → aus dem Kader wählen) + Modus-Zeile
+// (antippen → Format einstellen). Der Kader liegt am angemeldeten Handy bereits im Store. „Starten"
+// schickt Spieler-IDs + Format als Befehl; das Board bildet es ab und geht in die Anwurf-Phase.
+function StartMenu({ onStart }: { onStart: (sel: RemoteStartSelection) => void }) {
+  const players = useStore((s) => s.players);
+  // Standard-Spieler („Spieler 1/2", locked) oben — wie am Board.
+  const roster = useMemo(() => {
+    const locked = players.filter((p) => p.locked);
+    const rest = players.filter((p) => !p.locked);
+    return [...locked, ...rest];
+  }, [players]);
+  const [p1Id, setP1Id] = useState('');
+  const [p2Id, setP2Id] = useState('');
+  const [fmt, setFmt] = useState<{ startScore: number; outMode: 'single' | 'double' | 'master'; doubleIn: boolean; unit: 'legs' | 'sets'; bestOf: number; bestOfSets: number }>(
+    { startScore: 501, outMode: 'double', doubleIn: false, unit: 'legs', bestOf: 5, bestOfSets: 3 });
+  const [picker, setPicker] = useState<null | 'p1' | 'p2' | 'mode'>(null);
+
+  // Vorbelegung: die ersten beiden (Standard-)Spieler, sobald der Kader geladen ist.
+  const effP1 = p1Id || roster[0]?.id || '';
+  const effP2 = p2Id || roster[1]?.id || roster[0]?.id || '';
+  const nameOf = (id: string) => roster.find((p) => p.id === id)?.name || '—';
+
+  const outLabel = fmt.outMode === 'master' ? 'Master Out' : fmt.outMode === 'single' ? 'Single Out' : 'Double Out';
+  const modeSummary = `${fmt.startScore} · ${outLabel}${fmt.doubleIn ? ' · Double In' : ''} · ${fmt.unit === 'sets' ? `Best of ${fmt.bestOfSets} Sets` : `Best of ${fmt.bestOf}`}`;
+
+  const start = () => onStart({ p1Id: effP1, p2Id: effP2, startScore: fmt.startScore, outMode: fmt.outMode, doubleIn: fmt.doubleIn, unit: fmt.unit, bestOf: fmt.bestOf, bestOfSets: fmt.bestOfSets });
+
+  const rowStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: '#12161a', border: '1px solid #232a31', borderRadius: 12, padding: '13px 15px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' };
+  const rowLabel: React.CSSProperties = { fontSize: 10, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: '#6b747c' };
+  const rowValue: React.CSSProperties = { fontSize: 16, fontWeight: 800, color: '#e9edf1', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' };
+  const chevron = <span style={{ marginLeft: 'auto', color: '#6b747c', fontSize: 18, flexShrink: 0 }}>›</span>;
+
+  const playerRow = (slot: 'p1' | 'p2', label: string, id: string) => (
+    <button style={rowStyle} onClick={() => setPicker(slot)}>
+      <div style={{ minWidth: 0 }}>
+        <div style={rowLabel}>{label}</div>
+        <div style={rowValue}>{nameOf(id)}</div>
+      </div>
+      {chevron}
+    </button>
+  );
+
+  return (
+    <>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 420, margin: '0 auto' }}>
+        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color: ACCENT, textAlign: 'center' }}>Neues Spiel</div>
+        {playerRow('p1', 'Spieler 1', effP1)}
+        {playerRow('p2', 'Spieler 2', effP2)}
+        <button style={rowStyle} onClick={() => setPicker('mode')}>
+          <div style={{ minWidth: 0 }}>
+            <div style={rowLabel}>Spielmodus</div>
+            <div style={{ ...rowValue, fontSize: 14, fontFamily: 'var(--font-num,ui-monospace,monospace)' }}>{modeSummary}</div>
+          </div>
+          {chevron}
+        </button>
+        <button className="rc-primary" style={{ padding: '15px 18px', marginTop: 4 }} onClick={start}>Neues Spiel starten</button>
+      </div>
+
+      {(picker === 'p1' || picker === 'p2') && (
+        <PickerSheet title={picker === 'p1' ? 'Spieler 1 wählen' : 'Spieler 2 wählen'} onClose={() => setPicker(null)}>
+          {roster.map((p) => {
+            const on = (picker === 'p1' ? effP1 : effP2) === p.id;
+            return (
+              <button key={p.id} className="rc-key" style={{ justifyContent: 'flex-start', gap: 12, padding: '13px 15px', fontSize: 15, fontFamily: 'inherit', fontWeight: 700, background: on ? 'rgba(224,89,75,.14)' : '#14181c', border: on ? `1px solid ${ACCENT}` : '1px solid #2a3138' }}
+                onClick={() => { if (picker === 'p1') setP1Id(p.id); else setP2Id(p.id); setPicker(null); }}>
+                <span style={{ width: 30, height: 30, borderRadius: 8, background: '#222a31', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#c7ced4', flexShrink: 0 }}>{p.short}</span>
+                <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+              </button>
+            );
+          })}
+        </PickerSheet>
+      )}
+
+      {picker === 'mode' && (
+        <PickerSheet title="Spielmodus" onClose={() => setPicker(null)}>
+          <ModeGroup label="Startpunkte">
+            {[301, 501, 701, 1001].map((v) => <Seg key={v} on={fmt.startScore === v} onClick={() => setFmt((f) => ({ ...f, startScore: v }))}>{v}</Seg>)}
+          </ModeGroup>
+          <ModeGroup label="Out-Modus">
+            {([['double', 'Double'], ['master', 'Master'], ['single', 'Single']] as const).map(([v, l]) => <Seg key={v} on={fmt.outMode === v} onClick={() => setFmt((f) => ({ ...f, outMode: v }))}>{l}</Seg>)}
+          </ModeGroup>
+          <ModeGroup label="Double In">
+            <Seg on={!fmt.doubleIn} onClick={() => setFmt((f) => ({ ...f, doubleIn: false }))}>Aus</Seg>
+            <Seg on={fmt.doubleIn} onClick={() => setFmt((f) => ({ ...f, doubleIn: true }))}>An</Seg>
+          </ModeGroup>
+          <ModeGroup label="Zählweise">
+            <Seg on={fmt.unit === 'legs'} onClick={() => setFmt((f) => ({ ...f, unit: 'legs' }))}>Legs</Seg>
+            <Seg on={fmt.unit === 'sets'} onClick={() => setFmt((f) => ({ ...f, unit: 'sets' }))}>Sets</Seg>
+          </ModeGroup>
+          {fmt.unit === 'sets' ? (
+            <ModeGroup label="Best of Sets">
+              {[3, 5].map((v) => <Seg key={v} on={fmt.bestOfSets === v} onClick={() => setFmt((f) => ({ ...f, bestOfSets: v }))}>{v}</Seg>)}
+            </ModeGroup>
+          ) : (
+            <ModeGroup label="Best of Legs">
+              {[1, 3, 5, 7, 9, 11].map((v) => <Seg key={v} on={fmt.bestOf === v} onClick={() => setFmt((f) => ({ ...f, bestOf: v }))}>{v}</Seg>)}
+            </ModeGroup>
+          )}
+          <button className="rc-primary" style={{ padding: '14px 18px', marginTop: 6 }} onClick={() => setPicker(null)}>Fertig</button>
+        </PickerSheet>
+      )}
+    </>
+  );
+}
+
+// Vollflächiges Auswahl-Blatt über der Konsole (scrollt intern, schließt per „×").
+function PickerSheet({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: '#0b0d0f', zIndex: 40, display: 'flex', flexDirection: 'column', padding: 'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)' }}>
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderBottom: '1px solid #1c2228' }}>
+        <div style={{ flex: 1, fontWeight: 800, fontSize: 16 }}>{title}</div>
+        <button onClick={onClose} aria-label="Schließen" className="rc-ghost" style={{ width: 40, height: 40, borderRadius: 10, fontSize: 20 }}>×</button>
+      </div>
+      <div className="rc-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, padding: 16 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ModeGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: '#6b747c' }}>{label}</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{children}</div>
+    </div>
+  );
+}
+
+function Seg({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button onClick={onClick} style={{ flex: '1 0 auto', minWidth: 64, padding: '11px 16px', borderRadius: 10, fontWeight: 800, fontSize: 15, cursor: 'pointer', fontFamily: 'var(--font-num,inherit)', background: on ? ACCENT : '#14181c', color: on ? '#fff' : '#c7ced4', border: on ? 'none' : '1px solid #2a3138' }}>{children}</button>
   );
 }
