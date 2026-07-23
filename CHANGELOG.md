@@ -39,6 +39,19 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
   dunklem Knopf) — sie erscheinen jetzt in heller Schrift wie die übrigen Knöpfe.
 - Die **Saison-Auswahl in der Spieler-Statistik** erscheint nur noch im Vereinsmodus — im lokalen
   Einzelboard-Betrieb gibt es keine Saisons.
+- **Fernbedienung am Handy:** Die Bedienoberfläche passt sich jetzt auf jedes Handy ein — sie füllt
+  genau den Bildschirm, ohne zu scrollen. Vorher rutschten „Enter" und „Undo" auf kleineren Geräten
+  unter den sichtbaren Bereich. Neu außerdem: Querformat als Zwei-Spalten-Ansicht (Stand links,
+  Tastenfeld rechts), Druck-Feedback und kurze Vibration beim Tippen, kein versehentliches Zoomen
+  oder Textmarkieren mehr, Rand-Freihaltung für Geräte mit Kamera-Aussparung, Wurf-Anzeige und
+  Checkout-Vorschlag in einer Zeile, kompakte Spielerliste ab drei Spielern (der Spieler am Wurf
+  bleibt immer sichtbar).
+- Der Update-Hinweis („Neue Version verfügbar") erscheint nicht mehr auf Fernbedienung und
+  Zuschauer-TV — er schwebte dort über den Tasten.
+- **Fernbedienung koppeln:** Ein Handy, das den QR-Code scannt (oder `…/#/remote` öffnet), fragt nicht
+  mehr erst „Lokal oder Vereinsmodus?". Die Fernbedienung gibt es ohnehin nur im Vereinsmodus — das
+  Handy landet jetzt direkt auf dem Vereins-Login. Die Anmeldung bleibt (nur ein Vereinskonto darf ein
+  Board steuern); nur der überflüssige Zwischenschritt entfällt.
 
 ### Behoben
 - **Undo-Tastenkürzel-Standard auf deutschen Tastaturen.** Das Rückgängig-Kürzel war auf **Alt+Z**
@@ -68,21 +81,6 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
   „Session nicht gefunden". Der QR enthält den Kopplungscode aber ohnehin; das Handy sucht bei veralteter
   ID jetzt automatisch die aktuell aktive Sitzung zu diesem Code und verbindet sich damit. Der QR bleibt
   also gültig, auch wenn sich das Board zwischendurch neu geladen hat.
-
-### Geändert
-- **Fernbedienung am Handy:** Die Bedienoberfläche passt sich jetzt auf jedes Handy ein — sie füllt
-  genau den Bildschirm, ohne zu scrollen. Vorher rutschten „Enter" und „Undo" auf kleineren Geräten
-  unter den sichtbaren Bereich. Neu außerdem: Querformat als Zwei-Spalten-Ansicht (Stand links,
-  Tastenfeld rechts), Druck-Feedback und kurze Vibration beim Tippen, kein versehentliches Zoomen
-  oder Textmarkieren mehr, Rand-Freihaltung für Geräte mit Kamera-Aussparung, Wurf-Anzeige und
-  Checkout-Vorschlag in einer Zeile, kompakte Spielerliste ab drei Spielern (der Spieler am Wurf
-  bleibt immer sichtbar).
-- Der Update-Hinweis („Neue Version verfügbar") erscheint nicht mehr auf Fernbedienung und
-  Zuschauer-TV — er schwebte dort über den Tasten.
-- **Fernbedienung koppeln:** Ein Handy, das den QR-Code scannt (oder `…/#/remote` öffnet), fragt nicht
-  mehr erst „Lokal oder Vereinsmodus?". Die Fernbedienung gibt es ohnehin nur im Vereinsmodus — das
-  Handy landet jetzt direkt auf dem Vereins-Login. Die Anmeldung bleibt (nur ein Vereinskonto darf ein
-  Board steuern); nur der überflüssige Zwischenschritt entfällt.
 
 ## [1.0.3] – 2026-07-21
 
