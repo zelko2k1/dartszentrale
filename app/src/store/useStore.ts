@@ -27,6 +27,7 @@ import type { ProviderRecord } from '../data/provider';
 import { mergeSchedule, deriveOwnTeams, seasonKey, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
 import { mergeNuliga, type NuligaCounts, type NuligaConflict } from '../lib/nuligaImport';
 import { applyPwaUpdate, checkForUpdate as checkPwaUpdate } from '../lib/pwaUpdate';
+import { parseLiveRoute } from '../lib/deepLink';
 import { dict } from '../i18n';
 
 const LS = {
@@ -600,11 +601,18 @@ export const useStore = create<AppState>((set, get) => ({
     // shortcuts must be Strg+Alt+<letter/digit> — reset any legacy/invalid value
     // Kürzel = Alt + Buchstabe/Ziffer (optional Strg). Standard Alt+N / Alt+5 / Alt+3; alte Strg+Alt-Standards migrieren.
     normalizeShortcuts(settings);
+    // Fernbedienung per QR/Deep-Link (#/remote) funktioniert ausschließlich im Vereinsmodus. Das koppelnde
+    // Handy soll deshalb nicht erst „Lokal/Verein?" gefragt werden — direkt Vereinsmodus annehmen und den
+    // Auswahl-Screen überspringen (der Vereins-Login bleibt als Sicherheitsschritt bestehen). Nur laufzeit-
+    // wirksam (nicht persistiert): ein reiner Fernbedienungs-Aufruf verändert die Geräteeinstellung nicht.
+    const remoteEntry = parseLiveRoute()?.mode === 'remote';
     // Erst-Start: neutral im Local-Mode hochfahren und den Auswahl-Screen zeigen (s. needsModeChoice).
     // Bestehende Geräte ohne explizite Wahl behalten ihr bisheriges Verhalten (detected).
-    if (firstRun) settings.appMode = 'local';
+    if (remoteEntry) settings.appMode = 'verein';
+    else if (firstRun) settings.appMode = 'local';
     else if (savedSettings.appModeManual !== true) settings.appMode = detected;
     settings.appModeDetected = detected;
+    const showModeChoice = firstRun && !remoteEntry;
 
     // PocketBase-URL ist GERÄTE-LOKAL (eigener Key, nicht serverseitig) — jeder Rechner/Verein
     // trägt seine eigene Instanz ein. Hat Vorrang vor dem Build-Default VITE_PB_URL.
@@ -632,7 +640,7 @@ export const useStore = create<AppState>((set, get) => ({
       const restored = provider.currentUser();
       if (restored && !restored.active) { void provider.logout(); }
       const session = restored && restored.active ? restored.id : null;
-      set({ settings, provider, pbMode: true, session, needsModeChoice: firstRun });
+      set({ settings, provider, pbMode: true, session, needsModeChoice: showModeChoice });
       // Öffentliche Vereins-Infos (Name, Logo, Impressum, Datenschutz) unabhängig vom Login laden,
       // damit die Login-Seite sie auch beim allerersten Aufruf (noch nicht angemeldet) zeigt. Für
       // angemeldete Nutzer setzt applySnapshot dieselben Werte autoritativ nach (kein Konflikt).
@@ -689,7 +697,7 @@ export const useStore = create<AppState>((set, get) => ({
     if (mig.mc) { matches = mig.matches; write(LS.matches, matches); }
     const seasonSnapshots = read<SeasonSnapshot[]>(LS.seasonSnapshots, []);
 
-    set({ settings, provider, pbMode: false, players, teams, accounts, leagues, events, matches, seasons, seasonSnapshots, activeSeasonId, viewSeasonId: activeSeasonId, session, trainingPlays, lastBackupAt: read<string | null>(LS.lastBackup, null), needsModeChoice: firstRun });
+    set({ settings, provider, pbMode: false, players, teams, accounts, leagues, events, matches, seasons, seasonSnapshots, activeSeasonId, viewSeasonId: activeSeasonId, session, trainingPlays, lastBackupAt: read<string | null>(LS.lastBackup, null), needsModeChoice: showModeChoice });
   },
 
   reloadFromProvider() { void applySnapshot(get, set); },

@@ -31,6 +31,10 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
   bleibt immer sichtbar).
 - Der Update-Hinweis („Neue Version verfügbar") erscheint nicht mehr auf Fernbedienung und
   Zuschauer-TV — er schwebte dort über den Tasten.
+- **Fernbedienung koppeln:** Ein Handy, das den QR-Code scannt (oder `…/#/remote` öffnet), fragt nicht
+  mehr erst „Lokal oder Vereinsmodus?". Die Fernbedienung gibt es ohnehin nur im Vereinsmodus — das
+  Handy landet jetzt direkt auf dem Vereins-Login. Die Anmeldung bleibt (nur ein Vereinskonto darf ein
+  Board steuern); nur der überflüssige Zwischenschritt entfällt.
 
 ## [1.0.3] – 2026-07-21
 
