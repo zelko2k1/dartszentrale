@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { Modal, ModalTitle } from '../components/Modal';
 import { decodeBytes, countReplacementChars } from '../lib/csv';
-import { parseSchedule, scheduleTemplate, scheduleTemplateEn, describeImportSeason, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
+import { parseSchedule, scheduleTemplate, scheduleTemplateEn, describeImportSeason, type ParsedSchedule, type ImportCounts, type OwnTeamConflict, type OwnResolution } from '../lib/scheduleImport';
 import { useT } from '../i18n';
 
 function teamCount(g: ParsedSchedule['groups'][number]): number {
@@ -22,6 +22,9 @@ export function ImportModal() {
   const [error, setError] = useState('');
   const [warning, setWarning] = useState('');
   const [result, setResult] = useState<ImportCounts | null>(null);
+  // Konflikte beim Ableiten eigener Mannschaften + Admin-Entscheidung je Konflikt (Default: verknüpfen).
+  const [conflicts, setConflicts] = useState<OwnTeamConflict[]>([]);
+  const [resolutions, setResolutions] = useState<Record<string, OwnResolution>>({});
 
   const runParse = (raw: string, name: string) => {
     setText(raw); setFileName(name); setResult(null); setError('');
@@ -30,9 +33,14 @@ export function ImportModal() {
     try {
       const p = parseSchedule(raw, s.settings.clubName);
       setParsed(p);
-      if (p.total === 0) setError(tr.modals.noValidFixtures);
+      if (p.total === 0) { setError(tr.modals.noValidFixtures); setConflicts([]); setResolutions({}); }
+      else {
+        const c = s.detectImportConflicts(p);
+        setConflicts(c);
+        setResolutions(Object.fromEntries(c.map((x) => [x.key, 'link' as OwnResolution])));
+      }
     } catch (e) {
-      setParsed(null);
+      setParsed(null); setConflicts([]); setResolutions({});
       setError(e instanceof Error ? e.message : tr.modals.fileUnreadable);
     }
   };
@@ -54,7 +62,7 @@ export function ImportModal() {
 
   const doImport = () => {
     if (!parsed) return;
-    setResult(s.importSchedule(parsed));
+    setResult(s.importSchedule(parsed, resolutions));
   };
 
   const close = () => s.closeImport();
@@ -85,6 +93,7 @@ export function ImportModal() {
               <Stat label={tr.modals.statResultsSet} value={result.resultsSet} />
               <Stat label={tr.modals.statEventsNew} value={result.eventsNew} />
               <Stat label={tr.modals.statSkipped} value={result.skipped} />
+              {result.ownTeamsLinked > 0 && <Stat label={tr.modals.statOwnLinked} value={result.ownTeamsLinked} />}
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>{btn(tr.modals.done, close, true)}</div>
@@ -179,6 +188,37 @@ export function ImportModal() {
                   );
                 })}
               </div>
+
+              {conflicts.length > 0 && (
+                <div style={{ background: 'rgba(242,184,41,.08)', border: '1px solid rgba(242,184,41,.4)', borderRadius: 12, padding: '12px 14px', marginBottom: 16 }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: '#C9882E', marginBottom: 6 }}>⚠ {tr.modals.teamAssignTitle(conflicts.length)}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-4)', lineHeight: 1.5, marginBottom: 12 }}>{tr.modals.teamAssignIntro}</div>
+                  {conflicts.map((c) => (
+                    <div key={c.key} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '8px 0', borderTop: '1px solid var(--hairline)' }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.leagueName}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-4)' }}>
+                          {tr.modals.teamExisting}: <strong style={{ color: 'var(--text-2)' }}>{c.existingName}</strong>
+                          {'  ·  '}{tr.modals.teamImported}: <strong style={{ color: 'var(--text-2)' }}>{c.importedName}</strong>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                        {(['link', 'new', 'skip'] as OwnResolution[]).map((opt) => {
+                          const active = (resolutions[c.key] ?? 'link') === opt;
+                          const label = opt === 'link' ? tr.modals.teamResLink : opt === 'new' ? tr.modals.teamResNew : tr.modals.teamResSkip;
+                          return (
+                            <button key={opt} onClick={() => setResolutions((r) => ({ ...r, [c.key]: opt }))} style={{
+                              background: active ? 'var(--accent)' : 'var(--btn)', border: active ? 'none' : '1px solid var(--border-2)',
+                              color: active ? 'var(--accent-fg)' : 'var(--text-3)', padding: '6px 12px', borderRadius: 9,
+                              fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                            }}>{label}</button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div style={{ fontSize: 11, color: 'var(--text-5)', lineHeight: 1.5, marginBottom: 16 }}>
                 {tr.modals.importNote}
