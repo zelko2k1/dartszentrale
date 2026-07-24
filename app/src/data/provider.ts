@@ -56,12 +56,14 @@ export interface LiveViewState {
   currentIdx: number;
   input: string;                                  // aktueller Tipp-Puffer (Live-Feedback aufs Handy)
   checkout: string[];                             // Checkout-Vorschlag des aktuellen Spielers
-  lastThrow?: { player: number; value: number } | null;
+  // Letzte Aufnahme (für die „Letzter Wurf"-Anzeige): player = Index, value = geworfene Punkte, bust = überworfen.
+  lastThrow?: { player: number; value: number; bust: boolean } | null;
   winner?: string | null;                         // bei phase="won"
   finish?: { minDarts: number } | null;           // Finish-Dart-Abfrage offen → Handy zeigt 1/2/3
-  // Persistentes Highlight des zuletzt abgeschlossenen Legs (Shortleg/High Finish) für die TV-Ansicht.
-  // Bleibt stehen, bis das nächste Leg ausgemacht wird. Match-Ende zeigt die TV-Ansicht über phase="won".
-  highlight?: { player: string; darts: number; score: number; highFinish: boolean; shortLeg: boolean } | null;
+  // Feier-Ereignis der LETZTEN Aufnahme (180 / High Finish ≥100 / Short Leg ≤19 Darts) für die TV-Ansicht.
+  // `id` ist stabil pro Ereignis (Wurf-Index+Art) → der TV erkennt „neu" und blendet die Feier kurz ein, dann
+  // automatisch wieder aus (transient). Match-Ende bleibt dagegen dauerhaft über phase="won".
+  event?: { id: string; kind: '180' | 'highFinish' | 'shortLeg'; player: string; value: number } | null;
 }
 /** Eine Live-Session (ein Board). remoteUser = aktuell gekoppeltes Handy, pendingRemote = Übernahme-Anfrage. */
 export interface LiveSession {

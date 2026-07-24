@@ -81,16 +81,38 @@ describe('projectLiveState', () => {
     expect(v.players[1].c180).toBe(0);
   });
 
-  it('surfaces a short-leg / high-finish highlight for the last finished leg', () => {
-    const v = projectLiveState(state({ allThrows: nineDarter }));
-    expect(v.highlight).toMatchObject({ player: 'Alice', darts: 9, score: 141, highFinish: true, shortLeg: true });
+  it('populates lastThrow (player index + value + bust)', () => {
+    const v = projectLiveState(state({ allThrows: [turn('a', 100)] }));
+    expect(v.lastThrow).toMatchObject({ player: 0, value: 100, bust: false });
   });
 
-  it('no highlight for a long leg with a low finish', () => {
-    const many: Throw[] = [];
-    for (let i = 0; i < 7; i++) many.push(turn('a', 71, { leg: 1 })); // 7×71 = 497 in 21 Darts
-    many.push(turn('a', 4, { leg: 1, checkout: true }));               // Rest 4 → D2, 24 Darts gesamt
-    const v = projectLiveState(state({ allThrows: many }));
-    expect(v.highlight).toBeNull();
+  it('emits a transient 180 event for a 180 on the last throw', () => {
+    const v = projectLiveState(state({ allThrows: [turn('a', 180)] }));
+    expect(v.event).toMatchObject({ kind: '180', player: 'Alice', value: 180 });
+    expect(v.event!.id).toContain(':180');
+  });
+
+  it('emits a high-finish event on a ≥100 checkout (priority over short leg)', () => {
+    const v = projectLiveState(state({ allThrows: nineDarter })); // …141-Checkout, 9 Darts
+    expect(v.event).toMatchObject({ kind: 'highFinish', player: 'Alice', value: 141 });
+  });
+
+  it('emits a short-leg event on a low checkout that finishes a short leg', () => {
+    const v = projectLiveState(state({ allThrows: [
+      turn('a', 140, { leg: 1 }), turn('a', 140, { leg: 1 }), turn('a', 140, { leg: 1 }),
+      turn('a', 81, { leg: 1, checkout: true }), // 501 in 12 Darts, Ausmache 81 (<100)
+    ] }));
+    expect(v.event).toMatchObject({ kind: 'shortLeg', player: 'Alice', value: 12 });
+  });
+
+  it('no event after a normal (non-notable) throw', () => {
+    const v = projectLiveState(state({ allThrows: [turn('a', 60)] }));
+    expect(v.event).toBeNull();
+  });
+
+  it('event id changes per throw so the TV can re-trigger the celebration', () => {
+    const one = projectLiveState(state({ allThrows: [turn('a', 180)] })).event!.id;
+    const two = projectLiveState(state({ allThrows: [turn('a', 180), turn('b', 180)] })).event!.id;
+    expect(one).not.toBe(two);
   });
 });
