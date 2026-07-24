@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { createProvider } from '../data/dataProvider';
 import type { LiveRoute } from '../lib/deepLink';
-import type { LiveSession } from '../data/provider';
+import type { LiveSession, LiveViewState } from '../data/provider';
 import { RemoteConsole } from './RemoteConsole';
 
 export function LiveEntry({ route }: { route: LiveRoute }) {
@@ -103,45 +103,75 @@ function GameListItem({ board, onSelect }: { board: PublicBoard; onSelect: () =>
   );
 }
 
-function Badge({ color, children }: { color: string; children: React.ReactNode }) {
-  return <div style={{ background: `color-mix(in srgb, ${color} 16%, #12161a)`, border: `1px solid ${color}`, color, borderRadius: 12, padding: 'clamp(8px,1.6vw,12px) clamp(14px,2.4vw,22px)', fontSize: 'clamp(15px,2.3vw,24px)', fontWeight: 800 }}>{children}</div>;
-}
 function Stat({ label, value }: { label: string; value: string }) {
   return <span><span style={{ color: '#7c858d', fontWeight: 700 }}>{label}</span> <strong style={{ color: '#e9edf1', fontFamily: 'monospace' }}>{value}</strong></span>;
 }
 
-// Vollansicht eines Spiels: Restscore + Legs/Sets (wie bisher) PLUS Statistik-Zeile (3-Dart-Schnitt, 180er,
-// High Finish) und ein persistentes Highlight (Shortleg/High Finish); Match-Ende hat Vorrang.
+type LiveEvent = NonNullable<LiveViewState['event']>;
+// Feier-Text/-Farbe je Ereignisart. `big` = große Zahl (180 bzw. Ausmache); Short Leg nur als Textzeile.
+function celebrationBanner(e: LiveEvent): { text: string; color: string; big?: string } {
+  if (e.kind === '180') return { color: '#f2b829', big: '180', text: `${e.player} · Maximum!` };
+  if (e.kind === 'highFinish') return { color: '#E0594B', big: String(e.value), text: `${e.player} · High Finish` };
+  return { color: '#59c26a', text: `⚡ ${e.player} · Shortleg · ${e.value} Darts` }; // shortLeg: value = Darts
+}
+
+// Vollansicht eines Spiels: Restscore + Legs/Sets, Statistik-Zeile (3-Dart-Schnitt, 180er, High Finish),
+// „Letzter Wurf" + „am Wurf"-Indikator, sowie eine TRANSIENTE Feier bei 180/High Finish/Short Leg (blendet
+// nach ~6 s automatisch aus, danach Normalanzeige). Match-Ende (phase="won") bleibt dagegen dauerhaft stehen.
 function FullBoard({ board, onBack }: { board: PublicBoard; onBack: () => void }) {
   const st = board.state;
   const curIdx = st?.currentIdx ?? 0;
   const won = st?.phase === 'won';
-  const hl = st?.highlight;
+  const lastThrow = st?.lastThrow ?? null;
+
+  // Bei NEUER event.id die Feier einblenden und nach 6 s automatisch wieder ausblenden (transient).
+  const [celebrate, setCelebrate] = useState<LiveEvent | null>(null);
+  const ev = st?.event ?? null;
+  const evId = ev?.id;
+  useEffect(() => {
+    if (!evId || !ev) return;
+    setCelebrate(ev);
+    const timer = window.setTimeout(() => setCelebrate(null), 6000);
+    return () => window.clearTimeout(timer);
+    // Absichtlich nur bei neuer event.id auslösen (ev wird im Effekt frisch gelesen):
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [evId]);
+
+  const banner = won
+    ? { text: `🏆 ${st?.winner} gewinnt!`, color: '#f2b829' as string, big: undefined as string | undefined }
+    : celebrate
+    ? celebrationBanner(celebrate)
+    : null;
+
   return (
     <div style={{ width: '100%', maxWidth: 1000, display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <style>{`@keyframes dzPop{0%{transform:scale(.82);opacity:0}55%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}`}</style>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <button onClick={onBack} style={{ background: '#12161a', border: '1px solid #1c2228', color: '#e9edf1', borderRadius: 10, padding: '10px 16px', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>← Zur Liste</button>
         <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color: '#9aa4ad' }}>{board.boardName || 'Board'}</span>
         <span style={{ width: 96 }} />
       </div>
 
-      {won ? (
-        <div style={{ textAlign: 'center', fontSize: 'clamp(28px,6vw,56px)', fontWeight: 900, color: '#f2b829' }}>🏆 {st?.winner} gewinnt!</div>
-      ) : hl ? (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
-          {hl.shortLeg && <Badge color="#59c26a">⚡ {hl.player} · Shortleg · {hl.darts} Darts</Badge>}
-          {hl.highFinish && <Badge color="#E0594B">🎯 {hl.player} · High Finish {hl.score}</Badge>}
+      {banner && (
+        <div key={won ? 'won' : celebrate?.id} style={{ animation: 'dzPop .45s cubic-bezier(.2,.75,.25,1.15) both', textAlign: 'center', borderRadius: 16, padding: 'clamp(12px,2.4vw,22px)', background: `linear-gradient(135deg, color-mix(in srgb, ${banner.color} 28%, #12161a), #12161a)`, border: `1px solid ${banner.color}`, boxShadow: `0 12px 44px color-mix(in srgb, ${banner.color} 22%, transparent)` }}>
+          {banner.big && <div style={{ fontSize: 'clamp(44px,12vw,128px)', fontWeight: 900, lineHeight: 1, color: banner.color, letterSpacing: '.03em', fontFamily: 'monospace' }}>{banner.big}</div>}
+          <div style={{ fontSize: banner.big ? 'clamp(16px,2.6vw,30px)' : 'clamp(22px,5vw,46px)', fontWeight: 900, color: banner.big ? '#e9edf1' : banner.color, marginTop: banner.big ? 6 : 0 }}>{banner.text}</div>
         </div>
-      ) : null}
+      )}
 
       {(st?.players ?? []).map((p, i) => {
         const cur = i === curIdx && !won;
+        const threw = !!lastThrow && lastThrow.player === i;
         return (
           <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 'clamp(16px,2.5vw,26px)', borderRadius: 18, background: cur ? 'rgba(224,89,75,.14)' : '#12161a', border: cur ? '1px solid #E0594B' : '1px solid #1c2228', textAlign: 'left' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 800, fontSize: 'clamp(22px,4vw,40px)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
-                <div style={{ fontSize: 'clamp(13px,1.6vw,16px)', color: '#9aa4ad' }}>Sets {p.sets} · Legs {p.legs}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: 800, fontSize: 'clamp(22px,4vw,40px)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+                  {cur && <span style={{ fontSize: 'clamp(10px,1.3vw,13px)', fontWeight: 800, color: '#E0594B', background: 'rgba(224,89,75,.14)', border: '1px solid #E0594B', borderRadius: 999, padding: '2px 10px', letterSpacing: '.06em', textTransform: 'uppercase', flexShrink: 0 }}>am Wurf</span>}
+                  {threw && <span style={{ fontSize: 'clamp(11px,1.4vw,15px)', fontWeight: 800, color: lastThrow!.bust ? '#E0594B' : '#c3ccd4', background: '#12161a', border: '1px solid #1c2228', borderRadius: 8, padding: '2px 10px', fontFamily: 'monospace', flexShrink: 0 }}>{lastThrow!.bust ? 'Bust' : `Wurf ${lastThrow!.value}`}</span>}
+                </div>
+                <div style={{ fontSize: 'clamp(13px,1.6vw,16px)', color: '#9aa4ad', marginTop: 4 }}>Sets {p.sets} · Legs {p.legs}</div>
               </div>
               <div style={{ fontFamily: 'monospace', fontSize: 'clamp(48px,12vw,132px)', fontWeight: 800, lineHeight: 1 }}>{p.score}</div>
             </div>

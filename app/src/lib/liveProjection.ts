@@ -43,17 +43,25 @@ export function projectLiveState(st: ProjectableState): LiveViewState {
       hf: fs.hf,
     };
   });
-  // Persistentes Highlight: das ZULETZT ausgemachte Leg (über die ganze Wurf-Historie), damit die TV-Ansicht
-  // Shortleg/High Finish zuverlässig zeigt – auch wenn der 1,5-s-Poll den Moment des Checkouts verpasst.
-  const lastCo = [...st.allThrows].reverse().find((t) => t.checkout);
-  let highlight: LiveViewState['highlight'] = null;
-  if (lastCo) {
-    const legDarts = st.allThrows.filter((t) => t.playerId === lastCo.playerId && t.leg === lastCo.leg).reduce((a, t) => a + (t.darts || 3), 0);
-    const highFinish = lastCo.raw >= 100;
-    const shortLeg = legDarts <= 19;
-    if (highFinish || shortLeg) {
-      const nm = st.gamePlayers.find((p) => p.id === lastCo.playerId)?.name ?? '';
-      highlight = { player: nm, darts: legDarts, score: lastCo.raw, highFinish, shortLeg };
+  // Letzte Aufnahme + transientes Feier-Ereignis aus GENAU dieser Aufnahme (nicht aus der ganzen Historie),
+  // damit der TV eine 180 / ein High Finish / ein Short Leg kurz feiert und danach von selbst zur Normalanzeige
+  // zurückkehrt. `id` = Wurf-Index + Art → stabil pro Ereignis (der TV erkennt „neu"). Priorität 180 > HF > SL.
+  const lastIdx = st.allThrows.length - 1;
+  const lastT = lastIdx >= 0 ? st.allThrows[lastIdx] : null;
+  let lastThrow: LiveViewState['lastThrow'] = null;
+  let event: LiveViewState['event'] = null;
+  if (lastT) {
+    const pIdx = st.gamePlayers.findIndex((p) => p.id === lastT.playerId);
+    const pName = st.gamePlayers[pIdx]?.name ?? '';
+    lastThrow = { player: pIdx, value: lastT.raw, bust: !!lastT.bust };
+    if (!lastT.bust) {
+      if (lastT.raw === 180) {
+        event = { id: `${lastIdx}:180`, kind: '180', player: pName, value: 180 };
+      } else if (lastT.checkout) {
+        const legDarts = st.allThrows.filter((t) => t.playerId === lastT.playerId && t.leg === lastT.leg).reduce((a, t) => a + (t.darts || 3), 0);
+        if (lastT.raw >= 100) event = { id: `${lastIdx}:hf`, kind: 'highFinish', player: pName, value: lastT.raw };
+        else if (legDarts <= 19) event = { id: `${lastIdx}:sl`, kind: 'shortLeg', player: pName, value: legDarts };
+      }
     }
   }
   const curId = st.gamePlayers[curIdx]?.id;
@@ -68,9 +76,9 @@ export function projectLiveState(st: ProjectableState): LiveViewState {
     currentIdx: curIdx,
     input: st.input,
     checkout: co ? co.split(/\s+/).filter(Boolean) : [],
-    lastThrow: null,
+    lastThrow,
     winner: w?.name ?? null,
     finish: st.finishPrompt ? { minDarts: st.finishPrompt.minDarts } : null,
-    highlight,
+    event,
   };
 }
