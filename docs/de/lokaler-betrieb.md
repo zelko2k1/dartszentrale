@@ -172,8 +172,8 @@ Anmeldung — `gh auth login` ist also nur nötig, wenn du Änderungen hochladen
 ```bash
 # einmalig auf neuem Rechner — nur nötig, wenn du pushen willst
 gh auth login && gh auth setup-git          # GitHub-Anmeldung (oder Token beim push)
-git config --global user.name  "Heiko Frenzel"
-git config --global user.email "hfrenzel2k1@gmail.com"
+git config --global user.name  "username"
+git config --global user.email "mail"
 git clone https://github.com/zelko2k1/dartszentrale.git
 
 # täglich
