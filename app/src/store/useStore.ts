@@ -26,7 +26,7 @@ import {
 import {
   newTournament, setMatchLive as tSetMatchLive, setMatchResult as tSetMatchResult,
   assignBoards as tAssignBoards, matchById as tMatchById, maxBoards as tMaxBoards,
-  TOURNAMENT_MIN_PLAYERS, TOURNAMENT_MAX_PLAYERS,
+  mergeMatchTarget, TOURNAMENT_MIN_PLAYERS, TOURNAMENT_MAX_PLAYERS,
 } from './tournament';
 import { createProvider, type DataProvider } from '../data/dataProvider';
 import type { ProviderRecord } from '../data/provider';
@@ -51,6 +51,7 @@ const LS = {
   seasons: 'darts_seasons',
   seasonSnapshots: 'darts_season_snapshots',
   tournaments: 'darts_tournaments',
+  pendingSync: 'darts_pending_sync', // gepufferte Turnier-Schreibvorgänge (Reconnect-Nachholung, s. flushPendingSync)
   pburl: 'darts_pburl',
   device: 'darts_device', // gerätelokale Konfiguration (Board-/Kiosk-Modus, Board-Bezeichnung)
   devui: 'darts_devui', // gerätelokale UI-Vorlieben (Eingabe-Modus, Hell/Dunkel, Größen) – Mischbetrieb PC/Tablet
@@ -499,6 +500,7 @@ export interface AppState {
   createTournament: () => void;
   openTournament: (id: string) => void;
   startTournamentMatch: (matchId: string, board?: number, tournamentId?: string) => void;
+  resetTournamentMatch: (matchId: string, tournamentId: string) => void;
   leaveTournamentMatch: () => void;
   deleteTournament: (id: string) => void;
   openTournamentList: () => void;
@@ -794,7 +796,7 @@ export const useStore = create<AppState>((set, get) => ({
     set({ settings, provider, pbMode: false, players, teams, accounts, leagues, events, matches, seasons, seasonSnapshots, tournaments, activeSeasonId, viewSeasonId: activeSeasonId, session, trainingPlays, lastBackupAt: read<string | null>(LS.lastBackup, null), needsModeChoice: showModeChoice });
   },
 
-  reloadFromProvider() { void applySnapshot(get, set); },
+  reloadFromProvider() { void flushPendingSync(get, set); void applySnapshot(get, set); },
   clearSyncError() { set({ syncError: null }); },
 
   // Betrachtete Saison wechseln (nur Lese-/Filteransicht; ändert nicht die aktive Saison).
@@ -2265,7 +2267,19 @@ export const useStore = create<AppState>((set, get) => ({
     try { localStorage.removeItem(LS.live); } catch { /* ignore */ }
     set({ tournaments, activeTournamentId: t.id, gamePlayers, gameMode: 'single', allThrows: [], input: '', screen: 'counter', settings, startOffset: 0, pendingStart: true, bullMode: false, spinPick: null, matchSaved: false, freePlay: false, gameLink: null, gameTournament: { tournamentId: t.id, matchId, homeId: m.homeId, awayId: m.awayId }, hint: null, finishPrompt: null, abortConfirm: false });
     // Server robust aktualisieren (mehrere Boards gleichzeitig): frisch lesen → nur diese Partie live setzen.
-    void syncTournamentMatch(get, set, t.id, matchId, (mm) => ({ ...mm, status: 'live' as const, board: brd }));
+    void syncTournamentMatch(get, set, t.id, matchId, { status: 'live', board: brd });
+  },
+  // Operator-Reset: eine festhängende „live"-Partie (z. B. nach WLAN-Abbruch beim Anstoßen, ohne dass ein Board
+  // wirklich spielt) zurück auf „pending" + Board frei → das Board-Overlay bietet sie danach erneut an
+  // („erneut an die Boards senden"). Erledigte Partien werden nicht angetastet.
+  resetTournamentMatch(matchId, tournamentId) {
+    const st = get();
+    const t = st.tournaments.find((x) => x.id === tournamentId);
+    const m = t ? tMatchById(t, matchId) : undefined;
+    if (!t || !m || m.status === 'done') return;
+    const t2: Tournament = { ...t, matches: t.matches.map((x) => x.id === matchId ? { ...x, status: 'pending' as const, board: undefined } : x), status: 'running' };
+    set({ tournaments: st.tournaments.map((x) => x.id === t.id ? t2 : x) }); // optimistisch
+    void syncTournamentMatch(get, set, t.id, matchId, { status: 'pending' });
   },
   leaveTournamentMatch() {
     const st = get();
@@ -2280,7 +2294,7 @@ export const useStore = create<AppState>((set, get) => ({
       if (t && m && m.status !== 'done') {
         const t2: Tournament = { ...t, matches: t.matches.map((x) => x.id === m.id ? { ...x, status: 'pending' as const, board: undefined } : x) };
         tournaments = st.tournaments.map((x) => x.id === t.id ? t2 : x); // optimistisch
-        void syncTournamentMatch(get, set, t.id, m.id, (mm) => ({ ...mm, status: 'pending' as const, board: undefined }));
+        void syncTournamentMatch(get, set, t.id, m.id, { status: 'pending' });
       }
     }
     try { localStorage.removeItem(LS.live); } catch { /* ignore */ }
@@ -2611,35 +2625,78 @@ function recordTournamentResult(get: () => AppState, set: SetFn) {
   const t2 = tSetMatchResult(t, link.matchId, result);
   set({ tournaments: st.tournaments.map((x) => x.id === t.id ? t2 : x) }); // optimistisch für sofortige UI
   // Server robust (mehrere Boards): frisch lesen → nur diese Partie als erledigt mit Ergebnis mergen.
-  void syncTournamentMatch(get, set, t.id, link.matchId, (mm) => ({ ...mm, status: 'done' as const, result }));
+  void syncTournamentMatch(get, set, t.id, link.matchId, { status: 'done', result });
 }
-// Aktualisiert EINE Turnier-Partie robust auch bei mehreren gleichzeitigen Board-PCs: im Vereinsmodus wird
-// der Datensatz FRISCH vom Server gelesen, nur die eine Partie gemergt und zurückgeschrieben — statt den ganzen
-// (evtl. veralteten) lokalen Blob zu überschreiben. Sonst könnte ein Board das gerade erst geschriebene
-// Ergebnis eines anderen Boards wieder überschreiben. Lokal: direkt im localStorage-Array.
+// ── Retry-Warteschlange für Turnier-Schreibvorgänge (Reconnect-Sicherheit) ──
+// Fällt beim Anstoßen/Speichern die Verbindung aus, ginge der Server-Schreibvorgang sonst verloren (die Partie
+// bliebe „live"/offen hängen). Wir puffern das gewünschte Ziel (status/board/result) je Partie in localStorage
+// (überlebt einen Reload) und holen es nach Reconnect nach. Idempotent: ein bereits erledigtes Ergebnis wird
+// NIE durch einen veralteten live/pending-Stand überschrieben.
+interface PendingSync { tournamentId: string; matchId: string; target: Partial<TournamentMatch>; }
+function readPending(): PendingSync[] { try { return JSON.parse(localStorage.getItem(LS.pendingSync) || '[]'); } catch { return []; } }
+function writePending(q: PendingSync[]) { try { localStorage.setItem(LS.pendingSync, JSON.stringify(q)); } catch { /* ignore */ } }
+function enqueuePending(e: PendingSync) {
+  // Je Partie nur der ZULETZT gewünschte Stand (ein späteres „done" verdrängt ein früheres „live"/„pending").
+  const q = readPending().filter((x) => !(x.tournamentId === e.tournamentId && x.matchId === e.matchId));
+  q.push(e); writePending(q);
+}
+function removePending(tournamentId: string, matchId: string) {
+  writePending(readPending().filter((x) => !(x.tournamentId === tournamentId && x.matchId === matchId)));
+}
+
+// Aktualisiert EINE Turnier-Partie robust auch bei mehreren gleichzeitigen Board-PCs: im Vereinsmodus wird der
+// Datensatz FRISCH vom Server gelesen, nur die eine Partie gemergt und zurückgeschrieben — statt den ganzen
+// (evtl. veralteten) lokalen Blob zu überschreiben. Bei Fehler (z. B. WLAN weg) → in die Warteschlange, sonst
+// entfernen. `target` ist serialisierbar (status/board/result), damit ein Retry möglich ist. Lokal: direkt.
 async function syncTournamentMatch(
-  get: () => AppState, set: SetFn, tournamentId: string, matchId: string,
-  update: (m: TournamentMatch) => TournamentMatch,
+  get: () => AppState, set: SetFn, tournamentId: string, matchId: string, target: Partial<TournamentMatch>,
 ) {
   const st = get();
   const applyTo = (t: Tournament): Tournament => {
-    const matches = t.matches.map((m) => (m.id === matchId ? update(m) : m));
+    const matches = t.matches.map((m) => (m.id === matchId ? mergeMatchTarget(m, target) : m));
     return { ...t, matches, status: matches.every((m) => m.status === 'done') ? 'done' : 'running' };
   };
   if (st.provider.mode === 'verein') {
     try {
       const fresh = await st.provider.getRecord('tournaments', tournamentId);
-      if (!fresh) return;
+      // getRecord liefert bei JEDEM Fehler (auch WLAN weg) null. Ein lokal vorhandenes Turnier ist praktisch nie
+      // wirklich gelöscht → als transienten Fehler behandeln (werfen → puffern/retry). Ein echt gelöschtes
+      // Turnier wird in flushPendingSync anhand des lokalen Stands aussortiert (kein Endlos-Retry).
+      if (!fresh) throw new Error('tournament-read-failed');
       const t2 = applyTo(fresh as unknown as Tournament);
       await st.provider.updateRecord('tournaments', tournamentId, t2 as unknown as ProviderRecord);
       // frischen Server-Stand lokal übernehmen (get() erneut lesen, da zwischenzeitlich ein Reload lief).
       set({ tournaments: get().tournaments.map((x) => (x.id === tournamentId ? t2 : x)) });
-    } catch (e) { console.error('[sync]', e); set({ syncError: dict().storeMsg.errChangeSave }); }
+      removePending(tournamentId, matchId); // erfolgreich → aus der Warteschlange
+    } catch (e) {
+      console.error('[sync]', e);
+      enqueuePending({ tournamentId, matchId, target }); // fehlgeschlagen → nach Reconnect nachholen
+      set({ syncError: dict().storeMsg.errChangeSave });
+    }
   } else {
     const tournaments = get().tournaments.map((t) => (t.id === tournamentId ? applyTo(t) : t));
     write(LS.tournaments, tournaments);
     set({ tournaments });
   }
+}
+
+// Holt gepufferte Turnier-Schreibvorgänge nach (nach Reconnect bzw. beim regelmäßigen Polling). Idempotent;
+// überspringt, solange der Browser offline ist. Registriert beim ersten Aufruf einen 'online'-Listener, damit
+// die Nachholung sofort bei Wiederverbindung anläuft (nicht erst beim nächsten Poll).
+let onlineFlushHooked = false;
+async function flushPendingSync(get: () => AppState, set: SetFn) {
+  if (typeof window !== 'undefined' && !onlineFlushHooked) {
+    onlineFlushHooked = true;
+    window.addEventListener('online', () => { void flushPendingSync(get, set); });
+  }
+  if (get().provider.mode !== 'verein') return;
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+  // Einträge zu lokal nicht mehr vorhandenen Turnieren (wirklich gelöscht) verwerfen → kein Endlos-Retry.
+  const local = new Set(get().tournaments.map((t) => t.id));
+  const q = readPending();
+  const alive = q.filter((e) => local.has(e.tournamentId));
+  if (alive.length !== q.length) writePending(alive);
+  for (const e of alive) { await syncTournamentMatch(get, set, e.tournamentId, e.matchId, e.target); }
 }
 function persistSettings(st: AppState, set: SetFn, settings: Settings) {
   if (st.provider.mode === 'verein') {

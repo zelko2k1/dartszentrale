@@ -545,7 +545,11 @@ export const de = {
     // Board-Overlay
     boardWaiting: 'Warte auf die nächste Partie …',
     boardNextMatch: 'Nächste Partie an diesem Board',
+    boardResume: 'Verbindung war weg – Partie erneut starten',
     boardStart: 'Partie starten',
+    boardStartAgain: 'Partie erneut starten',
+    resetMatch: 'Neu ansetzen',
+    resetConfirm: 'Diese Partie neu ansetzen? Sie wird zurückgesetzt und erneut an das Board gesendet. Nur nutzen, wenn sie festhängt (kein Board spielt sie).',
     // Liste / Löschen
     newTournament: 'Neues Turnier',
     delete: 'Löschen',

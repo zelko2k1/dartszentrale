@@ -153,6 +153,13 @@ function TournamentDashboard({ t }: { t: TournamentT }) {
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
                           {tt.play}
                         </button>
+                      ) : m.status === 'live' ? (
+                        // Festhängende „live"-Partie (z. B. nach WLAN-Abbruch beim Anstoßen) neu ansetzen →
+                        // Board frei, Overlay bietet sie erneut an.
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: chip.color }}>{chip.label}</span>
+                          <button onClick={() => { if (confirm(tt.resetConfirm)) s.resetTournamentMatch(m.id, t.id); }} title={tt.resetMatch} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '5px 9px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{tt.resetMatch}</button>
+                        </div>
                       ) : (
                         <span style={{ fontSize: 11, fontWeight: 700, color: chip.color }}>{chip.label}</span>
                       )}

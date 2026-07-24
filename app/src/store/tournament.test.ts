@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   roundRobinPairings, generateSchedule, newTournament, assignBoards,
   setMatchLive, setMatchResult, standings, highlights, isTournamentOver,
-  tournamentProgress, maxBoards, matchById,
+  tournamentProgress, maxBoards, matchById, boardMatch, mergeMatchTarget,
 } from './tournament';
 import type { TournamentParticipant, TournamentConfig, TournamentPlayerStat } from '../data/types';
 
@@ -189,5 +189,45 @@ describe('highlights', () => {
     expect(hs.some((h) => h.kind === 'shortLeg' && h.value === 18)).toBe(true);
     // 40er ist kein High Finish (<100)
     expect(hs.some((h) => h.kind === 'highFinish' && h.value === 40)).toBe(false);
+  });
+});
+
+describe('boardMatch (Board-Overlay: nächste bzw. festhängende Partie)', () => {
+  it('weist einem freien Board die nächste spielbare Partie zu (stuck=false)', () => {
+    const t = make(4, 2);
+    const bm = boardMatch(t, 1);
+    expect(bm).not.toBeNull();
+    expect(bm!.stuck).toBe(false);
+  });
+
+  it('bietet eine festhängende live-Partie DESSELBEN Boards erneut an (stuck=true)', () => {
+    const t0 = make(4, 2);
+    const first = t0.matches[0];
+    const t = setMatchLive(t0, first.id, 1); // live auf Board 1, aber kein Board spielt sie (WLAN-Abbruch)
+    expect(boardMatch(t, 1)).toMatchObject({ matchId: first.id, stuck: true });
+  });
+
+  it('null, wenn dieses Board weder eine Zuweisung noch eine live-Partie hat', () => {
+    const t = make(3, 1); // 1 Board → Board 2 existiert nicht
+    expect(boardMatch(t, 2)).toBeNull();
+  });
+});
+
+describe('mergeMatchTarget (Reconnect-Nachholung, idempotent)', () => {
+  const live = { id: 'm0', round: 1, homeId: 'p0', awayId: 'p1', status: 'live' as const, board: 2 };
+  it('setzt live → done mit Ergebnis', () => {
+    const r = mergeMatchTarget(live, { status: 'done', result: { homeLegs: 2, awayLegs: 1, winnerId: 'p0', stats: {} } });
+    expect(r.status).toBe('done');
+    expect(r.result?.winnerId).toBe('p0');
+  });
+  it('überschreibt ein bereits erledigtes Ergebnis NICHT mit einem veralteten live/pending-Stand', () => {
+    const done = { ...live, status: 'done' as const, result: { homeLegs: 2, awayLegs: 0, winnerId: 'p0', stats: {} } };
+    expect(mergeMatchTarget(done, { status: 'live', board: 1 })).toBe(done);   // unverändert
+    expect(mergeMatchTarget(done, { status: 'pending' })).toBe(done);          // unverändert
+  });
+  it('pending räumt die Board-Zuweisung ab (auch ohne board im Ziel, JSON-Roundtrip)', () => {
+    const r = mergeMatchTarget(live, JSON.parse(JSON.stringify({ status: 'pending', board: undefined })));
+    expect(r.status).toBe('pending');
+    expect(r.board).toBeUndefined();
   });
 });
