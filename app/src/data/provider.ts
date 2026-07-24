@@ -51,13 +51,17 @@ export interface TwoFactorSetup { secret: string; otpauthUri: string; account: s
 export interface LiveViewState {
   phase: 'idle' | 'whoBegins' | 'playing' | 'bust' | 'won';
   format?: { startScore: number; unit: string; bestOf: number; bestOfSets?: number; doubleOut: boolean };
-  players: { name: string; short?: string; score: number; legs: number; sets: number }[];
+  // avg3/c180/hf: Live-Statistik je Spieler für die Zuschauer-/TV-Ansicht (3-Dart-Schnitt, 180er, High Finish).
+  players: { name: string; short?: string; score: number; legs: number; sets: number; avg3?: number; c180?: number; hf?: number }[];
   currentIdx: number;
   input: string;                                  // aktueller Tipp-Puffer (Live-Feedback aufs Handy)
   checkout: string[];                             // Checkout-Vorschlag des aktuellen Spielers
   lastThrow?: { player: number; value: number } | null;
   winner?: string | null;                         // bei phase="won"
   finish?: { minDarts: number } | null;           // Finish-Dart-Abfrage offen → Handy zeigt 1/2/3
+  // Persistentes Highlight des zuletzt abgeschlossenen Legs (Shortleg/High Finish) für die TV-Ansicht.
+  // Bleibt stehen, bis das nächste Leg ausgemacht wird. Match-Ende zeigt die TV-Ansicht über phase="won".
+  highlight?: { player: string; darts: number; score: number; highFinish: boolean; shortLeg: boolean } | null;
 }
 /** Eine Live-Session (ein Board). remoteUser = aktuell gekoppeltes Handy, pendingRemote = Übernahme-Anfrage. */
 export interface LiveSession {
