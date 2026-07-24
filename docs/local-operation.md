@@ -172,8 +172,8 @@ authentication, so `gh auth login` is only required if you want to upload change
 ```bash
 # once on a new machine — only needed if you intend to push
 gh auth login && gh auth setup-git          # GitHub sign-in (or token at push time)
-git config --global user.name  "Heiko Frenzel"
-git config --global user.email "hfrenzel2k1@gmail.com"
+git config --global user.name  "username"
+git config --global user.email "mail"
 git clone https://github.com/zelko2k1/dartszentrale.git
 
 # daily
