@@ -1,7 +1,7 @@
 // Reine View-Projektion für „Remote & Live" (Plan docs/plan-remote.md, Phase 2).
 // Bewusst OHNE Wert-Import des Stores → in Node testbar. Baut die kompakte LiveViewState aus dem
 // Spielzustand, ausschließlich über die counter.ts-Funktionen (Anzeige 1:1 identisch mit dem Board).
-import { scores, currentIdx, progress, matchOver, winner, checkoutSuggestion } from '../store/counter';
+import { scores, currentIdx, progress, matchOver, winner, checkoutSuggestion, average, countAtLeast, finishStats } from '../store/counter';
 import type { GamePlayer, Throw, Settings, Screen } from '../data/types';
 import type { LiveViewState } from '../data/provider';
 
@@ -30,12 +30,32 @@ export function projectLiveState(st: ProjectableState): LiveViewState {
   const prog = progress(slice);
   const curIdx = currentIdx(slice);
   const over = matchOver(slice);
-  const players = st.gamePlayers.map((p) => ({
-    name: p.name, short: p.short,
-    score: sc[p.id] ?? st.settings.startScore,
-    legs: prog.legsSet[p.id] ?? 0,
-    sets: prog.setsWon[p.id] ?? 0,
-  }));
+  const players = st.gamePlayers.map((p) => {
+    const fs = finishStats(slice, p.id);
+    return {
+      name: p.name, short: p.short,
+      score: sc[p.id] ?? st.settings.startScore,
+      legs: prog.legsSet[p.id] ?? 0,
+      sets: prog.setsWon[p.id] ?? 0,
+      // Live-Statistik für die TV-Ansicht (identisch zum Counter): 3-Dart-Schnitt, 180er, High Finish.
+      avg3: Math.round(average(slice, p.id) * 10) / 10,
+      c180: countAtLeast(slice, p.id, 180, true),
+      hf: fs.hf,
+    };
+  });
+  // Persistentes Highlight: das ZULETZT ausgemachte Leg (über die ganze Wurf-Historie), damit die TV-Ansicht
+  // Shortleg/High Finish zuverlässig zeigt – auch wenn der 1,5-s-Poll den Moment des Checkouts verpasst.
+  const lastCo = [...st.allThrows].reverse().find((t) => t.checkout);
+  let highlight: LiveViewState['highlight'] = null;
+  if (lastCo) {
+    const legDarts = st.allThrows.filter((t) => t.playerId === lastCo.playerId && t.leg === lastCo.leg).reduce((a, t) => a + (t.darts || 3), 0);
+    const highFinish = lastCo.raw >= 100;
+    const shortLeg = legDarts <= 19;
+    if (highFinish || shortLeg) {
+      const nm = st.gamePlayers.find((p) => p.id === lastCo.playerId)?.name ?? '';
+      highlight = { player: nm, darts: legDarts, score: lastCo.raw, highFinish, shortLeg };
+    }
+  }
   const curId = st.gamePlayers[curIdx]?.id;
   const curRem = curId != null ? (sc[curId] ?? st.settings.startScore) : st.settings.startScore;
   const co = !over ? checkoutSuggestion(st.settings, curRem) : null;
@@ -51,5 +71,6 @@ export function projectLiveState(st: ProjectableState): LiveViewState {
     lastThrow: null,
     winner: w?.name ?? null,
     finish: st.finishPrompt ? { minDarts: st.finishPrompt.minDarts } : null,
+    highlight,
   };
 }

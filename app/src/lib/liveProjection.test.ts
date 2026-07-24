@@ -64,4 +64,33 @@ describe('projectLiveState', () => {
     expect(v.phase).toBe('won');
     expect(v.winner).toBe('Alice');
   });
+
+  // Ein 9-Darter für Alice: 180, 180, 141-Checkout → Shortleg (9 Darts) + High Finish (141).
+  const nineDarter = [
+    turn('a', 180, { leg: 1 }),
+    turn('a', 180, { leg: 1 }),
+    turn('a', 141, { leg: 1, checkout: true }),
+  ];
+
+  it('exposes per-player live stats (avg3, 180er, high finish) for the TV view', () => {
+    const v = projectLiveState(state({ allThrows: nineDarter }));
+    const alice = v.players[0];
+    expect(alice.c180).toBe(2);
+    expect(alice.hf).toBe(141);            // höchste Ausmache
+    expect(alice.avg3).toBeGreaterThan(150);
+    expect(v.players[1].c180).toBe(0);
+  });
+
+  it('surfaces a short-leg / high-finish highlight for the last finished leg', () => {
+    const v = projectLiveState(state({ allThrows: nineDarter }));
+    expect(v.highlight).toMatchObject({ player: 'Alice', darts: 9, score: 141, highFinish: true, shortLeg: true });
+  });
+
+  it('no highlight for a long leg with a low finish', () => {
+    const many: Throw[] = [];
+    for (let i = 0; i < 7; i++) many.push(turn('a', 71, { leg: 1 })); // 7×71 = 497 in 21 Darts
+    many.push(turn('a', 4, { leg: 1, checkout: true }));               // Rest 4 → D2, 24 Darts gesamt
+    const v = projectLiveState(state({ allThrows: many }));
+    expect(v.highlight).toBeNull();
+  });
 });
