@@ -103,6 +103,19 @@ function recomputeStatus(matches: TournamentMatch[]): Tournament["status"] {
   return matches.every((m) => m.status === 'done') ? 'done' : 'running';
 }
 
+/**
+ * Wendet ein serialisierbares Ziel (status/board/result) auf eine Partie an — für die reconnect-sichere
+ * Nachholung von Turnier-Schreibvorgängen (s. flushPendingSync im Store). Idempotent und robust:
+ *  • Ein bereits erledigtes Ergebnis („done") wird NIE durch einen veralteten live/pending-Stand überschrieben.
+ *  • „pending" räumt die Board-Zuweisung immer ab (auch wenn target.board nach JSON-Roundtrip fehlt).
+ */
+export function mergeMatchTarget(m: TournamentMatch, target: Partial<TournamentMatch>): TournamentMatch {
+  if (m.status === 'done' && target.status !== 'done') return m;
+  const merged = { ...m, ...target };
+  if (target.status === 'pending') merged.board = undefined;
+  return merged;
+}
+
 /** Setzt eine Partie auf „live" mit Board-Nummer (unveränderlich → neues Objekt). */
 export function setMatchLive(t: Tournament, matchId: string, board: number): Tournament {
   const matches = t.matches.map((m) => (m.id === matchId ? { ...m, status: 'live' as const, board } : m));
@@ -149,6 +162,21 @@ export function assignBoards(t: Tournament): BoardAssignment[] {
     busy.add(m.awayId);
   }
   return out;
+}
+
+/**
+ * Nächste Partie für EIN Board (für das Board-Overlay). Bevorzugt die reguläre Greedy-Zuteilung
+ * (nächste spielbare `pending`-Partie auf diesem Board). Findet sich keine, aber es hängt eine
+ * `live`-Partie auf GENAU diesem Board fest (das Board ist gerade nicht am Spielen → das Spiel ging
+ * z. B. durch einen WLAN-Abbruch beim Anstoßen verloren), wird diese zum erneuten Starten angeboten
+ * (`stuck: true`). So heilt sich ein festgefahrenes Board nach Reconnect selbst. null = nichts zu tun.
+ */
+export function boardMatch(t: Tournament, boardNumber: number): { matchId: string; stuck: boolean } | null {
+  const a = assignBoards(t).find((x) => x.board === boardNumber);
+  if (a) return { matchId: a.matchId, stuck: false };
+  const live = t.matches.find((m) => m.status === 'live' && m.board === boardNumber);
+  if (live) return { matchId: live.id, stuck: true };
+  return null;
 }
 
 export interface TournamentStandingRow {
