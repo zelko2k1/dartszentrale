@@ -1276,7 +1276,7 @@ export const useStore = create<AppState>((set, get) => ({
         const rec: Account = { id: uid(), first, last, name, email, role, playerId, active: m.active, avi: m.avi, position: m.position.trim(), last_login: '—', isBoard: m.isBoard, boardNumber: m.boardNumber ?? undefined };
         accounts = [...st.accounts, rec];
         const body = { ...rec, password: m.password } as unknown as ProviderRecord;
-        persist(st, set, LS.users, accounts, (p) => p.createRecord('accounts', body));
+        persist(st, set, LS.users, accounts, (p) => p.createRecord('accounts', body), accountSaveError);
       } else {
         const fields = { first, last, name, email, role, playerId, active: m.active, avi: m.avi, position: m.position.trim() };
         accounts = st.accounts.map((a) => a.id === m.id ? { ...a, ...fields } : a);
@@ -1287,7 +1287,7 @@ export const useStore = create<AppState>((set, get) => ({
         persist(st, set, LS.users, accounts, async (p) => {
           await p.updateRecord('accounts', m.id!, body);
           if (pw) await p.setPassword(m.id!, pw);
-        });
+        }, accountSaveError);
       }
 
       // Mannschaftszuordnung des verknüpften Spielers autoritativ angleichen (nur Rolle Spieler/Kapitän):
@@ -2497,12 +2497,26 @@ export const useStore = create<AppState>((set, get) => ({
 // ── Persistenz-Routing: lokal → localStorage (volle Liste), verein → PocketBase (pro Datensatz) ──
 type SetFn = (p: Partial<AppState>) => void;
 
-function persist(st: AppState, set: SetFn, lsKey: string, fullArray: unknown, verein: (p: DataProvider) => Promise<unknown>) {
+// errMsg (optional): übersetzt einen fehlgeschlagenen Server-Schreibvorgang in eine verständliche Meldung.
+// Fehlt er, wird generisch „Änderung konnte nicht gespeichert werden." angezeigt.
+function persist(st: AppState, set: SetFn, lsKey: string, fullArray: unknown, verein: (p: DataProvider) => Promise<unknown>, errMsg?: (e: unknown) => string) {
   if (st.provider.mode === 'verein') {
-    void verein(st.provider).catch((e) => { console.error('[sync]', e); set({ syncError: dict().storeMsg.errChangeSave }); });
+    void verein(st.provider).catch((e) => { console.error('[sync]', e); set({ syncError: errMsg ? errMsg(e) : dict().storeMsg.errChangeSave }); });
   } else {
     write(lsKey, fullArray);
   }
+}
+// Übersetzt einen PocketBase-Fehler beim Speichern eines Kontos in eine konkrete Meldung. Wichtigster Fall:
+// E-Mail bereits vergeben (validation_not_unique) → klare Meldung statt generischem „nicht gespeichert".
+// Robust gegen die verschiedenen Fehler-Formen des PB-SDK (e.data bzw. e.response.data enthält die Feldfehler).
+function accountSaveError(e: unknown): string {
+  const asObj = (v: unknown): Record<string, unknown> | undefined => (v && typeof v === 'object' ? (v as Record<string, unknown>) : undefined);
+  const eo = asObj(e);
+  // PB-SDK: die Feldfehler liegen unter e.response.data bzw. e.data.data (je nach SDK-Form) → { email: { code } }.
+  const fieldErrs = asObj(asObj(eo?.response)?.data) ?? asObj(asObj(eo?.data)?.data);
+  const emailErr = asObj(fieldErrs?.email);
+  if (emailErr?.code === 'validation_not_unique') return dict().storeMsg.errEmailTaken;
+  return dict().storeMsg.errChangeSave;
 }
 // Persönliche Trainings-Bestwerte am Spieler-Datensatz verbuchen (nach Spielende). Aktualisiert je Spieler
 // den Bestwert seiner Modus-Kennzahl (falls verbessert), persistiert die geänderten Spieler und markiert die
