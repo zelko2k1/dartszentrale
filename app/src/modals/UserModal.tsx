@@ -31,7 +31,12 @@ export function UserModal() {
   };
   // Im echten Vereinsmodus braucht ein neues Konto ein Anmeldepasswort (PocketBase-Auth).
   const needsPw = s.pbMode && m.mode === 'add';
-  const canSave = `${m.first}${m.last}`.trim().length > 0 && m.email.trim().length > 0 && (!needsPw || m.password.trim().length >= 8);
+  // E-Mail bereits von einem ANDEREN Konto verwendet? Der Server (PocketBase) erzwingt Eindeutigkeit und würde
+  // sonst nur einen generischen Fehler liefern. Vorab erkennen → Speichern sperren + klarer Hinweis. Zum
+  // Verknüpfen eines Spielers mit einem bestehenden Konto: dieses Konto bearbeiten, nicht neu anlegen.
+  const emailNorm = m.email.trim().toLowerCase();
+  const emailOwner = emailNorm ? (s.accounts.find((a) => a.id !== m.id && a.email.trim().toLowerCase() === emailNorm) || null) : null;
+  const canSave = `${m.first}${m.last}`.trim().length > 0 && m.email.trim().length > 0 && (!needsPw || m.password.trim().length >= 8) && !emailOwner;
   const players = s.players;
   // Mannschaftszuordnung bezieht sich auf die AKTIVE Saison (archivierte Kader nicht im Benutzer-Dialog).
   const seasonTeams = s.teams.filter((t) => t.seasonId == null || t.seasonId === s.activeSeasonId);
@@ -95,7 +100,13 @@ export function UserModal() {
       </div>
 
       <FieldLabel>{tr.login.email}</FieldLabel>
-      <input className="dh-input" type="email" value={m.email} onChange={(e) => s.setUserField('email', e.target.value)} placeholder="name@verein.de" style={{ ...inputStyle, marginBottom: 18 }} />
+      <input className="dh-input" type="email" value={m.email} onChange={(e) => s.setUserField('email', e.target.value)} placeholder="name@verein.de" style={{ ...inputStyle, marginBottom: emailOwner ? 8 : 18 }} />
+      {emailOwner && (
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'rgba(224,89,75,.1)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', borderRadius: 11, padding: '10px 12px', fontSize: 12.5, lineHeight: 1.45, marginBottom: 18 }}>
+          <span style={{ flexShrink: 0, fontWeight: 800 }}>⚠</span>
+          <span>{tr.modals.emailTaken(emailOwner.name)}</span>
+        </div>
+      )}
 
       {s.pbMode && (
         <>
