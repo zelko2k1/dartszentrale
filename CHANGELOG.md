@@ -7,6 +7,8 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.0.7] – 2026-07-24
+
 ## [1.0.6] – 2026-07-24
 
 ## [1.0.5] – 2026-07-23
