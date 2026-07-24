@@ -1203,6 +1203,15 @@ export const de = {
     resultsAbbrev: 'Erg.',
     importNote: 'Hinweis: Der Export enthält nur eure Begegnungen — die Tabellen je Staffel zeigen daher eine Vereins-Sicht, keine vollständige Ligatabelle.',
     importN: (n: number) => `${n} Begegnungen importieren`,
+    statOwnLinked: 'Verknüpft',
+    // ── Mannschaften-Zuordnung: eigene Mannschaft, für die schon eine Roster-Mannschaft der Liga existiert ──
+    teamAssignTitle: (n: number) => `Mannschaften-Zuordnung (${n})`,
+    teamAssignIntro: 'Für diese Liga(en) existiert bereits eine eigene Mannschaft unter anderem Namen. Wähle je Eintrag: verknüpfen (keine neue Mannschaft), neu anlegen oder überspringen.',
+    teamExisting: 'Bestehend',
+    teamImported: 'Importiert',
+    teamResLink: 'Verknüpfen',
+    teamResNew: 'Neu anlegen',
+    teamResSkip: 'Überspringen',
     // ── nuLiga-Abruf (NuligaSyncModal) ──
     nuligaLoading: 'Spielplan wird von nuLiga geladen …',
     fetchFailed: 'Der Abruf ist fehlgeschlagen.',

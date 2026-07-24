@@ -40,7 +40,8 @@ export interface ImportCounts {
   leaguesNew: number;
   leaguesExisting: number;
   teamsNew: number;       // Mannschaften in den Liga-Tabellen
-  ownTeamsNew: number;    // eigene Vereins-Mannschaften (Mannschaften-Screen)
+  ownTeamsNew: number;    // eigene Vereins-Mannschaften (Mannschaften-Screen), tatsächlich angelegt
+  ownTeamsLinked: number; // eigene Mannschaften, die mit bestehenden Roster-Mannschaften verknüpft wurden (kein Doppel)
   fixturesNew: number;
   resultsSet: number;
   eventsNew: number;      // neue Kalender-Termine (eigene Begegnungen)
@@ -268,7 +269,7 @@ export function mergeSchedule(existing: League[], parsed: ParsedSchedule): Merge
   }));
 
   const counts: ImportCounts = {
-    leaguesNew: 0, leaguesExisting: 0, teamsNew: 0, ownTeamsNew: 0, fixturesNew: 0, resultsSet: 0, eventsNew: 0, skipped: parsed.skipped,
+    leaguesNew: 0, leaguesExisting: 0, teamsNew: 0, ownTeamsNew: 0, ownTeamsLinked: 0, fixturesNew: 0, resultsSet: 0, eventsNew: 0, skipped: parsed.skipped,
   };
   const newIds = new Set<string>();
   const dirty = new Set<string>();
@@ -344,35 +345,86 @@ export function mergeSchedule(existing: League[], parsed: ParsedSchedule): Merge
   return { leagues, touched, counts };
 }
 
+// Ein Konflikt beim Ableiten eigener Mannschaften: die Liga hat eine Eigen-Zeile (z. B. „Dartverein Demo I"),
+// aber im Mannschaften-Screen existiert für DIESELBE Liga (gleiche Art + Saison) bereits eine Roster-Mannschaft
+// unter ANDEREM Namen (z. B. „1. Mannschaft"). Roster- und Liga-Name werden bewusst nicht gleichgesetzt — der
+// Admin entscheidet je Konflikt: verknüpfen (bestehende behalten), neu anlegen oder überspringen.
+export interface OwnTeamConflict {
+  key: string;          // stabiler Schlüssel `${kind}|${normLiganame}` — Basis der Admin-Entscheidung
+  kind: TeamKind;
+  leagueName: string;   // Anzeigename der Liga
+  importedName: string; // Name der Eigen-Zeile aus dem Import
+  existingId: string;   // bestehende Roster-Mannschaft
+  existingName: string;
+  seasonId?: string;
+}
+export type OwnResolution = 'link' | 'new' | 'skip';
+
+export interface OwnTeamPlan {
+  auto: Team[];                 // ohne Konflikt → werden unmittelbar angelegt (bisheriges Verhalten)
+  conflicts: OwnTeamConflict[]; // mit bestehender Roster-Mannschaft → Admin entscheidet
+}
+
+const tkindOf = (k?: TeamKind): TeamKind => (k === 'cup' ? 'cup' : k === 'friendly' ? 'friendly' : 'league');
+function makeOwnTeam(name: string, league: string, kind: TeamKind, seasonId?: string): Team {
+  return { id: uid(), name: clean(name), league, memberIds: [], captainId: null, kind, ...(seasonId ? { seasonId } : {}) };
+}
+
 /**
- * Leitet aus den (gemergten) Ligen die eigenen Vereins-Mannschaften ab, die im
- * "Mannschaften"-Screen noch fehlen. Nur als "eigen" markierte Liga-Teams werden
- * berücksichtigt (Gegnervereine bleiben außen vor). Kader bleibt leer — Spieler
- * werden später manuell zugeordnet.
+ * Plant aus den (gemergten) Ligen die eigenen Vereins-Mannschaften, die im „Mannschaften"-Screen noch
+ * fehlen. Nur als „eigen" markierte Liga-Zeilen zählen (Gegner bleiben außen vor); Kader bleibt leer.
+ * Die Mannschaft bekommt die ART ihres Wettbewerbs (Pokal-Liga → 'cup', sonst 'league') — so entsteht für
+ * denselben Namen je eine Liga- UND eine Pokalmannschaft (z. B. „DSV Nürnberg" spielt in beidem).
  *
- * Wichtig: Die Mannschaft bekommt die ART ihres Wettbewerbs (Pokal-Liga → 'cup', sonst 'league'),
- * und der Abgleich läuft pro (Art + Name) — so entsteht für denselben Namen sowohl eine Liga- als
- * auch eine Pokalmannschaft (z. B. „DSV Nürnberg" spielt in Liga UND Pokal). Ein Spieler darf je einer
- * Liga- und einer Pokalmannschaft angehören.
+ * Abgleich in drei Stufen (pro Eigen-Zeile):
+ *  1) Es gibt schon eine Roster-Mannschaft mit gleichem (Art + Name) → nichts tun (Doppel vermeiden).
+ *  2) Es gibt schon eine Roster-Mannschaft für DIESELBE Liga (gleiches Art + normalisierter Liga-Name),
+ *     aber unter anderem Namen → KONFLIKT (Admin entscheidet). Roster-/Liga-Namen dürfen bewusst abweichen.
+ *  3) Sonst → automatisch anlegen.
  */
-export function deriveOwnTeams(leagues: League[], existingTeams: Team[]): Team[] {
-  const tkind = (k?: TeamKind): TeamKind => (k === 'cup' ? 'cup' : k === 'friendly' ? 'friendly' : 'league');
-  const keyOf = (kind: TeamKind | undefined, name: string) => `${tkind(kind)}|${norm(name)}`;
-  const have = new Set(existingTeams.map((t) => keyOf(t.kind, t.name)));
-  const seen = new Set<string>();
-  const out: Team[] = [];
+export function planOwnTeams(leagues: League[], existingTeams: Team[]): OwnTeamPlan {
+  const nameKey = (kind: TeamKind | undefined, name: string) => `${tkindOf(kind)}|name|${norm(name)}`;
+  const leagueKey = (kind: TeamKind | undefined, league: string) => `${tkindOf(kind)}|liga|${norm(league)}`;
+  const haveByName = new Set(existingTeams.map((t) => nameKey(t.kind, t.name)));
+  const existByLeague = new Map<string, Team>();
+  for (const t of existingTeams) if (t.league) if (!existByLeague.has(leagueKey(t.kind, t.league))) existByLeague.set(leagueKey(t.kind, t.league), t);
+
+  const auto: Team[] = [];
+  const conflicts: OwnTeamConflict[] = [];
+  const seenAuto = new Set<string>();
+  const seenConflict = new Set<string>();
   for (const lg of leagues) {
     const kind: TeamKind = lg.kind === 'cup' ? 'cup' : 'league';
     for (const t of lg.teams) {
       if (!t.own) continue;
-      const k = keyOf(kind, t.name);
-      if (have.has(k) || seen.has(k)) continue;
-      seen.add(k);
-      // Saison der Quell-Liga erben, damit die Mannschaft in der richtigen Saison auftaucht.
-      out.push({ id: uid(), name: clean(t.name), league: lg.name, memberIds: [], captainId: null, kind, ...(lg.seasonId ? { seasonId: lg.seasonId } : {}) });
+      const nk = nameKey(kind, t.name);
+      if (haveByName.has(nk)) continue;              // (1) exakte Roster-Mannschaft vorhanden
+      const lk = leagueKey(kind, lg.name);
+      const existing = existByLeague.get(lk);
+      if (existing && norm(existing.name) !== norm(t.name)) {  // (2) andere Roster-Mannschaft für diese Liga
+        if (seenConflict.has(lk)) continue;
+        seenConflict.add(lk);
+        conflicts.push({ key: lk, kind, leagueName: lg.name, importedName: clean(t.name), existingId: existing.id, existingName: existing.name, seasonId: lg.seasonId });
+        continue;
+      }
+      if (seenAuto.has(nk)) continue;                // (3) neu — innerhalb des Plans nach Name deduplizieren
+      seenAuto.add(nk);
+      auto.push(makeOwnTeam(t.name, lg.name, kind, lg.seasonId));
     }
   }
-  return out;
+  return { auto, conflicts };
+}
+
+/**
+ * Wendet die Admin-Entscheidungen auf einen Plan an → die tatsächlich anzulegenden Mannschaften.
+ * Default je Konflikt = 'link' (verknüpfen → keine neue Mannschaft). Nur 'new' legt die Import-Zeile
+ * als separate Roster-Mannschaft an; 'skip' legt nichts an.
+ */
+export function resolveOwnTeams(plan: OwnTeamPlan, resolutions: Record<string, OwnResolution> = {}): Team[] {
+  const extra = plan.conflicts
+    .filter((c) => (resolutions[c.key] ?? 'link') === 'new')
+    .map((c) => makeOwnTeam(c.importedName, c.leagueName, c.kind, c.seasonId));
+  return [...plan.auto, ...extra];
 }
 
 /**

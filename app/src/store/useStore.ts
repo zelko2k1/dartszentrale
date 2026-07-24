@@ -30,7 +30,7 @@ import {
 } from './tournament';
 import { createProvider, type DataProvider } from '../data/dataProvider';
 import type { ProviderRecord } from '../data/provider';
-import { mergeSchedule, deriveOwnTeams, seasonKey, type ParsedSchedule, type ImportCounts } from '../lib/scheduleImport';
+import { mergeSchedule, planOwnTeams, resolveOwnTeams, seasonKey, type ParsedSchedule, type ImportCounts, type OwnTeamConflict, type OwnResolution } from '../lib/scheduleImport';
 import { mergeNuliga, type NuligaCounts, type NuligaConflict } from '../lib/nuligaImport';
 import { applyPwaUpdate, checkForUpdate as checkPwaUpdate } from '../lib/pwaUpdate';
 import { parseLiveRoute } from '../lib/deepLink';
@@ -446,7 +446,10 @@ export interface AppState {
   // Spielplan-Import (CSV)
   openImport: () => void;
   closeImport: () => void;
-  importSchedule: (parsed: ParsedSchedule) => ImportCounts;
+  // Konflikte beim Ableiten eigener Mannschaften (bestehende Roster-Mannschaft für dieselbe Liga) — read-only Vorschau.
+  detectImportConflicts: (parsed: ParsedSchedule) => OwnTeamConflict[];
+  // resolutions: je Konflikt-Key 'link' | 'new' | 'skip' (fehlend = 'link' = verknüpfen).
+  importSchedule: (parsed: ParsedSchedule, resolutions?: Record<string, OwnResolution>) => ImportCounts;
 
   // nuLiga-Import (Vereinsmodus, Admin) — server-seitiger Abruf + Merge in die Liga
   importNuliga: (leagueId: string) => Promise<void>;
@@ -540,6 +543,43 @@ export interface AppState {
   cancelFinish: () => void;
   applyUpdate: () => void;
   checkForUpdate: () => void;
+}
+
+// Gemeinsame Season-/Merge-Vorbereitung für den Spielplan-Import: erkennt Ziel-Saison(en) aus der CSV,
+// legt fehlende (vorläufig) an und teilt Ligen/Teams/Termine in „Ziel-Saison" (base*) und „unberührt" (other*).
+// Rein lesend gegenüber dem Store (arbeitet auf Kopien) — nutzbar für die Konflikt-Vorschau UND den echten Import.
+// Gibt null zurück, wenn keine Saison ermittelbar ist. Die Status-Umstellung (aktiv/archiviert) macht erst importSchedule.
+function computeImportTargets(st: AppState, parsed: ParsedSchedule) {
+  const nrm = seasonKey;
+  const seasons: Season[] = st.seasons.map((x) => ({ ...x }));
+  const seasonByName = new Map(seasons.map((se) => [nrm(se.name), se]));
+  const seasonNew = new Set<string>();
+  const seasonChanged = new Set<string>();
+  const realNames = [...new Set(parsed.groups.map((g) => g.season))].filter((n) => n && n !== '—');
+  for (const name of realNames) {
+    if (!seasonByName.has(nrm(name))) {
+      const se: Season = { id: uid(), name, status: 'archived' };
+      seasons.push(se); seasonByName.set(nrm(name), se); seasonNew.add(se.id); seasonChanged.add(se.id);
+    }
+  }
+  const cnt = new Map<string, number>();
+  parsed.groups.forEach((g) => cnt.set(nrm(g.season), (cnt.get(nrm(g.season)) || 0) + 1));
+  const primaryName = realNames.slice().sort((a, b) => (cnt.get(nrm(b)) || 0) - (cnt.get(nrm(a)) || 0))[0];
+  const primary = primaryName ? seasonByName.get(nrm(primaryName))! : (st.seasons.find((s) => s.id === st.activeSeasonId) || seasons[0]);
+  if (!primary) return null;
+  const activeSeasonId = primary.id;
+  const targetIds = new Set([primary.id, ...realNames.map((n) => seasonByName.get(nrm(n))!.id)]);
+  const seasonIdFor = (seasonText: string) => (seasonByName.get(nrm(seasonText)) || primary).id;
+  const inTarget = <T extends { seasonId?: string }>(x: T) => targetIds.has(x.seasonId ?? activeSeasonId);
+  return {
+    seasons, seasonByName, seasonNew, seasonChanged, realNames, primaryName, primary, activeSeasonId, targetIds, seasonIdFor,
+    otherLeagues: st.leagues.filter((l) => !inTarget(l)),
+    otherTeams: st.teams.filter((t) => !inTarget(t)),
+    otherEvents: st.events.filter((e) => !inTarget(e)),
+    baseLeagues: st.leagues.filter(inTarget),
+    baseTeams: st.teams.filter(inTarget),
+    baseEvents: st.events.filter(inTarget),
+  };
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -1741,32 +1781,23 @@ export const useStore = create<AppState>((set, get) => ({
   // ── Spielplan-Import (CSV) ──
   openImport() { set({ importOpen: true }); },
   closeImport() { set({ importOpen: false }); },
-  importSchedule(parsed) {
+  detectImportConflicts(parsed) {
     const st = get();
-    // Saison-Abgleich tolerant: „2025/26", „2025/2026", „Saison 2025/26" gelten als dieselbe Saison →
-    // Re-Import trifft die bestehende Saison, statt eine zweite anzulegen (und dabei manuelle Termine zu
-    // archivieren). Siehe seasonKey in lib/scheduleImport.ts.
-    const nrm = seasonKey;
+    const T = computeImportTargets(st, parsed);
+    if (!T) return [];
+    const merged = mergeSchedule(T.baseLeagues, parsed);
+    const seasonLeagues = merged.leagues.map((l) => (l.seasonId && T.targetIds.has(l.seasonId)) ? l : { ...l, seasonId: T.seasonIdFor(l.season) });
+    return planOwnTeams(seasonLeagues, T.baseTeams).conflicts;
+  },
 
-    // ── 1) Saison(en) aus der CSV erkennen: bestehende per Name finden, fehlende anlegen. ──
-    const seasons: Season[] = st.seasons.map((x) => ({ ...x }));
-    const seasonByName = new Map(seasons.map((se) => [nrm(se.name), se]));
-    const seasonNew = new Set<string>();      // neu angelegte Saisons → createRecord
-    const seasonChanged = new Set<string>();  // neue oder statusgeänderte Saisons → Persistenz
-    // Nur „echte" Saison-Werte („—" = keine Saison-Spalte in der CSV → ignorieren, keine Junk-Saison anlegen).
-    const realNames = [...new Set(parsed.groups.map((g) => g.season))].filter((n) => n && n !== '—');
-    for (const name of realNames) {
-      if (!seasonByName.has(nrm(name))) {
-        const se: Season = { id: uid(), name, status: 'archived' }; // finaler Status unten
-        seasons.push(se); seasonByName.set(nrm(name), se); seasonNew.add(se.id); seasonChanged.add(se.id);
-      }
-    }
-    // Primär-Saison: die CSV-Saison mit den meisten Wettbewerben; fehlt eine Saison-Spalte → aktive Saison beibehalten.
-    const cnt = new Map<string, number>();
-    parsed.groups.forEach((g) => cnt.set(nrm(g.season), (cnt.get(nrm(g.season)) || 0) + 1));
-    const primaryName = realNames.slice().sort((a, b) => (cnt.get(nrm(b)) || 0) - (cnt.get(nrm(a)) || 0))[0];
-    const primary = primaryName ? seasonByName.get(nrm(primaryName))! : (st.seasons.find((s) => s.id === st.activeSeasonId) || seasons[0]);
-    if (!primary) return { leaguesNew: 0, leaguesExisting: 0, teamsNew: 0, ownTeamsNew: 0, fixturesNew: 0, resultsSet: 0, eventsNew: 0, skipped: parsed.skipped };
+  importSchedule(parsed, resolutions = {}) {
+    const st = get();
+    // Saison-/Merge-Vorbereitung (geteilt mit detectImportConflicts): erkennt Ziel-Saison(en) aus der CSV,
+    // legt fehlende vorläufig an, trennt Ziel-Saison (base*) von unberührt (other*). Siehe computeImportTargets.
+    const T = computeImportTargets(st, parsed);
+    if (!T) return { leaguesNew: 0, leaguesExisting: 0, teamsNew: 0, ownTeamsNew: 0, ownTeamsLinked: 0, fixturesNew: 0, resultsSet: 0, eventsNew: 0, skipped: parsed.skipped };
+    const { seasons, seasonNew, seasonChanged, primary, primaryName, activeSeasonId, targetIds, seasonIdFor, otherLeagues, otherTeams, otherEvents, baseLeagues, baseTeams, baseEvents } = T;
+
     // Aktive Saison auf die (Primär-)CSV-Saison umstellen (nur wenn eine echte CSV-Saison erkannt wurde);
     // jede andere bisher aktive → archiviert (bleibt erhalten).
     if (primaryName) {
@@ -1775,27 +1806,18 @@ export const useStore = create<AppState>((set, get) => ({
         else if (se.status === 'active') { se.status = 'archived'; seasonChanged.add(se.id); }
       }
     }
-    const activeSeasonId = primary.id;
-    const targetIds = new Set([primary.id, ...realNames.map((n) => seasonByName.get(nrm(n))!.id)]);
-    const seasonIdFor = (seasonText: string) => (seasonByName.get(nrm(seasonText)) || primary).id;
-
-    // ── 2) Merge: Basis = bestehende Ligen/Teams/Termine der Ziel-Saison(en); alles andere unberührt. ──
-    const inTarget = <T extends { seasonId?: string }>(x: T) => targetIds.has(x.seasonId ?? activeSeasonId);
-    const otherLeagues = st.leagues.filter((l) => !inTarget(l));
-    const otherTeams = st.teams.filter((t) => !inTarget(t));
-    const otherEvents = st.events.filter((e) => !inTarget(e));
-    const baseLeagues = st.leagues.filter(inTarget);
-    const baseTeams = st.teams.filter(inTarget);
-    const baseEvents = st.events.filter(inTarget);
 
     const merged = mergeSchedule(baseLeagues, parsed);
     const touched = merged.touched; const counts = merged.counts;
     // Jede gemergte Liga der passenden CSV-Saison zuordnen (Liga-Saison-Text → aufgelöste seasonId).
     const seasonLeagues = merged.leagues.map((l) => (l.seasonId && targetIds.has(l.seasonId)) ? l : { ...l, seasonId: seasonIdFor(l.season) });
     const leagues = [...otherLeagues, ...seasonLeagues];
-    // Eigene Mannschaften ableiten (Kader leer); deriveOwnTeams setzt Art + Saison der Quell-Liga. Dedup gegen Ziel-Saison.
-    const newTeams = deriveOwnTeams(seasonLeagues, baseTeams);
+    // Eigene Mannschaften planen; Konflikte (bestehende Roster-Mannschaft für dieselbe Liga) nach Admin-Entscheidung
+    // auflösen (Default = 'link' = verknüpfen → keine neue Mannschaft). Kader bleibt leer.
+    const plan = planOwnTeams(seasonLeagues, baseTeams);
+    const newTeams = resolveOwnTeams(plan, resolutions);
     counts.ownTeamsNew = newTeams.length;
+    counts.ownTeamsLinked = plan.conflicts.filter((c) => (resolutions[c.key] ?? 'link') !== 'new').length;
     const teams = newTeams.length ? [...otherTeams, ...baseTeams, ...newTeams] : st.teams;
     // Kalender-Termine für eigene Begegnungen ableiten – verknüpft per fixtureId, idempotent.
     const evByFixture = new Map(baseEvents.filter((e) => e.fixtureId).map((e) => [e.fixtureId as string, e]));
