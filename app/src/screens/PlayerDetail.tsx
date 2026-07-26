@@ -18,29 +18,29 @@ export function PlayerDetail() {
   const agg = aggregateFor(player, scopedMatches);
   const rec = agg.records;
   const records: { value: string; label: string; color: string }[] = [
-    { value: rec.bestAvg ? rec.bestAvg.toFixed(1) : '–', label: tr.playerDetail.recBestAvg, color: '#2BD377' },
-    { value: rec.bestF9 != null ? rec.bestF9.toFixed(1) : '–', label: tr.playerDetail.recBestF9, color: '#2bd3c0' },
-    { value: rec.bestCo != null ? rec.bestCo + '%' : '–', label: tr.playerDetail.recBestCo, color: '#3B9EFF' },
-    { value: rec.best180 ? String(rec.best180) : '–', label: tr.playerDetail.recMost180, color: '#E0594B' },
-    { value: rec.best100 ? String(rec.best100) : '–', label: tr.playerDetail.recMost100, color: '#19A463' },
-    { value: rec.longestWinStreak ? String(rec.longestWinStreak) : '–', label: tr.playerDetail.recWinStreak, color: '#F2B829' },
+    { value: rec.bestAvg ? rec.bestAvg.toFixed(1) : '–', label: tr.playerDetail.recBestAvg, color: 'var(--cat-6)' },
+    { value: rec.bestF9 != null ? rec.bestF9.toFixed(1) : '–', label: tr.playerDetail.recBestF9, color: 'var(--cat-3)' },
+    { value: rec.bestCo != null ? rec.bestCo + '%' : '–', label: tr.playerDetail.recBestCo, color: 'var(--cat-1)' },
+    { value: rec.best180 ? String(rec.best180) : '–', label: tr.playerDetail.recMost180, color: 'var(--cat-8)' },
+    { value: rec.best100 ? String(rec.best100) : '–', label: tr.playerDetail.recMost100, color: 'var(--cat-6)' },
+    { value: rec.longestWinStreak ? String(rec.longestWinStreak) : '–', label: tr.playerDetail.recWinStreak, color: 'var(--cat-4)' },
   ];
 
   const stats: { value: string; label: string; color: string }[] = [
-    { value: agg.avg ? agg.avg.toFixed(1) : '–', label: tr.common.avg3, color: '#2BD377' },
-    { value: agg.f9 != null ? agg.f9.toFixed(1) : '–', label: tr.playerDetail.first9, color: '#2bd3c0' },
-    { value: agg.games ? Math.round(agg.wins / agg.games * 100) + '%' : '–', label: tr.playerDetail.winRate, color: '#F2B829' },
+    { value: agg.avg ? agg.avg.toFixed(1) : '–', label: tr.common.avg3, color: 'var(--cat-6)' },
+    { value: agg.f9 != null ? agg.f9.toFixed(1) : '–', label: tr.playerDetail.first9, color: 'var(--cat-3)' },
+    { value: agg.games ? Math.round(agg.wins / agg.games * 100) + '%' : '–', label: tr.playerDetail.winRate, color: 'var(--cat-4)' },
     { value: String(agg.games), label: tr.playerDetail.gamesX01, color: 'var(--text)' },
-    { value: String(agg.wins), label: tr.common.wins, color: '#19A463' },
-    { value: String(agg.losses), label: tr.common.losses, color: '#E0594B' },
-    { value: agg.co != null ? agg.co + '%' : '–', label: tr.playerDetail.checkoutRate, color: '#3B9EFF' },
+    { value: String(agg.wins), label: tr.common.wins, color: 'var(--cat-6)' },
+    { value: String(agg.losses), label: tr.common.losses, color: 'var(--cat-8)' },
+    { value: agg.co != null ? agg.co + '%' : '–', label: tr.playerDetail.checkoutRate, color: 'var(--cat-1)' },
     { value: agg.high ? String(agg.high) : '–', label: tr.dashboard.highFinish, color: 'var(--text)' },
   ];
   const scoring: { value: string; label: string; color: string }[] = [
-    { value: String(agg.c60), label: '60+', color: '#3B9EFF' },
-    { value: String(agg.c100), label: '100+', color: '#19A463' },
-    { value: String(agg.c140), label: '140+', color: '#F2B829' },
-    { value: String(agg.c180), label: '180', color: '#E0594B' },
+    { value: String(agg.c60), label: '60+', color: 'var(--cat-1)' },
+    { value: String(agg.c100), label: '100+', color: 'var(--cat-6)' },
+    { value: String(agg.c140), label: '140+', color: 'var(--cat-4)' },
+    { value: String(agg.c180), label: '180', color: 'var(--cat-8)' },
   ];
   // Short Legs: niedrigster Wert (bestes) für die Übersicht + Verteilung nach Darts (9–19) für die Aufklappung.
   const slDarts = agg.shortLegDarts;
@@ -101,8 +101,8 @@ export function PlayerDetail() {
           ))}
           {/* Short Legs: Übersicht = niedrigster Wert (bestes), Klick → Verteilung 9–19 */}
           <button onClick={() => setSlOpen((v) => !v)} title={tr.playerDetail.showSlDist}
-            style={{ background: 'var(--btn)', border: `1px solid ${slOpen ? '#2bd3c0' : 'var(--border-2)'}`, borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 13, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
-            <span style={{ width: 8, height: 36, borderRadius: 4, background: '#2bd3c0', flexShrink: 0 }} />
+            style={{ background: 'var(--btn)', border: `1px solid ${slOpen ? 'var(--cat-3)' : 'var(--border-2)'}`, borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 13, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+            <span style={{ width: 8, height: 36, borderRadius: 4, background: 'var(--cat-3)', flexShrink: 0 }} />
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontFamily: 'var(--font-num)', fontSize: 24, fontWeight: 800, color: 'var(--text)', lineHeight: 1 }}>
                 {slMin != null ? slMin : '–'}
@@ -130,8 +130,8 @@ export function PlayerDetail() {
                   {slSorted.map(([darts, cnt]) => {
                     const best = darts === slMin;
                     return (
-                      <div key={darts} style={{ display: 'flex', alignItems: 'baseline', gap: 6, background: best ? 'color-mix(in srgb, #2bd3c0 14%, transparent)' : 'var(--btn)', border: `1px solid ${best ? '#2bd3c0' : 'var(--border-2)'}`, borderRadius: 10, padding: '8px 12px' }}>
-                        <span style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800, color: best ? '#2bd3c0' : 'var(--text)' }}>{darts}</span>
+                      <div key={darts} style={{ display: 'flex', alignItems: 'baseline', gap: 6, background: best ? 'color-mix(in srgb, var(--cat-3) 14%, transparent)' : 'var(--btn)', border: `1px solid ${best ? 'var(--cat-3)' : 'var(--border-2)'}`, borderRadius: 10, padding: '8px 12px' }}>
+                        <span style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800, color: best ? 'var(--cat-3)' : 'var(--text)' }}>{darts}</span>
                         <span style={{ fontSize: 10.5, color: 'var(--text-4)', fontWeight: 700 }}>{tr.playerDetail.darts}</span>
                         <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: 'var(--text-3)', marginLeft: 4 }}>{cnt}×</span>
                       </div>

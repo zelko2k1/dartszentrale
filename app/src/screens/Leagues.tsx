@@ -257,9 +257,9 @@ export function Leagues() {
                         {hl.map((h) => (
                           <span key={h.name} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '3px 9px', fontSize: 12, color: 'var(--text-2)' }}>
                             {h.name}
-                            {h.c180 > 0 && <b style={{ color: '#E0594B', fontFamily: 'var(--font-num)' }}>{h.c180}×180</b>}
+                            {h.c180 > 0 && <b style={{ color: 'var(--cat-8)', fontFamily: 'var(--font-num)' }}>{h.c180}×180</b>}
                             {h.shortLegs > 0 && <b style={{ color: '#2bd3c0', fontFamily: 'var(--font-num)' }} title={tr.leagues.slTitle}>{h.shortLegs}× SL</b>}
-                            {h.highFinish >= HF_MIN && <b style={{ color: '#F2B829', fontFamily: 'var(--font-num)' }} title={tr.leagues.hfTitle}>{h.highFinish} HF</b>}
+                            {h.highFinish >= HF_MIN && <b style={{ color: 'var(--cat-4)', fontFamily: 'var(--font-num)' }} title={tr.leagues.hfTitle}>{h.highFinish} HF</b>}
                           </span>
                         ))}
                       </div>
