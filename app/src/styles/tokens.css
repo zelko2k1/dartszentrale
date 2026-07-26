@@ -9,6 +9,9 @@
   --gold:#F2B829; --gold-ink:#1a1206; --co-ink:#F2B829; --win-good:#2BD377; --score-stroke:rgba(0,0,0,.6); --counter-bg:#0c0e11;
   /* Status-Semantik (app-weit): Info (blau, z. B. verknüpft/Vize), Warnung (amber) — je Theme AA */
   --info:#4c9dff; --warn:#e0a83a;
+  /* Kategoriale Stat-Palette (Dataviz): 8 unterscheidbare Hues für Stat-Identität. Dark-Stufe = helle,
+     text-lesbare Töne auf dunklem Grund; CVD-geprüft (validate_palette.js). Reihenfolge = CVD-Sicherheit. */
+  --cat-1:#4c9dff; --cat-2:#f07a3d; --cat-3:#2bd3c0; --cat-4:#F2B829; --cat-5:#e87ba4; --cat-6:#2bd377; --cat-7:#b48aff; --cat-8:#e0594b;
   --scrim:rgba(6,8,10,.72); --shadow-card:0 24px 60px rgba(0,0,0,.5);
   --ease-out:cubic-bezier(.16,1,.3,1); /* :root → global, themeunabhängig */
   --nav-active:color-mix(in srgb, var(--accent) 16%, transparent); --nav-active-fg:var(--accent); --bar:rgba(13,15,18,.55);
@@ -23,6 +26,9 @@
   --gold:#F2B829; --gold-ink:#1a1206; --co-ink:#8a5e00; --win-good:#2BD377; --score-stroke:rgba(0,0,0,.45); --counter-bg:#edeae1;
   /* Status-Semantik: dunklere Blau-/Amber-Werte fürs helle Papier (AA auf surface-2) */
   --info:#1a66c4; --warn:#8a5e00;
+  /* Kategoriale Stat-Palette (Dataviz): fürs helle Papier abgedunkelte Hues, alle ≥3:1 als Text
+     auf --btn (#ece9de); CVD-geprüft (validate_palette.js, alle Checks PASS). */
+  --cat-1:#2166c9; --cat-2:#c15a1c; --cat-3:#0d8f74; --cat-4:#8f6200; --cat-5:#b23a72; --cat-6:#0f8a3f; --cat-7:#5f3fb3; --cat-8:#bf3a2c;
   --scrim:rgba(24,20,12,.5); --shadow-card:0 20px 50px rgba(60,55,40,.18);
   --nav-active:color-mix(in srgb, var(--accent) 14%, transparent); --nav-active-fg:var(--accent); --bar:rgba(248,246,240,.7);
 }
