@@ -1,6 +1,6 @@
 /* Base + Pseudozustände (was Inline-Styles nicht können) */
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Archivo', system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
@@ -11,35 +11,67 @@ input, select, textarea { font-family: inherit; }
 input::placeholder, textarea::placeholder { color: var(--text-5); }
 
 /* Hover-Regel (README): Karten/Listenzeilen heben border-color auf --border-strong */
-.dh-hover-border { transition: border-color .18s ease, background .18s ease; }
+.dh-hover-border { transition: border-color .18s var(--ease-out), background .18s var(--ease-out); }
 .dh-hover-border:hover { border-color: var(--border-strong) !important; }
 
 /* Buttons mit dezentem Hover-Hintergrund */
-.dh-btn { transition: background .15s ease, border-color .15s ease, color .15s ease, opacity .15s ease; }
+.dh-btn { transition: background .15s var(--ease-out), border-color .15s var(--ease-out), color .15s var(--ease-out), opacity .15s var(--ease-out); }
 .dh-btn:hover { background: var(--surface-3); }
 .dh-btn-ghost:hover { background: rgba(255,255,255,.04); }
 
 /* Primärbutton (Akzent-Grün) */
-.dh-primary { transition: filter .15s ease, box-shadow .15s ease, transform .05s ease; }
+.dh-primary { transition: filter .15s var(--ease-out), box-shadow .15s var(--ease-out), transform .05s var(--ease-out); }
 .dh-primary:hover { filter: brightness(1.06); }
 .dh-primary:active { transform: translateY(1px); }
 
 /* Inputs Fokus */
-.dh-input { transition: border-color .15s ease, box-shadow .15s ease; outline: none; }
+.dh-input { transition: border-color .15s var(--ease-out), box-shadow .15s var(--ease-out); outline: none; }
 .dh-input:focus { border-color: var(--border-strong); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+
+/* Tastatur-Fokus als un-abschaltbare Grundregel (Härtung, WCAG 2.4.7): JEDES interaktive Element
+   zeigt bei Keyboard-Navigation einen Akzent-Ring – auch die vielen inline-gestylten Buttons/Inputs,
+   die outline:none setzen. :where() hält die Spezifität bei 0 (leicht überschreibbar); !important
+   schlägt das inline outline:none. Nur :focus-visible → Mausklicks bleiben ringfrei. Komponenten mit
+   eigener Fokus-Anzeige (Abbrechen-/Neu-Dialog per ring()) bekommen ihn additiv obendrauf. */
+:where(button, a[href], input, select, textarea, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 2px;
+}
+
+/* Taktile Spiel-Buttons (Keypad, Quick-Scores, Deck-/Header-Aktionen): dezentes Zeiger-Feedback.
+   filter überschreibt die inline gesetzten Backgrounds NICHT → kein !important, kein Per-Button-Umbau.
+   Nur (hover:hover) → Touch bekommt keinen klebenden Hover; :active gibt den Druck-Impuls (auch am Finger). */
+.dh-tactile button { transition: filter .12s var(--ease-out), box-shadow .12s var(--ease-out); }
+@media (hover: hover) {
+  .dh-tactile button:not(:disabled):hover { filter: brightness(1.12); box-shadow: inset 0 0 0 1.5px var(--border-strong); }
+}
+.dh-tactile button:not(:disabled):active { filter: brightness(.9); }
 
 /* Nav-Item Hover (nur wenn nicht aktiv) */
 .dh-nav:hover:not(.dh-nav-active) { background: var(--surface-2); color: var(--text); }
 
 /* Klickbare Zeile */
-.dh-row { transition: background .15s ease, border-color .18s ease; }
+.dh-row { transition: background .15s var(--ease-out), border-color .18s var(--ease-out); }
 
-.dh-pop { animation: dh-pop .18s ease both; }
-.dh-up { animation: dh-up .2s ease both; }
+.dh-pop { animation: dh-pop .18s var(--ease-out) both; }
+.dh-up { animation: dh-up .2s var(--ease-out) both; }
 
 /* Natives <dialog> (Spieltyp): Focus-Trap + Esc kommen vom Browser, hier nur das Aussehen. */
 .dh-dialog { border: 1px solid var(--border-2); border-radius: 20px; padding: 0; background: var(--surface); color: var(--text); width: 460px; max-width: 92vw; box-shadow: 0 30px 70px rgba(0,0,0,.55); }
 .dh-dialog::backdrop { background: rgba(8,10,12,.78); backdrop-filter: blur(6px); }
-.dh-dialog[open] { animation: dh-pop .18s ease both; }
+.dh-dialog[open] { animation: dh-pop .18s var(--ease-out) both; }
 
 a { color: inherit; text-decoration: none; }
+
+/* Reduced Motion — intentionale Alternative, kein Kahlschlag.
+   Räumliche Eingänge (Modal/Dialog, starten bei opacity:0 mit fill:both) erscheinen per kurzem
+   Fade statt Scale/Slide — abschalten würde sie unsichtbar lassen. Transform-/Positions-Transitions
+   (Klapp-Pfeil-Rotation, Schalter-Knopf) entfallen, ihre Endlage bleibt; Farb-, Deckkraft- und
+   Schatten-Feedback bleibt weich. Der Lade-Spinner (dh-spin, eigene animation) läuft weiter. */
+@media (prefers-reduced-motion: reduce) {
+  .dh-pop, .dh-up, .dh-dialog[open] { animation: dh-fade .12s var(--ease-out) both; }
+  * {
+    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, outline-color, filter !important;
+    transition-duration: .12s !important;
+  }
+}

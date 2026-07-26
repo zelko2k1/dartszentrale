@@ -145,7 +145,7 @@ function FullBoard({ board, onBack }: { board: PublicBoard; onBack: () => void }
 
   return (
     <div style={{ width: '100%', maxWidth: 1000, display: 'flex', flexDirection: 'column', gap: 18 }}>
-      <style>{`@keyframes dzPop{0%{transform:scale(.82);opacity:0}55%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}`}</style>
+      <style>{`@keyframes dzPop{0%{transform:scale(.92);opacity:0}100%{transform:scale(1);opacity:1}}@keyframes dzFade{from{opacity:0}to{opacity:1}}@media (prefers-reduced-motion:reduce){.dz-cel{animation:dzFade .12s ease both!important}}`}</style>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <button onClick={onBack} style={{ background: '#12161a', border: '1px solid #1c2228', color: '#e9edf1', borderRadius: 10, padding: '10px 16px', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>← Zur Liste</button>
         <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color: '#9aa4ad' }}>{board.boardName || 'Board'}</span>
@@ -153,7 +153,7 @@ function FullBoard({ board, onBack }: { board: PublicBoard; onBack: () => void }
       </div>
 
       {banner && (
-        <div key={won ? 'won' : celebrate?.id} style={{ animation: 'dzPop .45s cubic-bezier(.2,.75,.25,1.15) both', textAlign: 'center', borderRadius: 16, padding: 'clamp(12px,2.4vw,22px)', background: `linear-gradient(135deg, color-mix(in srgb, ${banner.color} 28%, #12161a), #12161a)`, border: `1px solid ${banner.color}`, boxShadow: `0 12px 44px color-mix(in srgb, ${banner.color} 22%, transparent)` }}>
+        <div key={won ? 'won' : celebrate?.id} className="dz-cel" style={{ animation: 'dzPop .4s cubic-bezier(.22,1,.36,1) both', textAlign: 'center', borderRadius: 16, padding: 'clamp(12px,2.4vw,22px)', background: `linear-gradient(135deg, color-mix(in srgb, ${banner.color} 28%, #12161a), #12161a)`, border: `1px solid ${banner.color}`, boxShadow: `0 12px 44px color-mix(in srgb, ${banner.color} 22%, transparent)` }}>
           {banner.big && <div style={{ fontSize: 'clamp(44px,12vw,128px)', fontWeight: 900, lineHeight: 1, color: banner.color, letterSpacing: '.03em', fontFamily: 'monospace' }}>{banner.big}</div>}
           <div style={{ fontSize: banner.big ? 'clamp(16px,2.6vw,30px)' : 'clamp(22px,5vw,46px)', fontWeight: 900, color: banner.big ? '#e9edf1' : banner.color, marginTop: banner.big ? 6 : 0 }}>{banner.text}</div>
         </div>

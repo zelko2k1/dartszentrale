@@ -119,9 +119,9 @@ export function Counter() {
   const accentInk = accent;
   const legInk = cfg.legColor || accent;
   const scoreInk = cfg.scoreColor;
-  const coInk = cfg.mode === 'light' ? '#8a5e00' : '#F2B829';
+  const coInk = 'var(--co-ink)';
   // crisp outline for the big score, immer aktiv und je nach Hell-/Dunkelmodus (stroke hinter der Füllung)
-  const scoreOutline: React.CSSProperties = { WebkitTextStroke: `1.5px ${cfg.mode === 'light' ? 'rgba(0,0,0,.45)' : 'rgba(0,0,0,.6)'}`, paintOrder: 'stroke fill' as React.CSSProperties['paintOrder'] };
+  const scoreOutline: React.CSSProperties = { WebkitTextStroke: '1.5px var(--score-stroke)', paintOrder: 'stroke fill' as React.CSSProperties['paintOrder'] };
 
   const keypad = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
   // Quick-Scores spiegeln die Funktionstasten F1–F8 wider
@@ -134,13 +134,13 @@ export function Counter() {
 
   return (
     <BoardScale>
-    <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: cfg.mode === 'light' ? 'var(--bg)' : '#0c0e11', fontFamily: 'inherit' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--counter-bg)', fontFamily: 'inherit' }}>
       {isPhone ? (
         <PhoneCounter landscape={isPhoneLandscape} />
       ) : (
         <>
       {/* header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)', backdropFilter: 'blur(6px)', flexShrink: 0 }}>
+      <div className="dh-tactile" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)', backdropFilter: 'blur(6px)', flexShrink: 0 }}>
         <button onClick={() => s.go('dashboard')} style={headBtn}><IconBack size={15} sw={2} />{tr.counter.back}</button>
         <div style={{ textAlign: 'center', flexShrink: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '.02em', whiteSpace: 'nowrap' }}>{gameTitle}</div>
@@ -149,7 +149,7 @@ export function Counter() {
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={(e) => { e.currentTarget.blur(); s.undo(); }} title={`Undo (${formatCombo(cfg.undoKey || 'alt+u')})`} style={headBtn}><IconUndo size={15} />Undo{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo(cfg.undoKey || 'alt+u')}</span>}</button>
           <button onClick={(e) => { e.currentTarget.blur(); s.newMatch(); }} title={`${tr.counter.newBtn} (${formatCombo(cfg.newGameKey || 'alt+n')})`} style={headBtn}><IconRefresh size={15} />{tr.counter.newBtn}{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo(cfg.newGameKey || 'alt+n')}</span>}</button>
-          <button onClick={(e) => { e.currentTarget.blur(); s.abortGame(); }} title={`${tr.counter.abort} (${formatCombo(cfg.abortKey || 'alt+x')})`} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />{tr.counter.abort}{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo(cfg.abortKey || 'alt+x')}</span>}</button>
+          <button onClick={(e) => { e.currentTarget.blur(); s.abortGame(); }} title={`${tr.counter.abort} (${formatCombo(cfg.abortKey || 'alt+x')})`} style={{ ...headBtn, background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 32%, transparent)', color: 'var(--danger)' }}><IconX size={15} sw={2} />{tr.counter.abort}{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo(cfg.abortKey || 'alt+x')}</span>}</button>
         </div>
       </div>
 
@@ -164,7 +164,7 @@ export function Counter() {
             const turnLabel = isActive ? tr.trainingScr.atThrow : '';
             const pips = Array.from({ length: prog.legsToWinSet }, (_, k) => k < (prog.legsSet[p.id] || 0));
             return (
-              <div key={p.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRadius: 16, background: isActive ? `color-mix(in srgb, ${accent} 9%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${isActive ? accent : 'var(--border-2)'}`, boxShadow: isActive ? `0 0 0 1px ${accent}, 0 0 46px color-mix(in srgb, ${accent} 12%, transparent)` : 'none', transition: 'border-color .18s ease', minWidth: 0, overflow: 'hidden' }}>
+              <div key={p.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRadius: 16, background: isActive ? `color-mix(in srgb, ${accent} 9%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${isActive ? accent : 'var(--border-2)'}`, boxShadow: isActive ? `0 0 0 1px ${accent}, 0 0 46px color-mix(in srgb, ${accent} 12%, transparent)` : 'none', transition: 'border-color .18s var(--ease-out)', minWidth: 0, overflow: 'hidden' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 18px 0', flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
                     <Avatar photo={p.photo} short={p.short} avi={p.av} size={40} />
@@ -187,7 +187,7 @@ export function Counter() {
                   </div>
                   {/* checkout suggestion — centred under the score */}
                   {cfg.showCheckout && co && (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0, maxWidth: '100%', background: 'rgba(242,184,41,.12)', border: '1px solid rgba(242,184,41,.32)', color: coInk, padding: '5px 12px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{co}</div>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0, maxWidth: '100%', background: 'color-mix(in srgb, var(--gold) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 32%, transparent)', color: coInk, padding: '5px 12px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{co}</div>
                   )}
                 </div>
               </div>
@@ -219,7 +219,7 @@ export function Counter() {
 
       {/* input deck */}
       {isTablet ? (
-        <div style={{ flex: `0 0 ${36 * cfg.deckSize / 100}vh`, display: 'flex', gap: 12, padding: '0 12px 12px', minHeight: 0 }}>
+        <div className="dh-tactile" style={{ flex: `0 0 ${36 * cfg.deckSize / 100}vh`, display: 'flex', gap: 12, padding: '0 12px 12px', minHeight: 0 }}>
           {cfg.showQuick && (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0, minHeight: 0 }}>
               <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', paddingLeft: 2, flexShrink: 0 }}>{tr.counter.quickScore}</div>
@@ -258,7 +258,7 @@ export function Counter() {
             <span style={{ fontSize: 15, fontWeight: 700 }}>{activePlayer?.name}</span>
             <span style={{ fontSize: 13, color: 'var(--text-4)' }}>{tr.counter.throwsRest(activeRem)}</span>
           </div>
-          {activeCheckout && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'rgba(242,184,41,.12)', border: '1px solid rgba(242,184,41,.32)', color: coInk, padding: '5px 12px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)' }}>{activeCheckout}</div>}
+          {activeCheckout && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'color-mix(in srgb, var(--gold) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 32%, transparent)', color: coInk, padding: '5px 12px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)' }}>{activeCheckout}</div>}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{ fontFamily: 'var(--font-num)', fontSize: 38, fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 78, textAlign: 'right' }}>{inputDisplay}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, whiteSpace: 'nowrap' }}>
@@ -305,7 +305,7 @@ export function Counter() {
   );
 }
 
-const phoneIconBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, cursor: 'pointer' };
+const phoneIconBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, cursor: 'pointer' };
 
 // „Spiel abbrechen?" – vollständig per Tastatur bedienbar: ◄ ► (bzw. ▲ ▼ / Tab) wechseln die Auswahl,
 // Enter/Leertaste bestätigt die markierte Schaltfläche, Esc = weiterspielen. Der Fokus steht anfangs sicher
@@ -332,7 +332,7 @@ function AbortConfirm() {
         <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>{tr.counter.abortBody}</div>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
           <button ref={keepRef} onClick={() => s.cancelAbort()} onMouseEnter={() => setSel(0)} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 0, 'var(--text)') }}>{tr.counter.keepPlaying}</button>
-          <button ref={abortRef} onClick={() => s.confirmAbort()} onMouseEnter={() => setSel(1)} style={{ flex: 1, background: '#E0594B', border: 'none', color: '#fff', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 1, '#E0594B') }}>{tr.counter.abort}</button>
+          <button ref={abortRef} onClick={() => s.confirmAbort()} onMouseEnter={() => setSel(1)} style={{ flex: 1, background: 'var(--danger)', border: 'none', color: '#fff', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 1, 'var(--danger)') }}>{tr.counter.abort}</button>
         </div>
         {/* Tastatur-Hinweis (nur Desktop, wo eine Tastatur da ist) – analog „Wer beginnt?": Badges + kurze Labels. */}
         {cfg.device === 'desktop' && (
@@ -363,7 +363,7 @@ function CollapseArrow({ open, onToggle }: { open: boolean; onToggle: () => void
       title={open ? tr.counter.sheetCollapse : tr.counter.sheetExpand}
       style={{ flexShrink: 0, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '2px 8px', background: 'var(--surface-3)', border: 'none', borderBottom: open ? '1px solid var(--border-2)' : 'none', cursor: 'pointer', color: 'var(--text-4)' }}
     >
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .18s ease' }}><path d="M6 9l6 6 6-6" /></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform .18s var(--ease-out)' }}><path d="M6 9l6 6 6-6" /></svg>
     </button>
   );
 }
@@ -392,9 +392,9 @@ function RestEntryBox() {
           autoFocus type="text" inputMode="numeric" value={val} placeholder={tr.counter.restPlaceholder}
           onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); else if (e.key === 'Escape') s.closeRestEntry(); }}
-          style={{ width: '100%', background: 'var(--btn)', border: `1px solid ${val !== '' && !valid ? '#E0594B' : 'var(--border-2)'}`, borderRadius: 12, padding: '12px 14px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 26, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+          style={{ width: '100%', background: 'var(--btn)', border: `1px solid ${val !== '' && !valid ? 'var(--danger)' : 'var(--border-2)'}`, borderRadius: 12, padding: '12px 14px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 26, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
         />
-        <div style={{ fontSize: 13, height: 18, marginTop: 10, textAlign: 'center', color: val !== '' && !valid ? '#E0594B' : 'var(--text-4)' }}>
+        <div style={{ fontSize: 13, height: 18, marginTop: 10, textAlign: 'center', color: val !== '' && !valid ? 'var(--danger)' : 'var(--text-4)' }}>
           {val === '' ? tr.counter.restHintEmpty : (scored != null ? tr.counter.restScored(scored) : tr.counter.restInvalid)}
         </div>
         <div style={{ display: 'flex', gap: 12, marginTop: 18 }}>
@@ -424,10 +424,10 @@ function FKeyLegend() {
     { k: 'F12', label: '3-Dart', enabled: canCheckout(cfg, rem, 3).ok, onClick: () => { if (canCheckout(cfg, rem, 3).ok) s.apply(rem, 3); } },
   ];
   return (
-    <div style={{ flexShrink: 0, display: 'flex', flexWrap: 'wrap', gap: 6, padding: '0 12px 10px' }}>
+    <div className="dh-tactile" style={{ flexShrink: 0, display: 'flex', flexWrap: 'wrap', gap: 6, padding: '0 12px 10px' }}>
       {items.map((it) => (
         <button key={it.k} onClick={(e) => { e.currentTarget.blur(); it.onClick(); }} disabled={!it.enabled} title={`${it.k} · ${it.label}`} style={{ flex: '1 1 60px', minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '5px 4px', cursor: it.enabled ? 'pointer' : 'default', opacity: it.enabled ? 1 : 0.4, fontFamily: 'inherit' }}>
-          <span style={{ fontSize: 9, fontWeight: 800, color: accentInk, letterSpacing: '.04em' }}>{it.k}</span>
+          <span style={{ fontSize: 11, fontWeight: 800, color: accentInk, letterSpacing: '.04em' }}>{it.k}</span>
           <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{it.label}</span>
         </button>
       ))}
@@ -467,9 +467,9 @@ function ScoreSheet({ open, onToggle }: { open: boolean; onToggle: () => void })
 
   // Ton-Markierung: 180 = gold gefüllt, 140–179 = Akzent-Ring, 100–139 = dezenter Ring (wie n01s Kringel).
   const scoredInner = (v: string | number, bust: boolean) => {
-    if (bust || typeof v !== 'number') return <span style={{ color: '#E0594B', fontWeight: 800 }}>BUST</span>;
+    if (bust || typeof v !== 'number') return <span style={{ color: 'var(--danger)', fontWeight: 800 }}>BUST</span>;
     let wrap: React.CSSProperties | null = null;
-    if (v >= 180) wrap = { background: '#F2B829', color: '#1a1206', border: '1.5px solid #F2B829' };
+    if (v >= 180) wrap = { background: 'var(--gold)', color: 'var(--gold-ink)', border: '1.5px solid var(--gold)' };
     else if (v >= 140) wrap = { border: `1.6px solid ${accent}`, color: accent };
     else if (v >= 100) wrap = { border: '1.5px solid var(--border-strong)', color: 'var(--text)' };
     if (wrap) return <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 34, padding: '2px 9px', borderRadius: 999, fontWeight: 800, ...wrap }}>{v}</span>;
@@ -495,7 +495,7 @@ function ScoreSheet({ open, onToggle }: { open: boolean; onToggle: () => void })
           {/* Spaltenköpfe */}
           <div style={{ display: 'grid', gridTemplateColumns: gridCols, borderBottom: '1px solid var(--border-2)', background: 'var(--surface-3)', flexShrink: 0 }}>
             {columns.map((col, ci) => (
-              <div key={ci} style={{ padding: '7px 12px', textAlign: col.k === 'dart' ? 'center' : 'right', fontSize: 9, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--text-5)' }}>
+              <div key={ci} style={{ padding: '7px 12px', textAlign: col.k === 'dart' ? 'center' : 'right', fontSize: 11, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--text-4)' }}>
                 {col.k === 'dart' ? tr.counter.colDarts : col.k === 'scored' ? tr.counter.colScore : tr.counter.colRest}
               </div>
             ))}
@@ -513,7 +513,7 @@ function ScoreSheet({ open, onToggle }: { open: boolean; onToggle: () => void })
             {/* Cursor-Zeile: aktuelle Eingabe des Spielers am Wurf (gelb hervorgehoben) */}
             {!over && columns.map((col, ci) => {
               const active = col.p === curIdx;
-              if (col.k === 'scored') return <div key={`p${ci}`} style={{ ...cellBase, borderBottom: 'none', background: active ? 'rgba(242,184,41,.16)' : 'transparent', color: active ? 'var(--text)' : 'var(--text-5)', fontWeight: 800 }}>{active ? (inputDisplay || <span style={{ color: 'var(--text-5)' }}>·</span>) : ''}</div>;
+              if (col.k === 'scored') return <div key={`p${ci}`} style={{ ...cellBase, borderBottom: 'none', background: active ? 'color-mix(in srgb, var(--gold) 16%, transparent)' : 'transparent', color: active ? 'var(--text)' : 'var(--text-5)', fontWeight: 800 }}>{active ? (inputDisplay || <span style={{ color: 'var(--text-5)' }}>·</span>) : ''}</div>;
               return <div key={`p${ci}`} style={{ ...(col.k === 'dart' ? dartCellBase : cellBase), borderBottom: 'none', background: col.k === 'dart' ? undefined : 'transparent' }} />;
             })}
           </div>
@@ -546,7 +546,7 @@ function SheetStats() {
               <div key={p.id} style={{ flex: 1, display: 'flex', gap: 1, background: 'var(--border)', minWidth: 0, borderLeft: pi > 0 ? '2px solid var(--border-strong)' : 'none' }}>
                 {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], [tr.counter.statLast, lt ? (lt.bust ? 'BUST' : String(lt.raw)) : '–'], ['180', String(countAtLeast(slice, p.id, 180, true))], ['SL', bestShortLeg(slice, p.id) > 0 ? String(bestShortLeg(slice, p.id)) : '–'], ['CO', `${fs.co}%`], ['HF', fs.hf > 0 ? String(fs.hf) : '–']].map(([label, val], k) => (
                   <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '8px 3px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, textAlign: 'center', minWidth: 0 }}>
-                    <div style={{ fontSize: Math.round(9 * cfg.statsSize / 100), color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
+                    <div style={{ fontSize: Math.round(10 * cfg.statsSize / 100), color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{label}</div>
                     <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(13 * cfg.statsSize / 100), fontWeight: 700, lineHeight: 1 }}>{val}</div>
                   </div>
                 ))}
@@ -593,15 +593,15 @@ function HistoryBox({ open, onToggle }: { open: boolean; onToggle: () => void })
               return (
                 <div key={p.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0, borderLeft: i > 0 ? '1px solid var(--border-2)' : 'none' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '34px 1fr 1fr', gap: 4, padding: '8px 18px 6px', flexShrink: 0, borderBottom: '1px solid var(--hairline)' }}>
-                    <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase' }}>{tr.counter.colRd}</span>
-                    <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right' }}>{tr.counter.colScore}</span>
-                    <span style={{ fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right' }}>{tr.counter.colRest}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>{tr.counter.colRd}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right' }}>{tr.counter.colScore}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase', textAlign: 'right' }}>{tr.counter.colRest}</span>
                   </div>
                   <div className="dh-history-scroll" style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '4px 8px 8px' }}>
                     {rows.map((r, k) => (
                       <div key={k} style={{ display: 'grid', gridTemplateColumns: '34px 1fr 1fr', gap: 4, padding: '6px 10px', borderRadius: 6, background: r.checkout ? `color-mix(in srgb, ${accent} 12%, transparent)` : 'transparent' }}>
                         <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-5)' }}>{r.round}</span>
-                        <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, textAlign: 'right', color: r.bust ? '#E0594B' : 'var(--text)' }}>{r.scored}</span>
+                        <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, textAlign: 'right', color: r.bust ? 'var(--danger)' : 'var(--text)' }}>{r.scored}</span>
                         <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, textAlign: 'right', color: r.checkout ? accent : 'var(--text-3)' }}>{r.rest}</span>
                       </div>
                     ))}
@@ -625,8 +625,8 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
   const accFg = accentFg(accent);
   const accentInk = accent;
   const scoreInk = cfg.scoreColor || accentInk;
-  const coInk = cfg.mode === 'light' ? '#8a5e00' : '#F2B829';
-  const scoreOutline: React.CSSProperties = { WebkitTextStroke: `1.5px ${cfg.mode === 'light' ? 'rgba(0,0,0,.45)' : 'rgba(0,0,0,.6)'}`, paintOrder: 'stroke fill' as React.CSSProperties['paintOrder'] };
+  const coInk = 'var(--co-ink)';
+  const scoreOutline: React.CSSProperties = { WebkitTextStroke: '1.5px var(--score-stroke)', paintOrder: 'stroke fill' as React.CSSProperties['paintOrder'] };
   const sc = scores(slice);
   const prog = progress(slice);
   const curIdx = currentIdx(slice);
@@ -658,7 +658,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
         <div style={{ fontFamily: 'var(--font-score)', fontWeight: 800, fontSize: `min(${Math.round(150 * cfg.scoreScale / 100)}cqh, ${Math.round(46 * cfg.scoreScale / 100)}cqw)`, lineHeight: 1, letterSpacing: '-.03em', color: scoreInk, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', ...scoreOutline }}>{rem}</div>
       </div>
       {cfg.showCheckout && co && (
-        <div style={{ alignSelf: 'center', display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0, background: 'rgba(242,184,41,.12)', border: '1px solid rgba(242,184,41,.32)', color: coInk, padding: '5px 14px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)' }}>{co}</div>
+        <div style={{ alignSelf: 'center', display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0, background: 'color-mix(in srgb, var(--gold) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 32%, transparent)', color: coInk, padding: '5px 14px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)' }}>{co}</div>
       )}
     </div>
   );
@@ -683,7 +683,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
   );
 
   const deck = (fill: boolean) => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: fill ? 6 : 8, minHeight: 0, ...(fill ? { flex: 1 } : { flexShrink: 0 }) }}>
+    <div className="dh-tactile" style={{ display: 'flex', flexDirection: 'column', gap: fill ? 6 : 8, minHeight: 0, ...(fill ? { flex: 1 } : { flexShrink: 0 }) }}>
       <div style={{ flexShrink: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 12, padding: fill ? '6px 16px' : '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>{tr.counter.enterThrow}</span>
         <span style={{ fontFamily: 'var(--font-num)', fontSize: fill ? 24 : 28, fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 60, textAlign: 'right' }}>{inputDisplay}</span>
@@ -715,7 +715,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
       <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>{matchInfo}</div>
       <div style={{ display: 'flex', gap: 6 }}>
         <button onClick={(e) => { e.currentTarget.blur(); s.undo(); }} style={phoneIconBtn} aria-label="Undo"><IconUndo size={18} /></button>
-        <button onClick={(e) => { e.currentTarget.blur(); s.abortGame(); }} style={{ ...phoneIconBtn, color: '#E0594B' }} aria-label={tr.counter.abort}><IconX size={18} sw={2} /></button>
+        <button onClick={(e) => { e.currentTarget.blur(); s.abortGame(); }} style={{ ...phoneIconBtn, color: 'var(--danger)' }} aria-label={tr.counter.abort}><IconX size={18} sw={2} /></button>
       </div>
     </div>
   );
@@ -765,7 +765,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
                     <div style={{ display: 'flex', gap: 1, background: 'var(--border)' }}>
                       {[[tr.common.avg3, average(slice, p.id).toFixed(1)], ['First 9', first9(slice, p.id).toFixed(1)], ['180', String(countAtLeast(slice, p.id, 180, true))], ['SL', bestShortLeg(slice, p.id) > 0 ? String(bestShortLeg(slice, p.id)) : '–']].map(([label, val], k) => (
                         <div key={k} style={{ flex: 1, background: 'var(--surface-2)', padding: '7px 4px', textAlign: 'center' }}>
-                          <div style={{ fontSize: 9, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase' }}>{label}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase' }}>{label}</div>
                           <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, marginTop: 2 }}>{val}</div>
                         </div>
                       ))}
@@ -775,7 +775,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
                       {rows.map((r, i) => (
                         <div key={i} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 1fr', gap: 4, padding: '5px 8px', borderRadius: 6, background: r.checkout ? `color-mix(in srgb, ${accent} 12%, transparent)` : 'transparent' }}>
                           <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-5)' }}>{r.round}</span>
-                          <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, textAlign: 'right', color: r.bust ? '#E0594B' : 'var(--text)' }}>{r.scored}</span>
+                          <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, textAlign: 'right', color: r.bust ? 'var(--danger)' : 'var(--text)' }}>{r.scored}</span>
                           <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, textAlign: 'right', color: r.checkout ? accent : 'var(--text-3)' }}>{r.rest}</span>
                         </div>
                       ))}
@@ -936,14 +936,14 @@ function WinOverlay() {
   return (
     <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,10,12,.86)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 30 }}>
       <div style={{ textAlign: 'center', maxWidth: 440, padding: '0 24px' }}>
-        <div style={{ width: 96, height: 96, borderRadius: '50%', background: 'radial-gradient(circle,rgba(242,184,41,.25),rgba(242,184,41,.05))', border: '1px solid rgba(242,184,41,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 22px' }}>
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#F2B829" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z" /></svg>
+        <div style={{ width: 96, height: 96, borderRadius: '50%', background: 'radial-gradient(circle,color-mix(in srgb, var(--gold) 25%, transparent),color-mix(in srgb, var(--gold) 5%, transparent))', border: '1px solid color-mix(in srgb, var(--gold) 40%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 22px' }}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z" /></svg>
         </div>
-        <div style={{ fontSize: 13, color: '#F2B829', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 8 }}>{tr.counter.matchWon}</div>
+        <div style={{ fontSize: 13, color: 'var(--gold)', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 8 }}>{tr.counter.matchWon}</div>
         {/* Overlay liegt immer auf dunklem Schleier → Textfarben fest hell, unabhängig vom Hell/Dunkel-Modus. */}
         <div style={{ fontSize: 34, fontWeight: 800, marginBottom: 6, color: '#fff' }}>{w?.name}</div>
         <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, color: 'rgba(255,255,255,.6)', marginBottom: finishLine ? 10 : 16 }}>{legs} · Ø {avg}</div>
-        {finishLine && <div style={{ fontSize: 15, fontWeight: 800, color: '#F2B829', marginBottom: 16 }}>{finishLine}</div>}
+        {finishLine && <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--gold)', marginBottom: 16 }}>{finishLine}</div>}
         {/* einklappbare Match-Statistik: pro Kennzahl der bessere Wert grün beim jeweiligen Spieler */}
         <div>
           <button
@@ -952,7 +952,7 @@ function WinOverlay() {
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.15)', color: 'rgba(255,255,255,.75)', padding: '8px 16px', borderRadius: 10, fontSize: 12, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', marginBottom: statsOpen ? 14 : 26 }}
           >
             {tr.counter.matchStats}
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ transform: statsOpen ? 'rotate(180deg)' : 'none', transition: 'transform .18s ease' }}><path d="M6 9l6 6 6-6" /></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ transform: statsOpen ? 'rotate(180deg)' : 'none', transition: 'transform .18s var(--ease-out)' }}><path d="M6 9l6 6 6-6" /></svg>
             <span style={kbd}>S</span>
           </button>
         </div>
@@ -970,7 +970,7 @@ function WinOverlay() {
                     <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,.42)', textTransform: 'uppercase', letterSpacing: '.03em', textAlign: 'left' }}>{r.label}</div>
                     {r.vals.map((v, i) => {
                       const green = hasWinner && (r.hasData ? r.hasData(v) : true) && v === best;
-                      return <div key={i} style={{ fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, textAlign: 'right', color: green ? '#2BD377' : 'rgba(255,255,255,.85)' }}>{r.fmt(v)}</div>;
+                      return <div key={i} style={{ fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, textAlign: 'right', color: green ? 'var(--win-good)' : 'rgba(255,255,255,.85)' }}>{r.fmt(v)}</div>;
                     })}
                   </Fragment>
                 );

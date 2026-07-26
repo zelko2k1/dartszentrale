@@ -82,7 +82,7 @@ export function CounterSetup() {
   );
   const toggle = (on: boolean, onClick: () => void) => (
     <button onClick={onClick} style={{ position: 'relative', width: 46, height: 26, borderRadius: 999, background: on ? accent : 'var(--btn)', border: on ? 'none' : '1px solid var(--border-2)', cursor: 'pointer', flexShrink: 0 }}>
-      <span style={{ position: 'absolute', top: 2, left: on ? 22 : 2, width: 22, height: 22, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.4)', transition: 'left .15s ease' }} />
+      <span style={{ position: 'absolute', top: 2, left: 2, transform: on ? 'translateX(20px)' : 'none', width: 22, height: 22, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.4)', transition: 'transform .15s var(--ease-out)' }} />
     </button>
   );
   const row = (label: React.ReactNode, sub: string | null, right: React.ReactNode) => (

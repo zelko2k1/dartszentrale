@@ -21,25 +21,28 @@ export function Login() {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 80,
-      background: 'radial-gradient(1200px 600px at 50% -10%, #122a1e 0%, #0a0c0e 60%)',
+      // Ambient-Glow aus dem (pro Verein konfigurierbaren) Akzent abgeleitet → folgt der Vereinsfarbe.
+      background: 'radial-gradient(1200px 620px at 50% -12%, color-mix(in srgb, var(--accent) 13%, var(--bg)) 0%, var(--bg) 60%)',
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, overflow: 'auto',
     }}>
       <div style={{ width: 420, maxWidth: '94vw' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, marginBottom: 26 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 22, padding: '0 2px' }}>
           {(() => {
             const logoSize = s.settings.loginLogoSize ?? 88;
+            const lockSize = Math.min(logoSize, 56);
             return s.settings.clubLogo
-              ? <img src={s.settings.clubLogo} alt={tr.sidebar.clubLogoAlt} style={{ width: logoSize, height: logoSize, borderRadius: Math.round(logoSize * 0.2), objectFit: 'contain' }} />
-              : <Logo size={logoSize} />;
+              ? <img src={s.settings.clubLogo} alt={tr.sidebar.clubLogoAlt} style={{ width: lockSize, height: lockSize, borderRadius: Math.round(lockSize * 0.2), objectFit: 'contain', flexShrink: 0 }} />
+              : <Logo size={lockSize} />;
           })()}
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>DartsZentrale</div>
-            <div style={{ fontSize: 13, color: 'var(--text-4)', fontWeight: 600, marginTop: 2 }}>{s.settings.clubName ? `${s.settings.clubName} · ` : ''}{tr.login.management}</div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-.01em', lineHeight: 1.1 }}>DartsZentrale</div>
+            <div style={{ fontSize: 13, color: 'var(--text-4)', fontWeight: 600, marginTop: 3 }}>{s.settings.clubName ? `${s.settings.clubName} · ` : ''}{tr.login.management}</div>
           </div>
         </div>
 
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 20, padding: 28, boxShadow: '0 30px 70px rgba(0,0,0,.5)' }}>
-          <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{tr.login.signIn}</div>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 20, padding: 28, boxShadow: 'var(--shadow-card)' }}>
+          <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: '-.01em' }}>{tr.login.signIn}</div>
+          <div style={{ width: 30, height: 2, background: 'var(--accent)', borderRadius: 2, margin: '9px 0 10px' }} />
           <div style={{ fontSize: 13, color: 'var(--text-4)', marginBottom: 20 }}>{tr.login.signInSub}</div>
 
           <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 6 }}>{tr.login.email}</label>
@@ -72,7 +75,7 @@ export function Login() {
             </div>
           )}
 
-          {s.loginForm.err && <div style={{ fontSize: 12, color: '#E0594B', fontWeight: 600, margin: '6px 2px 0' }}>{s.loginForm.err}</div>}
+          {s.loginForm.err && <div style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600, margin: '6px 2px 0' }}>{s.loginForm.err}</div>}
 
           <button className="dh-primary" onClick={() => s.loginEmail()} style={{ width: '100%', marginTop: 16, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{s.loginForm.mfaStep ? tr.login.confirm : tr.login.signIn}</button>
 
@@ -104,19 +107,19 @@ export function Login() {
 
         {(impressum || datenschutz) && (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, marginTop: 18, fontSize: 12 }}>
-            {impressum && <button onClick={() => setLegal('impressum')} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, padding: 4, textDecoration: 'underline' }}>{tr.login.impressum}</button>}
+            {impressum && <button className="dh-focus" onClick={() => setLegal('impressum')} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, padding: 4, borderRadius: 6, textDecoration: 'underline' }}>{tr.login.impressum}</button>}
             {impressum && datenschutz && <span style={{ color: 'var(--text-5)' }}>·</span>}
-            {datenschutz && <button onClick={() => setLegal('datenschutz')} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, padding: 4, textDecoration: 'underline' }}>{tr.login.datenschutz}</button>}
+            {datenschutz && <button className="dh-focus" onClick={() => setLegal('datenschutz')} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, padding: 4, borderRadius: 6, textDecoration: 'underline' }}>{tr.login.datenschutz}</button>}
           </div>
         )}
       </div>
 
       {legal && (
-        <div onClick={() => setLegal(null)} style={{ position: 'fixed', inset: 0, zIndex: 90, background: 'rgba(6,8,10,.72)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, overflow: 'auto' }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: 620, maxWidth: '94vw', maxHeight: '86vh', display: 'flex', flexDirection: 'column', background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, boxShadow: '0 30px 70px rgba(0,0,0,.55)' }}>
+        <div onClick={() => setLegal(null)} style={{ position: 'fixed', inset: 0, zIndex: 90, background: 'var(--scrim)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, overflow: 'auto' }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: 620, maxWidth: '94vw', maxHeight: '86vh', display: 'flex', flexDirection: 'column', background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, boxShadow: 'var(--shadow-card)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '20px 24px', borderBottom: '1px solid var(--hairline)' }}>
               <div style={{ fontSize: 18, fontWeight: 800 }}>{legalTitle}</div>
-              <button onClick={() => setLegal(null)} aria-label={tr.login.close} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, color: 'var(--text-3)', cursor: 'pointer' }}>
+              <button className="dh-focus dh-btn" onClick={() => setLegal(null)} aria-label={tr.login.close} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, color: 'var(--text-3)', cursor: 'pointer' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
