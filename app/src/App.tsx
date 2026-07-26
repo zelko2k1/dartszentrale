@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, lazy, Suspense } from 'react';
 import { useStore } from './store/useStore';
 import { rootBg, fontFam, accentFg } from './store/selectors';
 import { useDevice } from './lib/useIsPhone';
@@ -8,19 +8,23 @@ import { Sidebar } from './layout/Sidebar';
 import { Login } from './screens/Login';
 import { ModePicker } from './screens/ModePicker';
 import { Dashboard } from './screens/Dashboard';
-import { Leagues } from './screens/Leagues';
-import { Teams } from './screens/Teams';
-import { Players } from './screens/Players';
-import { PlayerDetail } from './screens/PlayerDetail';
-import { Users } from './screens/Users';
-import { Calendar } from './screens/Calendar';
-import { Statistics } from './screens/Statistics';
-import { Settings } from './screens/Settings';
-import { Training } from './screens/Training';
-import { TrainingSetup } from './screens/TrainingSetup';
+// Cold-Path-Screens (über Navigation erreichbar, nicht im Kaltstart/Kernspiel) werden per Code-Splitting
+// lazy geladen → kleinerer Initial-Chunk, weniger Parse beim Kaltstart. Gerendert nur hinter <Suspense>
+// (ScreenView + Kiosk-<main>). Offline bleibt intakt: der Service-Worker precacht die Lazy-Chunks mit.
+const Leagues = lazy(() => import('./screens/Leagues').then((m) => ({ default: m.Leagues })));
+const Teams = lazy(() => import('./screens/Teams').then((m) => ({ default: m.Teams })));
+const Players = lazy(() => import('./screens/Players').then((m) => ({ default: m.Players })));
+const PlayerDetail = lazy(() => import('./screens/PlayerDetail').then((m) => ({ default: m.PlayerDetail })));
+const Users = lazy(() => import('./screens/Users').then((m) => ({ default: m.Users })));
+const Calendar = lazy(() => import('./screens/Calendar').then((m) => ({ default: m.Calendar })));
+const Statistics = lazy(() => import('./screens/Statistics').then((m) => ({ default: m.Statistics })));
+const Settings = lazy(() => import('./screens/Settings').then((m) => ({ default: m.Settings })));
+const Training = lazy(() => import('./screens/Training').then((m) => ({ default: m.Training })));
+const TrainingSetup = lazy(() => import('./screens/TrainingSetup').then((m) => ({ default: m.TrainingSetup })));
+const TournamentSetup = lazy(() => import('./screens/TournamentSetup').then((m) => ({ default: m.TournamentSetup })));
+const Tournament = lazy(() => import('./screens/Tournament').then((m) => ({ default: m.Tournament })));
+// Hot Path (Kaltstart + Kernspiel) bleibt statisch → nie ein Loading-Flash beim Spielen.
 import { TrainingGame } from './screens/TrainingGame';
-import { TournamentSetup } from './screens/TournamentSetup';
-import { Tournament } from './screens/Tournament';
 import { Counter } from './screens/Counter';
 import { CounterSetup } from './screens/CounterSetup';
 import { LiveEntry } from './screens/LiveEntry';
@@ -34,25 +38,37 @@ import { LiveClock } from './components/LiveClock';
 import { Modals } from './modals/Modals';
 import { useT } from './i18n';
 
+// Neutraler Ladeplatzhalter für lazy-geladene Cold-Path-Screens (Chunk lädt im LAN in ~ms).
+function ScreenFallback() {
+  return (
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--text-4)" strokeWidth="2.4" strokeLinecap="round" style={{ animation: 'dh-spin .9s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+    </div>
+  );
+}
+
 function ScreenView() {
   const screen = useStore((s) => s.screen);
-  switch (screen) {
-    case 'dashboard': return <Dashboard />;
-    case 'leagues': return <Leagues />;
-    case 'teams': return <Teams />;
-    case 'players': return <Players />;
-    case 'playerDetail': return <PlayerDetail />;
-    case 'users': return <Users />;
-    case 'calendar': return <Calendar />;
-    case 'stats': return <Statistics />;
-    case 'settings': return <Settings />;
-    case 'training': return <Training />;
-    case 'trainSetup': return <TrainingSetup />;
-    case 'tournamentSetup': return <TournamentSetup />;
-    case 'tournament': return <Tournament />;
-    case 'setup': return <CounterSetup />;
-    default: return <Dashboard />;
-  }
+  const render = () => {
+    switch (screen) {
+      case 'dashboard': return <Dashboard />;
+      case 'leagues': return <Leagues />;
+      case 'teams': return <Teams />;
+      case 'players': return <Players />;
+      case 'playerDetail': return <PlayerDetail />;
+      case 'users': return <Users />;
+      case 'calendar': return <Calendar />;
+      case 'stats': return <Statistics />;
+      case 'settings': return <Settings />;
+      case 'training': return <Training />;
+      case 'trainSetup': return <TrainingSetup />;
+      case 'tournamentSetup': return <TournamentSetup />;
+      case 'tournament': return <Tournament />;
+      case 'setup': return <CounterSetup />;
+      default: return <Dashboard />;
+    }
+  };
+  return <Suspense fallback={<ScreenFallback />}>{render()}</Suspense>;
 }
 
 export default function App() {
@@ -171,7 +187,7 @@ export default function App() {
       <header style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)' }}>
         {narrowBar && (
           <button onClick={() => setKioskMenuOpen(true)} aria-label={tr.app.menuOpen} title={tr.app.menu}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 42, height: 42, background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 11, color: 'var(--text-2)', cursor: 'pointer', flexShrink: 0 }}>
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 11, color: 'var(--text-2)', cursor: 'pointer', flexShrink: 0 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
           </button>
         )}
@@ -205,7 +221,7 @@ export default function App() {
           <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: 'min(84vw, 320px)', background: 'var(--surface)', borderRight: '1px solid var(--border-2)', boxShadow: '12px 0 40px rgba(0,0,0,.5)', zIndex: 71, display: 'flex', flexDirection: 'column', padding: 16, gap: 9 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
               <div style={{ fontWeight: 800, fontSize: 16 }}>{boardNumber != null ? `Board ${boardNumber}` : tr.app.board}</div>
-              <button onClick={() => setKioskMenuOpen(false)} aria-label={tr.common.close} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, color: 'var(--text-3)', cursor: 'pointer' }}>
+              <button onClick={() => setKioskMenuOpen(false)} aria-label={tr.common.close} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, color: 'var(--text-3)', cursor: 'pointer' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
@@ -267,12 +283,14 @@ export default function App() {
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             {kioskBar}
             <main style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: rootBg(s.settings), position: 'relative' }}>
-              {s.screen === 'training' ? <Training />
-                : s.screen === 'trainSetup' ? <TrainingSetup />
-                : s.screen === 'tournamentSetup' ? <TournamentSetup />
-                : s.screen === 'tournament' ? <Tournament />
-                : s.screen === 'settings' ? <Settings kiosk />
-                : <><BoardPanel /><CounterSetup /><NextGameOverlay /><TournamentBoardOverlay /></>}
+              <Suspense fallback={<ScreenFallback />}>
+                {s.screen === 'training' ? <Training />
+                  : s.screen === 'trainSetup' ? <TrainingSetup />
+                  : s.screen === 'tournamentSetup' ? <TournamentSetup />
+                  : s.screen === 'tournament' ? <Tournament />
+                  : s.screen === 'settings' ? <Settings kiosk />
+                  : <><BoardPanel /><CounterSetup /><NextGameOverlay /><TournamentBoardOverlay /></>}
+              </Suspense>
             </main>
           </div>
         )
@@ -285,7 +303,7 @@ export default function App() {
           <header style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)' }}>
             <button
               onClick={() => setDrawerOpen(true)} aria-label="Menü öffnen"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 40, height: 40, background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 10, color: 'var(--text-2)', cursor: 'pointer', flexShrink: 0 }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 10, color: 'var(--text-2)', cursor: 'pointer', flexShrink: 0 }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
             </button>

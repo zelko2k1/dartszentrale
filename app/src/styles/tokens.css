@@ -2,8 +2,11 @@
 :root, [data-theme="dark"] {
   --sidebar:#0a0c0e; --bg:#0d0f12; --surface:#14181c; --surface-2:#13171c; --surface-3:#161b20; --btn:#1a2026;
   --border:#232a31; --border-2:#2a333c; --border-strong:#3a434d; --hairline:#1c2229;
-  --text:#ECEAE3; --text-2:#aeb4bd; --text-3:#8a9099; --text-4:#6b7480; --text-5:#5b626b;
+  /* text-4/-5 auf WCAG-AA angehoben (Mikro-Labels ≥4.5:1 auf surface-2/-3) */
+  --text:#ECEAE3; --text-2:#aeb4bd; --text-3:#8a9099; --text-4:#8c939d; --text-5:#838a93;
   --success:#7fd7a6; --danger-soft:#c98b86; --danger:#e0594b;
+  /* Spiel-Semantik: Gold (180/High Finish/Checkout), Sieg-Grün, Score-Kontur, Counter-Canvas */
+  --gold:#F2B829; --gold-ink:#1a1206; --co-ink:#F2B829; --win-good:#2BD377; --score-stroke:rgba(0,0,0,.6); --counter-bg:#0c0e11;
   --scrim:rgba(6,8,10,.72); --shadow-card:0 24px 60px rgba(0,0,0,.5);
   --ease-out:cubic-bezier(.16,1,.3,1); /* :root → global, themeunabhängig */
   --nav-active:color-mix(in srgb, var(--accent) 16%, transparent); --nav-active-fg:var(--accent); --bar:rgba(13,15,18,.55);
@@ -11,8 +14,11 @@
 [data-theme="light"] {
   --sidebar:#ffffff; --bg:#edeae1; --surface:#ffffff; --surface-2:#f7f5ef; --surface-3:#f0ede4; --btn:#ece9de;
   --border:#e3e0d4; --border-2:#dad6c8; --border-strong:#c2bdac; --hairline:#ece9df;
-  --text:#1c1f24; --text-2:#474c54; --text-3:#5c616a; --text-4:#7c818a; --text-5:#9aa0a7;
+  /* text-4/-5 auf WCAG-AA angehoben (Mikro-Labels ≥4.5:1 auf hellem Papier) */
+  --text:#1c1f24; --text-2:#474c54; --text-3:#5c616a; --text-4:#656b74; --text-5:#767c85;
   --danger-soft:#b5483b; --success:#178a52; --danger:#c0392b;
+  /* Spiel-Semantik: co-ink dunkler fürs helle Papier; Gold/Sieg-Grün sitzen nur auf dem dunklen Overlay */
+  --gold:#F2B829; --gold-ink:#1a1206; --co-ink:#8a5e00; --win-good:#2BD377; --score-stroke:rgba(0,0,0,.45); --counter-bg:#edeae1;
   --scrim:rgba(24,20,12,.5); --shadow-card:0 20px 50px rgba(60,55,40,.18);
   --nav-active:color-mix(in srgb, var(--accent) 14%, transparent); --nav-active-fg:var(--accent); --bar:rgba(248,246,240,.7);
 }
@@ -24,5 +30,6 @@ html, body { margin: 0; padding: 0; height: 100%; }
 ::-webkit-scrollbar-track { background: transparent; }
 @keyframes dh-pop { from { transform: scale(.82); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes dh-up { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-@keyframes dh-glow { 0%,100% { box-shadow: 0 0 0 1px rgba(43,211,119,.55), 0 0 46px rgba(43,211,119,.10); } 50% { box-shadow: 0 0 0 1px rgba(43,211,119,.85), 0 0 60px rgba(43,211,119,.20); } }
 @keyframes dh-spin { to { transform: rotate(360deg); } }
+/* dh-fade: sichtbarer Endzustand ohne räumliche Bewegung (Reduced-Motion-Ersatz für dh-pop/dh-up/dzPop) */
+@keyframes dh-fade { from { opacity: 0; } to { opacity: 1; } }
