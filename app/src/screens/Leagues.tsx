@@ -176,7 +176,7 @@ export function Leagues() {
               const tblCols = isPhone ? '24px minmax(0,1fr) 24px 22px 22px 22px 50px' : '28px minmax(104px,1fr) 26px 24px 24px 24px 58px 42px 52px';
               const tblMinW = isPhone ? undefined : 508;
               return (
-            <div role="table" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
+            <div role="table" aria-label={sel.name} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
               <div role="row" style={{ display: 'grid', gridTemplateColumns: tblCols, gap: 5, padding: isPhone ? '12px 12px' : '13px 18px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', minWidth: tblMinW }}>
                 <span role="columnheader">#</span><span role="columnheader">{tr.leagues.thTeam}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thPlayed}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thWin}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thDraw}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thLoss}</span>{!isPhone && <span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thLegs}</span>}{!isPhone && <span role="columnheader" style={{ textAlign: 'center' }}>+/−</span>}<span role="columnheader" style={{ textAlign: 'right' }}>{tr.leagues.thPts}</span>
               </div>

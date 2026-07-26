@@ -74,9 +74,9 @@ export function Users() {
         ))}
       </div>
 
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1.1fr 64px 92px 56px', gap: 10, padding: '13px 20px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', minWidth: 584 }}>
-          <span>{tr.users.thUser}</span><span>{tr.users.thRole}</span><span>{tr.users.thPlayerProfile}</span><span style={{ textAlign: 'center' }}>2FA</span><span style={{ textAlign: 'center' }}>{tr.users.thStatus}</span><span />
+      <div role="table" aria-label={tr.dashboard.usersRights} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
+        <div role="row" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1.1fr 64px 92px 56px', gap: 10, padding: '13px 20px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', minWidth: 584 }}>
+          <span role="columnheader">{tr.users.thUser}</span><span role="columnheader">{tr.users.thRole}</span><span role="columnheader">{tr.users.thPlayerProfile}</span><span role="columnheader" style={{ textAlign: 'center' }}>2FA</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.users.thStatus}</span><span role="columnheader" />
         </div>
         {visible.length === 0 && (
           <div style={{ padding: '28px 20px', textAlign: 'center', color: 'var(--text-4)', fontSize: 14 }}>
@@ -88,8 +88,8 @@ export function Users() {
           const pn = playerName(u.playerId);
           const me = u.id === s.session;
           return (
-            <div key={u.id} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1.1fr 64px 92px 56px', gap: 10, alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid var(--hairline)', opacity: u.active ? 1 : 0.55, minWidth: 584 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+            <div key={u.id} role="row" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1.1fr 64px 92px 56px', gap: 10, alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid var(--hairline)', opacity: u.active ? 1 : 0.55, minWidth: 584 }}>
+              <div role="cell" style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
                 <Avatar photo={u.photo} short={(u.first[0] || '') + (u.last[0] || '')} avi={u.avi} size={38} />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -100,23 +100,25 @@ export function Users() {
                   <div style={{ fontSize: 12, color: 'var(--text-4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.email}</div>
                 </div>
               </div>
-              <div>
+              <div role="cell">
                 <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, color: r.color, background: r.bg, border: `1px solid ${r.bd}`, padding: '4px 10px', borderRadius: 7 }}>{r.label}</span>
                 {u.position && <div style={{ fontSize: 11, color: 'var(--text-4)', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.position}</div>}
               </div>
-              <div style={{ fontSize: 12, color: pn ? 'var(--text-2)' : 'var(--text-5)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pn ? `↔ ${pn}` : tr.users.noPlayerProfile}</div>
-              <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <div role="cell" style={{ fontSize: 12, color: pn ? 'var(--text-2)' : 'var(--text-5)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pn ? `↔ ${pn}` : tr.users.noPlayerProfile}</div>
+              <div role="cell" style={{ display: 'flex', justifyContent: 'center' }}>
                 {u.isBoard
                   ? <span style={{ fontSize: 12, color: 'var(--text-5)' }}>–</span>
                   : s.twoFAUserIds.includes(u.id)
                     ? <span title={tr.users.twoFAActive} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 800, color: 'var(--success)' }}><span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--success)' }} />2FA</span>
                     : <span title={tr.users.twoFANotSet} style={{ fontSize: 12, color: 'var(--text-5)' }}>–</span>}
               </div>
-              <button onClick={() => s.toggleUserActive(u.id)} title={tr.users.toggleActive} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: u.active ? 'var(--success)' : 'var(--text-5)' }} />
-                <span style={{ fontSize: 12, fontWeight: 600, color: u.active ? 'var(--success)' : 'var(--text-4)' }}>{u.active ? tr.users.active : tr.users.inactive}</span>
-              </button>
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <div role="cell" style={{ display: 'flex', justifyContent: 'center' }}>
+                <button onClick={() => s.toggleUserActive(u.id)} title={tr.users.toggleActive} aria-label={tr.users.toggleActive} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: u.active ? 'var(--success)' : 'var(--text-5)' }} />
+                  <span style={{ fontSize: 12, fontWeight: 600, color: u.active ? 'var(--success)' : 'var(--text-4)' }}>{u.active ? tr.users.active : tr.users.inactive}</span>
+                </button>
+              </div>
+              <div role="cell" style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <button className="dh-btn" onClick={() => s.openEditUser(u.id)} title={tr.common.edit} aria-label={tr.common.edit} style={{ width: 44, height: 44, borderRadius: 9, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                   <IconEdit size={15} />
                 </button>
