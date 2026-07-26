@@ -33,6 +33,7 @@ function WatchView({ route }: { route: LiveRoute }) {
     if (!provider.liveSupported) { setStatus('off'); return; }
     let alive = true;
     const tick = async () => {
+      if (document.hidden) return; // versteckter Tab: kein Netz-Polling im Hintergrund
       try {
         const r = await provider.watchPublic(token);
         if (!alive) return;
@@ -41,7 +42,10 @@ function WatchView({ route }: { route: LiveRoute }) {
     };
     void tick();
     const id = window.setInterval(tick, 1500);
-    return () => { alive = false; window.clearInterval(id); };
+    // Beim Zurückkehren zum Tab sofort aktualisieren (statt bis zum nächsten Intervall zu warten).
+    const onVis = () => { if (!document.hidden) void tick(); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => { alive = false; window.clearInterval(id); document.removeEventListener('visibilitychange', onVis); };
   }, [provider, token]);
 
   const shell: React.CSSProperties = { flex: 1, width: '100%', boxSizing: 'border-box', minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, padding: 'clamp(16px,4vw,48px)', background: '#0b0d0f', color: '#e9edf1', textAlign: 'center' };
@@ -147,7 +151,7 @@ function FullBoard({ board, onBack }: { board: PublicBoard; onBack: () => void }
     <div style={{ width: '100%', maxWidth: 1000, display: 'flex', flexDirection: 'column', gap: 18 }}>
       <style>{`@keyframes dzPop{0%{transform:scale(.92);opacity:0}100%{transform:scale(1);opacity:1}}@keyframes dzFade{from{opacity:0}to{opacity:1}}@media (prefers-reduced-motion:reduce){.dz-cel{animation:dzFade .12s ease both!important}}`}</style>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <button onClick={onBack} style={{ background: '#12161a', border: '1px solid #1c2228', color: '#e9edf1', borderRadius: 10, padding: '10px 16px', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>← Zur Liste</button>
+        <button onClick={onBack} style={{ background: '#12161a', border: '1px solid #1c2228', color: '#e9edf1', borderRadius: 10, padding: '10px 16px', minHeight: 44, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>← Zur Liste</button>
         <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color: '#9aa4ad' }}>{board.boardName || 'Board'}</span>
         <span style={{ width: 96 }} />
       </div>

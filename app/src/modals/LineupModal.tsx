@@ -36,7 +36,7 @@ export function LineupModal() {
   };
 
   const PlayerSelect = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-    <select value={value} onChange={(e) => onChange(e.target.value)} style={selectStyle}>
+    <select value={value} onChange={(e) => onChange(e.target.value)} aria-label={tr.modals.playerOpt} style={selectStyle}>
       <option value="">{tr.modals.playerOpt}</option>
       {roster.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
     </select>
@@ -49,7 +49,7 @@ export function LineupModal() {
   const availableForSub = roster.filter((p) => !placed.has(p.id) && !m.substitutes.includes(p.id));
 
   return (
-    <Modal onClose={() => s.closeLineup()} width={600} z={64} style={{ maxHeight: '88vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <Modal onClose={() => s.closeLineup()} width={600} z={64} label={tr.dashboard.lineupView} style={{ maxHeight: '88vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <ModalTitle>{tr.dashboard.lineupView}</ModalTitle>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-3)', marginBottom: 16, flexWrap: 'wrap' }}>
@@ -76,14 +76,14 @@ export function LineupModal() {
           return (
             <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <button onClick={() => s.moveLineupPosition(p.id, -1)} disabled={idx === 0} title={tr.modals.up} style={{ ...iconBtn, width: 22, height: 14, opacity: idx === 0 ? 0.35 : 1 }}>▲</button>
-                <button onClick={() => s.moveLineupPosition(p.id, 1)} disabled={idx === m.positions.length - 1} title={tr.modals.down} style={{ ...iconBtn, width: 22, height: 14, opacity: idx === m.positions.length - 1 ? 0.35 : 1 }}>▼</button>
+                <button onClick={() => s.moveLineupPosition(p.id, -1)} disabled={idx === 0} title={tr.modals.up} aria-label={tr.modals.up} style={{ ...iconBtn, minWidth: 44, minHeight: 44, width: 44, height: 44, opacity: idx === 0 ? 0.35 : 1 }}>▲</button>
+                <button onClick={() => s.moveLineupPosition(p.id, 1)} disabled={idx === m.positions.length - 1} title={tr.modals.down} aria-label={tr.modals.down} style={{ ...iconBtn, minWidth: 44, minHeight: 44, width: 44, height: 44, opacity: idx === m.positions.length - 1 ? 0.35 : 1 }}>▼</button>
               </div>
               <span style={{ width: 62, flexShrink: 0, fontSize: 11, fontWeight: 800, color: p.kind === 'single' ? 'var(--text-3)' : 'var(--accent)', textTransform: 'uppercase', letterSpacing: '.03em' }}>{label}</span>
               <PlayerSelect value={p.playerIds[0] || ''} onChange={(v) => s.setLineupPositionPlayer(p.id, 0, v)} />
               {p.kind === 'double' && <PlayerSelect value={p.playerIds[1] || ''} onChange={(v) => s.setLineupPositionPlayer(p.id, 1, v)} />}
-              <input value={p.board || ''} onChange={(e) => s.setLineupPositionBoard(p.id, e.target.value.replace(/[^0-9]/g, '').slice(0, 2))} inputMode="numeric" placeholder={tr.modals.boardNoPh} title={tr.modals.boardNoTitle} style={boardStyle} />
-              <button onClick={() => s.removeLineupPosition(p.id)} title={tr.modals.remove} style={iconBtn}><IconTrash size={14} /></button>
+              <input value={p.board || ''} onChange={(e) => s.setLineupPositionBoard(p.id, e.target.value.replace(/[^0-9]/g, '').slice(0, 2))} inputMode="numeric" placeholder={tr.modals.boardNoPh} title={tr.modals.boardNoTitle} aria-label={tr.modals.boardNoTitle} style={boardStyle} />
+              <button onClick={() => s.removeLineupPosition(p.id)} title={tr.modals.remove} aria-label={tr.modals.remove} style={{ ...iconBtn, minWidth: 44, minHeight: 44 }}><IconTrash size={14} /></button>
             </div>
           );
         })}
@@ -106,9 +106,9 @@ export function LineupModal() {
                   <span style={{ width: 28, flexShrink: 0, fontSize: 12, fontWeight: 800, color: 'var(--accent)' }}>E{i + 1}</span>
                   <Avatar photo={p.photo} short={p.short} avi={p.avi} size={26} circle />
                   <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{p.name}</span>
-                  <button onClick={() => s.moveSubstitute(id, -1)} disabled={i === 0} title={tr.modals.up} style={{ ...iconBtn, opacity: i === 0 ? 0.35 : 1 }}>▲</button>
-                  <button onClick={() => s.moveSubstitute(id, 1)} disabled={i === m.substitutes.length - 1} title={tr.modals.down} style={{ ...iconBtn, opacity: i === m.substitutes.length - 1 ? 0.35 : 1 }}>▼</button>
-                  <button onClick={() => s.toggleSubstitute(id)} title={tr.modals.removeFromSubs} style={iconBtn}><IconTrash size={14} /></button>
+                  <button onClick={() => s.moveSubstitute(id, -1)} disabled={i === 0} title={tr.modals.up} aria-label={tr.modals.up} style={{ ...iconBtn, minWidth: 44, minHeight: 44, opacity: i === 0 ? 0.35 : 1 }}>▲</button>
+                  <button onClick={() => s.moveSubstitute(id, 1)} disabled={i === m.substitutes.length - 1} title={tr.modals.down} aria-label={tr.modals.down} style={{ ...iconBtn, minWidth: 44, minHeight: 44, opacity: i === m.substitutes.length - 1 ? 0.35 : 1 }}>▼</button>
+                  <button onClick={() => s.toggleSubstitute(id)} title={tr.modals.removeFromSubs} aria-label={tr.modals.removeFromSubs} style={{ ...iconBtn, minWidth: 44, minHeight: 44 }}><IconTrash size={14} /></button>
                 </div>
               );
             })}
@@ -136,6 +136,7 @@ export function LineupModal() {
       <div style={{ flexShrink: 0, borderTop: '1px solid var(--border)', paddingTop: 14, marginTop: 4 }}>
         <button
           onClick={() => s.toggleLineupBoardLive()}
+          aria-pressed={m.boardLive}
           title={tr.modals.sendToBoardsTitle}
           style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, background: m.boardLive ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--btn)', border: `1px solid ${m.boardLive ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 11, padding: '10px 14px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', boxSizing: 'border-box' }}
         >

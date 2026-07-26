@@ -62,7 +62,7 @@ export function Sidebar() {
               value={s.viewSeasonId ?? ''}
               onChange={(e) => s.setViewSeason(e.target.value)}
               title={tr.sidebar.chooseSeason}
-              style={{ width: '100%', appearance: 'none', WebkitAppearance: 'none', background: 'var(--surface-2)', border: `1px solid ${s.viewSeasonId !== s.activeSeasonId ? 'rgba(242,184,41,.5)' : 'var(--border-2)'}`, borderRadius: 10, padding: '8px 28px 8px 11px', color: 'var(--text)', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}
+              style={{ width: '100%', appearance: 'none', WebkitAppearance: 'none', background: 'var(--surface-2)', border: `1px solid ${s.viewSeasonId !== s.activeSeasonId ? 'color-mix(in srgb, var(--warn) 50%, transparent)' : 'var(--border-2)'}`, borderRadius: 10, padding: '8px 28px 8px 11px', color: 'var(--text)', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}
             >
               {[...s.seasons]
                 .sort((a, b) => (a.status === 'active' ? 0 : 1) - (b.status === 'active' ? 0 : 1) || b.name.localeCompare(a.name))
@@ -73,7 +73,7 @@ export function Sidebar() {
             <span style={{ position: 'absolute', right: 11, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-4)', fontSize: 10 }}>▼</span>
           </div>
           {s.viewSeasonId !== s.activeSeasonId && (
-            <div style={{ marginTop: 6, fontSize: 11, color: '#F2B829', fontWeight: 700 }}>{tr.sidebar.archivedReadOnly}</div>
+            <div style={{ marginTop: 6, fontSize: 11, color: 'var(--warn)', fontWeight: 700 }}>{tr.sidebar.archivedReadOnly}</div>
           )}
         </div>
       )}
@@ -84,7 +84,7 @@ export function Sidebar() {
           <>
             <NavItem
               icon={<IconTarget />} label={tr.nav.counter} screen="counter" active={active === 'counter'} onClick={() => gameActive ? s.go('counter') : s.goSetup()}
-              badge={gameActive ? <span style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', background: '#E04B43', boxShadow: '0 0 8px #E04B43' }} /> : undefined}
+              badge={gameActive ? <span style={{ marginLeft: 'auto', width: 7, height: 7, borderRadius: '50%', background: 'var(--danger)', boxShadow: '0 0 8px var(--danger)' }} /> : undefined}
             />
             <NavItem icon={<IconTraining />} label={tr.nav.training} screen="training" active={active === 'training'} onClick={() => s.go('training')} />
           </>

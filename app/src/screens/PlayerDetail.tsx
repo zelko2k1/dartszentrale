@@ -73,7 +73,7 @@ export function PlayerDetail() {
           <div style={{ fontSize: 14, color: 'var(--text-3)', marginTop: 4 }}>{tr.playerDetail.profile} · {tr.common.gamesCount(agg.games)}</div>
         </div>
         <div style={{ textAlign: 'center', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '14px 22px' }}>
-          <div style={{ fontFamily: 'var(--font-num)', fontSize: 32, fontWeight: 800, color: '#2BD377' }}>{agg.avg ? agg.avg.toFixed(1) : '–'}</div>
+          <div style={{ fontFamily: 'var(--font-num)', fontSize: 32, fontWeight: 800, color: 'var(--success)' }}>{agg.avg ? agg.avg.toFixed(1) : '–'}</div>
           <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>{seasonId === 'all' ? tr.playerDetail.totalAvg : (s.seasons.find((x) => x.id === seasonId)?.name || tr.playerDetail.seasonAvg)}</div>
         </div>
       </div>
@@ -188,7 +188,7 @@ export function PlayerDetail() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {agg.recent.map((g, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 4px', borderBottom: '1px solid var(--hairline)' }}>
-                  <span style={{ width: 22, height: 22, borderRadius: 6, background: g.won ? 'rgba(25,164,99,.18)' : 'rgba(224,89,75,.18)', color: g.won ? 'var(--success)' : 'var(--danger-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800 }}>{g.won ? tr.common.winLetter : tr.common.lossLetter}</span>
+                  <span style={{ width: 22, height: 22, borderRadius: 6, background: g.won ? 'color-mix(in srgb, var(--success) 18%, transparent)' : 'color-mix(in srgb, var(--danger) 18%, transparent)', color: g.won ? 'var(--success)' : 'var(--danger-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800 }}>{g.won ? tr.common.winLetter : tr.common.lossLetter}</span>
                   <span style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>vs. {g.opp}</span>
                   <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>Ø {g.avg ? g.avg.toFixed(1) : '–'}</span>
                 </div>

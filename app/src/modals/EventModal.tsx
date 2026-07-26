@@ -13,7 +13,7 @@ export function EventModal() {
   const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontFamily: 'inherit', fontWeight: 600, outline: 'none' };
 
   return (
-    <Modal onClose={() => s.closeEventModal()} width={460} z={62}>
+    <Modal onClose={() => s.closeEventModal()} width={460} z={62} label={m.mode === 'edit' ? tr.modals.eventEdit : tr.modals.eventNew}>
       <ModalTitle>{m.mode === 'edit' ? tr.modals.eventEdit : tr.modals.eventNew}</ModalTitle>
 
       <FieldLabel>{tr.modals.titleLabel}</FieldLabel>
@@ -60,14 +60,14 @@ export function EventModal() {
             <div style={{ marginBottom: 24 }}>
               <FieldLabel>{tr.modals.repeatUntil}</FieldLabel>
               <input className="dh-input" type="date" value={m.until} min={m.date} onChange={(e) => s.setEventField('until', e.target.value)} style={{ ...inputStyle, fontSize: 14 }} />
-              {(!m.until || m.until < m.date) && <div style={{ fontSize: 11.5, color: '#C9882E', marginTop: 6 }}>{tr.modals.repeatUntilWarn}</div>}
+              {(!m.until || m.until < m.date) && <div style={{ fontSize: 11.5, color: 'var(--warn)', marginTop: 6 }}>{tr.modals.repeatUntilWarn}</div>}
             </div>
           )}
         </>
       )}
 
       {m.mode === 'edit' && m.seriesId && (
-        <button onClick={() => { if (window.confirm(tr.modals.deleteSeriesConfirm)) s.deleteEventSeries(m.seriesId!); }} style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(224,89,75,.1)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', padding: '10px 14px', borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 14 }}>{tr.modals.deleteSeries}</button>
+        <button onClick={() => { if (window.confirm(tr.modals.deleteSeriesConfirm)) s.deleteEventSeries(m.seriesId!); }} style={{ width: '100%', boxSizing: 'border-box', background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', padding: '10px 14px', borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 14 }}>{tr.modals.deleteSeries}</button>
       )}
 
       <ModalFooter

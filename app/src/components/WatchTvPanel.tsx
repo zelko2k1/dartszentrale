@@ -62,8 +62,8 @@ export function WatchTvPanel() {
             Im Internet standardmäßig aus — bewusst einschalten. Der Link folgt automatisch dem laufenden Spiel.
           </div>
         </div>
-        <button onClick={toggle} disabled={busy || !loaded} role="switch" aria-checked={enabled}
-          style={{ flexShrink: 0, width: 46, height: 26, borderRadius: 999, background: enabled ? ACCENT : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative', cursor: busy ? 'default' : 'pointer', padding: 0 }}>
+        <button onClick={toggle} disabled={busy || !loaded} role="switch" aria-checked={enabled} aria-label="Zuschauer-TV aktivieren"
+          style={{ flexShrink: 0, width: 46, height: 26, minHeight: 44, borderRadius: 999, background: enabled ? ACCENT : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative', cursor: busy ? 'default' : 'pointer', padding: 0 }}>
           <span style={{ position: 'absolute', top: 2, left: enabled ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff' }} />
         </button>
       </div>

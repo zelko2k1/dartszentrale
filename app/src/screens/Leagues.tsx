@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { computeStandings, perm, inSeason } from '../store/selectors';
 import { initials } from '../lib/format';
 import { IconPlus, IconUsersSmall } from '../lib/icons';
+import { PressableRow } from '../components/PressableRow';
 import { useIsPhone } from '../lib/useIsPhone';
 import { useReorder } from '../lib/useReorder';
 import { useT, dict } from '../i18n';
@@ -160,7 +161,7 @@ export function Leagues() {
                   <IconPlus size={15} />
                   {tr.leagues.addFixture}
                 </button>
-                <button className="dh-btn" onClick={() => { if (window.confirm(tr.leagues.deleteConfirm(sel.name))) s.deleteLeague(sel.id); }} title={tr.leagues.deleteTitle} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(224,89,75,.1)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <button className="dh-btn" onClick={() => { if (window.confirm(tr.leagues.deleteConfirm(sel.name))) s.deleteLeague(sel.id); }} title={tr.leagues.deleteTitle} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" /></svg>
                   {tr.leagues.deleteBtn}
                 </button>
@@ -175,28 +176,28 @@ export function Leagues() {
               const tblCols = isPhone ? '24px minmax(0,1fr) 24px 22px 22px 22px 50px' : '28px minmax(104px,1fr) 26px 24px 24px 24px 58px 42px 52px';
               const tblMinW = isPhone ? undefined : 508;
               return (
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: tblCols, gap: 5, padding: isPhone ? '12px 12px' : '13px 18px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', minWidth: tblMinW }}>
-                <span>#</span><span>{tr.leagues.thTeam}</span><span style={{ textAlign: 'center' }}>{tr.leagues.thPlayed}</span><span style={{ textAlign: 'center' }}>{tr.leagues.thWin}</span><span style={{ textAlign: 'center' }}>{tr.leagues.thDraw}</span><span style={{ textAlign: 'center' }}>{tr.leagues.thLoss}</span>{!isPhone && <span style={{ textAlign: 'center' }}>{tr.leagues.thLegs}</span>}{!isPhone && <span style={{ textAlign: 'center' }}>+/−</span>}<span style={{ textAlign: 'right' }}>{tr.leagues.thPts}</span>
+            <div role="table" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
+              <div role="row" style={{ display: 'grid', gridTemplateColumns: tblCols, gap: 5, padding: isPhone ? '12px 12px' : '13px 18px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', minWidth: tblMinW }}>
+                <span role="columnheader">#</span><span role="columnheader">{tr.leagues.thTeam}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thPlayed}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thWin}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thDraw}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thLoss}</span>{!isPhone && <span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thLegs}</span>}{!isPhone && <span role="columnheader" style={{ textAlign: 'center' }}>+/−</span>}<span role="columnheader" style={{ textAlign: 'right' }}>{tr.leagues.thPts}</span>
               </div>
               {standings.length === 0 && <div style={{ padding: '30px 18px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.leagues.noResultsYet}</div>}
               {standings.map((t, i) => {
                 const diff = t.lf - t.la;
                 const posColor = i < 2 ? 'var(--success)' : (standings.length > 4 && i >= standings.length - 1) ? 'var(--danger-soft)' : 'var(--text-3)';
                 return (
-                  <div key={t.id} style={{ display: 'grid', gridTemplateColumns: tblCols, gap: 5, padding: isPhone ? '11px 12px' : '12px 18px', borderBottom: '1px solid var(--hairline)', alignItems: 'center', background: t.own ? 'rgba(25,164,99,.08)' : 'transparent', minWidth: tblMinW }}>
-                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: posColor }}>{i + 1}</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: isPhone ? 7 : 10, minWidth: 0 }}>
-                      {!isPhone && <div style={{ width: 28, height: 28, borderRadius: 8, background: t.own ? 'linear-gradient(135deg,#19A463,#0f6b40)' : 'var(--btn)', color: t.own ? '#fff' : 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 10, flexShrink: 0 }}>{initials(t.name).slice(0, 3)}</div>}
+                  <div key={t.id} role="row" style={{ display: 'grid', gridTemplateColumns: tblCols, gap: 5, padding: isPhone ? '11px 12px' : '12px 18px', borderBottom: '1px solid var(--hairline)', alignItems: 'center', background: t.own ? 'color-mix(in srgb, var(--success) 8%, transparent)' : 'transparent', minWidth: tblMinW }}>
+                    <span role="cell" style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: posColor }}>{i + 1}</span>
+                    <div role="cell" style={{ display: 'flex', alignItems: 'center', gap: isPhone ? 7 : 10, minWidth: 0 }}>
+                      {!isPhone && <div style={{ width: 28, height: 28, borderRadius: 8, background: t.own ? 'linear-gradient(135deg,var(--success),#0f6b40)' : 'var(--btn)', color: t.own ? '#fff' : 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 10, flexShrink: 0 }}>{initials(t.name).slice(0, 3)}</div>}
                       <span style={{ fontSize: isPhone ? 13 : 14, fontWeight: t.own ? 700 : 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</span>
                     </div>
-                    <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{t.sp}</span>
-                    <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--success)' }}>{t.s}</span>
-                    <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-4)' }}>{t.u}</span>
-                    <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--danger-soft)' }}>{t.n}</span>
-                    {!isPhone && <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{t.lf}:{t.la}</span>}
-                    {!isPhone && <span style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{diff > 0 ? '+' : ''}{diff}</span>}
-                    <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>{t.pts}:{t.n * 2 + t.u}</span>
+                    <span role="cell" style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{t.sp}</span>
+                    <span role="cell" style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--success)' }}>{t.s}</span>
+                    <span role="cell" style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-4)' }}>{t.u}</span>
+                    <span role="cell" style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--danger-soft)' }}>{t.n}</span>
+                    {!isPhone && <span role="cell" style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{t.lf}:{t.la}</span>}
+                    {!isPhone && <span role="cell" style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{diff > 0 ? '+' : ''}{diff}</span>}
+                    <span role="cell" style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: 'var(--text)' }}>{t.pts}:{t.n * 2 + t.u}</span>
                   </div>
                 );
               })}
@@ -220,7 +221,7 @@ export function Leagues() {
                   const hl = isOwn ? highlightsFor(f.id) : [];
                   return (
                     <div key={f.id} style={{ border: '1px solid var(--border-2)', borderRadius: 12, overflow: 'hidden' }}>
-                    <div className="dh-hover-border" onClick={() => canEdit && s.openEditFixture(f.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', cursor: canEdit ? 'pointer' : 'default', background: 'transparent' }}>
+                    <PressableRow className="dh-hover-border" disabled={!canEdit} onClick={() => s.openEditFixture(f.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', cursor: canEdit ? 'pointer' : 'default', background: 'transparent' }}>
                       <div style={{ textAlign: 'center', width: 42, flexShrink: 0 }}>
                         <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>{mon}</div>
                         <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800 }}>{day}</div>
@@ -233,7 +234,7 @@ export function Leagues() {
                         </div>
                       </div>
                       <span style={{ fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: played ? 'var(--text)' : 'var(--text-4)' }}>{score}</span>
-                    </div>
+                    </PressableRow>
                     {isOwn && canEdit && (
                       <div style={{ display: 'flex', gap: 8, padding: '10px 14px', borderTop: '1px solid var(--hairline)' }}>
                         <button onClick={() => s.openLineup(f.id)} title={tr.dashboard.lineupView}
@@ -264,8 +265,8 @@ export function Leagues() {
                       </div>
                     )}
                     {f.nuligaConflict && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, padding: '9px 14px 11px', borderTop: '1px solid var(--hairline)', background: 'rgba(242,184,41,.10)' }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 800, color: '#B8860B', letterSpacing: '.04em', textTransform: 'uppercase' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, padding: '9px 14px 11px', borderTop: '1px solid var(--hairline)', background: 'color-mix(in srgb, var(--warn) 10%, transparent)' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 800, color: 'var(--warn)', letterSpacing: '.04em', textTransform: 'uppercase' }}>
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><path d="M12 9v4M12 17h.01" /></svg>
                           {tr.leagues.nuligaDiffers}
                         </span>
@@ -274,8 +275,8 @@ export function Leagues() {
                         </span>
                         {canEdit && (
                           <div style={{ display: 'flex', gap: 7, marginLeft: 'auto' }}>
-                            <button onClick={() => s.resolveNuligaConflict(sel.id, f.id, false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '5px 11px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.leagues.keepOwn}</button>
-                            <button onClick={() => s.resolveNuligaConflict(sel.id, f.id, true)} style={{ background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '5px 11px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.leagues.takeNuliga}</button>
+                            <button onClick={() => s.resolveNuligaConflict(sel.id, f.id, false)} style={{ minHeight: 44, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '5px 11px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.leagues.keepOwn}</button>
+                            <button onClick={() => s.resolveNuligaConflict(sel.id, f.id, true)} style={{ minHeight: 44, background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '5px 11px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.leagues.takeNuliga}</button>
                           </div>
                         )}
                       </div>

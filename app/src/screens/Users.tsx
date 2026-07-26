@@ -65,7 +65,7 @@ export function Users() {
         {[
           { v: total, label: tr.users.totalAccounts, color: 'var(--text)' },
           { v: active, label: tr.users.activeCount, color: 'var(--success)' },
-          { v: linked, label: tr.users.linkedWithPlayer, color: '#3B9EFF' },
+          { v: linked, label: tr.users.linkedWithPlayer, color: 'var(--info)' },
         ].map((t) => (
           <div key={t.label} style={{ flex: 1, minWidth: 140, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px' }}>
             <div style={{ fontFamily: 'var(--font-num)', fontSize: 24, fontWeight: 800, color: t.color }}>{t.v}</div>
@@ -113,11 +113,11 @@ export function Users() {
                     : <span title={tr.users.twoFANotSet} style={{ fontSize: 12, color: 'var(--text-5)' }}>–</span>}
               </div>
               <button onClick={() => s.toggleUserActive(u.id)} title={tr.users.toggleActive} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: u.active ? '#19A463' : 'var(--text-5)' }} />
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: u.active ? 'var(--success)' : 'var(--text-5)' }} />
                 <span style={{ fontSize: 12, fontWeight: 600, color: u.active ? 'var(--success)' : 'var(--text-4)' }}>{u.active ? tr.users.active : tr.users.inactive}</span>
               </button>
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button className="dh-btn" onClick={() => s.openEditUser(u.id)} title={tr.common.edit} style={{ width: 32, height: 32, borderRadius: 9, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <button className="dh-btn" onClick={() => s.openEditUser(u.id)} title={tr.common.edit} aria-label={tr.common.edit} style={{ width: 44, height: 44, borderRadius: 9, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                   <IconEdit size={15} />
                 </button>
               </div>

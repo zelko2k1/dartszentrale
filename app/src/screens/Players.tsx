@@ -54,7 +54,7 @@ export function Players() {
           const agg = aggregateFor(pl, s.matches);
           const linked = linkedPlayerIds.has(pl.id);
           return (
-            <div key={pl.id} className="dh-hover-border" onClick={() => s.openPlayer(pl.id)} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 20, cursor: 'pointer', position: 'relative' }}>
+            <div key={pl.id} className="dh-hover-border" role="button" tabIndex={0} onClick={() => s.openPlayer(pl.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); s.openPlayer(pl.id); } }} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 20, cursor: 'pointer', position: 'relative' }}>
               <div style={{ position: 'absolute', top: 14, right: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
                 {isVerein && p.manageUsers && (
                   linked ? (
@@ -62,13 +62,13 @@ export function Players() {
                       <IconUserCheck size={15} />
                     </span>
                   ) : (
-                    <button onClick={(e) => { e.stopPropagation(); s.openAddUserForPlayer(pl.id); }} title={tr.players.createUser} className="dh-btn" style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    <button onClick={(e) => { e.stopPropagation(); s.openAddUserForPlayer(pl.id); }} title={tr.players.createUser} aria-label={tr.players.createUser} className="dh-btn" style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                       <IconUserCheck size={15} />
                     </button>
                   )
                 )}
                 {p.managePlayers && (
-                  <button onClick={(e) => { e.stopPropagation(); s.openEditPlayer(pl.id); }} title={tr.common.edit} className="dh-btn" style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <button onClick={(e) => { e.stopPropagation(); s.openEditPlayer(pl.id); }} title={tr.common.edit} aria-label={tr.common.edit} className="dh-btn" style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                     <IconEdit size={15} />
                   </button>
                 )}
@@ -86,7 +86,7 @@ export function Players() {
                   <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>{tr.common.avg3}</div>
                 </div>
                 <div style={{ flex: 1, background: 'var(--btn)', borderRadius: 10, padding: '9px 11px' }}>
-                  <div style={{ fontFamily: 'var(--font-num)', fontSize: 17, fontWeight: 800, color: '#F2B829' }}>{agg.wins}</div>
+                  <div style={{ fontFamily: 'var(--font-num)', fontSize: 17, fontWeight: 800, color: 'var(--gold)' }}>{agg.wins}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>{tr.common.wins}</div>
                 </div>
               </div>

@@ -45,16 +45,18 @@ export function Login() {
           <div style={{ width: 30, height: 2, background: 'var(--accent)', borderRadius: 2, margin: '9px 0 10px' }} />
           <div style={{ fontSize: 13, color: 'var(--text-4)', marginBottom: 20 }}>{tr.login.signInSub}</div>
 
-          <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 6 }}>{tr.login.email}</label>
+          <label htmlFor="login-email" style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 6 }}>{tr.login.email}</label>
           <input
+            id="login-email"
             className="dh-input" type="email" value={s.loginForm.email} placeholder="name@verein.de"
             onChange={(e) => s.setLoginField('email', e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') s.loginEmail(); }}
             style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 14 }}
           />
 
-          <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 6 }}>{tr.login.password}</label>
+          <label htmlFor="login-pw" style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 6 }}>{tr.login.password}</label>
           <input
+            id="login-pw"
             className="dh-input" type="password" value={s.loginForm.pw} placeholder="••••••••"
             onChange={(e) => s.setLoginField('pw', e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') s.loginEmail(); }}
@@ -63,8 +65,9 @@ export function Login() {
 
           {s.loginForm.mfaStep && (
             <div style={{ marginTop: 8 }}>
-              <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 6 }}>{tr.login.code}</label>
+              <label htmlFor="login-code" style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 6 }}>{tr.login.code}</label>
               <input
+                id="login-code"
                 className="dh-input" type="text" inputMode="numeric" autoComplete="one-time-code" autoFocus
                 value={s.loginForm.code} placeholder="123456"
                 onChange={(e) => s.setLoginField('code', e.target.value.replace(/\s/g, ''))}
@@ -116,7 +119,7 @@ export function Login() {
 
       {legal && (
         <div onClick={() => setLegal(null)} style={{ position: 'fixed', inset: 0, zIndex: 90, background: 'var(--scrim)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, overflow: 'auto' }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: 620, maxWidth: '94vw', maxHeight: '86vh', display: 'flex', flexDirection: 'column', background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, boxShadow: 'var(--shadow-card)' }}>
+          <div role="dialog" aria-modal="true" aria-label={legalTitle} onClick={(e) => e.stopPropagation()} style={{ width: 620, maxWidth: '94vw', maxHeight: '86vh', display: 'flex', flexDirection: 'column', background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, boxShadow: 'var(--shadow-card)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '20px 24px', borderBottom: '1px solid var(--hairline)' }}>
               <div style={{ fontSize: 18, fontWeight: 800 }}>{legalTitle}</div>
               <button className="dh-focus dh-btn" onClick={() => setLegal(null)} aria-label={tr.login.close} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, color: 'var(--text-3)', cursor: 'pointer' }}>

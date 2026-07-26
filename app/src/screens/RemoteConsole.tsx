@@ -144,6 +144,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
           <div style={{ fontSize: 22, fontWeight: 800 }}>Code eingeben</div>
           <div style={hint}>Den Kopplungscode findest du am Board unter <b>Einstellungen → Handy koppeln</b>.</div>
           <input
+            aria-label="Kopplungscode"
             value={manualCode}
             onChange={(e) => setManualCode(e.target.value.toUpperCase().slice(0, 8))}
             onKeyDown={(e) => { if (e.key === 'Enter') void pairByCode(); }}
@@ -219,8 +220,8 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
   const takeoverBar = takeoverIncoming && (
     <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', background: '#3a2714', borderBottom: '1px solid #7a5a2a', fontSize: 13 }}>
       <span style={{ flex: 1, minWidth: 0 }}>Ein anderes Gerät möchte übernehmen.</span>
-      <button className="rc-ghost" style={{ padding: '6px 12px', fontSize: 13 }} onClick={() => provider.liveClaimDeny(sessionId)}>Ablehnen</button>
-      <button className="rc-primary" style={{ padding: '6px 12px', fontSize: 13, borderRadius: 9 }} onClick={() => provider.liveClaimApprove(sessionId)}>Zulassen</button>
+      <button className="rc-ghost" style={{ padding: '6px 12px', fontSize: 13, minHeight: 44 }} onClick={() => provider.liveClaimDeny(sessionId)}>Ablehnen</button>
+      <button className="rc-primary" style={{ padding: '6px 12px', fontSize: 13, borderRadius: 9, minHeight: 44 }} onClick={() => provider.liveClaimApprove(sessionId)}>Zulassen</button>
     </div>
   );
 
@@ -243,7 +244,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
   // Eingabepuffer + Checkout in EINER Zeile (spart die Höhe, die vorher zwei Blöcke gefressen haben).
   const inputRow = (
     <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, background: '#12161a', border: '1px solid #232a31', borderRadius: 12, padding: '8px 14px' }}>
-      <span style={{ fontSize: 12, color: '#6b747c', fontWeight: 700, flexShrink: 0 }}>Wurf</span>
+      <span style={{ fontSize: 12, color: '#8b9299', fontWeight: 700, flexShrink: 0 }}>Wurf</span>
       <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 700, color: '#59c26a', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {phase === 'playing' && (st?.checkout?.length ?? 0) > 0 ? st?.checkout.join(' ') : ''}
       </span>
@@ -266,7 +267,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
       {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => (
         <button key={d} className="rc-key" onClick={() => send('digit', { d })}>{d}</button>
       ))}
-      <button className="rc-key" style={{ fontSize: 18, color: '#9aa4ad' }} onClick={() => send('clear')}>C</button>
+      <button className="rc-key" style={{ fontSize: 18, color: '#9aa4ad' }} onClick={() => send('clear')} aria-label="Leeren">C</button>
       <button className="rc-key" onClick={() => send('digit', { d: '0' })}>0</button>
       <button className="rc-key" style={{ fontSize: 20 }} onClick={() => send('del')} aria-label="Löschen">⌫</button>
     </div>
@@ -280,7 +281,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
   );
 
   const footer = (
-    <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', gap: 10, height: 'clamp(38px,5.5vh,48px)' }}>
+    <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center', gap: 10, height: 'clamp(38px,5.5vh,48px)', minHeight: 44 }}>
       <button className="rc-ghost" style={{ flex: 1, maxWidth: 200, fontSize: 14, fontWeight: 700 }} onClick={() => send('newGame')}>Neues Spiel</button>
       <button className="rc-ghost" style={{ flex: 1, maxWidth: 200, fontSize: 14, fontWeight: 700 }} onClick={() => send('abort')}>Abbruch</button>
     </div>
@@ -420,7 +421,7 @@ function StartMenu({ onStart }: { onStart: (sel: RemoteStartSelection) => void }
   const start = () => onStart({ p1Id: effP1, p2Id: effP2, startScore: fmt.startScore, outMode: fmt.outMode, doubleIn: fmt.doubleIn, unit: fmt.unit, bestOf: fmt.bestOf, bestOfSets: fmt.bestOfSets });
 
   const rowStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: '#12161a', border: '1px solid #232a31', borderRadius: 12, padding: '13px 15px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' };
-  const rowLabel: React.CSSProperties = { fontSize: 10, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: '#6b747c' };
+  const rowLabel: React.CSSProperties = { fontSize: 10, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: '#8b9299' };
   const rowValue: React.CSSProperties = { fontSize: 16, fontWeight: 800, color: '#e9edf1', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' };
   const chevron = <span style={{ marginLeft: 'auto', color: '#6b747c', fontSize: 18, flexShrink: 0 }}>›</span>;
 
@@ -515,7 +516,7 @@ function PickerSheet({ title, onClose, children }: { title: string; onClose: () 
 function ModeGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: '#6b747c' }}>{label}</div>
+      <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: '#8b9299' }}>{label}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{children}</div>
     </div>
   );
