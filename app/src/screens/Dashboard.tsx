@@ -1,6 +1,7 @@
 import { useStore } from '../store/useStore';
 import { EVENT_TYPES, TRAIN_MODES, ROLES, TEAM_KINDS, teamKind, type TrainMode } from '../data/constants';
 import { Avatar } from '../components/Avatar';
+import { PressableRow } from '../components/PressableRow';
 import {
   dashboardMetrics, recentResults, aggregateFor, perm, currentUser, nextOwnFixture, computeStandings, inSeason, upcomingEvents,
 } from '../store/selectors';
@@ -196,8 +197,8 @@ function VereinDashboard() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {results.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-4)', padding: '8px 6px' }}>{tr.dashboard.noResults}</div>}
         {results.map((r, i) => {
-          const barColor = r.outcome === 'S' ? '#19A463' : r.outcome === 'U' ? '#F2B829' : '#E0594B';
-          const scoreColor = r.outcome === 'S' ? 'var(--success)' : r.outcome === 'U' ? '#F2B829' : 'var(--danger-soft)';
+          const barColor = r.outcome === 'S' ? 'var(--success)' : r.outcome === 'U' ? 'var(--gold)' : 'var(--danger)';
+          const scoreColor = r.outcome === 'S' ? 'var(--success)' : r.outcome === 'U' ? 'var(--gold)' : 'var(--danger-soft)';
           return (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 6px', borderBottom: '1px solid var(--hairline)' }}>
               <div style={{ width: 5, height: 30, borderRadius: 3, background: barColor }} />
@@ -240,7 +241,7 @@ function VereinDashboard() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {myAgg.recent.slice(0, 4).map((g, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 4px', borderBottom: '1px solid var(--hairline)' }}>
-              <span style={{ width: 5, height: 26, borderRadius: 3, background: g.won ? '#19A463' : '#E0594B', flexShrink: 0 }} />
+              <span style={{ width: 5, height: 26, borderRadius: 3, background: g.won ? 'var(--success)' : 'var(--danger)', flexShrink: 0 }} />
               <span style={{ flex: 1, fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{g.opp || '—'}</span>
               <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{g.avg ? g.avg.toFixed(1) : ''}</span>
               <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: g.won ? 'var(--success)' : 'var(--danger-soft)', width: 44, textAlign: 'right' }}>{g.score}</span>
@@ -320,7 +321,7 @@ function VereinDashboard() {
                 {([['week', tr.dashboard.week], ['month', tr.dashboard.month], ['all', tr.dashboard.all]] as const).map(([key, label]) => {
                   const on = range === key;
                   return (
-                    <button key={key} onClick={() => s.setSetting('dashRange', key)} style={{ background: on ? accent : 'transparent', color: on ? 'var(--accent-fg)' : 'var(--text-3)', fontWeight: on ? 800 : 600, border: 'none', padding: '6px 12px', borderRadius: 7, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
+                    <button key={key} onClick={() => s.setSetting('dashRange', key)} style={{ background: on ? accent : 'transparent', color: on ? 'var(--accent-fg)' : 'var(--text-3)', fontWeight: on ? 800 : 600, border: 'none', padding: '6px 12px', borderRadius: 7, fontSize: 12, minHeight: 44, cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
                   );
                 })}
               </div>
@@ -343,7 +344,7 @@ function VereinDashboard() {
           })()}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '8px 18px' }}>
             {events.map((ev) => (
-              <div key={ev.id} className="dh-hover-border dh-row" onClick={() => s.openEditEvent(ev.id)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 10px', borderRadius: 12, cursor: 'pointer', border: '1px solid transparent' }}>
+              <PressableRow key={ev.id} className="dh-hover-border dh-row" onClick={() => s.openEditEvent(ev.id)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 10px', borderRadius: 12, cursor: 'pointer', border: '1px solid transparent' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: 50, flexShrink: 0, borderRight: `2px solid ${ev.color}`, paddingRight: 12 }}>
                   <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em' }}>{ev.mon}</span>
                   <span style={{ fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, lineHeight: 1.05, letterSpacing: '-.02em' }}>{ev.day}</span>
@@ -357,7 +358,7 @@ function VereinDashboard() {
                   <div style={{ fontSize: 12, color: 'var(--text-4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>{ev.meta}</div>
                 </div>
                 <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, color: ev.color, background: ev.typeBg, padding: '4px 9px', borderRadius: 6, letterSpacing: '.03em', whiteSpace: 'nowrap' }}>{ev.typeLabel}</span>
-              </div>
+              </PressableRow>
             ))}
           </div>
         </div>
@@ -512,7 +513,7 @@ function LocalDashboard() {
             {events.length === 0 && <div style={{ padding: '14px 6px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.dashboard.noUpcomingEvents}</div>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {events.map((ev) => (
-                <div key={ev.id} className="dh-hover-border dh-row" onClick={() => s.openEditEvent(ev.id)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 10px', borderRadius: 12, cursor: 'pointer', border: '1px solid transparent' }}>
+                <PressableRow key={ev.id} className="dh-hover-border dh-row" onClick={() => s.openEditEvent(ev.id)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 10px', borderRadius: 12, cursor: 'pointer', border: '1px solid transparent' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: 50, flexShrink: 0, borderRight: `2px solid ${ev.color}`, paddingRight: 12 }}>
                     <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em' }}>{ev.mon}</span>
                     <span style={{ fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, lineHeight: 1.05, letterSpacing: '-.02em' }}>{ev.day}</span>
@@ -526,7 +527,7 @@ function LocalDashboard() {
                     <div style={{ fontSize: 12, color: 'var(--text-4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>{ev.meta}</div>
                   </div>
                   <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, color: ev.color, background: ev.typeBg, padding: '4px 9px', borderRadius: 6, letterSpacing: '.03em', whiteSpace: 'nowrap' }}>{ev.typeLabel}</span>
-                </div>
+                </PressableRow>
               ))}
             </div>
           </div>
@@ -562,13 +563,13 @@ function LocalDashboard() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {trainStats.map(({ mode, n }) => (
-                  <div key={mode.id} className="dh-row" onClick={() => s.openTrainSetup(mode.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 6px', cursor: 'pointer', borderRadius: 9 }}>
+                  <PressableRow key={mode.id} className="dh-row" onClick={() => s.openTrainSetup(mode.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 6px', cursor: 'pointer', borderRadius: 9 }}>
                     <div style={{ width: 32, height: 32, borderRadius: 9, background: `color-mix(in srgb, ${mode.color} 16%, transparent)`, color: mode.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={mode.icon} /></svg>
                     </div>
                     <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{mode.name}</span>
                     <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: 'var(--text-3)' }}>×{n}</span>
-                  </div>
+                  </PressableRow>
                 ))}
               </div>
             )}
@@ -582,12 +583,12 @@ function LocalDashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {top.map((row, idx) => {
                 return (
-                  <div key={row.pl.id} className="dh-row" onClick={() => s.openPlayer(row.pl.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 6px', cursor: 'pointer', borderRadius: 9 }}>
-                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: idx === 0 && row.agg.avg ? '#F2B829' : 'var(--text-4)', width: 18 }}>{idx + 1}</span>
+                  <PressableRow key={row.pl.id} className="dh-row" onClick={() => s.openPlayer(row.pl.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 6px', cursor: 'pointer', borderRadius: 9 }}>
+                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: idx === 0 && row.agg.avg ? 'var(--gold)' : 'var(--text-4)', width: 18 }}>{idx + 1}</span>
                     <Avatar photo={row.pl.photo} short={row.pl.short} avi={row.pl.avi} size={32} />
                     <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{row.pl.name}</span>
                     <span style={{ fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{row.agg.avg ? row.agg.avg.toFixed(1) : '–'}</span>
-                  </div>
+                  </PressableRow>
                 );
               })}
             </div>

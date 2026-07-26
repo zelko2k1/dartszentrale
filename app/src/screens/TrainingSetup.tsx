@@ -24,7 +24,7 @@ export function TrainingSetup() {
   for (let i = meta.minPlayers; i <= meta.maxPlayers; i++) countOpts.push(i);
 
   const seg = (active: boolean, label: string, onClick: () => void) => (
-    <button key={label} onClick={onClick} style={{ background: active ? accent : 'var(--btn)', color: active ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${active ? accent : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '9px 0', minWidth: 44, borderRadius: 10, fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-num)' }}>{label}</button>
+    <button key={label} onClick={onClick} style={{ background: active ? accent : 'var(--btn)', color: active ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${active ? accent : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '9px 0', minWidth: 44, minHeight: 44, borderRadius: 10, fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-num)' }}>{label}</button>
   );
 
   const slots = Array.from({ length: su.count }, (_, i) => i);
@@ -89,7 +89,7 @@ export function TrainingSetup() {
                   : <div style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--btn)', flexShrink: 0 }} />}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em' }}>{tr.trainingScr.playerN(i + 1)}</div>
-                  <select value={su.picks[i]} onChange={(e) => s.setTrainPick(i, Number(e.target.value))} style={{ width: '100%', background: 'transparent', color: 'var(--text)', border: 'none', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', outline: 'none', padding: 0 }}>
+                  <select aria-label={tr.trainingScr.playerN(i + 1)} value={su.picks[i]} onChange={(e) => s.setTrainPick(i, Number(e.target.value))} style={{ width: '100%', background: 'transparent', color: 'var(--text)', border: 'none', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', outline: 'none', padding: 0 }}>
                     {players.map((p, idx) => <option key={p.id} value={idx} style={{ background: 'var(--surface)' }}>{p.name}</option>)}
                   </select>
                   {(() => {
@@ -105,7 +105,7 @@ export function TrainingSetup() {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button onClick={() => s.startTrain()} style={{ display: 'flex', alignItems: 'center', gap: 10, background: mode.color, border: 'none', color: '#06160d', padding: '14px 30px', borderRadius: 13, fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 8px 24px color-mix(in srgb, ${mode.color} 28%, transparent)` }}>
+        <button onClick={() => s.startTrain()} style={{ display: 'flex', alignItems: 'center', gap: 10, background: mode.color, border: 'none', color: 'var(--accent-fg)', padding: '14px 30px', borderRadius: 13, fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: `0 8px 24px color-mix(in srgb, ${mode.color} 28%, transparent)` }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
           {tr.trainingScr.startTraining}
         </button>

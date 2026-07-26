@@ -15,11 +15,11 @@ export function ResultModal() {
   const open = m.rows.length - ownWins - oppWins;
 
   const resBtn = (active: boolean, color: string, label: string, onClick: () => void) => (
-    <button onClick={onClick} style={{ background: active ? color : 'var(--btn)', color: active ? '#fff' : 'var(--text-3)', border: `1px solid ${active ? color : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '7px 12px', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{label}</button>
+    <button onClick={onClick} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, background: active ? color : 'var(--btn)', color: active ? '#fff' : 'var(--text-3)', border: `1px solid ${active ? color : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '7px 12px', borderRadius: 8, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{label}</button>
   );
 
   return (
-    <Modal onClose={() => s.closeResult()} width={620} z={64} style={{ maxHeight: '88vh', overflow: 'auto' }}>
+    <Modal onClose={() => s.closeResult()} width={620} z={64} label={tr.modals.resultTitle} style={{ maxHeight: '88vh', overflow: 'auto' }}>
       <ModalTitle>{tr.modals.resultTitle}</ModalTitle>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
@@ -53,7 +53,7 @@ export function ResultModal() {
             </span>
             <div style={{ display: 'flex', gap: 6 }}>
               {resBtn(r.won === 'own', 'var(--success)', tr.modals.win, () => s.setResultWon(r.id, 'own'))}
-              {resBtn(r.won === 'opp', '#E0594B', tr.modals.loss, () => s.setResultWon(r.id, 'opp'))}
+              {resBtn(r.won === 'opp', 'var(--danger)', tr.modals.loss, () => s.setResultWon(r.id, 'opp'))}
             </div>
           </div>
         ))}

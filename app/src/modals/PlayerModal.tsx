@@ -30,14 +30,14 @@ export function PlayerModal() {
   };
 
   return (
-    <Modal onClose={() => s.closePlayerModal()} width={440} z={60}>
+    <Modal onClose={() => s.closePlayerModal()} width={440} z={60} label={m.mode === 'edit' ? tr.modals.playerEdit : tr.modals.playerNew}>
       <ModalTitle>{m.mode === 'edit' ? tr.modals.playerEdit : tr.modals.playerNew}</ModalTitle>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 22 }}>
         <Avatar photo={photo} short={preview} avi={m.avi} size={64} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button className="dh-btn" onClick={() => s.cyclePlayerAvi(-1)} title={tr.modals.colorBack} style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 17, cursor: 'pointer', fontFamily: 'inherit' }}>‹</button>
-            <button className="dh-btn" onClick={() => s.cyclePlayerAvi(1)} title={tr.modals.colorFwd} style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 17, cursor: 'pointer', fontFamily: 'inherit' }}>›</button>
+            <button className="dh-btn" onClick={() => s.cyclePlayerAvi(-1)} title={tr.modals.colorBack} aria-label={tr.modals.colorBack} style={{ minWidth: 44, minHeight: 44, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 17, cursor: 'pointer', fontFamily: 'inherit' }}>‹</button>
+            <button className="dh-btn" onClick={() => s.cyclePlayerAvi(1)} title={tr.modals.colorFwd} aria-label={tr.modals.colorFwd} style={{ minWidth: 44, minHeight: 44, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 17, cursor: 'pointer', fontFamily: 'inherit' }}>›</button>
             <span style={{ fontSize: 12, color: 'var(--text-4)' }}>{tr.modals.color}</span>
           </div>
           {canPhoto ? (
@@ -51,7 +51,7 @@ export function PlayerModal() {
           ) : isVerein && m.mode === 'add' ? (
             <span style={{ fontSize: 11, color: 'var(--text-5)' }}>{tr.modals.photoAfterSave}</span>
           ) : null}
-          {photoErr && <span style={{ fontSize: 11, color: '#E0594B', fontWeight: 600 }}>{photoErr}</span>}
+          {photoErr && <span style={{ fontSize: 11, color: 'var(--danger)', fontWeight: 600 }}>{photoErr}</span>}
         </div>
       </div>
       <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
@@ -67,14 +67,14 @@ export function PlayerModal() {
       <FieldLabel note={tr.modals.shortNote}>{tr.modals.shortLabel}</FieldLabel>
       <input className="dh-input" value={m.short} onChange={(e) => s.setPlayerField('short', e.target.value)} placeholder={tr.modals.shortPh} maxLength={3} style={{ width: 140, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', fontSize: 15, color: 'var(--text)', fontFamily: 'var(--font-num)', textTransform: 'uppercase', marginBottom: 26 }} />
       {confirmDel ? (
-        <div style={{ background: 'rgba(224,89,75,.08)', border: '1px solid rgba(224,89,75,.32)', borderRadius: 12, padding: '14px 16px' }}>
+        <div style={{ background: 'color-mix(in srgb, var(--danger) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 32%, transparent)', borderRadius: 12, padding: '14px 16px' }}>
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{tr.modals.deleteConfirmTitle(fullName || tr.modals.playerFallback)}</div>
           <div style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 14 }}>
             {tr.modals.cannotUndo}{isVerein ? tr.modals.alsoRemovedFromTeams : ''}
           </div>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
             <button className="dh-btn" onClick={() => setConfirmDel(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
-            <button onClick={() => s.deletePlayer(m.id!)} style={{ background: '#E0594B', border: 'none', color: '#fff', padding: '11px 20px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.delete}</button>
+            <button onClick={() => s.deletePlayer(m.id!)} style={{ background: 'var(--danger)', border: 'none', color: '#fff', padding: '11px 20px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.delete}</button>
           </div>
         </div>
       ) : (

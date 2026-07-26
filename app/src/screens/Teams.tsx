@@ -7,6 +7,7 @@ import { initials, shortLong, todayIso } from '../lib/format';
 import { IconPlus, IconEdit } from '../lib/icons';
 import { TeamKindIcon } from '../modals/TeamModal';
 import { SearchInput } from '../components/SearchInput';
+import { PressableRow } from '../components/PressableRow';
 import { compareName, matchesQuery, nameParts } from '../lib/people';
 import { useIsPhone } from '../lib/useIsPhone';
 import type { Player } from '../data/types';
@@ -42,7 +43,7 @@ export function Teams() {
   const nextFx = useMemo(() => (sel ? nextOwnFixture(inSeason(s.leagues, s.viewSeasonId), todayIso(), sel.name, teamKind(sel)) : null), [sel, s.leagues, s.viewSeasonId]);
 
   return (
-    <div style={{ padding: '28px 32px', maxWidth: 1100, margin: '0 auto' }}>
+    <div style={{ padding: isPhone ? '18px 16px' : '28px 32px', maxWidth: 1100, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, marginBottom: 24, flexWrap: 'wrap' }}>
         <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{tr.nav.teams}</h1>
         {canManage && (
@@ -77,8 +78,8 @@ export function Teams() {
             })}
           </div>
 
-          <div style={{ background: 'linear-gradient(135deg,#13241b,var(--surface) 70%)', border: '1px solid #234032', borderRadius: 18, padding: 24, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-            <div style={{ width: 68, height: 68, borderRadius: 18, background: 'linear-gradient(135deg,#19A463,#0f6b40)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 22, color: '#fff' }}>{initials(sel.name).toUpperCase() || 'TM'}</div>
+          <div style={{ background: 'color-mix(in srgb, var(--accent) 10%, var(--surface))', border: '1px solid var(--border-2)', borderRadius: 18, padding: 24, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+            <div style={{ width: 68, height: 68, borderRadius: 18, background: 'linear-gradient(135deg,var(--success),#0f6b40)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 22, color: '#fff' }}>{initials(sel.name).toUpperCase() || 'TM'}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 800, color: TEAM_KINDS[teamKind(sel)].color, background: `color-mix(in srgb, ${TEAM_KINDS[teamKind(sel)].color} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${TEAM_KINDS[teamKind(sel)].color} 42%, transparent)`, padding: '3px 9px 3px 7px', borderRadius: 7, letterSpacing: '.03em', textTransform: 'uppercase' }}>
@@ -110,13 +111,13 @@ export function Teams() {
                 const isCaptain = sel.captainId === m.id;
                 const isVice = (sel.viceCaptainIds || []).includes(m.id);
                 return (
-                  <div key={m.id} className="dh-row" onClick={() => s.openPlayer(m.id)} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '13px 20px', borderBottom: '1px solid var(--hairline)', cursor: 'pointer' }}>
+                  <PressableRow key={m.id} className="dh-row" onClick={() => s.openPlayer(m.id)} style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '13px 20px', borderBottom: '1px solid var(--hairline)', cursor: 'pointer' }}>
                     <Avatar photo={m.photo} short={m.short} avi={m.avi} size={38} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap' }}>{m.name}</span>
-                        {isCaptain && <span style={{ fontSize: 10, fontWeight: 800, color: '#F2B829', background: 'rgba(242,184,41,.12)', padding: '2px 6px', borderRadius: 5, letterSpacing: '.04em' }}>C</span>}
-                        {isVice && <span title={tr.teams.viceCaptain} style={{ fontSize: 10, fontWeight: 800, color: '#3B9EFF', background: 'rgba(59,158,255,.12)', padding: '2px 6px', borderRadius: 5, letterSpacing: '.04em' }}>EK</span>}
+                        {isCaptain && <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--gold)', background: 'color-mix(in srgb, var(--gold) 12%, transparent)', padding: '2px 6px', borderRadius: 5, letterSpacing: '.04em' }}>C</span>}
+                        {isVice && <span title={tr.teams.viceCaptain} style={{ fontSize: 10, fontWeight: 800, color: 'var(--info)', background: 'color-mix(in srgb, var(--info) 12%, transparent)', padding: '2px 6px', borderRadius: 5, letterSpacing: '.04em' }}>EK</span>}
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{agg.games ? tr.common.gamesCount(agg.games) : tr.teams.squadPlayer}</div>
                     </div>
@@ -124,7 +125,7 @@ export function Teams() {
                       <div style={{ fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 800 }}>{agg.avg ? agg.avg.toFixed(1) : '–'}</div>
                       <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>{tr.common.avg3}</div>
                     </div>
-                  </div>
+                  </PressableRow>
                 );
               })}
             </div>

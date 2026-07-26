@@ -52,7 +52,7 @@ export function TeamModal() {
   const vicePlayers = m.viceCaptainIds.map((id) => s.players.find((p) => p.id === id)).filter((p): p is NonNullable<typeof p> => !!p);
 
   return (
-    <Modal onClose={() => s.closeTeamModal()} width={520} z={61} style={{ maxHeight: '88vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <Modal onClose={() => s.closeTeamModal()} width={520} z={61} label={m.mode === 'edit' ? tr.modals.teamEdit : tr.modals.teamNew} style={{ maxHeight: '88vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Fester Kopf: scrollt NICHT mit, damit Suche immer erreichbar bleibt. */}
       <div style={{ flexShrink: 0 }}>
       <ModalTitle>{m.mode === 'edit' ? tr.modals.teamEdit : tr.modals.teamNew}</ModalTitle>
@@ -82,10 +82,10 @@ export function TeamModal() {
       </div>
 
       {dupSameKind && (
-        <div role="alert" style={{ display: 'flex', alignItems: 'flex-start', gap: 9, background: 'rgba(224,89,75,.1)', border: '1px solid rgba(224,89,75,.45)', borderRadius: 11, padding: '11px 13px', marginBottom: 16 }}>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E0594B" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16.5v.01" /></svg>
+        <div role="alert" style={{ display: 'flex', alignItems: 'flex-start', gap: 9, background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 45%, transparent)', borderRadius: 11, padding: '11px 13px', marginBottom: 16 }}>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16.5v.01" /></svg>
           <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.5 }}>
-            <strong style={{ color: '#E0594B' }}>{tr.modals.dupName}</strong>{tr.modals.dupNameBody(TEAM_KINDS[m.kind].label, m.name.trim(), TEAM_KINDS[otherKind].label)}
+            <strong style={{ color: 'var(--danger)' }}>{tr.modals.dupName}</strong>{tr.modals.dupNameBody(TEAM_KINDS[m.kind].label, m.name.trim(), TEAM_KINDS[otherKind].label)}
           </div>
         </div>
       )}
@@ -101,17 +101,17 @@ export function TeamModal() {
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 14, padding: '11px 13px', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11 }}>
           <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.05em', textTransform: 'uppercase' }}>{tr.modals.leadership}</span>
           {captainPlayer ? (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#F2B829', background: 'rgba(242,184,41,.13)', border: '1px solid rgba(242,184,41,.4)', borderRadius: 999, padding: '4px 6px 4px 10px' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: 'var(--gold)', background: 'color-mix(in srgb, var(--gold) 13%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 40%, transparent)', borderRadius: 999, padding: '4px 6px 4px 10px' }}>
               C · {captainPlayer.name}
-              <button onClick={() => s.setTeamCaptain(captainPlayer.id)} title={tr.modals.removeCaptain} style={{ display: 'flex', width: 16, height: 16, borderRadius: '50%', border: 'none', background: 'rgba(242,184,41,.25)', color: '#F2B829', cursor: 'pointer', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, padding: 0, fontFamily: 'inherit' }}>×</button>
+              <button onClick={() => s.setTeamCaptain(captainPlayer.id)} title={tr.modals.removeCaptain} aria-label={tr.modals.removeCaptain} style={{ display: 'flex', minWidth: 44, minHeight: 44, borderRadius: '50%', border: 'none', background: 'color-mix(in srgb, var(--gold) 25%, transparent)', color: 'var(--gold)', cursor: 'pointer', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, padding: 0, fontFamily: 'inherit' }}>×</button>
             </span>
           ) : (
             <span style={{ fontSize: 12, color: 'var(--text-5)' }}>{tr.modals.noCaptain}</span>
           )}
           {vicePlayers.map((v, i) => (
-            <span key={v.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#3B9EFF', background: 'rgba(59,158,255,.13)', border: '1px solid rgba(59,158,255,.4)', borderRadius: 999, padding: '4px 6px 4px 10px' }}>
+            <span key={v.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: 'var(--info)', background: 'color-mix(in srgb, var(--info) 13%, transparent)', border: '1px solid color-mix(in srgb, var(--info) 40%, transparent)', borderRadius: 999, padding: '4px 6px 4px 10px' }}>
               V{i + 1} · {v.name}
-              <button onClick={() => s.toggleTeamViceCaptain(v.id)} title={tr.modals.removeVice} style={{ display: 'flex', width: 16, height: 16, borderRadius: '50%', border: 'none', background: 'rgba(59,158,255,.25)', color: '#3B9EFF', cursor: 'pointer', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, padding: 0, fontFamily: 'inherit' }}>×</button>
+              <button onClick={() => s.toggleTeamViceCaptain(v.id)} title={tr.modals.removeVice} aria-label={tr.modals.removeVice} style={{ display: 'flex', minWidth: 44, minHeight: 44, borderRadius: '50%', border: 'none', background: 'color-mix(in srgb, var(--info) 25%, transparent)', color: 'var(--info)', cursor: 'pointer', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, padding: 0, fontFamily: 'inherit' }}>×</button>
             </span>
           ))}
           <span style={{ fontSize: 11, color: 'var(--text-5)', marginLeft: 'auto' }}>{tr.modals.setInSquad}</span>
@@ -146,7 +146,7 @@ export function TeamModal() {
           const viceFull = m.viceCaptainIds.length >= 2;
           const memberOf = membershipsByPlayer.get(p.id) || [];
           return (
-            <div key={p.id} onClick={() => s.toggleTeamMember(p.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', border: `1px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, background: on ? 'color-mix(in srgb, var(--accent) 9%, transparent)' : 'var(--btn)', borderRadius: 11, cursor: 'pointer' }}>
+            <div key={p.id} role="button" tabIndex={0} aria-pressed={on} onClick={() => s.toggleTeamMember(p.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); s.toggleTeamMember(p.id); } }} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', border: `1px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, background: on ? 'color-mix(in srgb, var(--accent) 9%, transparent)' : 'var(--btn)', borderRadius: 11, cursor: 'pointer' }}>
               <div style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${on ? 'var(--accent)' : 'var(--border-strong)'}`, background: on ? 'var(--accent)' : 'transparent', color: 'var(--accent-fg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {on && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>}
               </div>
@@ -166,12 +166,12 @@ export function TeamModal() {
               </div>
               {on && (
                 <div style={{ display: 'flex', gap: 6, flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
-                  <button onClick={() => s.setTeamCaptain(p.id)} title={tr.modals.setCaptainTitle} style={{ display: 'flex', alignItems: 'center', gap: 5, background: isCap ? 'rgba(242,184,41,.14)' : 'var(--btn)', border: `1px solid ${isCap ? 'rgba(242,184,41,.5)' : 'var(--border-2)'}`, color: isCap ? '#F2B829' : 'var(--text-4)', padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '.03em' }}>
+                  <button onClick={() => s.setTeamCaptain(p.id)} title={tr.modals.setCaptainTitle} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, minHeight: 44, background: isCap ? 'color-mix(in srgb, var(--gold) 14%, transparent)' : 'var(--btn)', border: `1px solid ${isCap ? 'color-mix(in srgb, var(--gold) 50%, transparent)' : 'var(--border-2)'}`, color: isCap ? 'var(--gold)' : 'var(--text-4)', padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '.03em' }}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.4 6.5L21 9l-5 4.5L17.5 21 12 17.3 6.5 21 8 13.5 3 9l6.6-.5z" /></svg>
                     {tr.modals.captainBtn}
                   </button>
                   {!isCap && (
-                    <button onClick={() => s.toggleTeamViceCaptain(p.id)} disabled={!isVice && viceFull} title={!isVice && viceFull ? tr.modals.maxVice : tr.modals.setViceTitle} style={{ background: isVice ? 'rgba(59,158,255,.14)' : 'var(--btn)', border: `1px solid ${isVice ? 'rgba(59,158,255,.5)' : 'var(--border-2)'}`, color: isVice ? '#3B9EFF' : 'var(--text-4)', padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: (!isVice && viceFull) ? 'default' : 'pointer', opacity: (!isVice && viceFull) ? 0.5 : 1, fontFamily: 'inherit', letterSpacing: '.03em', whiteSpace: 'nowrap' }}>
+                    <button onClick={() => s.toggleTeamViceCaptain(p.id)} disabled={!isVice && viceFull} title={!isVice && viceFull ? tr.modals.maxVice : tr.modals.setViceTitle} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, background: isVice ? 'color-mix(in srgb, var(--info) 14%, transparent)' : 'var(--btn)', border: `1px solid ${isVice ? 'color-mix(in srgb, var(--info) 50%, transparent)' : 'var(--border-2)'}`, color: isVice ? 'var(--info)' : 'var(--text-4)', padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: (!isVice && viceFull) ? 'default' : 'pointer', opacity: (!isVice && viceFull) ? 0.5 : 1, fontFamily: 'inherit', letterSpacing: '.03em', whiteSpace: 'nowrap' }}>
                       {isVice ? tr.modals.viceN(viceIdx + 1) : tr.modals.vice}
                     </button>
                   )}

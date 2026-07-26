@@ -49,13 +49,13 @@ function TournamentList() {
           {list.map((tt) => {
             const pr = tournamentProgress(tt);
             return (
-              <div key={tt.id} className="dh-hover-border" onClick={() => s.openTournament(tt.id)} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 18, cursor: 'pointer', position: 'relative' }}>
+              <div key={tt.id} className="dh-hover-border" role="button" tabIndex={0} onClick={() => s.openTournament(tt.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); s.openTournament(tt.id); } }} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: 18, cursor: 'pointer', position: 'relative' }}>
                 <div style={{ fontSize: 16, fontWeight: 800 }}>{tt.name}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 4 }}>{tt.participants.length} · {t.progress(pr.done, pr.total)}</div>
                 <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 800, color: tt.status === 'done' ? ACCENT : 'var(--text-3)' }}>
                   {tt.status === 'done' ? t.doneTitle : t.statusLive}
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); if (confirm(t.deleteConfirm)) s.deleteTournament(tt.id); }} title={t.delete} style={{ position: 'absolute', top: 12, right: 12, width: 26, height: 26, borderRadius: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-4)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <button onClick={(e) => { e.stopPropagation(); if (confirm(t.deleteConfirm)) s.deleteTournament(tt.id); }} title={t.delete} aria-label={t.delete} style={{ position: 'absolute', top: 12, right: 12, width: 44, height: 44, borderRadius: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-4)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
                 </button>
               </div>
@@ -70,7 +70,7 @@ function TournamentList() {
 function statusChip(m: TournamentMatch, tr: Dict) {
   const t = tr.tournament;
   if (m.status === 'done') return { label: t.statusDone, color: 'var(--text-4)' };
-  if (m.status === 'live') return { label: `${t.statusLive} · ${t.board(m.board || 0)}`, color: '#19A463' };
+  if (m.status === 'live') return { label: `${t.statusLive} · ${t.board(m.board || 0)}`, color: 'var(--success)' };
   return { label: t.statusPending, color: 'var(--text-4)' };
 }
 
@@ -115,7 +115,7 @@ function TournamentDashboard({ t }: { t: TournamentT }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>{tt.progress(pr.done, pr.total)}</span>
           <span style={{ fontSize: 12, color: 'var(--text-4)' }}>· {t.config.startScore} · {tt.bestOfValue(t.config.bestOf)} · {t.config.outMode === 'single' ? tt.outSingle : t.config.outMode === 'master' ? tt.outMaster : tt.outDouble}</span>
-          <button onClick={() => { if (confirm(tt.deleteConfirm)) { s.deleteTournament(t.id); s.go('training'); } }} title={tt.delete} style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-4)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <button onClick={() => { if (confirm(tt.deleteConfirm)) { s.deleteTournament(t.id); s.go('training'); } }} title={tt.delete} aria-label={tt.delete} style={{ width: 44, height: 44, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-4)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
           </button>
         </div>
@@ -149,7 +149,7 @@ function TournamentDashboard({ t }: { t: TournamentT }) {
                       {done ? (
                         <span style={{ fontFamily: 'var(--font-num)', fontWeight: 800, fontSize: 15 }}>{m.result!.homeLegs}:{m.result!.awayLegs}</span>
                       ) : canStart ? (
-                        <button onClick={() => s.startTournamentMatch(m.id, undefined, t.id)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: ACCENT, border: 'none', color: '#06160d', padding: '6px 12px', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+                        <button onClick={() => s.startTournamentMatch(m.id, undefined, t.id)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: ACCENT, border: 'none', color: '#06160d', padding: '6px 12px', minHeight: 44, borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
                           {tt.play}
                         </button>
@@ -158,7 +158,7 @@ function TournamentDashboard({ t }: { t: TournamentT }) {
                         // Board frei, Overlay bietet sie erneut an.
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                           <span style={{ fontSize: 11, fontWeight: 700, color: chip.color }}>{chip.label}</span>
-                          <button onClick={() => { if (confirm(tt.resetConfirm)) s.resetTournamentMatch(m.id, t.id); }} title={tt.resetMatch} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '5px 9px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{tt.resetMatch}</button>
+                          <button onClick={() => { if (confirm(tt.resetConfirm)) s.resetTournamentMatch(m.id, t.id); }} title={tt.resetMatch} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '5px 9px', minHeight: 44, borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{tt.resetMatch}</button>
                         </div>
                       ) : (
                         <span style={{ fontSize: 11, fontWeight: 700, color: chip.color }}>{chip.label}</span>
@@ -194,7 +194,7 @@ function TournamentDashboard({ t }: { t: TournamentT }) {
                       <td style={{ ...td, color: 'var(--text-4)' }}>{r.rank}</td>
                       <td style={{ ...td, textAlign: 'left', fontFamily: 'inherit' }}>{r.name}</td>
                       <td style={td}>{r.played}</td>
-                      <td style={{ ...td, color: '#19A463' }}>{r.wins}</td>
+                      <td style={{ ...td, color: 'var(--success)' }}>{r.wins}</td>
                       <td style={{ ...td, color: 'var(--text-4)' }}>{r.losses}</td>
                       <td style={td}>{r.legDiff > 0 ? `+${r.legDiff}` : r.legDiff}</td>
                       <td style={{ ...td, fontWeight: 800 }}>{r.points}</td>

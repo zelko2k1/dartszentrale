@@ -24,7 +24,7 @@ export function LeagueModal() {
   );
 
   return (
-    <Modal onClose={() => s.closeLeagueModal()} width={540} z={62} style={{ maxHeight: '88vh', overflow: 'auto' }}>
+    <Modal onClose={() => s.closeLeagueModal()} width={540} z={62} label={m.mode === 'edit' ? tr.modals.leagueEdit : tr.modals.leagueNew} style={{ maxHeight: '88vh', overflow: 'auto' }}>
       <ModalTitle>{m.mode === 'edit' ? tr.modals.leagueEdit : tr.modals.leagueNew}</ModalTitle>
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
@@ -83,12 +83,12 @@ export function LeagueModal() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
         {m.teams.map((t) => (
           <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input className="dh-input" value={t.name} onChange={(e) => s.setLeagueTeamName(t.id, e.target.value)} placeholder={tr.modals.teamNamePh} style={{ flex: 1, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+            <input className="dh-input" value={t.name} onChange={(e) => s.setLeagueTeamName(t.id, e.target.value)} placeholder={tr.modals.teamNamePh} aria-label={tr.modals.teamNamePh} style={{ flex: 1, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
             <button onClick={() => s.toggleLeagueTeamOwn(t.id)} title={tr.modals.ownTitle} style={{ display: 'flex', alignItems: 'center', gap: 6, background: t.own ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--btn)', border: `1px solid ${t.own ? 'var(--accent)' : 'var(--border-2)'}`, color: t.own ? 'var(--accent)' : 'var(--text-4)', padding: '9px 12px', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
               {tr.modals.ownBadge}
             </button>
-            <button className="dh-btn" onClick={() => s.removeLeagueTeam(t.id)} title={tr.modals.remove} style={{ width: 38, height: 38, flexShrink: 0, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-4)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+            <button className="dh-btn" onClick={() => s.removeLeagueTeam(t.id)} title={tr.modals.remove} aria-label={tr.modals.remove} style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-4)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /></svg>
             </button>
           </div>

@@ -52,7 +52,7 @@ export function UserModal() {
   const hiddenLinkedCount = players.filter((p) => p.id !== m.playerId && linkedElsewhere.has(p.id)).length;
 
   return (
-    <Modal onClose={() => s.closeUserModal()} width={540} z={63} style={{ maxHeight: '88vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <Modal onClose={() => s.closeUserModal()} width={540} z={63} label={m.mode === 'edit' ? tr.modals.userEdit : tr.modals.userNew} style={{ maxHeight: '88vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <ModalTitle>{m.mode === 'edit' ? tr.modals.userEdit : tr.modals.userNew}</ModalTitle>
 
       {/* Scrollbarer Formularbereich – der Speichern-Fuß bleibt fix. */}
@@ -69,8 +69,8 @@ export function UserModal() {
         <Avatar photo={accountPhoto} short={preview} avi={m.avi} size={58} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button className="dh-btn" onClick={() => s.cycleUserAvi(-1)} style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 16, cursor: 'pointer', fontFamily: 'inherit' }}>‹</button>
-            <button className="dh-btn" onClick={() => s.cycleUserAvi(1)} style={{ width: 34, height: 34, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 16, cursor: 'pointer', fontFamily: 'inherit' }}>›</button>
+            <button className="dh-btn" onClick={() => s.cycleUserAvi(-1)} title={tr.modals.colorBack} aria-label={tr.modals.colorBack} style={{ minWidth: 44, minHeight: 44, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 16, cursor: 'pointer', fontFamily: 'inherit' }}>‹</button>
+            <button className="dh-btn" onClick={() => s.cycleUserAvi(1)} title={tr.modals.colorFwd} aria-label={tr.modals.colorFwd} style={{ minWidth: 44, minHeight: 44, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 16, cursor: 'pointer', fontFamily: 'inherit' }}>›</button>
             <span style={{ fontSize: 12, color: 'var(--text-4)' }}>{tr.modals.color}</span>
           </div>
           {canPhoto ? (
@@ -84,7 +84,7 @@ export function UserModal() {
           ) : isVerein && m.mode === 'add' && !m.isBoard ? (
             <span style={{ fontSize: 11, color: 'var(--text-5)' }}>{tr.modals.photoAfterSave}</span>
           ) : null}
-          {photoErr && <span style={{ fontSize: 11, color: '#E0594B', fontWeight: 600 }}>{photoErr}</span>}
+          {photoErr && <span style={{ fontSize: 11, color: 'var(--danger)', fontWeight: 600 }}>{photoErr}</span>}
         </div>
       </div>
 
@@ -102,7 +102,7 @@ export function UserModal() {
       <FieldLabel>{tr.login.email}</FieldLabel>
       <input className="dh-input" type="email" value={m.email} onChange={(e) => s.setUserField('email', e.target.value)} placeholder="name@verein.de" style={{ ...inputStyle, marginBottom: emailOwner ? 8 : 18 }} />
       {emailOwner && (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'rgba(224,89,75,.1)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', borderRadius: 11, padding: '10px 12px', fontSize: 12.5, lineHeight: 1.45, marginBottom: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', borderRadius: 11, padding: '10px 12px', fontSize: 12.5, lineHeight: 1.45, marginBottom: 18 }}>
           <span style={{ flexShrink: 0, fontWeight: 800 }}>⚠</span>
           <span>{tr.modals.emailTaken(emailOwner.name)}</span>
         </div>
@@ -230,7 +230,7 @@ export function UserModal() {
           <div style={{ fontSize: 14, fontWeight: 600 }}>{m.active ? tr.modals.accountActive : tr.modals.accountInactive}</div>
           <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>{tr.modals.inactiveHint}</div>
         </div>
-        <button onClick={() => s.setUserField('active', !m.active)} style={{ position: 'relative', width: 44, height: 24, borderRadius: 999, background: m.active ? 'var(--accent)' : 'var(--border-2)', border: 'none', cursor: 'pointer', flexShrink: 0, padding: 0 }}>
+        <button onClick={() => s.setUserField('active', !m.active)} role="switch" aria-checked={m.active} aria-label={m.active ? tr.modals.accountActive : tr.modals.accountInactive} style={{ position: 'relative', width: 44, height: 24, borderRadius: 999, background: m.active ? 'var(--accent)' : 'var(--border-2)', border: 'none', cursor: 'pointer', flexShrink: 0, padding: 0 }}>
           <span style={{ position: 'absolute', top: 2, left: 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'transform .15s', transform: m.active ? 'translateX(20px)' : 'translateX(0)' }} />
         </button>
       </div>
@@ -247,7 +247,7 @@ export function UserModal() {
           {!reset2faMsg && (confirm2fa ? (
             <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
               <button onClick={() => setConfirm2fa(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
-              <button onClick={() => { void s.resetUserTwoFA(m.id!).then((okr) => { setConfirm2fa(false); if (okr) setReset2faMsg(tr.modals.twoFAResetDone); }); }} style={{ background: '#E0594B', border: 'none', color: '#fff', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.modals.yesReset}</button>
+              <button onClick={() => { void s.resetUserTwoFA(m.id!).then((okr) => { setConfirm2fa(false); if (okr) setReset2faMsg(tr.modals.twoFAResetDone); }); }} style={{ background: 'var(--danger)', border: 'none', color: '#fff', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.modals.yesReset}</button>
             </div>
           ) : (
             <button onClick={() => setConfirm2fa(true)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>{tr.modals.reset2FA}</button>

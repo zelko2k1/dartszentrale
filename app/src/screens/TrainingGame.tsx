@@ -56,7 +56,7 @@ export function TrainingGame() {
 
   return (
     <BoardScale>
-    <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: s.settings.mode === 'light' ? 'var(--bg)' : '#0c0e11', fontFamily: 'inherit' }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: s.settings.mode === 'light' ? 'var(--bg)' : 'var(--counter-bg)', fontFamily: 'inherit' }}>
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)', flexShrink: 0 }}>
         <button onClick={() => s.trainExit()} title={`${tr.trainingScr.quit} (${formatCombo(cfg.abortKey || 'alt+x')})`} style={headBtn}><IconBack size={15} sw={2} />{tr.trainingScr.quit}</button>
@@ -66,7 +66,7 @@ export function TrainingGame() {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => s.trainUndoTurn()} disabled={!canUndo} title={`Undo (${formatCombo(cfg.undoKey || 'alt+u')})`} style={{ ...headBtn, opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default' }}><IconUndo size={15} />Undo{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo(cfg.undoKey || 'alt+u')}</span>}</button>
-          <button onClick={() => s.trainExit()} title={`${tr.trainingScr.cancel} (${formatCombo(cfg.abortKey || 'alt+x')})`} style={{ ...headBtn, background: 'rgba(224,75,67,.10)', border: '1px solid rgba(224,75,67,.32)', color: '#E0594B' }}><IconX size={15} sw={2} />{tr.trainingScr.cancel}{cfg.device === 'desktop' && <span style={{ ...hintKbd, background: 'rgba(224,75,67,.16)' }}>{formatCombo(cfg.abortKey || 'alt+x')}</span>}</button>
+          <button onClick={() => s.trainExit()} title={`${tr.trainingScr.cancel} (${formatCombo(cfg.abortKey || 'alt+x')})`} style={{ ...headBtn, background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 32%, transparent)', color: 'var(--danger)' }}><IconX size={15} sw={2} />{tr.trainingScr.cancel}{cfg.device === 'desktop' && <span style={{ ...hintKbd, background: 'color-mix(in srgb, var(--danger) 16%, transparent)' }}>{formatCombo(cfg.abortKey || 'alt+x')}</span>}</button>
         </div>
       </div>
 
@@ -271,7 +271,7 @@ function GameBoard({ game, accent, activeId }: { game: TrainGame; accent: string
         const arr = rounds[players[ci].id];
         if (ri >= arr.length) return dotCell();
         const e = arr[ri];
-        return <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, color: e.hit ? 'var(--text)' : '#E0594B' }}>{e.val}</span>;
+        return <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, color: e.hit ? 'var(--text)' : 'var(--danger)' }}>{e.val}</span>;
       };
       return <MatrixBoard headLabel={dict().trainingScr.headRound} cols={cols} rows={rows} accent={accent} renderCell={renderCell} />;
     }
@@ -359,7 +359,7 @@ function CheckoutPanel({ accent }: { accent: string }) {
       {[1, 2, 3].map((d) => (
         <button key={d} onClick={() => apply({ kind: 'made', made: true, darts: d })} style={{ ...bigBtn(), background: `color-mix(in srgb, ${accent} 16%, var(--btn))`, border: `1px solid ${accent}`, color: 'var(--text)', fontSize: 15 }}>✓ {d} Dart{d > 1 ? 's' : ''}</button>
       ))}
-      <button onClick={() => apply({ kind: 'made', made: false, darts: 3 })} style={{ ...bigBtn(), background: 'rgba(224,89,75,.12)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', fontSize: 15 }}>{tr.trainingScr.missed} <span style={{ opacity: 0.6, fontSize: 12 }}>(0)</span></button>
+      <button onClick={() => apply({ kind: 'made', made: false, darts: 3 })} style={{ ...bigBtn(), background: 'color-mix(in srgb, var(--danger) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', fontSize: 15 }}>{tr.trainingScr.missed} <span style={{ opacity: 0.6, fontSize: 12 }}>(0)</span></button>
     </div>
   );
 }
@@ -396,7 +396,7 @@ function HalvePanel({ accent }: { accent: string }) {
           onKeyDown={(e) => { if (e.key === 'Enter') { if (val === '') miss(); else submit(); } }}
           style={{ flex: 1, minWidth: 120, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '13px 16px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
         <button onClick={submit} disabled={!valid} style={{ ...primaryBtn(accent), opacity: valid ? 1 : 0.4, cursor: valid ? 'pointer' : 'default', padding: '15px 24px' }}>{tr.trainingScr.enter}</button>
-        <button onClick={miss} style={{ background: 'rgba(224,89,75,.12)', border: '1px solid rgba(224,89,75,.4)', color: '#E0594B', borderRadius: 12, padding: '15px 22px', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.missHalve}</button>
+        <button onClick={miss} style={{ background: 'color-mix(in srgb, var(--danger) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', borderRadius: 12, padding: '15px 22px', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.missHalve}</button>
       </div>
       <div style={{ fontSize: 11, color: 'var(--text-5)', fontWeight: 600, marginTop: 8 }}>{tr.trainingScr.halveKeysHint}</div>
     </div>
@@ -464,7 +464,7 @@ function CricketPanel({ game, accent }: { game: TrainGame; accent: string }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
         <span style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600 }}>{tr.trainingScr.fieldValue}</span>
         {[['Single', 1], ['Double', 2], ['Triple', 3]].map(([lbl, m]) => (
-          <button key={m as number} onClick={() => setMult(m as number)} style={{ background: mult === m ? accent : 'var(--btn)', color: mult === m ? accentFg(accent) : 'var(--text-2)', border: `1px solid ${mult === m ? accent : 'var(--border-2)'}`, borderRadius: 9, padding: '7px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{lbl}</button>
+          <button key={m as number} onClick={() => setMult(m as number)} style={{ background: mult === m ? accent : 'var(--btn)', color: mult === m ? accentFg(accent) : 'var(--text-2)', border: `1px solid ${mult === m ? accent : 'var(--border-2)'}`, borderRadius: 9, padding: '7px 14px', minHeight: 44, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{lbl}</button>
         ))}
         <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>Darts: {darts}/3</span>
       </div>
@@ -569,10 +569,10 @@ function TrainWinOverlay({ game, accent }: { game: TrainGame; accent: string }) 
     <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,10,12,.86)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 40, padding: 24 }}>
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 20, padding: 28, width: 460, maxWidth: '94vw', boxShadow: '0 30px 70px rgba(0,0,0,.55)' }}>
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'radial-gradient(circle,rgba(242,184,41,.25),rgba(242,184,41,.05))', border: '1px solid rgba(242,184,41,.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#F2B829" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z" /></svg>
+          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'radial-gradient(circle, color-mix(in srgb, var(--gold) 25%, transparent), color-mix(in srgb, var(--gold) 5%, transparent))', border: '1px solid color-mix(in srgb, var(--gold) 40%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z" /></svg>
           </div>
-          <div style={{ fontSize: 12, color: '#F2B829', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 6 }}>{title}</div>
+          <div style={{ fontSize: 12, color: 'var(--gold)', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 6 }}>{title}</div>
           {!solo && <div style={{ fontSize: 26, fontWeight: 800 }}>{winners.join(' & ') || '—'}</div>}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 22 }}>

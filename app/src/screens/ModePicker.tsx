@@ -48,7 +48,7 @@ export function ModePicker() {
         <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-.01em' }}>DartsZentrale</div>
       </div>
       <div style={{ textAlign: 'center', maxWidth: 540 }}>
-        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>{tr.modePicker.question}</div>
+        <h1 style={{ fontSize: 18, fontWeight: 800, marginTop: 0, marginBottom: 6 }}>{tr.modePicker.question}</h1>
         <div style={{ fontSize: 13.5, color: 'var(--text-3)', lineHeight: 1.55 }}>
           {tr.modePicker.changeHint}
         </div>

@@ -3,6 +3,7 @@ import { aggregateFor, inSeason } from '../store/selectors';
 import { Avatar } from '../components/Avatar';
 import { useIsPhone } from '../lib/useIsPhone';
 import { useT } from '../i18n';
+import { PressableRow } from '../components/PressableRow';
 
 const COLS = '26px 1fr 54px 48px 34px 30px 30px 44px 46px 46px 40px 40px 46px 44px';
 
@@ -33,8 +34,8 @@ export function Statistics() {
       avg: agg.avg ? agg.avg.toFixed(1) : '0.0', f9: agg.f9 != null ? agg.f9.toFixed(1) : '–', sp: String(agg.games), sw: String(agg.wins), sn: String(agg.losses),
       checkout: agg.co != null ? agg.co + '%' : '–',
       s60: String(agg.c60), s100: String(agg.c100), s140: String(agg.c140), s180: String(agg.c180), shortLegs: String(agg.shortLegs), highFinish: agg.high ? String(agg.high) : '0',
-      rankColor: idx === 0 && agg.games ? '#F2B829' : idx < 3 && agg.games ? 'var(--success)' : 'var(--text-4)',
-      rowBg: idx === 0 && agg.games ? 'rgba(242,184,41,.05)' : 'transparent',
+      rankColor: idx === 0 && agg.games ? 'var(--gold)' : idx < 3 && agg.games ? 'var(--success)' : 'var(--text-4)',
+      rowBg: idx === 0 && agg.games ? 'color-mix(in srgb, var(--gold) 5%, transparent)' : 'transparent',
     }));
 
   // Bestenliste als CSV herunterladen (Semikolon-getrennt + BOM → öffnet sauber in Excel).
@@ -62,8 +63,8 @@ export function Statistics() {
         )}
       </div>
       {snap && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'rgba(242,184,41,.1)', border: '1px solid rgba(242,184,41,.35)', borderRadius: 11, padding: '10px 14px', marginBottom: 18, fontSize: 13, color: 'var(--text-2)' }}>
-          <span style={{ fontSize: 11, fontWeight: 800, color: '#F2B829', background: 'var(--btn)', border: '1px solid var(--border-2)', padding: '2px 8px', borderRadius: 6 }}>{tr.stats.offloadedBadge}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'color-mix(in srgb, var(--gold) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 35%, transparent)', borderRadius: 11, padding: '10px 14px', marginBottom: 18, fontSize: 13, color: 'var(--text-2)' }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--gold)', background: 'var(--btn)', border: '1px solid var(--border-2)', padding: '2px 8px', borderRadius: 6 }}>{tr.stats.offloadedBadge}</span>
           {tr.stats.offloadedInfo}
         </div>
       )}
@@ -71,61 +72,62 @@ export function Statistics() {
         /* Handy: Karten statt 14-Spalten-Tabelle — kein horizontales Scrollen; alle Details im Spieler-Profil (Tap). */
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
           {rows.map((l) => (
-            <div key={l.id} className="dh-row" onClick={() => s.openPlayer(l.id)} style={{ padding: '13px 14px', borderBottom: '1px solid var(--hairline)', cursor: 'pointer', background: l.rowBg }}>
+            <PressableRow key={l.id} className="dh-row" onClick={() => s.openPlayer(l.id)} style={{ padding: '13px 14px', borderBottom: '1px solid var(--hairline)', cursor: 'pointer', background: l.rowBg }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ width: 22, flexShrink: 0, fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: l.rankColor }}>{l.rank}</span>
                 <Avatar photo={l.photo} short={l.short} avi={l.avi} size={34} />
                 <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.name}</span>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{ fontFamily: 'var(--font-num)', fontSize: 19, fontWeight: 800, color: '#2BD377', lineHeight: 1.1 }}>{l.avg}</div>
-                  <div style={{ fontSize: 9, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.03em', textTransform: 'uppercase' }}>{tr.stats.thAvg}</div>
+                  <div style={{ fontFamily: 'var(--font-num)', fontSize: 19, fontWeight: 800, color: 'var(--success)', lineHeight: 1.1 }}>{l.avg}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.03em', textTransform: 'uppercase' }}>{tr.stats.thAvg}</div>
                 </div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 4, marginTop: 10 }}>
                 {[
                   { v: l.sp, label: tr.stats.thPlayed, color: 'var(--text-3)' },
-                  { v: l.sw, label: tr.stats.thWin, color: '#19A463' },
-                  { v: l.sn, label: tr.stats.thLoss, color: '#E0594B' },
-                  { v: l.s180, label: '180', color: '#E0594B' },
+                  { v: l.sw, label: tr.stats.thWin, color: 'var(--success)' },
+                  { v: l.sn, label: tr.stats.thLoss, color: 'var(--danger)' },
+                  { v: l.s180, label: '180', color: 'var(--danger)' },
                   { v: l.checkout, label: 'CO', color: 'var(--text)' },
                   { v: l.highFinish, label: 'HF', color: 'var(--text)' },
                 ].map((c) => (
                   <div key={c.label} style={{ textAlign: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '5px 2px' }}>
                     <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: c.color }}>{c.v}</div>
-                    <div style={{ fontSize: 8.5, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden' }}>{c.label}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden' }}>{c.label}</div>
                   </div>
                 ))}
               </div>
-            </div>
+            </PressableRow>
           ))}
-          {rows.length === 0 && <div style={{ padding: '30px 18px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>–</div>}
+          {rows.length === 0 && <div style={{ padding: '30px 18px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.dashboard.noPlayers}</div>}
         </div>
       ) : (
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4, padding: '14px 18px', borderBottom: '1px solid var(--border)', fontSize: 10, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', minWidth: 730 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4, padding: '14px 18px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', minWidth: 730 }}>
           <span>#</span><span>{tr.stats.thPlayer}</span><span style={{ textAlign: 'right' }}>{tr.stats.thAvg}</span><span style={{ textAlign: 'right' }} title={tr.stats.f9Title}>F9</span><span style={{ textAlign: 'right' }}>{tr.stats.thPlayed}</span><span style={{ textAlign: 'right' }}>{tr.stats.thWin}</span><span style={{ textAlign: 'right' }}>{tr.stats.thLoss}</span><span style={{ textAlign: 'right' }}>60+</span><span style={{ textAlign: 'right' }}>100+</span><span style={{ textAlign: 'right' }}>140+</span><span style={{ textAlign: 'right' }}>180</span><span style={{ textAlign: 'right' }} title={tr.stats.slTitle}>SL</span><span style={{ textAlign: 'right' }}>CO</span><span style={{ textAlign: 'right' }}>HF</span>
         </div>
         {rows.map((l) => (
-          <div key={l.id} className="dh-row" onClick={() => s.openPlayer(l.id)} style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4, padding: '13px 18px', borderBottom: '1px solid var(--hairline)', alignItems: 'center', cursor: 'pointer', background: l.rowBg, minWidth: 730 }}>
+          <PressableRow key={l.id} className="dh-row" onClick={() => s.openPlayer(l.id)} style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4, padding: '13px 18px', borderBottom: '1px solid var(--hairline)', alignItems: 'center', cursor: 'pointer', background: l.rowBg, minWidth: 730 }}>
             <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: l.rankColor }}>{l.rank}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
               <Avatar photo={l.photo} short={l.short} avi={l.avi} size={30} />
               <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.name}</span>
             </div>
-            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: '#2BD377' }}>{l.avg}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: 'var(--success)' }}>{l.avg}</span>
             <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: '#2bd3c0' }}>{l.f9}</span>
             <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{l.sp}</span>
-            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: '#19A463' }}>{l.sw}</span>
-            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: '#E0594B' }}>{l.sn}</span>
-            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: '#3B9EFF' }}>{l.s60}</span>
-            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: '#19A463' }}>{l.s100}</span>
-            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: '#F2B829' }}>{l.s140}</span>
-            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: '#E0594B' }}>{l.s180}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: 'var(--success)' }}>{l.sw}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: 'var(--danger)' }}>{l.sn}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--info)' }}>{l.s60}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--success)' }}>{l.s100}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--gold)' }}>{l.s140}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--danger)' }}>{l.s180}</span>
             <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: '#2bd3c0' }}>{l.shortLegs}</span>
             <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text)' }}>{l.checkout}</span>
             <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text)' }}>{l.highFinish}</span>
-          </div>
+          </PressableRow>
         ))}
+        {rows.length === 0 && <div style={{ padding: '30px 18px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.dashboard.noPlayers}</div>}
       </div>
       )}
     </div>

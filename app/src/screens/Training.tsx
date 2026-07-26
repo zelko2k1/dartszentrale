@@ -28,7 +28,7 @@ function Grid({ modes }: { modes: TrainMode[] }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 28 }}>
       {modes.map((m) => (
-        <div key={m.id} className="dh-hover-border" onClick={() => openTrainSetup(m.id)} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 20, cursor: 'pointer', position: 'relative' }}>
+        <div key={m.id} className="dh-hover-border" role="button" tabIndex={0} onClick={() => openTrainSetup(m.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openTrainSetup(m.id); } }} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 20, cursor: 'pointer', position: 'relative' }}>
           <div style={{ width: 46, height: 46, borderRadius: 13, background: `color-mix(in srgb, ${m.color} 16%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={m.color} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d={m.icon} /></svg>
           </div>
@@ -37,7 +37,7 @@ function Grid({ modes }: { modes: TrainMode[] }) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--hairline)' }}>
             <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, whiteSpace: 'nowrap' }}>{tagText(m, tr)}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <button onClick={(e) => { e.stopPropagation(); openRules(m.id); }} title={tr.trainingScr.rules} className="dh-btn" style={{ width: 24, height: 24, borderRadius: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800 }}>?</button>
+              <button onClick={(e) => { e.stopPropagation(); openRules(m.id); }} title={tr.trainingScr.rules} className="dh-btn" style={{ minWidth: 44, minHeight: 44, borderRadius: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800 }}>?</button>
               {(() => { const bv = overallBest(m.id, players); const bm = TRAIN_BEST[m.id]; return (
                 <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: m.color }}>{m.metric}{bv != null && bm ? ` ${bm.format(bv)}` : ''}</span>
               ); })()}
@@ -55,10 +55,10 @@ function TournamentTile() {
   const tournaments = useStore((s) => s.tournaments);
   const tr = useT();
   const t = tr.tournament;
-  const ACCENT = '#F2B829';
+  const ACCENT = 'var(--gold)';
   const running = tournaments.filter((x) => x.status === 'running');
   return (
-    <div className="dh-hover-border" onClick={() => openTournamentSetup()} style={{ background: `linear-gradient(135deg, color-mix(in srgb, ${ACCENT} 12%, var(--surface)), var(--surface))`, border: `1px solid color-mix(in srgb, ${ACCENT} 40%, var(--border))`, borderRadius: 16, padding: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 18, marginBottom: 28 }}>
+    <div className="dh-hover-border" role="button" tabIndex={0} onClick={() => openTournamentSetup()} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openTournamentSetup(); } }} style={{ background: `linear-gradient(135deg, color-mix(in srgb, ${ACCENT} 12%, var(--surface)), var(--surface))`, border: `1px solid color-mix(in srgb, ${ACCENT} 40%, var(--border))`, borderRadius: 16, padding: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 18, marginBottom: 28 }}>
       <div style={{ width: 52, height: 52, borderRadius: 14, background: `color-mix(in srgb, ${ACCENT} 18%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke={ACCENT} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9a6 6 0 0 0 12 0M6 9V4h12v5M9 21h6M12 15v6M4 4h2M18 4h2" /></svg>
       </div>
@@ -70,7 +70,7 @@ function TournamentTile() {
         {tournaments.length > 0 && (
           <button onClick={(e) => { e.stopPropagation(); openTournamentList(); }} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{t.listTitle}{running.length > 0 ? ` · ${running.length} ${t.statusLive}` : ''}</button>
         )}
-        <div style={{ background: ACCENT, color: '#06160d', padding: '9px 16px', borderRadius: 10, fontSize: 14, fontWeight: 800, whiteSpace: 'nowrap' }}>{t.newTournament}</div>
+        <div style={{ background: ACCENT, color: 'var(--accent-fg)', padding: '9px 16px', borderRadius: 10, fontSize: 14, fontWeight: 800, whiteSpace: 'nowrap' }}>{t.newTournament}</div>
       </div>
     </div>
   );

@@ -69,6 +69,9 @@ export function NextGameOverlay() {
     <div
       ref={rootRef}
       tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Nächstes Spiel"
       onKeyDown={(e) => {
         // Garantierter Esc-Pfad, wenn das (fokussierte) Overlay-Div die Taste bekommt. Escape ist idempotent
         // (dismiss/zurück), daher unkritisch, falls zusätzlich der window-Capture-Handler feuert.
@@ -83,9 +86,9 @@ export function NextGameOverlay() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
           <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--accent-fg)', background: 'var(--accent)', padding: '3px 10px', borderRadius: 7 }}>{boardName}</span>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>{a.ownTeamName}</span>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,.45)' }}>{tr.nextGame.vsWord}</span>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,.6)' }}>{tr.nextGame.vsWord}</span>
           <span style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,.85)' }}>{a.oppName}</span>
-          {a.date && <span style={{ fontSize: 12, color: 'rgba(255,255,255,.4)', fontWeight: 600 }}>· {shortLong(a.date)}</span>}
+          {a.date && <span style={{ fontSize: 12, color: 'rgba(255,255,255,.6)', fontWeight: 600 }}>· {shortLong(a.date)}</span>}
         </div>
 
         {/* Begegnung groß */}
@@ -97,7 +100,7 @@ export function NextGameOverlay() {
                 <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>{pl.name}</div>
               </div>
             ))}
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.4)', textTransform: 'uppercase', letterSpacing: '.05em' }}>{game.label}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.6)', textTransform: 'uppercase', letterSpacing: '.05em' }}>{game.label}</div>
           </div>
           <div style={{ fontSize: 20, fontWeight: 800, color: 'rgba(255,255,255,.45)', fontFamily: 'var(--font-num)' }}>vs</div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
