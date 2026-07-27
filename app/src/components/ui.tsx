@@ -11,7 +11,7 @@ export function RoleBadge({ role, style }: { role: Role; style?: CSSProperties }
   return (
     <span style={{
       display: 'inline-block', fontSize: 11, fontWeight: 800, padding: '4px 10px',
-      borderRadius: 7, color: r.color, background: r.bg, border: `1px solid ${r.bd}`,
+      borderRadius: 'var(--radius-xs)', color: r.color, background: r.bg, border: `1px solid ${r.bd}`,
       whiteSpace: 'nowrap', ...style,
     }}>{r.label}</span>
   );
@@ -25,7 +25,7 @@ export function PrimaryButton({ children, onClick, accent = '#19A463', style, di
     <button className="dh-primary" onClick={onClick} disabled={disabled} title={title} style={{
       display: 'inline-flex', alignItems: 'center', gap: 8, background: disabled ? 'var(--btn)' : accent,
       color: disabled ? 'var(--text-5)' : accentFg(accent), border: 'none', padding: '11px 18px',
-      borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: disabled ? 'default' : 'pointer',
+      borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: disabled ? 'default' : 'pointer',
       fontFamily: 'inherit', boxShadow: disabled ? 'none' : '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)',
       whiteSpace: 'nowrap', ...style,
     }}>{children}</button>
@@ -39,7 +39,7 @@ export function SecondaryButton({ children, onClick, style, title, ghost }: {
   return (
     <button className={ghost ? 'dh-btn dh-btn-ghost' : 'dh-btn'} onClick={onClick} title={title} style={{
       display: 'inline-flex', alignItems: 'center', gap: 8, background: ghost ? 'transparent' : 'var(--btn)',
-      color: 'var(--text-2)', border: '1px solid var(--border-2)', padding: '9px 14px', borderRadius: 10,
+      color: 'var(--text-2)', border: '1px solid var(--border-2)', padding: '9px 14px', borderRadius: 'var(--radius-md)',
       fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', ...style,
     }}>{children}</button>
   );
@@ -51,7 +51,7 @@ export function Card({ children, style, hover = false, onClick }: {
 }) {
   return (
     <div className={hover ? 'dh-hover-border' : undefined} onClick={onClick} style={{
-      background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, ...style,
+      background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', ...style,
     }}>{children}</div>
   );
 }
@@ -61,10 +61,10 @@ export function StatTile({ label, value, sub, icon, iconBg = 'var(--btn)', value
   label: string; value: ReactNode; sub?: ReactNode; icon?: ReactNode; iconBg?: string; valueColor?: string;
 }) {
   return (
-    <div className="dh-hover-border" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '18px 20px' }}>
+    <div className="dh-hover-border" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-4)' }}>{label}</span>
-        {icon && <span style={{ width: 30, height: 30, borderRadius: 9, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>{icon}</span>}
+        {icon && <span style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>{icon}</span>}
       </div>
       <div style={{ fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, lineHeight: 1, color: valueColor }}>{value}</div>
       {sub && <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 10 }}>{sub}</div>}
@@ -76,7 +76,7 @@ export function StatTile({ label, value, sub, icon, iconBg = 'var(--btn)', value
 export function EmptyState({ children, style }: { children: ReactNode; style?: CSSProperties }) {
   return (
     <div style={{
-      border: '1px dashed var(--border-2)', borderRadius: 14, padding: '28px 22px', textAlign: 'center',
+      border: '1px dashed var(--border-2)', borderRadius: 'var(--radius-lg)', padding: '28px 22px', textAlign: 'center',
       color: 'var(--text-4)', fontSize: 13, ...style,
     }}>{children}</div>
   );

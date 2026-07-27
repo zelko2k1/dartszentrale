@@ -59,18 +59,18 @@ export function Statistics() {
           <p style={{ margin: 0, fontSize: 13, color: 'var(--text-4)' }}>{tr.stats.subtitle}</p>
         </div>
         {rows.length > 0 && (
-          <button onClick={exportCsv} className="dh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{tr.stats.exportCsv}</button>
+          <button onClick={exportCsv} className="dh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{tr.stats.exportCsv}</button>
         )}
       </div>
       {snap && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'color-mix(in srgb, var(--gold) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 35%, transparent)', borderRadius: 11, padding: '10px 14px', marginBottom: 18, fontSize: 13, color: 'var(--text-2)' }}>
-          <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--gold)', background: 'var(--btn)', border: '1px solid var(--border-2)', padding: '2px 8px', borderRadius: 6 }}>{tr.stats.offloadedBadge}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'color-mix(in srgb, var(--gold) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 35%, transparent)', borderRadius: 'var(--radius-md)', padding: '10px 14px', marginBottom: 18, fontSize: 13, color: 'var(--text-2)' }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--gold)', background: 'var(--btn)', border: '1px solid var(--border-2)', padding: '2px 8px', borderRadius: 'var(--radius-xs)' }}>{tr.stats.offloadedBadge}</span>
           {tr.stats.offloadedInfo}
         </div>
       )}
       {isPhone ? (
         /* Handy: Karten statt 14-Spalten-Tabelle — kein horizontales Scrollen; alle Details im Spieler-Profil (Tap). */
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
           {rows.map((l) => (
             <PressableRow key={l.id} className="dh-row" onClick={() => s.openPlayer(l.id)} style={{ padding: '13px 14px', borderBottom: '1px solid var(--hairline)', cursor: 'pointer', background: l.rowBg }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -91,7 +91,7 @@ export function Statistics() {
                   { v: l.checkout, label: 'CO', color: 'var(--text)' },
                   { v: l.highFinish, label: 'HF', color: 'var(--text)' },
                 ].map((c) => (
-                  <div key={c.label} style={{ textAlign: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '5px 2px' }}>
+                  <div key={c.label} style={{ textAlign: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)', padding: '5px 2px' }}>
                     <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: c.color }}>{c.v}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden' }}>{c.label}</div>
                   </div>
@@ -102,7 +102,7 @@ export function Statistics() {
           {rows.length === 0 && <div style={{ padding: '30px 18px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.dashboard.noPlayers}</div>}
         </div>
       ) : (
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
         <div style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4, padding: '14px 18px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase', minWidth: 730 }}>
           <span>#</span><span>{tr.stats.thPlayer}</span><span style={{ textAlign: 'right' }}>{tr.stats.thAvg}</span><span style={{ textAlign: 'right' }} title={tr.stats.f9Title}>F9</span><span style={{ textAlign: 'right' }}>{tr.stats.thPlayed}</span><span style={{ textAlign: 'right' }}>{tr.stats.thWin}</span><span style={{ textAlign: 'right' }}>{tr.stats.thLoss}</span><span style={{ textAlign: 'right' }}>60+</span><span style={{ textAlign: 'right' }}>100+</span><span style={{ textAlign: 'right' }}>140+</span><span style={{ textAlign: 'right' }}>180</span><span style={{ textAlign: 'right' }} title={tr.stats.slTitle}>SL</span><span style={{ textAlign: 'right' }}>CO</span><span style={{ textAlign: 'right' }}>HF</span>
         </div>

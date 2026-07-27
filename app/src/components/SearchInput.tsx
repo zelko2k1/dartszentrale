@@ -36,7 +36,7 @@ export function SearchInput({
         aria-label={placeholder ?? tr.search.placeholder}
         style={{
           width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)',
-          borderRadius: 11, padding: '10px 34px', color: 'var(--text)', fontSize: 14, fontWeight: 600,
+          borderRadius: 'var(--radius-md)', padding: '10px 34px', color: 'var(--text)', fontSize: 14, fontWeight: 600,
           fontFamily: 'inherit', outline: 'none',
         }}
       />
@@ -45,7 +45,7 @@ export function SearchInput({
           onClick={() => onChange('')}
           title={tr.search.clear}
           aria-label={tr.search.clear}
-          style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', minWidth: 44, minHeight: 44, borderRadius: 7, background: 'transparent', border: 'none', color: 'var(--text-4)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          style={{ position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)', minWidth: 44, minHeight: 44, borderRadius: 'var(--radius-xs)', background: 'transparent', border: 'none', color: 'var(--text-4)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
         >
           <IconX size={15} />
         </button>

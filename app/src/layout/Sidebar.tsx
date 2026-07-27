@@ -21,7 +21,7 @@ function NavItem({ icon, label, screen, active, onClick, badge }: {
       className={`dh-nav${active ? ' dh-nav-active' : ''}`}
       onClick={onClick}
       style={{
-        display: 'flex', alignItems: 'center', gap: 12, padding: '11px 13px', borderRadius: 11, border: 'none',
+        display: 'flex', alignItems: 'center', gap: 12, padding: '11px 13px', borderRadius: 'var(--radius-md)', border: 'none',
         cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, textAlign: 'left',
         background: active ? 'var(--nav-active)' : 'transparent', color: active ? 'var(--nav-active-fg)' : 'var(--text-3)',
       }}
@@ -46,7 +46,7 @@ export function Sidebar() {
     <aside style={{ width: 248, flexShrink: 0, background: 'var(--sidebar)', borderRight: '1px solid var(--hairline)', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 18px' }}>
         {isVerein && s.settings.clubLogo
-          ? <img src={s.settings.clubLogo} alt={tr.sidebar.clubLogoAlt} style={{ width: 38, height: 38, borderRadius: 9, objectFit: 'contain', flexShrink: 0 }} />
+          ? <img src={s.settings.clubLogo} alt={tr.sidebar.clubLogoAlt} style={{ width: 38, height: 38, borderRadius: 'var(--radius-sm)', objectFit: 'contain', flexShrink: 0 }} />
           : <Logo size={38} />}
         <div>
           <div style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-.01em' }}>DartsZentrale</div>
@@ -62,7 +62,7 @@ export function Sidebar() {
               value={s.viewSeasonId ?? ''}
               onChange={(e) => s.setViewSeason(e.target.value)}
               title={tr.sidebar.chooseSeason}
-              style={{ width: '100%', appearance: 'none', WebkitAppearance: 'none', background: 'var(--surface-2)', border: `1px solid ${s.viewSeasonId !== s.activeSeasonId ? 'color-mix(in srgb, var(--warn) 50%, transparent)' : 'var(--border-2)'}`, borderRadius: 10, padding: '8px 28px 8px 11px', color: 'var(--text)', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}
+              style={{ width: '100%', appearance: 'none', WebkitAppearance: 'none', background: 'var(--surface-2)', border: `1px solid ${s.viewSeasonId !== s.activeSeasonId ? 'color-mix(in srgb, var(--warn) 50%, transparent)' : 'var(--border-2)'}`, borderRadius: 'var(--radius-md)', padding: '8px 28px 8px 11px', color: 'var(--text)', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}
             >
               {[...s.seasons]
                 .sort((a, b) => (a.status === 'active' ? 0 : 1) - (b.status === 'active' ? 0 : 1) || b.name.localeCompare(a.name))
@@ -104,13 +104,13 @@ export function Sidebar() {
 
       {isVerein && cu && (
         <div style={{ padding: 12, borderTop: '1px solid var(--hairline)' }}>
-          <div title={tr.sidebar.loggedInAccount} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '9px 11px', borderRadius: 11, background: 'var(--surface-2)' }}>
+          <div title={tr.sidebar.loggedInAccount} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '9px 11px', borderRadius: 'var(--radius-md)', background: 'var(--surface-2)' }}>
             <Avatar photo={cu.photo} short={(cu.first[0] || '') + (cu.last[0] || '')} avi={cu.avi} size={34} />
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cu.name}</div>
               <div style={{ fontSize: 11, color: ROLES[cu.role].color, fontWeight: 600 }}>{ROLES[cu.role].label}</div>
             </div>
-            <button className="dh-btn-ghost" onClick={() => s.logout()} title={tr.sidebar.logout} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer', flexShrink: 0, color: 'var(--text-4)' }}>
+            <button className="dh-btn-ghost" onClick={() => s.logout()} title={tr.sidebar.logout} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: 'transparent', border: 'none', cursor: 'pointer', flexShrink: 0, color: 'var(--text-4)' }}>
               <IconLogout size={16} sw={2} />
             </button>
           </div>

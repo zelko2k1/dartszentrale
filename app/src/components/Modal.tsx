@@ -34,7 +34,7 @@ export function Modal({ children, onClose, width = 440, z = 60, style, label }: 
       }}
     >
       <div ref={ref} className="dh-pop" role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} style={{
-        background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 20, padding: 28,
+        background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xl)', padding: 28,
         width, maxWidth: '92vw', boxShadow: 'var(--shadow-card)', outline: 'none', ...style,
       }}>{children}</div>
     </div>
@@ -64,17 +64,17 @@ export function ModalFooter({ onDelete, onCancel, onSave, saveDisabled, saveLabe
       {onDelete && (
         <button className="dh-btn" onClick={onDelete} style={{
           background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)',
-          padding: '12px 16px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+          padding: '12px 16px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
         }}>{tr.common.delete}</button>
       )}
       <div style={{ flex: 1 }} />
       <button className="dh-btn" onClick={onCancel} style={{
         background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)',
-        padding: '12px 20px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+        padding: '12px 20px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
       }}>{tr.common.cancel}</button>
       <button onClick={disabled ? undefined : onSave} disabled={disabled} style={{
         background: disabled ? 'var(--btn)' : 'var(--accent)', border: 'none',
-        color: disabled ? 'var(--text-5)' : 'var(--accent-fg)', padding: '12px 22px', borderRadius: 11,
+        color: disabled ? 'var(--text-5)' : 'var(--accent-fg)', padding: '12px 22px', borderRadius: 'var(--radius-md)',
         fontSize: 14, fontWeight: 800, cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit',
       }}>{saving ? '…' : (saveLabel ?? tr.common.save)}</button>
     </div>

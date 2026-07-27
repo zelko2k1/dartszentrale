@@ -10,7 +10,7 @@ export function EventModal() {
   if (!m) return null;
   const canSave = m.title.trim().length > 0;
 
-  const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontFamily: 'inherit', fontWeight: 600, outline: 'none' };
+  const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontFamily: 'inherit', fontWeight: 600, outline: 'none' };
 
   return (
     <Modal onClose={() => s.closeEventModal()} width={460} z={62} label={m.mode === 'edit' ? tr.modals.eventEdit : tr.modals.eventNew}>
@@ -35,7 +35,7 @@ export function EventModal() {
         {EVENT_TYPE_ALL.map((key) => {
           const t = EVENT_TYPES[key]; const on = m.type === key;
           return (
-            <button key={key} onClick={() => s.setEventField('type', key)} style={{ display: 'flex', alignItems: 'center', gap: 7, background: on ? `color-mix(in srgb, ${t.color} 16%, transparent)` : 'var(--btn)', border: `1px solid ${on ? t.color : 'var(--border-2)'}`, color: on ? t.color : 'var(--text-2)', fontWeight: on ? 800 : 600, padding: '9px 13px', borderRadius: 10, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button key={key} onClick={() => s.setEventField('type', key)} style={{ display: 'flex', alignItems: 'center', gap: 7, background: on ? `color-mix(in srgb, ${t.color} 16%, transparent)` : 'var(--btn)', border: `1px solid ${on ? t.color : 'var(--border-2)'}`, color: on ? t.color : 'var(--text-2)', fontWeight: on ? 800 : 600, padding: '9px 13px', borderRadius: 'var(--radius-md)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={t.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={t.icon} /></svg>{t.label}
             </button>
           );
@@ -52,7 +52,7 @@ export function EventModal() {
             {([['none', tr.modals.repeatNone], ['weekly', tr.modals.repeatWeekly], ['biweekly', tr.modals.repeatBiweekly], ['monthly', tr.modals.repeatMonthly]] as const).map(([val, label]) => {
               const on = m.repeat === val;
               return (
-                <button key={val} onClick={() => s.setEventField('repeat', val)} style={{ background: on ? 'color-mix(in srgb, var(--accent) 16%, transparent)' : 'var(--btn)', border: `1px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, color: on ? 'var(--accent)' : 'var(--text-2)', fontWeight: on ? 800 : 600, padding: '9px 13px', borderRadius: 10, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
+                <button key={val} onClick={() => s.setEventField('repeat', val)} style={{ background: on ? 'color-mix(in srgb, var(--accent) 16%, transparent)' : 'var(--btn)', border: `1px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, color: on ? 'var(--accent)' : 'var(--text-2)', fontWeight: on ? 800 : 600, padding: '9px 13px', borderRadius: 'var(--radius-md)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
               );
             })}
           </div>
@@ -67,7 +67,7 @@ export function EventModal() {
       )}
 
       {m.mode === 'edit' && m.seriesId && (
-        <button onClick={() => { if (window.confirm(tr.modals.deleteSeriesConfirm)) s.deleteEventSeries(m.seriesId!); }} style={{ width: '100%', boxSizing: 'border-box', background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', padding: '10px 14px', borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 14 }}>{tr.modals.deleteSeries}</button>
+        <button onClick={() => { if (window.confirm(tr.modals.deleteSeriesConfirm)) s.deleteEventSeries(m.seriesId!); }} style={{ width: '100%', boxSizing: 'border-box', background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 14 }}>{tr.modals.deleteSeries}</button>
       )}
 
       <ModalFooter

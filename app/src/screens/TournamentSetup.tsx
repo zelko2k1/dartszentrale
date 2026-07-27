@@ -32,20 +32,20 @@ export function TournamentSetup() {
   const enoughPlayers = players.length >= TOURNAMENT_MIN_PLAYERS;
 
   const seg = (active: boolean, label: string, onClick: () => void, key?: string | number) => (
-    <button key={key ?? label} onClick={onClick} style={{ background: active ? ACCENT : 'var(--btn)', color: active ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${active ? ACCENT : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '9px 14px', minWidth: 44, minHeight: 44, borderRadius: 10, fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-num)' }}>{label}</button>
+    <button key={key ?? label} onClick={onClick} style={{ background: active ? ACCENT : 'var(--btn)', color: active ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${active ? ACCENT : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '9px 14px', minWidth: 44, minHeight: 44, borderRadius: 'var(--radius-md)', fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-num)' }}>{label}</button>
   );
 
   const slots = Array.from({ length: su.count }, (_, i) => i);
 
   return (
     <div style={{ padding: isPhone ? '18px 14px' : '28px 32px', maxWidth: 980, margin: '0 auto' }}>
-      <button onClick={() => s.go('training')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '8px 13px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 18 }}>
+      <button onClick={() => s.go('training')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 18 }}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
         {tr.nav.training}
       </button>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 22 }}>
-        <div style={{ width: 54, height: 54, borderRadius: 15, background: `color-mix(in srgb, ${ACCENT} 16%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ width: 54, height: 54, borderRadius: 'var(--radius-lg)', background: `color-mix(in srgb, ${ACCENT} 16%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={ACCENT} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9a6 6 0 0 0 12 0M6 9V4h12v5M9 21h6M12 15v6M4 4h2M18 4h2" /></svg>
         </div>
         <div>
@@ -55,15 +55,15 @@ export function TournamentSetup() {
       </div>
 
       {!enoughPlayers && (
-        <div style={{ background: 'color-mix(in srgb, var(--danger) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--text)', borderRadius: 12, padding: '12px 16px', marginBottom: 16, fontSize: 14 }}>{t.tooFewPlayers}</div>
+        <div style={{ background: 'color-mix(in srgb, var(--danger) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--text)', borderRadius: 'var(--radius-md)', padding: '12px 16px', marginBottom: 16, fontSize: 14 }}>{t.tooFewPlayers}</div>
       )}
 
       {/* Name + Optionen */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '8px 22px', marginBottom: 18 }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '8px 22px', marginBottom: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '16px 0', flexWrap: 'wrap' }}>
           <div style={{ fontSize: 14, fontWeight: 600 }}>{t.nameLabel}</div>
           <input aria-label={t.nameLabel} value={su.name} onChange={(e) => s.setTournamentSetup({ name: e.target.value })} placeholder={t.namePlaceholder}
-            style={{ flex: '1 1 240px', maxWidth: 320, background: 'var(--btn)', color: 'var(--text)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 13px', fontSize: 14, fontFamily: 'inherit', outline: 'none' }} />
+            style={{ flex: '1 1 240px', maxWidth: 320, background: 'var(--btn)', color: 'var(--text)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '10px 13px', fontSize: 14, fontFamily: 'inherit', outline: 'none' }} />
         </div>
         <Row label={t.playersLabel}>{countOpts.map((n) => seg(su.count === n, String(n), () => s.setTournamentSetup({ count: n }), n))}</Row>
         <Row label={t.startScoreLabel}>{TOURNAMENT_START_OPTS.map((n) => seg(su.config.startScore === n, String(n), () => s.setTournamentSetup({ config: { ...su.config, startScore: n } }), n))}</Row>
@@ -83,14 +83,14 @@ export function TournamentSetup() {
       </div>
 
       {/* Teilnehmer */}
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '8px 22px', marginBottom: 22 }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '8px 22px', marginBottom: 22 }}>
         <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', padding: '16px 0 12px' }}>{t.playersLabel}</div>
         <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12, paddingBottom: 18, borderTop: '1px solid var(--hairline)', paddingTop: 16 }}>
           {slots.map((i) => {
             const sel = players[su.picks[i]] || players[0];
             return (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12 }}>
-                {sel ? <Avatar photo={sel.photo} short={sel.short} avi={sel.avi} size={38} /> : <div style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--btn)', flexShrink: 0 }} />}
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)' }}>
+                {sel ? <Avatar photo={sel.photo} short={sel.short} avi={sel.avi} size={38} /> : <div style={{ width: 38, height: 38, borderRadius: 'var(--radius-md)', background: 'var(--btn)', flexShrink: 0 }} />}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em' }}>{tr.trainingScr.playerN(i + 1)}</div>
                   <select aria-label={tr.trainingScr.playerN(i + 1)} value={su.picks[i]} onChange={(e) => s.setTournamentPick(i, Number(e.target.value))} style={{ width: '100%', background: 'transparent', color: 'var(--text)', border: 'none', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', outline: 'none', padding: 0 }}>
@@ -104,7 +104,7 @@ export function TournamentSetup() {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button onClick={() => s.createTournament()} disabled={!enoughPlayers} style={{ display: 'flex', alignItems: 'center', gap: 10, background: enoughPlayers ? ACCENT : 'var(--btn)', border: 'none', color: enoughPlayers ? 'var(--accent-fg)' : 'var(--text-4)', padding: '14px 30px', borderRadius: 13, fontSize: 16, fontWeight: 800, cursor: enoughPlayers ? 'pointer' : 'not-allowed', fontFamily: 'inherit', boxShadow: enoughPlayers ? `0 8px 24px color-mix(in srgb, ${ACCENT} 28%, transparent)` : 'none' }}>
+        <button onClick={() => s.createTournament()} disabled={!enoughPlayers} style={{ display: 'flex', alignItems: 'center', gap: 10, background: enoughPlayers ? ACCENT : 'var(--btn)', border: 'none', color: enoughPlayers ? 'var(--accent-fg)' : 'var(--text-4)', padding: '14px 30px', borderRadius: 'var(--radius-md)', fontSize: 16, fontWeight: 800, cursor: enoughPlayers ? 'pointer' : 'not-allowed', fontFamily: 'inherit', boxShadow: enoughPlayers ? `0 8px 24px color-mix(in srgb, ${ACCENT} 28%, transparent)` : 'none' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
           {t.create}
         </button>

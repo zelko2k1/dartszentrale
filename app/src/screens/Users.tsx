@@ -51,10 +51,10 @@ export function Users() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', flexShrink: 0 }}>
           <SearchInput value={query} onChange={setQuery} placeholder={tr.users.search} width={220} />
-          <button className="dh-btn" onClick={createBoards} title={tr.users.boardAccountsTitle} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 16px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
+          <button className="dh-btn" onClick={createBoards} title={tr.users.boardAccountsTitle} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 16px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
             {tr.users.boardAccounts}
           </button>
-          <button className="dh-primary" onClick={() => s.openAddUser()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
+          <button className="dh-primary" onClick={() => s.openAddUser()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
             <IconPlus size={17} />
             {tr.users.addUser}
           </button>
@@ -67,14 +67,14 @@ export function Users() {
           { v: active, label: tr.users.activeCount, color: 'var(--success)' },
           { v: linked, label: tr.users.linkedWithPlayer, color: 'var(--info)' },
         ].map((t) => (
-          <div key={t.label} style={{ flex: 1, minWidth: 140, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '16px 18px' }}>
+          <div key={t.label} style={{ flex: 1, minWidth: 140, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '16px 18px' }}>
             <div style={{ fontFamily: 'var(--font-num)', fontSize: 24, fontWeight: 800, color: t.color }}>{t.v}</div>
             <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginTop: 2 }}>{t.label}</div>
           </div>
         ))}
       </div>
 
-      <div role="table" aria-label={tr.dashboard.usersRights} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
+      <div role="table" aria-label={tr.dashboard.usersRights} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
         <div role="row" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1.1fr 64px 92px 56px', gap: 10, padding: '13px 20px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.05em', textTransform: 'uppercase', minWidth: 584 }}>
           <span role="columnheader">{tr.users.thUser}</span><span role="columnheader">{tr.users.thRole}</span><span role="columnheader">{tr.users.thPlayerProfile}</span><span role="columnheader" style={{ textAlign: 'center' }}>2FA</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.users.thStatus}</span><span role="columnheader" />
         </div>
@@ -94,14 +94,14 @@ export function Users() {
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                     <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.name}</span>
-                    {u.isBoard && <span style={{ fontSize: 9, fontWeight: 800, color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '2px 5px', borderRadius: 5, letterSpacing: '.04em', flexShrink: 0 }}>BOARD {u.boardNumber}</span>}
-                    {me && <span style={{ fontSize: 9, fontWeight: 800, color: 'var(--text-3)', background: 'var(--btn)', border: '1px solid var(--border-2)', padding: '2px 5px', borderRadius: 5, letterSpacing: '.04em', flexShrink: 0 }}>{tr.users.meBadge}</span>}
+                    {u.isBoard && <span style={{ fontSize: 9, fontWeight: 800, color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '2px 5px', borderRadius: 'var(--radius-xs)', letterSpacing: '.04em', flexShrink: 0 }}>BOARD {u.boardNumber}</span>}
+                    {me && <span style={{ fontSize: 9, fontWeight: 800, color: 'var(--text-3)', background: 'var(--btn)', border: '1px solid var(--border-2)', padding: '2px 5px', borderRadius: 'var(--radius-xs)', letterSpacing: '.04em', flexShrink: 0 }}>{tr.users.meBadge}</span>}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.email}</div>
                 </div>
               </div>
               <div role="cell">
-                <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, color: r.color, background: r.bg, border: `1px solid ${r.bd}`, padding: '4px 10px', borderRadius: 7 }}>{r.label}</span>
+                <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, color: r.color, background: r.bg, border: `1px solid ${r.bd}`, padding: '4px 10px', borderRadius: 'var(--radius-xs)' }}>{r.label}</span>
                 {u.position && <div style={{ fontSize: 11, color: 'var(--text-4)', marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.position}</div>}
               </div>
               <div role="cell" style={{ fontSize: 12, color: pn ? 'var(--text-2)' : 'var(--text-5)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pn ? `↔ ${pn}` : tr.users.noPlayerProfile}</div>
@@ -119,7 +119,7 @@ export function Users() {
                 </button>
               </div>
               <div role="cell" style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button className="dh-btn" onClick={() => s.openEditUser(u.id)} title={tr.common.edit} aria-label={tr.common.edit} style={{ width: 44, height: 44, borderRadius: 9, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <button className="dh-btn" onClick={() => s.openEditUser(u.id)} title={tr.common.edit} aria-label={tr.common.edit} style={{ width: 44, height: 44, borderRadius: 'var(--radius-sm)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                   <IconEdit size={15} />
                 </button>
               </div>
@@ -134,7 +134,7 @@ export function Users() {
           const r = ROLES[role];
           return (
             <div key={role} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--text-3)' }}>
-              <span style={{ width: 9, height: 9, borderRadius: 3, background: r.color }} />
+              <span style={{ width: 9, height: 9, borderRadius: 'var(--radius-xs)', background: r.color }} />
               <span style={{ fontWeight: 700 }}>{r.label}</span>
               <span style={{ color: 'var(--text-5)' }}>· {count}</span>
             </div>

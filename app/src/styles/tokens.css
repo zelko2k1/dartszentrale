@@ -13,6 +13,8 @@
      text-lesbare Töne auf dunklem Grund; CVD-geprüft (validate_palette.js). Reihenfolge = CVD-Sicherheit. */
   --cat-1:#4c9dff; --cat-2:#f07a3d; --cat-3:#2bd3c0; --cat-4:#F2B829; --cat-5:#e87ba4; --cat-6:#2bd377; --cat-7:#b48aff; --cat-8:#e0594b;
   --scrim:rgba(6,8,10,.72); --shadow-card:0 24px 60px rgba(0,0,0,.5);
+  /* Radius-Skala (themeunabhängig; ein Theme darf sie via [data-theme="…"] überschreiben, z. B. kantiger) */
+  --radius-xs:6px; --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-xl:20px; --radius-pill:999px;
   --ease-out:cubic-bezier(.16,1,.3,1); /* :root → global, themeunabhängig */
   --nav-active:color-mix(in srgb, var(--accent) 16%, transparent); --nav-active-fg:var(--accent); --bar:rgba(13,15,18,.55);
 }
@@ -36,7 +38,7 @@
 html, body { margin: 0; padding: 0; height: 100%; }
 #root { height: 100%; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 6px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: var(--radius-xs); border: 2px solid var(--bg); }
 ::-webkit-scrollbar-track { background: transparent; }
 @keyframes dh-pop { from { transform: scale(.82); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes dh-up { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

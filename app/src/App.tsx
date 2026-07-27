@@ -170,16 +170,16 @@ export default function App() {
   const kioskInTraining = s.screen === 'training' || s.screen === 'trainSetup' || s.screen === 'trainGame' || s.screen === 'tournamentSetup' || s.screen === 'tournament';
   const kioskInSettings = s.screen === 'settings';
   const kioskTab = (label: string, active: boolean, onClick: () => void, hint?: string) => (
-    <button onClick={onClick} title={hint ? `${label} (${hint})` : label} style={{ display: 'flex', alignItems: 'center', gap: 7, background: active ? 'var(--accent)' : 'var(--surface-3)', color: active ? 'var(--accent-fg)' : 'var(--text-3)', border: `1px solid ${active ? 'var(--accent)' : 'var(--border-2)'}`, padding: '7px 14px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+    <button onClick={onClick} title={hint ? `${label} (${hint})` : label} style={{ display: 'flex', alignItems: 'center', gap: 7, background: active ? 'var(--accent)' : 'var(--surface-3)', color: active ? 'var(--accent-fg)' : 'var(--text-3)', border: `1px solid ${active ? 'var(--accent)' : 'var(--border-2)'}`, padding: '7px 14px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
       {label}
-      {hint && <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.65, background: active ? 'rgba(0,0,0,.16)' : 'var(--btn)', borderRadius: 5, padding: '1px 5px' }}>{hint}</span>}
+      {hint && <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.65, background: active ? 'rgba(0,0,0,.16)' : 'var(--btn)', borderRadius: 'var(--radius-xs)', padding: '1px 5px' }}>{hint}</span>}
     </button>
   );
   // Schmale Viewports (Smartphone, Tablet im Hochformat) → Tabs/Verlassen in eine Seitenleiste auslagern,
   // damit sich in der Topbar nichts überlagert. isHandset greift bei Tablets nicht, daher Breiten-Schwelle.
   const narrowBar = width < 860;
   const kioskMenuItem = (label: string, active: boolean, onClick: () => void) => (
-    <button onClick={onClick} style={{ display: 'flex', alignItems: 'center', width: '100%', textAlign: 'left', background: active ? 'var(--accent)' : 'var(--btn)', color: active ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${active ? 'var(--accent)' : 'var(--border-2)'}`, padding: '13px 15px', borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
+    <button onClick={onClick} style={{ display: 'flex', alignItems: 'center', width: '100%', textAlign: 'left', background: active ? 'var(--accent)' : 'var(--btn)', color: active ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${active ? 'var(--accent)' : 'var(--border-2)'}`, padding: '13px 15px', borderRadius: 'var(--radius-md)', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
   );
   const openExit = () => { setKioskMenuOpen(false); setExitForm({ email: '', pw: '', err: '', busy: false }); setExitOpen(true); };
   const kioskBar = (
@@ -187,12 +187,12 @@ export default function App() {
       <header style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)' }}>
         {narrowBar && (
           <button onClick={() => setKioskMenuOpen(true)} aria-label={tr.app.menuOpen} title={tr.app.menu}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 11, color: 'var(--text-2)', cursor: 'pointer', flexShrink: 0 }}>
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', color: 'var(--text-2)', cursor: 'pointer', flexShrink: 0 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
           </button>
         )}
         {isVerein && s.settings.clubLogo
-          ? <img src={s.settings.clubLogo} alt={tr.sidebar.clubLogoAlt} style={{ width: 28, height: 28, borderRadius: 7, objectFit: 'contain' }} />
+          ? <img src={s.settings.clubLogo} alt={tr.sidebar.clubLogoAlt} style={{ width: 28, height: 28, borderRadius: 'var(--radius-xs)', objectFit: 'contain' }} />
           : <Logo size={28} />}
         <div style={{ fontWeight: 800, fontSize: 15 }}>{boardNumber != null ? `Board ${boardNumber}` : tr.app.board}</div>
         {!narrowBar && (
@@ -208,10 +208,10 @@ export default function App() {
         {!narrowBar && (
           <button onClick={openExit}
             title={tr.app.exitTitleBar}
-            style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 13px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
             {tr.app.leave}
-            <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.65, background: 'var(--btn)', borderRadius: 5, padding: '1px 5px' }}>Alt+V</span>
+            <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.65, background: 'var(--btn)', borderRadius: 'var(--radius-xs)', padding: '1px 5px' }}>Alt+V</span>
           </button>
         )}
       </header>
@@ -221,7 +221,7 @@ export default function App() {
           <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: 'min(84vw, 320px)', background: 'var(--surface)', borderRight: '1px solid var(--border-2)', boxShadow: '12px 0 40px rgba(0,0,0,.5)', zIndex: 71, display: 'flex', flexDirection: 'column', padding: 16, gap: 9 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
               <div style={{ fontWeight: 800, fontSize: 16 }}>{boardNumber != null ? `Board ${boardNumber}` : tr.app.board}</div>
-              <button onClick={() => setKioskMenuOpen(false)} aria-label={tr.common.close} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, color: 'var(--text-3)', cursor: 'pointer' }}>
+              <button onClick={() => setKioskMenuOpen(false)} aria-label={tr.common.close} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', color: 'var(--text-3)', cursor: 'pointer' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
@@ -231,7 +231,7 @@ export default function App() {
             {kioskMenuItem(tr.nav.settings, kioskInSettings, () => { s.go('settings'); setKioskMenuOpen(false); })}
             <div style={{ flex: 1 }} />
             <button onClick={openExit}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 15px', borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 15px', borderRadius: 'var(--radius-md)', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
               {tr.app.leaveBoardMode}
             </button>
@@ -259,9 +259,9 @@ export default function App() {
       {/* PWA-Update-Hinweis: dezent, während eines laufenden Spiels ausgeblendet (unterbricht nie eine Partie).
           Auch auf Fernbedienung/Zuschauer-TV (liveRoute) aus — er würde dort über den Tasten schweben. */}
       {s.updateReady && !updateDismissed && !isCounter && !isTrainGame && !liveRoute && (
-        <div style={{ position: 'fixed', bottom: 18, left: '50%', transform: 'translateX(-50%)', zIndex: 90, display: 'flex', alignItems: 'center', gap: 12, background: 'var(--surface)', border: '1px solid var(--accent)', boxShadow: '0 8px 30px rgba(0,0,0,.4)', borderRadius: 12, padding: '10px 12px 10px 16px' }}>
+        <div style={{ position: 'fixed', bottom: 18, left: '50%', transform: 'translateX(-50%)', zIndex: 90, display: 'flex', alignItems: 'center', gap: 12, background: 'var(--surface)', border: '1px solid var(--accent)', boxShadow: '0 8px 30px rgba(0,0,0,.4)', borderRadius: 'var(--radius-md)', padding: '10px 12px 10px 16px' }}>
           <span style={{ color: 'var(--text)', fontWeight: 600, fontSize: 14 }}>Neue Version verfügbar</span>
-          <button onClick={() => s.applyUpdate()} style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 9, padding: '8px 14px', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Aktualisieren</button>
+          <button onClick={() => s.applyUpdate()} style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 'var(--radius-sm)', padding: '8px 14px', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Aktualisieren</button>
           <button onClick={() => setUpdateDismissed(true)} aria-label="Später" title="Später" style={{ background: 'transparent', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 4px' }}>×</button>
         </div>
       )}
@@ -303,12 +303,12 @@ export default function App() {
           <header style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)' }}>
             <button
               onClick={() => setDrawerOpen(true)} aria-label="Menü öffnen"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 10, color: 'var(--text-2)', cursor: 'pointer', flexShrink: 0 }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', color: 'var(--text-2)', cursor: 'pointer', flexShrink: 0 }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
             </button>
             {isVerein && s.settings.clubLogo
-              ? <img src={s.settings.clubLogo} alt="Vereinslogo" style={{ width: 30, height: 30, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
+              ? <img src={s.settings.clubLogo} alt="Vereinslogo" style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', objectFit: 'contain', flexShrink: 0 }} />
               : <Logo size={30} />}
             <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-.01em' }}>DartsZentrale</div>
           </header>
@@ -337,7 +337,7 @@ export default function App() {
       {s.syncError && (
         <div
           onClick={() => s.clearSyncError()}
-          style={{ position: 'fixed', bottom: 18, left: '50%', transform: 'translateX(-50%)', zIndex: 95, display: 'flex', alignItems: 'center', gap: 10, background: '#3a1714', border: '1px solid #E0594B', color: '#ffd9d3', padding: '10px 16px', borderRadius: 12, fontSize: 13, fontWeight: 600, boxShadow: '0 12px 30px rgba(0,0,0,.45)', cursor: 'pointer', maxWidth: '92vw' }}
+          style={{ position: 'fixed', bottom: 18, left: '50%', transform: 'translateX(-50%)', zIndex: 95, display: 'flex', alignItems: 'center', gap: 10, background: '#3a1714', border: '1px solid #E0594B', color: '#ffd9d3', padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 600, boxShadow: '0 12px 30px rgba(0,0,0,.45)', cursor: 'pointer', maxWidth: '92vw' }}
         >
           <span>⚠ {s.syncError}</span>
           <span style={{ opacity: .7, fontSize: 11 }}>{tr.app.tapToClose}</span>
@@ -349,7 +349,7 @@ export default function App() {
         <button
           onClick={() => s.relockKiosk()}
           title={tr.app.relockTitle}
-          style={{ position: 'fixed', bottom: 18, right: 18, zIndex: 92, display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '12px 18px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 10px 28px rgba(0,0,0,.4)' }}
+          style={{ position: 'fixed', bottom: 18, right: 18, zIndex: 92, display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '12px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 10px 28px rgba(0,0,0,.4)' }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
           {tr.app.relock}
@@ -358,15 +358,15 @@ export default function App() {
 
       {exitOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.82)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 96 }}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 26, width: '92vw', maxWidth: 420, boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 26, width: '92vw', maxWidth: 420, boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
             <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>{tr.app.leaveBoardMode}</div>
             <div style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 18 }}>{tr.app.exitInfo}</div>
-            <input className="dh-input" type="email" inputMode="email" autoCapitalize="off" autoCorrect="off" spellCheck={false} value={exitForm.email} onChange={(e) => setExitForm((f) => ({ ...f, email: e.target.value, err: '' }))} placeholder={tr.login.email} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 10 }} />
-            <input className="dh-input" type="password" value={exitForm.pw} onChange={(e) => setExitForm((f) => ({ ...f, pw: e.target.value, err: '' }))} onKeyDown={(e) => { if (e.key === 'Enter' && !exitForm.busy) submitExit(); }} placeholder={tr.login.password} autoComplete="current-password" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: exitForm.err ? 8 : 18 }} />
+            <input className="dh-input" type="email" inputMode="email" autoCapitalize="off" autoCorrect="off" spellCheck={false} value={exitForm.email} onChange={(e) => setExitForm((f) => ({ ...f, email: e.target.value, err: '' }))} placeholder={tr.login.email} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 10 }} />
+            <input className="dh-input" type="password" value={exitForm.pw} onChange={(e) => setExitForm((f) => ({ ...f, pw: e.target.value, err: '' }))} onKeyDown={(e) => { if (e.key === 'Enter' && !exitForm.busy) submitExit(); }} placeholder={tr.login.password} autoComplete="current-password" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: exitForm.err ? 8 : 18 }} />
             {exitForm.err && <div style={{ fontSize: 12, color: '#E0594B', fontWeight: 600, marginBottom: 14 }}>{exitForm.err}</div>}
             <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-              <button onClick={() => setExitOpen(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
-              <button onClick={submitExit} disabled={exitForm.busy || !exitForm.email.trim() || !exitForm.pw} style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: exitForm.busy ? 'default' : 'pointer', opacity: (exitForm.busy || !exitForm.email.trim() || !exitForm.pw) ? 0.6 : 1, fontFamily: 'inherit' }}>{exitForm.busy ? tr.app.signingIn : tr.app.signInLeave}</button>
+              <button onClick={() => setExitOpen(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
+              <button onClick={submitExit} disabled={exitForm.busy || !exitForm.email.trim() || !exitForm.pw} style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: exitForm.busy ? 'default' : 'pointer', opacity: (exitForm.busy || !exitForm.email.trim() || !exitForm.pw) ? 0.6 : 1, fontFamily: 'inherit' }}>{exitForm.busy ? tr.app.signingIn : tr.app.signInLeave}</button>
             </div>
           </div>
         </div>
@@ -393,12 +393,12 @@ function NewGameConfirm() {
   const ring = (on: boolean, color: string): React.CSSProperties => (on ? { boxShadow: `0 0 0 3px color-mix(in srgb, ${color} 55%, transparent)` } : {});
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.82)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 90 }}>
-      <div onKeyDown={onKey} style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 28, width: '92vw', maxWidth: 400, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+      <div onKeyDown={onKey} style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 28, width: '92vw', maxWidth: 400, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
         <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{tr.app.newGameConfirmTitle}</div>
         <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>{tr.counter.abortBody}</div>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-          <button ref={keepRef} onClick={() => s.cancelNew()} onMouseEnter={() => setSel(0)} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 0, 'var(--text)') }}>{tr.counter.keepPlaying}</button>
-          <button ref={newRef} onClick={() => s.confirmNew()} onMouseEnter={() => setSel(1)} style={{ flex: 1, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 1, 'var(--accent)') }}>{tr.counter.newGame}</button>
+          <button ref={keepRef} onClick={() => s.cancelNew()} onMouseEnter={() => setSel(0)} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 0, 'var(--text)') }}>{tr.counter.keepPlaying}</button>
+          <button ref={newRef} onClick={() => s.confirmNew()} onMouseEnter={() => setSel(1)} style={{ flex: 1, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 1, 'var(--accent)') }}>{tr.counter.newGame}</button>
         </div>
         {/* Tastatur-Hinweis (nur Desktop, wo eine Tastatur da ist) – analog „Spiel abbrechen?". */}
         {s.settings.device === 'desktop' && (
@@ -413,5 +413,5 @@ function NewGameConfirm() {
   );
 }
 function NewKbd({ children }: { children: React.ReactNode }) {
-  return <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px', lineHeight: 1.4 }}>{children}</kbd>;
+  return <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xs)', padding: '2px 7px', lineHeight: 1.4 }}>{children}</kbd>;
 }

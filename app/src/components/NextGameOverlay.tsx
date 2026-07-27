@@ -62,8 +62,8 @@ export function NextGameOverlay() {
   const oppShort = (a.oppName.match(/\b\p{L}/gu) || []).join('').slice(0, 3).toUpperCase() || '?';
   const ownFirst = game.players.map((p) => p.name.split(' ')[0]).join(' & ');
 
-  const kbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,.65)', background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.16)', borderRadius: 6, padding: '2px 8px', marginLeft: 8 };
-  const starterBtn: React.CSSProperties = { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.16)', borderRadius: 14, padding: '18px 12px', cursor: 'pointer', fontFamily: 'inherit' };
+  const kbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,.65)', background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.16)', borderRadius: 'var(--radius-xs)', padding: '2px 8px', marginLeft: 8 };
+  const starterBtn: React.CSSProperties = { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.16)', borderRadius: 'var(--radius-lg)', padding: '18px 12px', cursor: 'pointer', fontFamily: 'inherit' };
 
   return (
     <div
@@ -84,7 +84,7 @@ export function NextGameOverlay() {
           {tr.nextGame.title}{games.length > 1 ? tr.nextGame.ofCount(gi + 1, games.length) : ''}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
-          <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--accent-fg)', background: 'var(--accent)', padding: '3px 10px', borderRadius: 7 }}>{boardName}</span>
+          <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--accent-fg)', background: 'var(--accent)', padding: '3px 10px', borderRadius: 'var(--radius-xs)' }}>{boardName}</span>
           <span style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>{a.ownTeamName}</span>
           <span style={{ fontSize: 12, color: 'rgba(255,255,255,.6)' }}>{tr.nextGame.vsWord}</span>
           <span style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,.85)' }}>{a.oppName}</span>

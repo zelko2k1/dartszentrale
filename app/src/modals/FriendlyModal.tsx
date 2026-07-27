@@ -24,7 +24,7 @@ export function FriendlyModal() {
   const matches = oppPool.filter((n) => !q || n.toLowerCase().includes(q)).slice(0, 60);
   const canSave = !!m.ownTeam.trim() && !!m.opponent.trim();
 
-  const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' };
+  const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' };
 
   return (
     <Modal onClose={() => s.closeFriendly()} width={520} z={63} style={{ maxHeight: '88vh', overflow: 'auto' }}>
@@ -35,16 +35,16 @@ export function FriendlyModal() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
           {ownNames.map((n) => {
             const on = m.ownTeam === n;
-            return <button key={n} onClick={() => s.setFriendlyField('ownTeam', n)} style={{ background: on ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1.5px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, color: on ? 'var(--success)' : 'var(--text-2)', padding: '8px 13px', borderRadius: 999, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{n}</button>;
+            return <button key={n} onClick={() => s.setFriendlyField('ownTeam', n)} style={{ background: on ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1.5px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, color: on ? 'var(--success)' : 'var(--text-2)', padding: '8px 13px', borderRadius: 'var(--radius-pill)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{n}</button>;
           })}
         </div>
       ) : (
         <input className="dh-input" value={m.ownTeam} onChange={(e) => s.setFriendlyField('ownTeam', e.target.value)} placeholder={tr.modals.ownTeamPh} style={{ ...inputStyle, marginBottom: 16 }} />
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '12px 16px', background: 'var(--btn)', borderRadius: 12, marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '12px 16px', background: 'var(--btn)', borderRadius: 'var(--radius-md)', marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 600 }}>{m.homeIsOwn ? tr.modals.homeGame : tr.modals.awayGame}</div>
-        <button onClick={() => s.setFriendlyField('homeIsOwn', !m.homeIsOwn)} style={{ position: 'relative', width: 44, height: 24, borderRadius: 999, background: m.homeIsOwn ? 'var(--accent)' : 'var(--border-2)', border: 'none', cursor: 'pointer', flexShrink: 0, padding: 0 }}>
+        <button onClick={() => s.setFriendlyField('homeIsOwn', !m.homeIsOwn)} style={{ position: 'relative', width: 44, height: 24, borderRadius: 'var(--radius-pill)', background: m.homeIsOwn ? 'var(--accent)' : 'var(--border-2)', border: 'none', cursor: 'pointer', flexShrink: 0, padding: 0 }}>
           <span style={{ position: 'absolute', top: 2, left: 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'transform .15s', transform: m.homeIsOwn ? 'translateX(20px)' : 'translateX(0)' }} />
         </button>
       </div>
@@ -55,7 +55,7 @@ export function FriendlyModal() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 180, overflowY: 'auto', marginBottom: 16 }}>
           {matches.map((n) => {
             const on = m.opponent.trim().toLowerCase() === n.toLowerCase();
-            return <button key={n} onClick={() => s.setFriendlyField('opponent', n)} style={{ textAlign: 'left', background: on ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 10, padding: '9px 12px', fontSize: 13, fontWeight: 600, color: 'var(--text)', cursor: 'pointer', fontFamily: 'inherit' }}>{n}</button>;
+            return <button key={n} onClick={() => s.setFriendlyField('opponent', n)} style={{ textAlign: 'left', background: on ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 'var(--radius-md)', padding: '9px 12px', fontSize: 13, fontWeight: 600, color: 'var(--text)', cursor: 'pointer', fontFamily: 'inherit' }}>{n}</button>;
           })}
         </div>
       ) : (

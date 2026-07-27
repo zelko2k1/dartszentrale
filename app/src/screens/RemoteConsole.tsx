@@ -150,7 +150,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
             onKeyDown={(e) => { if (e.key === 'Enter') void pairByCode(); }}
             placeholder="z. B. DVXR2K"
             autoCapitalize="characters" autoCorrect="off" spellCheck={false} autoFocus
-            style={{ width: 220, maxWidth: '80vw', textAlign: 'center', fontFamily: 'var(--font-num,ui-monospace,monospace)', fontSize: 28, fontWeight: 800, letterSpacing: '.18em', background: '#12161a', border: '1px solid #2a3138', borderRadius: 12, padding: '14px 12px', color: '#e9edf1', outline: 'none' }}
+            style={{ width: 220, maxWidth: '80vw', textAlign: 'center', fontFamily: 'var(--font-num,ui-monospace,monospace)', fontSize: 28, fontWeight: 800, letterSpacing: '.18em', background: '#12161a', border: '1px solid #2a3138', borderRadius: 'var(--radius-md)', padding: '14px 12px', color: '#e9edf1', outline: 'none' }}
           />
           <button className="rc-primary" style={{ ...bigBtn, opacity: busy || manualCode.trim().length < 4 ? 0.5 : 1 }} disabled={busy || manualCode.trim().length < 4} onClick={pairByCode}>Koppeln</button>
           {err && <div style={{ color: ACCENT, fontWeight: 700 }}>{err}</div>}
@@ -221,7 +221,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
     <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', background: '#3a2714', borderBottom: '1px solid #7a5a2a', fontSize: 13 }}>
       <span style={{ flex: 1, minWidth: 0 }}>Ein anderes Gerät möchte übernehmen.</span>
       <button className="rc-ghost" style={{ padding: '6px 12px', fontSize: 13, minHeight: 44 }} onClick={() => provider.liveClaimDeny(sessionId)}>Ablehnen</button>
-      <button className="rc-primary" style={{ padding: '6px 12px', fontSize: 13, borderRadius: 9, minHeight: 44 }} onClick={() => provider.liveClaimApprove(sessionId)}>Zulassen</button>
+      <button className="rc-primary" style={{ padding: '6px 12px', fontSize: 13, borderRadius: 'var(--radius-sm)', minHeight: 44 }} onClick={() => provider.liveClaimApprove(sessionId)}>Zulassen</button>
     </div>
   );
 
@@ -230,7 +230,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
   const scorePanel = (
     <div className="rc-scroll" style={{ flex: '0 1 auto', minHeight: 0, maxHeight: tight ? '26vh' : '33vh', padding: tight ? '8px 14px 4px' : '10px 14px 6px', display: 'flex', flexDirection: 'column', gap: many ? 5 : 6 }}>
       {players.map((p, i) => (
-        <div key={i} ref={i === curIdx ? activeRowRef : undefined} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: many ? '5px 11px' : '9px 13px', borderRadius: 12, background: i === curIdx ? 'rgba(224,89,75,.14)' : '#12161a', border: i === curIdx ? `1px solid ${ACCENT}` : '1px solid #1c2228' }}>
+        <div key={i} ref={i === curIdx ? activeRowRef : undefined} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: many ? '5px 11px' : '9px 13px', borderRadius: 'var(--radius-md)', background: i === curIdx ? 'rgba(224,89,75,.14)' : '#12161a', border: i === curIdx ? `1px solid ${ACCENT}` : '1px solid #1c2228' }}>
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: many ? 'row' : 'column', alignItems: many ? 'baseline' : 'stretch', gap: many ? 8 : 0 }}>
             <div style={{ fontWeight: 800, fontSize: many ? 13 : 15, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
             <div style={{ fontSize: 11, color: '#9aa4ad', flexShrink: 0, whiteSpace: 'nowrap' }}>{many ? `${p.sets}·${p.legs}` : `Sets ${p.sets} · Legs ${p.legs}`}</div>
@@ -243,7 +243,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
 
   // Eingabepuffer + Checkout in EINER Zeile (spart die Höhe, die vorher zwei Blöcke gefressen haben).
   const inputRow = (
-    <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, background: '#12161a', border: '1px solid #232a31', borderRadius: 12, padding: '8px 14px' }}>
+    <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, background: '#12161a', border: '1px solid #232a31', borderRadius: 'var(--radius-md)', padding: '8px 14px' }}>
       <span style={{ fontSize: 12, color: '#8b9299', fontWeight: 700, flexShrink: 0 }}>Wurf</span>
       <span style={{ flex: 1, minWidth: 0, fontSize: 12, fontWeight: 700, color: '#59c26a', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {phase === 'playing' && (st?.checkout?.length ?? 0) > 0 ? st?.checkout.join(' ') : ''}
@@ -343,7 +343,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div className="rc-scroll" style={{ flex: '0 1 auto', minHeight: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
               {players.map((p, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 12px', borderRadius: 10, background: i === curIdx ? 'rgba(224,89,75,.14)' : '#12161a', border: i === curIdx ? `1px solid ${ACCENT}` : '1px solid #1c2228' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 12px', borderRadius: 'var(--radius-md)', background: i === curIdx ? 'rgba(224,89,75,.14)' : '#12161a', border: i === curIdx ? `1px solid ${ACCENT}` : '1px solid #1c2228' }}>
                   <div style={{ flex: 1, minWidth: 0, fontWeight: 800, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
                   <div style={{ fontFamily: 'var(--font-num,ui-monospace,monospace)', fontSize: 24, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{p.score}</div>
                 </div>
@@ -420,7 +420,7 @@ function StartMenu({ onStart }: { onStart: (sel: RemoteStartSelection) => void }
 
   const start = () => onStart({ p1Id: effP1, p2Id: effP2, startScore: fmt.startScore, outMode: fmt.outMode, doubleIn: fmt.doubleIn, unit: fmt.unit, bestOf: fmt.bestOf, bestOfSets: fmt.bestOfSets });
 
-  const rowStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: '#12161a', border: '1px solid #232a31', borderRadius: 12, padding: '13px 15px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' };
+  const rowStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: '#12161a', border: '1px solid #232a31', borderRadius: 'var(--radius-md)', padding: '13px 15px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' };
   const rowLabel: React.CSSProperties = { fontSize: 10, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: '#8b9299' };
   const rowValue: React.CSSProperties = { fontSize: 16, fontWeight: 800, color: '#e9edf1', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' };
   const chevron = <span style={{ marginLeft: 'auto', color: '#6b747c', fontSize: 18, flexShrink: 0 }}>›</span>;
@@ -458,7 +458,7 @@ function StartMenu({ onStart }: { onStart: (sel: RemoteStartSelection) => void }
             return (
               <button key={p.id} className="rc-key" style={{ justifyContent: 'flex-start', gap: 12, padding: '13px 15px', fontSize: 15, fontFamily: 'inherit', fontWeight: 700, background: on ? 'rgba(224,89,75,.14)' : '#14181c', border: on ? `1px solid ${ACCENT}` : '1px solid #2a3138' }}
                 onClick={() => { if (picker === 'p1') setP1Id(p.id); else setP2Id(p.id); setPicker(null); }}>
-                <span style={{ width: 30, height: 30, borderRadius: 8, background: '#222a31', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#c7ced4', flexShrink: 0 }}>{p.short}</span>
+                <span style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: '#222a31', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#c7ced4', flexShrink: 0 }}>{p.short}</span>
                 <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
               </button>
             );
@@ -504,7 +504,7 @@ function PickerSheet({ title, onClose, children }: { title: string; onClose: () 
     <div style={{ position: 'fixed', inset: 0, background: '#0b0d0f', zIndex: 40, display: 'flex', flexDirection: 'column', padding: 'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)' }}>
       <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderBottom: '1px solid #1c2228' }}>
         <div style={{ flex: 1, fontWeight: 800, fontSize: 16 }}>{title}</div>
-        <button onClick={onClose} aria-label="Schließen" className="rc-ghost" style={{ width: 40, height: 40, borderRadius: 10, fontSize: 20 }}>×</button>
+        <button onClick={onClose} aria-label="Schließen" className="rc-ghost" style={{ width: 40, height: 40, borderRadius: 'var(--radius-md)', fontSize: 20 }}>×</button>
       </div>
       <div className="rc-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, padding: 16 }}>
         {children}
@@ -524,6 +524,6 @@ function ModeGroup({ label, children }: { label: string; children: React.ReactNo
 
 function Seg({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} style={{ flex: '1 0 auto', minWidth: 64, padding: '11px 16px', borderRadius: 10, fontWeight: 800, fontSize: 15, cursor: 'pointer', fontFamily: 'var(--font-num,inherit)', background: on ? ACCENT : '#14181c', color: on ? '#fff' : '#c7ced4', border: on ? 'none' : '1px solid #2a3138' }}>{children}</button>
+    <button onClick={onClick} style={{ flex: '1 0 auto', minWidth: 64, padding: '11px 16px', borderRadius: 'var(--radius-md)', fontWeight: 800, fontSize: 15, cursor: 'pointer', fontFamily: 'var(--font-num,inherit)', background: on ? ACCENT : '#14181c', color: on ? '#fff' : '#c7ced4', border: on ? 'none' : '1px solid #2a3138' }}>{children}</button>
   );
 }

@@ -87,15 +87,15 @@ export function Leagues() {
         <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{tr.nav.leagues}</h1>
         {canEdit && (
           <div style={{ display: 'flex', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
-            <button className="dh-btn" onClick={() => s.openImport()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 16px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button className="dh-btn" onClick={() => s.openImport()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 16px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
               {tr.leagues.importBtn}
             </button>
-            <button className="dh-btn" onClick={() => s.openFriendly()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 16px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button className="dh-btn" onClick={() => s.openFriendly()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 16px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
               <IconPlus size={16} />
               {tr.leagues.friendly}
             </button>
-            <button className="dh-primary" onClick={() => s.openAddLeague()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button className="dh-primary" onClick={() => s.openAddLeague()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
               <IconPlus size={17} />
               {tr.leagues.addLeague}
             </button>
@@ -104,7 +104,7 @@ export function Leagues() {
       </div>
 
       {leagues.length === 0 && (
-        <div style={{ background: 'var(--surface)', border: '1px dashed var(--border-strong)', borderRadius: 16, padding: 48, textAlign: 'center', color: 'var(--text-3)' }}>
+        <div style={{ background: 'var(--surface)', border: '1px dashed var(--border-strong)', borderRadius: 'var(--radius-lg)', padding: 48, textAlign: 'center', color: 'var(--text-3)' }}>
           <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>{tr.leagues.emptyTitle}</div>
           <div style={{ fontSize: 13, color: 'var(--text-4)' }}>{tr.leagues.emptyHint}</div>
         </div>
@@ -122,7 +122,7 @@ export function Leagues() {
               return (
                 <button key={l.id} {...ip} onClick={() => s.selectLeague(i)} title={canEdit ? tr.leagues.dragToReorder : undefined} style={{
                   display: 'flex', alignItems: 'center', gap: 8, background: active ? 'var(--btn)' : 'transparent',
-                  border: `1.5px solid ${isTarget ? accent : (active ? accent : 'var(--border)')}`, borderRadius: 12, padding: '10px 16px',
+                  border: `1.5px solid ${isTarget ? accent : (active ? accent : 'var(--border)')}`, borderRadius: 'var(--radius-md)', padding: '10px 16px',
                   cursor: canEdit ? (dragging ? 'grabbing' : 'grab') : 'pointer', fontFamily: 'inherit', minWidth: 130,
                   opacity: dragging ? 0.55 : 1, boxShadow: isTarget ? `0 0 0 3px color-mix(in srgb, ${accent} 22%, transparent)` : 'none',
                   transition: 'box-shadow .12s, opacity .12s', ...ip.style,
@@ -147,21 +147,21 @@ export function Leagues() {
                   const loading = s.nuligaSync?.phase === 'loading' && s.nuligaSync.leagueId === sel.id;
                   return (
                     <button className="dh-btn" onClick={() => { if (!loading) s.importNuliga(sel.id); }} disabled={loading} title={tr.leagues.nuligaTitle}
-                      style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.6 : 1, fontFamily: 'inherit' }}>
+                      style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: loading ? 'default' : 'pointer', opacity: loading ? 0.6 : 1, fontFamily: 'inherit' }}>
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={loading ? { animation: 'dh-spin 0.9s linear infinite' } : undefined}><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" /></svg>
                       {loading ? tr.leagues.nuligaLoading : tr.leagues.nuligaRefresh}
                     </button>
                   );
                 })()}
-                <button className="dh-btn" onClick={() => s.openEditLeague()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <button className="dh-btn" onClick={() => s.openEditLeague()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
                   {tr.leagues.editLeague}
                 </button>
-                <button className="dh-btn" onClick={() => s.openAddFixture()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <button className="dh-btn" onClick={() => s.openAddFixture()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   <IconPlus size={15} />
                   {tr.leagues.addFixture}
                 </button>
-                <button className="dh-btn" onClick={() => { if (window.confirm(tr.leagues.deleteConfirm(sel.name))) s.deleteLeague(sel.id); }} title={tr.leagues.deleteTitle} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <button className="dh-btn" onClick={() => { if (window.confirm(tr.leagues.deleteConfirm(sel.name))) s.deleteLeague(sel.id); }} title={tr.leagues.deleteTitle} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', padding: '9px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" /></svg>
                   {tr.leagues.deleteBtn}
                 </button>
@@ -176,7 +176,7 @@ export function Leagues() {
               const tblCols = isPhone ? '24px minmax(0,1fr) 24px 22px 22px 22px 50px' : '28px minmax(104px,1fr) 26px 24px 24px 24px 58px 42px 52px';
               const tblMinW = isPhone ? undefined : 508;
               return (
-            <div role="table" aria-label={sel.name} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
+            <div role="table" aria-label={sel.name} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
               <div role="row" style={{ display: 'grid', gridTemplateColumns: tblCols, gap: 5, padding: isPhone ? '12px 12px' : '13px 18px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', minWidth: tblMinW }}>
                 <span role="columnheader">#</span><span role="columnheader">{tr.leagues.thTeam}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thPlayed}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thWin}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thDraw}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thLoss}</span>{!isPhone && <span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thLegs}</span>}{!isPhone && <span role="columnheader" style={{ textAlign: 'center' }}>+/−</span>}<span role="columnheader" style={{ textAlign: 'right' }}>{tr.leagues.thPts}</span>
               </div>
@@ -188,7 +188,7 @@ export function Leagues() {
                   <div key={t.id} role="row" style={{ display: 'grid', gridTemplateColumns: tblCols, gap: 5, padding: isPhone ? '11px 12px' : '12px 18px', borderBottom: '1px solid var(--hairline)', alignItems: 'center', background: t.own ? 'color-mix(in srgb, var(--success) 8%, transparent)' : 'transparent', minWidth: tblMinW }}>
                     <span role="cell" style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: posColor }}>{i + 1}</span>
                     <div role="cell" style={{ display: 'flex', alignItems: 'center', gap: isPhone ? 7 : 10, minWidth: 0 }}>
-                      {!isPhone && <div style={{ width: 28, height: 28, borderRadius: 8, background: t.own ? 'linear-gradient(135deg,var(--success),#0f6b40)' : 'var(--btn)', color: t.own ? '#fff' : 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 10, flexShrink: 0 }}>{initials(t.name).slice(0, 3)}</div>}
+                      {!isPhone && <div style={{ width: 28, height: 28, borderRadius: 'var(--radius-sm)', background: t.own ? 'linear-gradient(135deg,var(--success),#0f6b40)' : 'var(--btn)', color: t.own ? '#fff' : 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 10, flexShrink: 0 }}>{initials(t.name).slice(0, 3)}</div>}
                       <span style={{ fontSize: isPhone ? 13 : 14, fontWeight: t.own ? 700 : 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</span>
                     </div>
                     <span role="cell" style={{ textAlign: 'center', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{t.sp}</span>
@@ -206,7 +206,7 @@ export function Leagues() {
             })()}
 
             {/* fixtures */}
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 22px', minWidth: 0 }}>
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px 22px', minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                 <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>{tr.leagues.fixturesTitle}</div>
               </div>
@@ -220,7 +220,7 @@ export function Leagues() {
                   const hasLineup = !!(f.lineup && (f.lineup.positions?.some((e) => e.playerIds.length) || f.lineup.substitutes?.length));
                   const hl = isOwn ? highlightsFor(f.id) : [];
                   return (
-                    <div key={f.id} style={{ border: '1px solid var(--border-2)', borderRadius: 12, overflow: 'hidden' }}>
+                    <div key={f.id} style={{ border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
                     <PressableRow className="dh-hover-border" disabled={!canEdit} onClick={() => s.openEditFixture(f.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', cursor: canEdit ? 'pointer' : 'default', background: 'transparent' }}>
                       <div style={{ textAlign: 'center', width: 42, flexShrink: 0 }}>
                         <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>{mon}</div>
@@ -229,7 +229,7 @@ export function Leagues() {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{teamNameById(f.homeId)} — {teamNameById(f.awayId)}</div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2, minWidth: 0 }}>
-                          {f.round && <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, letterSpacing: '.03em', textTransform: 'uppercase', color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 12%, transparent)', padding: '1px 6px', borderRadius: 6 }}>{f.round}</span>}
+                          {f.round && <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, letterSpacing: '.03em', textTransform: 'uppercase', color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 12%, transparent)', padding: '1px 6px', borderRadius: 'var(--radius-xs)' }}>{f.round}</span>}
                           <span style={{ fontSize: 11, color: played ? 'var(--text-4)' : 'var(--success)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{[played ? tr.leagues.finished : tr.leagues.scheduled, f.time, f.loc].filter(Boolean).join(' · ')}</span>
                         </div>
                       </div>
@@ -238,13 +238,13 @@ export function Leagues() {
                     {isOwn && canEdit && (
                       <div style={{ display: 'flex', gap: 8, padding: '10px 14px', borderTop: '1px solid var(--hairline)' }}>
                         <button onClick={() => s.openLineup(f.id)} title={tr.dashboard.lineupView}
-                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flex: 1, background: hasLineup ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--btn)', border: `1px solid ${hasLineup ? 'var(--accent)' : 'var(--border-2)'}`, color: hasLineup ? 'var(--accent)' : 'var(--text-3)', padding: '8px 10px', borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flex: 1, background: hasLineup ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--btn)', border: `1px solid ${hasLineup ? 'var(--accent)' : 'var(--border-2)'}`, color: hasLineup ? 'var(--accent)' : 'var(--text-3)', padding: '8px 10px', borderRadius: 'var(--radius-sm)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                           <IconUsersSmall size={14} />
                           {hasLineup ? tr.dashboard.lineupView : tr.dashboard.lineupDo}
                         </button>
                         {hasLineup && (
                           <button onClick={() => s.openResult(f.id)} title={tr.leagues.resultTitle}
-                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 10px', borderRadius: 9, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 10px', borderRadius: 'var(--radius-sm)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
                             {tr.leagues.result}
                           </button>
@@ -255,7 +255,7 @@ export function Leagues() {
                       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 7, padding: '8px 14px 10px', borderTop: '1px solid var(--hairline)', background: 'color-mix(in srgb, var(--accent) 4%, transparent)' }}>
                         <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em', textTransform: 'uppercase' }}>{tr.leagues.highlights}</span>
                         {hl.map((h) => (
-                          <span key={h.name} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '3px 9px', fontSize: 12, color: 'var(--text-2)' }}>
+                          <span key={h.name} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)', padding: '3px 9px', fontSize: 12, color: 'var(--text-2)' }}>
                             {h.name}
                             {h.c180 > 0 && <b style={{ color: 'var(--cat-8)', fontFamily: 'var(--font-num)' }}>{h.c180}×180</b>}
                             {h.shortLegs > 0 && <b style={{ color: '#2bd3c0', fontFamily: 'var(--font-num)' }} title={tr.leagues.slTitle}>{h.shortLegs}× SL</b>}
@@ -275,8 +275,8 @@ export function Leagues() {
                         </span>
                         {canEdit && (
                           <div style={{ display: 'flex', gap: 7, marginLeft: 'auto' }}>
-                            <button onClick={() => s.resolveNuligaConflict(sel.id, f.id, false)} style={{ minHeight: 44, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '5px 11px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.leagues.keepOwn}</button>
-                            <button onClick={() => s.resolveNuligaConflict(sel.id, f.id, true)} style={{ minHeight: 44, background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '5px 11px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.leagues.takeNuliga}</button>
+                            <button onClick={() => s.resolveNuligaConflict(sel.id, f.id, false)} style={{ minHeight: 44, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '5px 11px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.leagues.keepOwn}</button>
+                            <button onClick={() => s.resolveNuligaConflict(sel.id, f.id, true)} style={{ minHeight: 44, background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '5px 11px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.leagues.takeNuliga}</button>
                           </div>
                         )}
                       </div>
@@ -287,7 +287,7 @@ export function Leagues() {
               </div>
               {fxHidden > 0 && (
                 <button onClick={() => setFxExpandedFor(fxExpanded ? null : sel.id)}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, width: '100%', marginTop: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '10px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, width: '100%', marginTop: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   {fxExpanded ? tr.leagues.showLess : tr.leagues.showAll(fxSorted.length)}
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: fxExpanded ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }}><path d="M6 9l6 6 6-6" /></svg>
                 </button>

@@ -15,7 +15,7 @@ function Card({ title, sub, points, select, onClick, primary }: {
       style={{
         flex: 1, minWidth: 240, maxWidth: 340, textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit',
         background: 'var(--surface-2)', border: `1px solid ${primary ? 'var(--accent)' : 'var(--border-2)'}`,
-        borderRadius: 18, padding: '24px 24px 22px', display: 'flex', flexDirection: 'column', gap: 12,
+        borderRadius: 'var(--radius-lg)', padding: '24px 24px 22px', display: 'flex', flexDirection: 'column', gap: 12,
         boxShadow: primary ? '0 0 0 1px var(--accent), 0 14px 40px color-mix(in srgb, var(--accent) 14%, transparent)' : 'none',
       }}
     >
@@ -27,7 +27,7 @@ function Card({ title, sub, points, select, onClick, primary }: {
       <div style={{ marginTop: 'auto', paddingTop: 14, display: 'flex', justifyContent: 'flex-end' }}>
         <span style={{
           background: primary ? 'var(--accent)' : 'var(--btn)', color: primary ? 'var(--accent-fg)' : 'var(--text)',
-          border: primary ? 'none' : '1px solid var(--border-2)', padding: '9px 16px', borderRadius: 11,
+          border: primary ? 'none' : '1px solid var(--border-2)', padding: '9px 16px', borderRadius: 'var(--radius-md)',
           fontSize: 13.5, fontWeight: 800,
         }}>{select}</span>
       </div>

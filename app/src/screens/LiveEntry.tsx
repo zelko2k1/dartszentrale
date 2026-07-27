@@ -88,7 +88,7 @@ function GameListItem({ board, onSelect }: { board: PublicBoard; onSelect: () =>
   const st = board.state;
   const won = st?.phase === 'won';
   return (
-    <button onClick={onSelect} className="dh-hover-border" style={{ textAlign: 'left', cursor: 'pointer', background: '#12161a', border: '1px solid #1c2228', borderRadius: 16, padding: '18px 20px', color: '#e9edf1', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <button onClick={onSelect} className="dh-hover-border" style={{ textAlign: 'left', cursor: 'pointer', background: '#12161a', border: '1px solid #1c2228', borderRadius: 'var(--radius-lg)', padding: '18px 20px', color: '#e9edf1', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color: '#9aa4ad' }}>{board.boardName || 'Board'}</span>
         <span style={{ fontSize: 12, fontWeight: 800, color: won ? '#f2b829' : '#59c26a' }}>{won ? '🏆 Beendet' : '● Live'}</span>
@@ -151,13 +151,13 @@ function FullBoard({ board, onBack }: { board: PublicBoard; onBack: () => void }
     <div style={{ width: '100%', maxWidth: 1000, display: 'flex', flexDirection: 'column', gap: 18 }}>
       <style>{`@keyframes dzPop{0%{transform:scale(.92);opacity:0}100%{transform:scale(1);opacity:1}}@keyframes dzFade{from{opacity:0}to{opacity:1}}@media (prefers-reduced-motion:reduce){.dz-cel{animation:dzFade .12s ease both!important}}`}</style>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <button onClick={onBack} style={{ background: '#12161a', border: '1px solid #1c2228', color: '#e9edf1', borderRadius: 10, padding: '10px 16px', minHeight: 44, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>← Zur Liste</button>
+        <button onClick={onBack} style={{ background: '#12161a', border: '1px solid #1c2228', color: '#e9edf1', borderRadius: 'var(--radius-md)', padding: '10px 16px', minHeight: 44, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>← Zur Liste</button>
         <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color: '#9aa4ad' }}>{board.boardName || 'Board'}</span>
         <span style={{ width: 96 }} />
       </div>
 
       {banner && (
-        <div key={won ? 'won' : celebrate?.id} className="dz-cel" style={{ animation: 'dzPop .4s cubic-bezier(.22,1,.36,1) both', textAlign: 'center', borderRadius: 16, padding: 'clamp(12px,2.4vw,22px)', background: `linear-gradient(135deg, color-mix(in srgb, ${banner.color} 28%, #12161a), #12161a)`, border: `1px solid ${banner.color}`, boxShadow: `0 12px 44px color-mix(in srgb, ${banner.color} 22%, transparent)` }}>
+        <div key={won ? 'won' : celebrate?.id} className="dz-cel" style={{ animation: 'dzPop .4s cubic-bezier(.22,1,.36,1) both', textAlign: 'center', borderRadius: 'var(--radius-lg)', padding: 'clamp(12px,2.4vw,22px)', background: `linear-gradient(135deg, color-mix(in srgb, ${banner.color} 28%, #12161a), #12161a)`, border: `1px solid ${banner.color}`, boxShadow: `0 12px 44px color-mix(in srgb, ${banner.color} 22%, transparent)` }}>
           {banner.big && <div style={{ fontSize: 'clamp(44px,12vw,128px)', fontWeight: 900, lineHeight: 1, color: banner.color, letterSpacing: '.03em', fontFamily: 'monospace' }}>{banner.big}</div>}
           <div style={{ fontSize: banner.big ? 'clamp(16px,2.6vw,30px)' : 'clamp(22px,5vw,46px)', fontWeight: 900, color: banner.big ? '#e9edf1' : banner.color, marginTop: banner.big ? 6 : 0 }}>{banner.text}</div>
         </div>
@@ -167,13 +167,13 @@ function FullBoard({ board, onBack }: { board: PublicBoard; onBack: () => void }
         const cur = i === curIdx && !won;
         const threw = !!lastThrow && lastThrow.player === i;
         return (
-          <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 'clamp(16px,2.5vw,26px)', borderRadius: 18, background: cur ? 'rgba(224,89,75,.14)' : '#12161a', border: cur ? '1px solid #E0594B' : '1px solid #1c2228', textAlign: 'left' }}>
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 'clamp(16px,2.5vw,26px)', borderRadius: 'var(--radius-lg)', background: cur ? 'rgba(224,89,75,.14)' : '#12161a', border: cur ? '1px solid #E0594B' : '1px solid #1c2228', textAlign: 'left' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <span style={{ fontWeight: 800, fontSize: 'clamp(22px,4vw,40px)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
-                  {cur && <span style={{ fontSize: 'clamp(10px,1.3vw,13px)', fontWeight: 800, color: '#E0594B', background: 'rgba(224,89,75,.14)', border: '1px solid #E0594B', borderRadius: 999, padding: '2px 10px', letterSpacing: '.06em', textTransform: 'uppercase', flexShrink: 0 }}>am Wurf</span>}
-                  {threw && <span style={{ fontSize: 'clamp(11px,1.4vw,15px)', fontWeight: 800, color: lastThrow!.bust ? '#E0594B' : '#c3ccd4', background: '#12161a', border: '1px solid #1c2228', borderRadius: 8, padding: '2px 10px', fontFamily: 'monospace', flexShrink: 0 }}>{lastThrow!.bust ? 'Bust' : `Wurf ${lastThrow!.value}`}</span>}
+                  {cur && <span style={{ fontSize: 'clamp(10px,1.3vw,13px)', fontWeight: 800, color: '#E0594B', background: 'rgba(224,89,75,.14)', border: '1px solid #E0594B', borderRadius: 'var(--radius-pill)', padding: '2px 10px', letterSpacing: '.06em', textTransform: 'uppercase', flexShrink: 0 }}>am Wurf</span>}
+                  {threw && <span style={{ fontSize: 'clamp(11px,1.4vw,15px)', fontWeight: 800, color: lastThrow!.bust ? '#E0594B' : '#c3ccd4', background: '#12161a', border: '1px solid #1c2228', borderRadius: 'var(--radius-sm)', padding: '2px 10px', fontFamily: 'monospace', flexShrink: 0 }}>{lastThrow!.bust ? 'Bust' : `Wurf ${lastThrow!.value}`}</span>}
                 </div>
                 <div style={{ fontSize: 'clamp(13px,1.6vw,16px)', color: '#9aa4ad', marginTop: 4 }}>Sets {p.sets} · Legs {p.legs}</div>
               </div>

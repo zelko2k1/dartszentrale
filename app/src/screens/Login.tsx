@@ -40,7 +40,7 @@ export function Login() {
           </div>
         </div>
 
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 20, padding: 28, boxShadow: 'var(--shadow-card)' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xl)', padding: 28, boxShadow: 'var(--shadow-card)' }}>
           <div style={{ fontSize: 19, fontWeight: 800, letterSpacing: '-.01em' }}>{tr.login.signIn}</div>
           <div style={{ width: 30, height: 2, background: 'var(--accent)', borderRadius: 2, margin: '9px 0 10px' }} />
           <div style={{ fontSize: 13, color: 'var(--text-4)', marginBottom: 20 }}>{tr.login.signInSub}</div>
@@ -51,7 +51,7 @@ export function Login() {
             className="dh-input" type="email" value={s.loginForm.email} placeholder="name@verein.de"
             onChange={(e) => s.setLoginField('email', e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') s.loginEmail(); }}
-            style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 14 }}
+            style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 14 }}
           />
 
           <label htmlFor="login-pw" style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 6 }}>{tr.login.password}</label>
@@ -60,7 +60,7 @@ export function Login() {
             className="dh-input" type="password" value={s.loginForm.pw} placeholder="••••••••"
             onChange={(e) => s.setLoginField('pw', e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') s.loginEmail(); }}
-            style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 6 }}
+            style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 6 }}
           />
 
           {s.loginForm.mfaStep && (
@@ -72,7 +72,7 @@ export function Login() {
                 value={s.loginForm.code} placeholder="123456"
                 onChange={(e) => s.setLoginField('code', e.target.value.replace(/\s/g, ''))}
                 onKeyDown={(e) => { if (e.key === 'Enter') s.loginEmail(); }}
-                style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 18, letterSpacing: '.25em', fontFamily: 'var(--font-num, monospace)', marginBottom: 6 }}
+                style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 18, letterSpacing: '.25em', fontFamily: 'var(--font-num, monospace)', marginBottom: 6 }}
               />
               <div style={{ fontSize: 11, color: 'var(--text-5)', margin: '2px 2px 0' }}>{tr.login.codeHint}</div>
             </div>
@@ -80,7 +80,7 @@ export function Login() {
 
           {s.loginForm.err && <div style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600, margin: '6px 2px 0' }}>{s.loginForm.err}</div>}
 
-          <button className="dh-primary" onClick={() => s.loginEmail()} style={{ width: '100%', marginTop: 16, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{s.loginForm.mfaStep ? tr.login.confirm : tr.login.signIn}</button>
+          <button className="dh-primary" onClick={() => s.loginEmail()} style={{ width: '100%', marginTop: 16, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 'var(--radius-md)', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{s.loginForm.mfaStep ? tr.login.confirm : tr.login.signIn}</button>
 
           {demos.length > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '22px 0 16px' }}>
@@ -94,13 +94,13 @@ export function Login() {
             {demos.map((d) => {
               const r = ROLES[d.role];
               return (
-                <button key={d.id} className="dh-hover-border" onClick={() => s.login(d.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '10px 12px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                <button key={d.id} className="dh-hover-border" onClick={() => s.login(d.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', textAlign: 'left', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '10px 12px', cursor: 'pointer', fontFamily: 'inherit' }}>
                   <Avatar photo={d.photo} short={(d.first[0] || '') + (d.last[0] || '')} avi={d.avi} size={34} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.name}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.email}</div>
                   </div>
-                  <span style={{ fontSize: 10, fontWeight: 800, color: r.color, background: r.bg, padding: '3px 8px', borderRadius: 6, flexShrink: 0 }}>{r.label}</span>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: r.color, background: r.bg, padding: '3px 8px', borderRadius: 'var(--radius-xs)', flexShrink: 0 }}>{r.label}</span>
                 </button>
               );
             })}
@@ -110,19 +110,19 @@ export function Login() {
 
         {(impressum || datenschutz) && (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, marginTop: 18, fontSize: 12 }}>
-            {impressum && <button className="dh-focus" onClick={() => setLegal('impressum')} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, padding: 4, borderRadius: 6, textDecoration: 'underline' }}>{tr.login.impressum}</button>}
+            {impressum && <button className="dh-focus" onClick={() => setLegal('impressum')} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, padding: 4, borderRadius: 'var(--radius-xs)', textDecoration: 'underline' }}>{tr.login.impressum}</button>}
             {impressum && datenschutz && <span style={{ color: 'var(--text-5)' }}>·</span>}
-            {datenschutz && <button className="dh-focus" onClick={() => setLegal('datenschutz')} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, padding: 4, borderRadius: 6, textDecoration: 'underline' }}>{tr.login.datenschutz}</button>}
+            {datenschutz && <button className="dh-focus" onClick={() => setLegal('datenschutz')} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, padding: 4, borderRadius: 'var(--radius-xs)', textDecoration: 'underline' }}>{tr.login.datenschutz}</button>}
           </div>
         )}
       </div>
 
       {legal && (
         <div onClick={() => setLegal(null)} style={{ position: 'fixed', inset: 0, zIndex: 90, background: 'var(--scrim)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, overflow: 'auto' }}>
-          <div role="dialog" aria-modal="true" aria-label={legalTitle} onClick={(e) => e.stopPropagation()} style={{ width: 620, maxWidth: '94vw', maxHeight: '86vh', display: 'flex', flexDirection: 'column', background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, boxShadow: 'var(--shadow-card)' }}>
+          <div role="dialog" aria-modal="true" aria-label={legalTitle} onClick={(e) => e.stopPropagation()} style={{ width: 620, maxWidth: '94vw', maxHeight: '86vh', display: 'flex', flexDirection: 'column', background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-card)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '20px 24px', borderBottom: '1px solid var(--hairline)' }}>
               <div style={{ fontSize: 18, fontWeight: 800 }}>{legalTitle}</div>
-              <button className="dh-focus dh-btn" onClick={() => setLegal(null)} aria-label={tr.login.close} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, color: 'var(--text-3)', cursor: 'pointer' }}>
+              <button className="dh-focus dh-btn" onClick={() => setLegal(null)} aria-label={tr.login.close} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', color: 'var(--text-3)', cursor: 'pointer' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>

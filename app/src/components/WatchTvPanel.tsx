@@ -49,8 +49,8 @@ export function WatchTvPanel() {
     try { void navigator.clipboard?.writeText(url); setCopied(true); } catch { /* ignore */ }
   }
 
-  const card: React.CSSProperties = { border: '1px solid var(--border-2)', borderRadius: 14, padding: 16, marginTop: 12, background: 'var(--surface-2, var(--surface))' };
-  const btn: React.CSSProperties = { background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: busy ? 'default' : 'pointer', fontFamily: 'inherit', opacity: busy ? 0.6 : 1 };
+  const card: React.CSSProperties = { border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 16, marginTop: 12, background: 'var(--surface-2, var(--surface))' };
+  const btn: React.CSSProperties = { background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: busy ? 'default' : 'pointer', fontFamily: 'inherit', opacity: busy ? 0.6 : 1 };
 
   return (
     <div style={card}>
@@ -63,7 +63,7 @@ export function WatchTvPanel() {
           </div>
         </div>
         <button onClick={toggle} disabled={busy || !loaded} role="switch" aria-checked={enabled} aria-label="Zuschauer-TV aktivieren"
-          style={{ flexShrink: 0, width: 46, height: 26, minHeight: 44, borderRadius: 999, background: enabled ? ACCENT : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative', cursor: busy ? 'default' : 'pointer', padding: 0 }}>
+          style={{ flexShrink: 0, width: 46, height: 26, minHeight: 44, borderRadius: 'var(--radius-pill)', background: enabled ? ACCENT : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative', cursor: busy ? 'default' : 'pointer', padding: 0 }}>
           <span style={{ position: 'absolute', top: 2, left: enabled ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff' }} />
         </button>
       </div>
@@ -72,10 +72,10 @@ export function WatchTvPanel() {
 
       {enabled && url && (
         <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginTop: 14, flexWrap: 'wrap' }}>
-          <img src={qrUri} alt="QR-Code für den Zuschauer-Link" style={{ width: 120, height: 120, background: '#fff', borderRadius: 8, padding: 6, boxSizing: 'border-box', flexShrink: 0 }} />
+          <img src={qrUri} alt="QR-Code für den Zuschauer-Link" style={{ width: 120, height: 120, background: '#fff', borderRadius: 'var(--radius-sm)', padding: 6, boxSizing: 'border-box', flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 200 }}>
             <div style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 4 }}>Zuschauer-Link</div>
-            <div style={{ fontFamily: 'monospace', fontSize: 12, wordBreak: 'break-all', color: 'var(--text-2)', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '8px 10px' }}>{url}</div>
+            <div style={{ fontFamily: 'monospace', fontSize: 12, wordBreak: 'break-all', color: 'var(--text-2)', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)', padding: '8px 10px' }}>{url}</div>
             <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
               <button style={btn} onClick={copy}>{copied ? '✓ Kopiert' : 'Link kopieren'}</button>
               <button style={btn} onClick={rotate}>Neu generieren</button>

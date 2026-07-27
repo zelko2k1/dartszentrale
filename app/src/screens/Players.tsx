@@ -28,7 +28,7 @@ export function Players() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <SearchInput value={query} onChange={setQuery} placeholder={tr.players.search} />
           {p.managePlayers && (
-            <button className="dh-primary" onClick={() => s.openAddPlayer()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button className="dh-primary" onClick={() => s.openAddPlayer()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
               <IconPlus size={17} />
               {tr.players.addPlayer}
             </button>
@@ -37,14 +37,14 @@ export function Players() {
       </div>
 
       {s.players.length === 0 && (
-        <div style={{ background: 'var(--surface)', border: '1px dashed var(--border-strong)', borderRadius: 16, padding: 48, textAlign: 'center', color: 'var(--text-3)' }}>
+        <div style={{ background: 'var(--surface)', border: '1px dashed var(--border-strong)', borderRadius: 'var(--radius-lg)', padding: 48, textAlign: 'center', color: 'var(--text-3)' }}>
           <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>{tr.players.emptyTitle}</div>
           <div style={{ fontSize: 13, color: 'var(--text-4)' }}>{tr.players.emptyHint}</div>
         </div>
       )}
 
       {s.players.length > 0 && players.length === 0 && (
-        <div style={{ background: 'var(--surface)', border: '1px dashed var(--border-strong)', borderRadius: 16, padding: 36, textAlign: 'center', color: 'var(--text-4)', fontSize: 14 }}>
+        <div style={{ background: 'var(--surface)', border: '1px dashed var(--border-strong)', borderRadius: 'var(--radius-lg)', padding: 36, textAlign: 'center', color: 'var(--text-4)', fontSize: 14 }}>
           {tr.players.noMatch(query)}
         </div>
       )}
@@ -54,21 +54,21 @@ export function Players() {
           const agg = aggregateFor(pl, s.matches);
           const linked = linkedPlayerIds.has(pl.id);
           return (
-            <div key={pl.id} className="dh-hover-border" role="button" tabIndex={0} onClick={() => s.openPlayer(pl.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); s.openPlayer(pl.id); } }} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 20, cursor: 'pointer', position: 'relative' }}>
+            <div key={pl.id} className="dh-hover-border" role="button" tabIndex={0} onClick={() => s.openPlayer(pl.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); s.openPlayer(pl.id); } }} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 20, cursor: 'pointer', position: 'relative' }}>
               <div style={{ position: 'absolute', top: 14, right: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
                 {isVerein && p.manageUsers && (
                   linked ? (
-                    <span title={tr.players.hasAccount} style={{ width: 30, height: 30, borderRadius: 8, background: 'color-mix(in srgb, var(--success) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--success) 45%, transparent)', color: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span title={tr.players.hasAccount} style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: 'color-mix(in srgb, var(--success) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--success) 45%, transparent)', color: 'var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <IconUserCheck size={15} />
                     </span>
                   ) : (
-                    <button onClick={(e) => { e.stopPropagation(); s.openAddUserForPlayer(pl.id); }} title={tr.players.createUser} aria-label={tr.players.createUser} className="dh-btn" style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    <button onClick={(e) => { e.stopPropagation(); s.openAddUserForPlayer(pl.id); }} title={tr.players.createUser} aria-label={tr.players.createUser} className="dh-btn" style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                       <IconUserCheck size={15} />
                     </button>
                   )
                 )}
                 {p.managePlayers && (
-                  <button onClick={(e) => { e.stopPropagation(); s.openEditPlayer(pl.id); }} title={tr.common.edit} aria-label={tr.common.edit} className="dh-btn" style={{ width: 30, height: 30, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <button onClick={(e) => { e.stopPropagation(); s.openEditPlayer(pl.id); }} title={tr.common.edit} aria-label={tr.common.edit} className="dh-btn" style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                     <IconEdit size={15} />
                   </button>
                 )}
@@ -81,11 +81,11 @@ export function Players() {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <div style={{ flex: 1, background: 'var(--btn)', borderRadius: 10, padding: '9px 11px' }}>
+                <div style={{ flex: 1, background: 'var(--btn)', borderRadius: 'var(--radius-md)', padding: '9px 11px' }}>
                   <div style={{ fontFamily: 'var(--font-num)', fontSize: 17, fontWeight: 800 }}>{agg.avg ? agg.avg.toFixed(1) : '–'}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>{tr.common.avg3}</div>
                 </div>
-                <div style={{ flex: 1, background: 'var(--btn)', borderRadius: 10, padding: '9px 11px' }}>
+                <div style={{ flex: 1, background: 'var(--btn)', borderRadius: 'var(--radius-md)', padding: '9px 11px' }}>
                   <div style={{ fontFamily: 'var(--font-num)', fontSize: 17, fontWeight: 800, color: 'var(--gold)' }}>{agg.wins}</div>
                   <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>{tr.common.wins}</div>
                 </div>

@@ -40,7 +40,7 @@ export function UserModal() {
   const players = s.players;
   // Mannschaftszuordnung bezieht sich auf die AKTIVE Saison (archivierte Kader nicht im Benutzer-Dialog).
   const seasonTeams = s.teams.filter((t) => t.seasonId == null || t.seasonId === s.activeSeasonId);
-  const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' };
+  const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' };
 
   // Spieler-Verknüpfung: aktuelle Auswahl separat, Suche + bereits anderweitig verknüpfte ausblenden (kein Doppel-Link).
   const order = s.settings.nameOrder ?? 'first';
@@ -59,8 +59,8 @@ export function UserModal() {
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', margin: '0 -4px', padding: '2px 4px' }}>
 
       {m.isBoard && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 35%, transparent)', borderRadius: 11, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: 'var(--text-2)' }}>
-          <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', background: 'var(--btn)', border: '1px solid var(--border-2)', padding: '2px 8px', borderRadius: 6 }}>BOARD {m.boardNumber}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 35%, transparent)', borderRadius: 'var(--radius-md)', padding: '10px 14px', marginBottom: 16, fontSize: 13, color: 'var(--text-2)' }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', background: 'var(--btn)', border: '1px solid var(--border-2)', padding: '2px 8px', borderRadius: 'var(--radius-xs)' }}>BOARD {m.boardNumber}</span>
           {tr.modals.boardAccountNote}
         </div>
       )}
@@ -69,17 +69,17 @@ export function UserModal() {
         <Avatar photo={accountPhoto} short={preview} avi={m.avi} size={58} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button className="dh-btn" onClick={() => s.cycleUserAvi(-1)} title={tr.modals.colorBack} aria-label={tr.modals.colorBack} style={{ minWidth: 44, minHeight: 44, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 16, cursor: 'pointer', fontFamily: 'inherit' }}>‹</button>
-            <button className="dh-btn" onClick={() => s.cycleUserAvi(1)} title={tr.modals.colorFwd} aria-label={tr.modals.colorFwd} style={{ minWidth: 44, minHeight: 44, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 16, cursor: 'pointer', fontFamily: 'inherit' }}>›</button>
+            <button className="dh-btn" onClick={() => s.cycleUserAvi(-1)} title={tr.modals.colorBack} aria-label={tr.modals.colorBack} style={{ minWidth: 44, minHeight: 44, borderRadius: 'var(--radius-md)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 16, cursor: 'pointer', fontFamily: 'inherit' }}>‹</button>
+            <button className="dh-btn" onClick={() => s.cycleUserAvi(1)} title={tr.modals.colorFwd} aria-label={tr.modals.colorFwd} style={{ minWidth: 44, minHeight: 44, borderRadius: 'var(--radius-md)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 16, cursor: 'pointer', fontFamily: 'inherit' }}>›</button>
             <span style={{ fontSize: 12, color: 'var(--text-4)' }}>{tr.modals.color}</span>
           </div>
           {canPhoto ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <label className="dh-btn" style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '7px 12px', borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <label className="dh-btn" style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '7px 12px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                 {accountPhoto ? tr.modals.photoChange : tr.modals.photoChoose}
                 <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onPhoto} style={{ display: 'none' }} />
               </label>
-              {accountPhoto && <button onClick={() => m.id && s.clearPhoto('account', m.id)} style={{ background: 'transparent', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '7px 11px', borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.modals.remove}</button>}
+              {accountPhoto && <button onClick={() => m.id && s.clearPhoto('account', m.id)} style={{ background: 'transparent', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '7px 11px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.modals.remove}</button>}
             </div>
           ) : isVerein && m.mode === 'add' && !m.isBoard ? (
             <span style={{ fontSize: 11, color: 'var(--text-5)' }}>{tr.modals.photoAfterSave}</span>
@@ -102,7 +102,7 @@ export function UserModal() {
       <FieldLabel>{tr.login.email}</FieldLabel>
       <input className="dh-input" type="email" value={m.email} onChange={(e) => s.setUserField('email', e.target.value)} placeholder="name@verein.de" style={{ ...inputStyle, marginBottom: emailOwner ? 8 : 18 }} />
       {emailOwner && (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', borderRadius: 11, padding: '10px 12px', fontSize: 12.5, lineHeight: 1.45, marginBottom: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', padding: '10px 12px', fontSize: 12.5, lineHeight: 1.45, marginBottom: 18 }}>
           <span style={{ flexShrink: 0, fontWeight: 800 }}>⚠</span>
           <span>{tr.modals.emailTaken(emailOwner.name)}</span>
         </div>
@@ -121,7 +121,7 @@ export function UserModal() {
       <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 8 }}>{tr.modals.roleRights}</label>
       {m.isBoard ? (
         // Board-Rechner-Konten haben fest die Rolle 'board' — nicht änderbar.
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: ROLES.board.bg, border: `1px solid ${ROLES.board.bd}`, borderRadius: 11, padding: '11px 13px', marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: ROLES.board.bg, border: `1px solid ${ROLES.board.bd}`, borderRadius: 'var(--radius-md)', padding: '11px 13px', marginBottom: 20 }}>
           <span style={{ width: 14, height: 14, borderRadius: '50%', border: `2px solid ${ROLES.board.color}`, background: ROLES.board.color, flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: ROLES.board.color }}>{ROLES.board.label}</div>
@@ -134,7 +134,7 @@ export function UserModal() {
           {ROLE_ORDER.map((role) => {
             const r = ROLES[role]; const on = m.role === role;
             return (
-              <button key={role} onClick={() => s.setUserField('role', role as Role)} style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', background: on ? r.bg : 'var(--btn)', border: `1px solid ${on ? r.bd : 'var(--border-2)'}`, borderRadius: 11, padding: '11px 13px', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button key={role} onClick={() => s.setUserField('role', role as Role)} style={{ display: 'flex', alignItems: 'center', gap: 12, textAlign: 'left', background: on ? r.bg : 'var(--btn)', border: `1px solid ${on ? r.bd : 'var(--border-2)'}`, borderRadius: 'var(--radius-md)', padding: '11px 13px', cursor: 'pointer', fontFamily: 'inherit' }}>
                 <span style={{ width: 14, height: 14, borderRadius: '50%', border: `2px solid ${on ? r.color : 'var(--border-strong)'}`, background: on ? r.color : 'transparent', flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: r.color }}>{r.label}</div>
@@ -149,19 +149,19 @@ export function UserModal() {
       {!m.isBoard && (
         <>
           <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 10 }}>{tr.modals.linkPlayer} <span style={{ color: 'var(--text-5)', fontWeight: 500 }}>{tr.modals.optional}</span></label>
-          {players.length === 0 && <div style={{ background: 'var(--btn)', border: '1px dashed var(--border-strong)', borderRadius: 12, padding: 18, textAlign: 'center', color: 'var(--text-4)', fontSize: 13, marginBottom: 20 }}>{tr.modals.noPlayersYet}</div>}
+          {players.length === 0 && <div style={{ background: 'var(--btn)', border: '1px dashed var(--border-strong)', borderRadius: 'var(--radius-md)', padding: 18, textAlign: 'center', color: 'var(--text-4)', fontSize: 13, marginBottom: 20 }}>{tr.modals.noPlayersYet}</div>}
 
           {players.length > 0 && (
             <div style={{ marginBottom: 22 }}>
               {/* Aktuelle Auswahl – klar sichtbar, mit „Entfernen". */}
               {selectedPlayer && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', borderRadius: 11, padding: '9px 11px', marginBottom: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'color-mix(in srgb, var(--accent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', borderRadius: 'var(--radius-md)', padding: '9px 11px', marginBottom: 10 }}>
                   <Avatar photo={selectedPlayer.photo} short={selectedPlayer.short} avi={selectedPlayer.avi} size={28} circle />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{selectedPlayer.name}</div>
                     <div style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 700 }}>{tr.modals.linked}</div>
                   </div>
-                  <button onClick={() => s.setUserField('playerId', null)} className="dh-btn" style={{ flexShrink: 0, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.modals.remove}</button>
+                  <button onClick={() => s.setUserField('playerId', null)} className="dh-btn" style={{ flexShrink: 0, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 12px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.modals.remove}</button>
                 </div>
               )}
 
@@ -172,7 +172,7 @@ export function UserModal() {
                   <div style={{ fontSize: 13, color: 'var(--text-4)', padding: '10px 4px' }}>{playerQuery ? tr.players.noMatch(playerQuery) : tr.modals.noLinkable}</div>
                 )}
                 {linkable.map((p) => (
-                  <button key={p.id} onClick={() => { s.setUserField('playerId', p.id); setPlayerQuery(''); }} className="dh-hover-border" style={{ display: 'flex', alignItems: 'center', gap: 11, textAlign: 'left', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '8px 11px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <button key={p.id} onClick={() => { s.setUserField('playerId', p.id); setPlayerQuery(''); }} className="dh-hover-border" style={{ display: 'flex', alignItems: 'center', gap: 11, textAlign: 'left', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '8px 11px', cursor: 'pointer', fontFamily: 'inherit' }}>
                     <Avatar photo={p.photo} short={p.short} avi={p.avi} size={28} circle />
                     <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
                   </button>
@@ -198,23 +198,23 @@ export function UserModal() {
                   : tr.modals.memberOnly(selectedPlayer.name)}
               </div>
               {seasonTeams.length === 0 ? (
-                <div style={{ background: 'var(--btn)', border: '1px dashed var(--border-strong)', borderRadius: 12, padding: 16, textAlign: 'center', color: 'var(--text-4)', fontSize: 13 }}>{tr.modals.noTeamsYet}</div>
+                <div style={{ background: 'var(--btn)', border: '1px dashed var(--border-strong)', borderRadius: 'var(--radius-md)', padding: 16, textAlign: 'center', color: 'var(--text-4)', fontSize: 13 }}>{tr.modals.noTeamsYet}</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 220, overflowY: 'auto' }}>
                   {seasonTeams.map((t) => {
                     const on = m.teamIds.includes(t.id);
                     const cup = t.kind === 'cup';
                     return (
-                      <button key={t.id} onClick={() => s.toggleUserTeam(t.id)} className="dh-hover-border" style={{ display: 'flex', alignItems: 'center', gap: 11, textAlign: 'left', background: on ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'var(--btn)', border: `1px solid ${on ? 'color-mix(in srgb, var(--accent) 40%, transparent)' : 'var(--border-2)'}`, borderRadius: 10, padding: '9px 11px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                        <span style={{ width: 18, height: 18, borderRadius: 6, border: `2px solid ${on ? 'var(--accent)' : 'var(--border-strong)'}`, background: on ? 'var(--accent)' : 'transparent', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <button key={t.id} onClick={() => s.toggleUserTeam(t.id)} className="dh-hover-border" style={{ display: 'flex', alignItems: 'center', gap: 11, textAlign: 'left', background: on ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'var(--btn)', border: `1px solid ${on ? 'color-mix(in srgb, var(--accent) 40%, transparent)' : 'var(--border-2)'}`, borderRadius: 'var(--radius-md)', padding: '9px 11px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        <span style={{ width: 18, height: 18, borderRadius: 'var(--radius-xs)', border: `2px solid ${on ? 'var(--accent)' : 'var(--border-strong)'}`, background: on ? 'var(--accent)' : 'transparent', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {on && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>}
                         </span>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</div>
                           {t.league && <div style={{ fontSize: 11, color: 'var(--text-4)' }}>{t.league}</div>}
                         </div>
-                        {cup && <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, color: 'var(--text-4)', background: 'var(--btn)', border: '1px solid var(--border-2)', padding: '2px 7px', borderRadius: 6 }}>{tr.modals.cupBadge}</span>}
-                        {on && m.role === 'captain' && <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '2px 7px', borderRadius: 6 }}>{tr.modals.captainBadge}</span>}
+                        {cup && <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, color: 'var(--text-4)', background: 'var(--btn)', border: '1px solid var(--border-2)', padding: '2px 7px', borderRadius: 'var(--radius-xs)' }}>{tr.modals.cupBadge}</span>}
+                        {on && m.role === 'captain' && <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '2px 7px', borderRadius: 'var(--radius-xs)' }}>{tr.modals.captainBadge}</span>}
                       </button>
                     );
                   })}
@@ -225,19 +225,19 @@ export function UserModal() {
         </>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 16px', background: 'var(--btn)', borderRadius: 12, marginBottom: 22 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 16px', background: 'var(--btn)', borderRadius: 'var(--radius-md)', marginBottom: 22 }}>
         <div>
           <div style={{ fontSize: 14, fontWeight: 600 }}>{m.active ? tr.modals.accountActive : tr.modals.accountInactive}</div>
           <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>{tr.modals.inactiveHint}</div>
         </div>
-        <button onClick={() => s.setUserField('active', !m.active)} role="switch" aria-checked={m.active} aria-label={m.active ? tr.modals.accountActive : tr.modals.accountInactive} style={{ position: 'relative', width: 44, height: 24, borderRadius: 999, background: m.active ? 'var(--accent)' : 'var(--border-2)', border: 'none', cursor: 'pointer', flexShrink: 0, padding: 0 }}>
+        <button onClick={() => s.setUserField('active', !m.active)} role="switch" aria-checked={m.active} aria-label={m.active ? tr.modals.accountActive : tr.modals.accountInactive} style={{ position: 'relative', width: 44, height: 24, borderRadius: 'var(--radius-pill)', background: m.active ? 'var(--accent)' : 'var(--border-2)', border: 'none', cursor: 'pointer', flexShrink: 0, padding: 0 }}>
           <span style={{ position: 'absolute', top: 2, left: 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'transform .15s', transform: m.active ? 'translateX(20px)' : 'translateX(0)' }} />
         </button>
       </div>
 
       {/* 2FA zurücksetzen (nur Bearbeiten/Verein, Konto hat 2FA aktiv, kein Board-Konto). */}
       {m.mode === 'edit' && isVerein && !m.isBoard && (s.twoFAUserIds.includes(m.id!) || reset2faMsg) && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 16px', background: 'var(--btn)', borderRadius: 12, marginBottom: 22 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 16px', background: 'var(--btn)', borderRadius: 'var(--radius-md)', marginBottom: 22 }}>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 14, fontWeight: 600 }}>{tr.modals.twoFA}</div>
             <div style={{ fontSize: 12, color: reset2faMsg ? 'var(--success)' : 'var(--text-4)', marginTop: 2 }}>
@@ -246,11 +246,11 @@ export function UserModal() {
           </div>
           {!reset2faMsg && (confirm2fa ? (
             <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-              <button onClick={() => setConfirm2fa(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
-              <button onClick={() => { void s.resetUserTwoFA(m.id!).then((okr) => { setConfirm2fa(false); if (okr) setReset2faMsg(tr.modals.twoFAResetDone); }); }} style={{ background: 'var(--danger)', border: 'none', color: '#fff', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.modals.yesReset}</button>
+              <button onClick={() => setConfirm2fa(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
+              <button onClick={() => { void s.resetUserTwoFA(m.id!).then((okr) => { setConfirm2fa(false); if (okr) setReset2faMsg(tr.modals.twoFAResetDone); }); }} style={{ background: 'var(--danger)', border: 'none', color: '#fff', padding: '9px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.modals.yesReset}</button>
             </div>
           ) : (
-            <button onClick={() => setConfirm2fa(true)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>{tr.modals.reset2FA}</button>
+            <button onClick={() => setConfirm2fa(true)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>{tr.modals.reset2FA}</button>
           ))}
         </div>
       )}

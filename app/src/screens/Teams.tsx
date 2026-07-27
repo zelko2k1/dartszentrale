@@ -47,7 +47,7 @@ export function Teams() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, marginBottom: 24, flexWrap: 'wrap' }}>
         <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{tr.nav.teams}</h1>
         {canManage && (
-          <button className="dh-primary" onClick={() => s.openAddTeam()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button className="dh-primary" onClick={() => s.openAddTeam()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
             <IconPlus size={17} />
             {tr.teams.addTeam}
           </button>
@@ -55,7 +55,7 @@ export function Teams() {
       </div>
 
       {teams.length === 0 && (
-        <div style={{ background: 'var(--surface)', border: '1px dashed var(--border-strong)', borderRadius: 16, padding: 48, textAlign: 'center', color: 'var(--text-3)' }}>
+        <div style={{ background: 'var(--surface)', border: '1px dashed var(--border-strong)', borderRadius: 'var(--radius-lg)', padding: 48, textAlign: 'center', color: 'var(--text-3)' }}>
           <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>{tr.teams.emptyTitle}</div>
           <div style={{ fontSize: 13, color: 'var(--text-4)' }}>{tr.teams.emptyHint}</div>
         </div>
@@ -67,7 +67,7 @@ export function Teams() {
             {teams.map((t, i) => {
               const active = i === selIdx;
               return (
-                <button key={t.id} onClick={() => s.selectTeam(i)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, background: active ? 'var(--btn)' : 'transparent', border: `1.5px solid ${active ? accent : 'var(--border)'}`, borderRadius: 12, padding: '10px 16px', cursor: 'pointer', fontFamily: 'inherit', minWidth: 120 }}>
+                <button key={t.id} onClick={() => s.selectTeam(i)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2, background: active ? 'var(--btn)' : 'transparent', border: `1.5px solid ${active ? accent : 'var(--border)'}`, borderRadius: 'var(--radius-md)', padding: '10px 16px', cursor: 'pointer', fontFamily: 'inherit', minWidth: 120 }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, fontWeight: 700, color: active ? 'var(--text)' : 'var(--text-3)' }}>
                     <span style={{ color: TEAM_KINDS[teamKind(t)].color, display: 'inline-flex' }} title={TEAM_KINDS[teamKind(t)].label}><TeamKindIcon kind={teamKind(t)} size={14} /></span>
                     {t.name}
@@ -78,11 +78,11 @@ export function Teams() {
             })}
           </div>
 
-          <div style={{ background: 'color-mix(in srgb, var(--accent) 10%, var(--surface))', border: '1px solid var(--border-2)', borderRadius: 18, padding: 24, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-            <div style={{ width: 68, height: 68, borderRadius: 18, background: 'linear-gradient(135deg,var(--success),#0f6b40)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 22, color: '#fff' }}>{initials(sel.name).toUpperCase() || 'TM'}</div>
+          <div style={{ background: 'color-mix(in srgb, var(--accent) 10%, var(--surface))', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 24, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+            <div style={{ width: 68, height: 68, borderRadius: 'var(--radius-lg)', background: 'linear-gradient(135deg,var(--success),#0f6b40)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 22, color: '#fff' }}>{initials(sel.name).toUpperCase() || 'TM'}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 800, color: TEAM_KINDS[teamKind(sel)].color, background: `color-mix(in srgb, ${TEAM_KINDS[teamKind(sel)].color} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${TEAM_KINDS[teamKind(sel)].color} 42%, transparent)`, padding: '3px 9px 3px 7px', borderRadius: 7, letterSpacing: '.03em', textTransform: 'uppercase' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 800, color: TEAM_KINDS[teamKind(sel)].color, background: `color-mix(in srgb, ${TEAM_KINDS[teamKind(sel)].color} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${TEAM_KINDS[teamKind(sel)].color} 42%, transparent)`, padding: '3px 9px 3px 7px', borderRadius: 'var(--radius-xs)', letterSpacing: '.03em', textTransform: 'uppercase' }}>
                   <TeamKindIcon kind={teamKind(sel)} size={13} />{TEAM_KINDS[teamKind(sel)].short}
                 </span>
               </div>
@@ -90,7 +90,7 @@ export function Teams() {
               <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 3 }}>{teamMeta}</div>
             </div>
             {canManage && (
-              <button className="dh-btn" onClick={() => s.openEditTeam()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 15px', borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <button className="dh-btn" onClick={() => s.openEditTeam()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 15px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                 <IconEdit size={15} />
                 {tr.common.edit}
               </button>
@@ -99,7 +99,7 @@ export function Teams() {
 
           <div style={{ display: 'grid', gridTemplateColumns: isPhone ? 'minmax(0, 1fr)' : '1.4fr 1fr', gap: 18, alignItems: 'start' }}>
             {/* roster */}
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden', minWidth: 0 }}>
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', minWidth: 0 }}>
               <div style={{ padding: '12px 16px 12px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                 <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>{tr.teams.squad}</span>
                 {members.length > 0 && <SearchInput value={query} onChange={setQuery} placeholder={tr.teams.searchSquad} width={200} />}
@@ -116,8 +116,8 @@ export function Teams() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap' }}>{m.name}</span>
-                        {isCaptain && <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--gold)', background: 'color-mix(in srgb, var(--gold) 12%, transparent)', padding: '2px 6px', borderRadius: 5, letterSpacing: '.04em' }}>C</span>}
-                        {isVice && <span title={tr.teams.viceCaptain} style={{ fontSize: 10, fontWeight: 800, color: 'var(--info)', background: 'color-mix(in srgb, var(--info) 12%, transparent)', padding: '2px 6px', borderRadius: 5, letterSpacing: '.04em' }}>EK</span>}
+                        {isCaptain && <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--gold)', background: 'color-mix(in srgb, var(--gold) 12%, transparent)', padding: '2px 6px', borderRadius: 'var(--radius-xs)', letterSpacing: '.04em' }}>C</span>}
+                        {isVice && <span title={tr.teams.viceCaptain} style={{ fontSize: 10, fontWeight: 800, color: 'var(--info)', background: 'color-mix(in srgb, var(--info) 12%, transparent)', padding: '2px 6px', borderRadius: 'var(--radius-xs)', letterSpacing: '.04em' }}>EK</span>}
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{agg.games ? tr.common.gamesCount(agg.games) : tr.teams.squadPlayer}</div>
                     </div>
@@ -131,16 +131,16 @@ export function Teams() {
             </div>
 
             {/* Aufstellung-Hinweis: Aufstellungen werden je Ligaspiel unter „Ligen" gesetzt, nicht hier. */}
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 22px', minWidth: 0 }}>
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px 22px', minWidth: 0 }}>
               <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 12 }}>{tr.teams.lineup}</div>
 
               {canManage && nextFx && (
                 // Kurzer Weg: direkt den nächsten Spieltag aufstellen, ohne Umweg über die Ligen.
-                <div style={{ background: 'var(--btn)', border: '1px solid color-mix(in srgb, var(--accent) 35%, var(--border-2))', borderRadius: 12, padding: 14, marginBottom: 16 }}>
+                <div style={{ background: 'var(--btn)', border: '1px solid color-mix(in srgb, var(--accent) 35%, var(--border-2))', borderRadius: 'var(--radius-md)', padding: 14, marginBottom: 16 }}>
                   <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--accent)', letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: 6 }}>{tr.teams.nextMatchday}</div>
                   <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2 }}>{nextFx.ownIsHome ? tr.teams.versus : tr.teams.at} {nextFx.oppName}</div>
                   <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 12 }}>{nextFx.date ? shortLong(nextFx.date) : tr.teams.dateOpen} · {nextFx.ownIsHome ? tr.teams.home : tr.teams.away}</div>
-                  <button onClick={() => s.openLineupAt(nextFx.leagueIndex, nextFx.fixtureId)} className="dh-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '10px 16px', borderRadius: 11, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <button onClick={() => s.openLineupAt(nextFx.leagueIndex, nextFx.fixtureId)} className="dh-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
                     {nextFx.hasLineup ? tr.teams.editLineup : tr.teams.lineupNow}
                   </button>
                 </div>
@@ -151,7 +151,7 @@ export function Teams() {
                 {nextFx ? tr.teams.lineupFindAll : tr.teams.lineupFind}<strong style={{ color: 'var(--text)' }}>{tr.teams.lineupPath}</strong>.
               </div>
               {canManage && (
-                <button onClick={() => s.go('leagues')} className="dh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <button onClick={() => s.go('leagues')} className="dh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                   {tr.dashboard.toLeagues}
                 </button>
               )}

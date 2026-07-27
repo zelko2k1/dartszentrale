@@ -61,17 +61,17 @@ function ShortcutRecorder({ value, accent, fallback, onChange }: { value: string
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
       {warn && <span style={{ fontSize: 11, color: 'var(--danger)', fontWeight: 600 }}>{tr.settings.shortcutWarn}</span>}
-      <button onClick={() => { setRecording((r) => !r); setWarn(false); }} style={{ minWidth: 140, fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: recording ? accent : 'var(--text-2)', background: 'var(--btn)', border: `1px solid ${recording ? accent : 'var(--border-2)'}`, borderRadius: 8, padding: '8px 14px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+      <button onClick={() => { setRecording((r) => !r); setWarn(false); }} style={{ minWidth: 140, fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: recording ? accent : 'var(--text-2)', background: 'var(--btn)', border: `1px solid ${recording ? accent : 'var(--border-2)'}`, borderRadius: 'var(--radius-sm)', padding: '8px 14px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
         {recording ? tr.settings.recording : formatCombo(value)}
       </button>
-      <button onClick={() => { onChange(fallback); setRecording(false); setWarn(false); }} title={tr.settings.resetTo(formatCombo(fallback))} aria-label={tr.settings.resetTo(formatCombo(fallback))} className="dh-btn" style={{ minWidth: 44, minHeight: 44, borderRadius: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>↺</button>
+      <button onClick={() => { onChange(fallback); setRecording(false); setWarn(false); }} title={tr.settings.resetTo(formatCombo(fallback))} aria-label={tr.settings.resetTo(formatCombo(fallback))} className="dh-btn" style={{ minWidth: 44, minHeight: 44, borderRadius: 'var(--radius-sm)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>↺</button>
     </div>
   );
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '8px 22px', marginBottom: 18 }}>
+    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '8px 22px', marginBottom: 18 }}>
       <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', padding: '16px 0 10px' }}>{title}</div>
       {children}
     </div>
@@ -121,8 +121,8 @@ function UpdatePanel() {
   const saveToken = () => { try { localStorage.setItem(UPDATE_TOKEN_KEY, token.trim()); } catch { /* ignore */ } void check(); };
   useEffect(() => { void check(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const btn = (primary?: boolean): CSSProperties => ({ background: primary ? accent : 'var(--btn)', color: primary ? 'var(--accent-fg)' : 'var(--text)', border: primary ? 'none' : '1px solid var(--border-2)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: primary ? 800 : 700, cursor: 'pointer', fontFamily: 'inherit' });
-  const field: CSSProperties = { width: 220, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 14, outline: 'none' };
+  const btn = (primary?: boolean): CSSProperties => ({ background: primary ? accent : 'var(--btn)', color: primary ? 'var(--accent-fg)' : 'var(--text)', border: primary ? 'none' : '1px solid var(--border-2)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: primary ? 800 : 700, cursor: 'pointer', fontFamily: 'inherit' });
+  const field: CSSProperties = { width: 220, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '10px 12px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 14, outline: 'none' };
 
   return (
     <Section title={tr.settings.appUpdates}>
@@ -168,7 +168,7 @@ function PasswordChange() {
   const [pw2, setPw2] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
-  const field: CSSProperties = { width: 210, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, outline: 'none' };
+  const field: CSSProperties = { width: 210, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '10px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, outline: 'none' };
   const submit = async () => {
     setMsg(null);
     if (pw.length < 8) { setMsg({ ok: false, text: tr.settings.pwMin8 }); return; }
@@ -183,7 +183,7 @@ function PasswordChange() {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
       <input type="password" aria-label={tr.settings.newPw} autoComplete="new-password" value={pw} onChange={(e) => { setPw(e.target.value); setMsg(null); }} placeholder={tr.settings.newPw} style={field} />
       <input type="password" aria-label={tr.settings.repeatPw} autoComplete="new-password" value={pw2} onChange={(e) => { setPw2(e.target.value); setMsg(null); }} placeholder={tr.settings.repeatPw} style={field} />
-      <button onClick={submit} disabled={busy || !pw || !pw2} style={{ background: accent, color: 'var(--accent-fg)', border: 'none', borderRadius: 10, padding: '10px 18px', fontSize: 13, fontWeight: 800, cursor: busy ? 'default' : 'pointer', fontFamily: 'inherit', opacity: busy || !pw || !pw2 ? 0.6 : 1 }}>{busy ? tr.settings.saving : tr.settings.changePw}</button>
+      <button onClick={submit} disabled={busy || !pw || !pw2} style={{ background: accent, color: 'var(--accent-fg)', border: 'none', borderRadius: 'var(--radius-md)', padding: '10px 18px', fontSize: 13, fontWeight: 800, cursor: busy ? 'default' : 'pointer', fontFamily: 'inherit', opacity: busy || !pw || !pw2 ? 0.6 : 1 }}>{busy ? tr.settings.saving : tr.settings.changePw}</button>
       {msg && <span style={{ fontSize: 12, fontWeight: 600, color: msg.ok ? 'var(--success)' : 'var(--danger)' }}>{msg.text}</span>}
     </div>
   );
@@ -229,8 +229,8 @@ function TwoFactorSettings() {
   const reauthArg = () => (/^\d{6}$|^\d{8}$/.test(reauth.trim()) ? { code: reauth.trim() } : { password: reauth });
   const reset = () => { setPhase('idle'); setSetup(null); setCode(''); setReauth(''); setBackupCodes(null); setErr(''); setBusy(false); };
 
-  const field: CSSProperties = { width: 210, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'var(--font-num, monospace)', fontSize: 15, letterSpacing: '.12em', outline: 'none' };
-  const btn = (primary?: boolean): CSSProperties => ({ background: primary ? accent : 'var(--btn)', color: primary ? 'var(--accent-fg)' : 'var(--text)', border: primary ? 'none' : '1px solid var(--border-2)', padding: '10px 18px', borderRadius: 10, fontSize: 13, fontWeight: primary ? 800 : 700, cursor: busy ? 'default' : 'pointer', fontFamily: 'inherit', opacity: busy ? 0.6 : 1 });
+  const field: CSSProperties = { width: 210, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '10px 12px', color: 'var(--text)', fontFamily: 'var(--font-num, monospace)', fontSize: 15, letterSpacing: '.12em', outline: 'none' };
+  const btn = (primary?: boolean): CSSProperties => ({ background: primary ? accent : 'var(--btn)', color: primary ? 'var(--accent-fg)' : 'var(--text)', border: primary ? 'none' : '1px solid var(--border-2)', padding: '10px 18px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: primary ? 800 : 700, cursor: busy ? 'default' : 'pointer', fontFamily: 'inherit', opacity: busy ? 0.6 : 1 });
 
   const beginSetup = async () => {
     setBusy(true); setErr('');
@@ -264,7 +264,7 @@ function TwoFactorSettings() {
     return (
       <div style={{ maxWidth: 420 }}>
         <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 10 }}><b>{tr.settings.bcTitle}</b>{tr.settings.bcNoteA}<b>{tr.settings.bcNoteB}</b>{tr.settings.bcNoteC}</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: 14 }}>
           {backupCodes.map((c) => <span key={c} style={{ fontFamily: 'var(--font-num, monospace)', fontSize: 15, letterSpacing: '.1em', textAlign: 'center' }}>{c}</span>)}
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
@@ -284,10 +284,10 @@ function TwoFactorSettings() {
       <div style={{ maxWidth: 420 }}>
         <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 12 }}>{tr.settings.setupStep1}</div>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-          <img src={dataUri} alt={tr.settings.qrAlt} width={168} height={168} style={{ background: '#fff', borderRadius: 10, padding: 8 }} />
+          <img src={dataUri} alt={tr.settings.qrAlt} width={168} height={168} style={{ background: '#fff', borderRadius: 'var(--radius-md)', padding: 8 }} />
           <div style={{ minWidth: 160 }}>
             <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, marginBottom: 4 }}>{tr.settings.orManual}</div>
-            <div style={{ fontFamily: 'var(--font-num, monospace)', fontSize: 13, wordBreak: 'break-all', color: 'var(--text-2)', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '8px 10px' }}>{setup.secret}</div>
+            <div style={{ fontFamily: 'var(--font-num, monospace)', fontSize: 13, wordBreak: 'break-all', color: 'var(--text-2)', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)', padding: '8px 10px' }}>{setup.secret}</div>
           </div>
         </div>
         <div style={{ fontSize: 13, color: 'var(--text-2)', margin: '16px 0 8px' }}>{tr.settings.setupStep2}</div>
@@ -347,13 +347,13 @@ function JoinDevicesPanel() {
   const isLocalOnly = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|\/|$)/i.test(url.trim());
   const valid = /^https?:\/\/.+/i.test(url.trim());
   const dataUri = valid ? 'data:image/svg+xml;utf8,' + encodeURIComponent(qrSvg(url.trim(), { moduleSize: 5, margin: 2 })) : '';
-  const field: CSSProperties = { width: 280, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'var(--font-num, monospace)', fontSize: 13, outline: 'none' };
-  const btn: CSSProperties = { background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' };
+  const field: CSSProperties = { width: 280, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '10px 12px', color: 'var(--text)', fontFamily: 'var(--font-num, monospace)', fontSize: 13, outline: 'none' };
+  const btn: CSSProperties = { background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' };
   return (
     <Section title={tr.settings.addDevices}>
       <Row label={tr.settings.joinAddr} sub={tr.settings.joinAddrSub} top>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
-          {valid && <img src={dataUri} width={184} height={184} alt={tr.settings.joinQrAlt} style={{ background: '#fff', borderRadius: 10, padding: 8 }} />}
+          {valid && <img src={dataUri} width={184} height={184} alt={tr.settings.joinQrAlt} style={{ background: '#fff', borderRadius: 'var(--radius-md)', padding: 8 }} />}
           <input value={url} onChange={(e) => setAndSave(e.target.value)} placeholder="http://192.168.0.10:8090" style={field} />
           <button style={btn} onClick={() => { void navigator.clipboard?.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}>{copied ? tr.settings.copied : tr.settings.copyAddr}</button>
           {isLocalOnly && (
@@ -474,7 +474,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
       {opts.map((o) => {
         const on = cfg[key] === o.val;
         return (
-          <button key={String(o.val)} onClick={() => set(key, o.val)} style={{ background: on ? accent : 'var(--btn)', color: on ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${on ? accent : 'var(--border-2)'}`, fontWeight: on ? 800 : 600, padding: pad, borderRadius: 10, fontSize: o.fam ? 14 : 13, cursor: 'pointer', fontFamily: o.fam || 'inherit', whiteSpace: 'nowrap' }}>{o.label}</button>
+          <button key={String(o.val)} onClick={() => set(key, o.val)} style={{ background: on ? accent : 'var(--btn)', color: on ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${on ? accent : 'var(--border-2)'}`, fontWeight: on ? 800 : 600, padding: pad, borderRadius: 'var(--radius-md)', fontSize: o.fam ? 14 : 13, cursor: 'pointer', fontFamily: o.fam || 'inherit', whiteSpace: 'nowrap' }}>{o.label}</button>
         );
       })}
     </div>
@@ -483,11 +483,11 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const stepper = <K extends keyof SettingsType>(key: K, min: number, max: number) => {
     const val = cfg[key] as number;
     const clamp = (n: number) => Math.max(min, Math.min(max, n));
-    const btn: React.CSSProperties = { width: 40, height: 40, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 22, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center' };
+    const btn: React.CSSProperties = { width: 40, height: 40, borderRadius: 'var(--radius-md)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', fontSize: 22, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center' };
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
         <button className="dh-btn" onClick={() => set(key, clamp(val - 5) as SettingsType[K])} style={btn}>−</button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 9, padding: '0 9px', height: 40 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)', padding: '0 9px', height: 40 }}>
           <PercentField value={val} min={min} max={max} onCommit={(n) => set(key, n as SettingsType[K])} />
           <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-4)', fontWeight: 700 }}>%</span>
         </div>
@@ -549,8 +549,8 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
       <Row label={tr.settings.pbServer} sub={tr.settings.pbServerSub} top>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <input className="dh-input" type="url" inputMode="url" aria-label={tr.settings.pbServer} autoCapitalize="off" autoCorrect="off" spellCheck={false} value={pbUrlDraft} onChange={(e) => { setPbUrlDraft(e.target.value); setPbMsg(''); }} placeholder="https://db.deinverein.de" style={{ width: 260, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, outline: 'none' }} />
-            <button onClick={savePbUrl} style={{ background: accent, color: 'var(--accent-fg)', border: `1px solid ${accent}`, padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{tr.settings.saveConnect}</button>
+            <input className="dh-input" type="url" inputMode="url" aria-label={tr.settings.pbServer} autoCapitalize="off" autoCorrect="off" spellCheck={false} value={pbUrlDraft} onChange={(e) => { setPbUrlDraft(e.target.value); setPbMsg(''); }} placeholder="https://db.deinverein.de" style={{ width: 260, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '10px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, outline: 'none' }} />
+            <button onClick={savePbUrl} style={{ background: accent, color: 'var(--accent-fg)', border: `1px solid ${accent}`, padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{tr.settings.saveConnect}</button>
           </div>
           <span style={{ fontSize: 12, fontWeight: 600, color: s.pbMode ? accent : 'var(--text-4)' }}>
             {s.pbMode ? tr.settings.connectedTo(cfg.pbUrl || tr.settings.serverFallback) : (cfg.pbUrl ? tr.settings.notConnected : tr.settings.noServerLocal)}
@@ -559,19 +559,19 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         </div>
       </Row>
       <Row label={tr.settings.clubName} sub={tr.settings.clubNameSub}>
-        <input className="dh-input" type="text" aria-label={tr.settings.clubName} value={cfg.clubName} onChange={(e) => set('clubName', e.target.value)} placeholder={tr.settings.clubNamePh} style={{ width: 260, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, outline: 'none' }} />
+        <input className="dh-input" type="text" aria-label={tr.settings.clubName} value={cfg.clubName} onChange={(e) => set('clubName', e.target.value)} placeholder={tr.settings.clubNamePh} style={{ width: 260, maxWidth: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '10px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, outline: 'none' }} />
       </Row>
       <Row label={tr.settings.clubLogo} sub={tr.settings.clubLogoSub}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <div style={{ width: 44, height: 44, borderRadius: 11, background: 'var(--btn)', border: '1px solid var(--border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, color: 'var(--text-4)' }}>
+            <div style={{ width: 44, height: 44, borderRadius: 'var(--radius-md)', background: 'var(--btn)', border: '1px solid var(--border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, color: 'var(--text-4)' }}>
               {cfg.clubLogo ? <img src={cfg.clubLogo} alt={tr.sidebar.clubLogoAlt} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <IconUsers size={20} />}
             </div>
-            <label className="dh-btn" style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <label className="dh-btn" style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
               {cfg.clubLogo ? tr.settings.logoChange : tr.settings.logoChoose}
               <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" onChange={onLogoFile} style={{ display: 'none' }} />
             </label>
-            {cfg.clubLogo && <button onClick={() => { set('clubLogo', null); setLogoErr(''); }} style={{ background: 'transparent', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '10px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.modals.remove}</button>}
+            {cfg.clubLogo && <button onClick={() => { set('clubLogo', null); setLogoErr(''); }} style={{ background: 'transparent', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.modals.remove}</button>}
           </div>
           {logoErr && <span style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600 }}>{logoErr}</span>}
         </div>
@@ -594,10 +594,10 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
 
   // Rechtstexte für den Internet-Betrieb (Impressum §5 DDG, Datenschutz Art. 13 DSGVO). Zentral,
   // nur Admin. Werden auf der Login-Seite ohne Anmeldung verlinkt (siehe screens/Login.tsx).
-  const legalArea: CSSProperties = { width: '100%', minHeight: 160, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '11px 13px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, lineHeight: 1.55, outline: 'none', resize: 'vertical' };
+  const legalArea: CSSProperties = { width: '100%', minHeight: 160, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '11px 13px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 14, lineHeight: 1.55, outline: 'none', resize: 'vertical' };
   const rechtlichesNode = (
     <Section title={tr.settings.secLegal}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '12px 16px', margin: '4px 0 6px', fontSize: 13, color: 'var(--text-3)', lineHeight: 1.5 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 16px', margin: '4px 0 6px', fontSize: 13, color: 'var(--text-3)', lineHeight: 1.5 }}>
         <span>{tr.settings.legalIntroA}<b>{tr.settings.impressum}</b>{tr.settings.legalIntroB}<b>{tr.settings.datenschutz}</b>{tr.settings.legalIntroC}</span>
       </div>
       <Row label={tr.settings.impressum} sub={tr.settings.impressumSub} top>
@@ -612,7 +612,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const benutzerNode = (
     <Section title={tr.dashboard.usersRights}>
       <button className="dh-row" onClick={() => s.go('users')} style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: '16px 0', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--text)' }}>
-        <div style={{ width: 40, height: 40, borderRadius: 11, background: 'var(--btn)', border: '1px solid var(--border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--text-2)' }}><IconUsers size={20} /></div>
+        <div style={{ width: 40, height: 40, borderRadius: 'var(--radius-md)', background: 'var(--btn)', border: '1px solid var(--border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--text-2)' }}><IconUsers size={20} /></div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 14, fontWeight: 600 }}>{tr.settings.manageUsers}</div>
           <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>{tr.settings.manageUsersSub}</div>
@@ -635,7 +635,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
             {([[tr.settings.newGameShortcut, cfg.newGameKey || 'alt+n'], [tr.settings.quickBo5Short, cfg.quickBo5Key || 'alt+5'], [tr.settings.quickBo3Short, cfg.quickBo3Key || 'alt+3']] as const).map(([label, combo]) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{label}</span>
-                <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 12.5, fontWeight: 700, color: accent, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '4px 10px' }}>{formatCombo(combo)}</kbd>
+                <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 12.5, fontWeight: 700, color: accent, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)', padding: '4px 10px' }}>{formatCombo(combo)}</kbd>
               </div>
             ))}
           </div>
@@ -646,7 +646,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
             {ed('fkeys', (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, width: '100%', maxWidth: 340 }}>
                 {cfg.fkeys.map((v, i) => (
-                  <label key={i} style={{ display: 'flex', flexDirection: 'column', gap: 3, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '7px 10px', cursor: 'text' }}>
+                  <label key={i} style={{ display: 'flex', flexDirection: 'column', gap: 3, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '7px 10px', cursor: 'text' }}>
                     <span style={{ fontSize: 10, fontWeight: 800, color: accent, letterSpacing: '.05em' }}>F{i + 1}</span>
                     <input type="number" min={0} max={180} value={v} onChange={(e) => s.setFKey(i, e.target.value)} style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 700, padding: 0, margin: 0 }} />
                   </label>
@@ -691,7 +691,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
           ] as const).map(([label, keys]) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 13, color: 'var(--text-3)', textAlign: 'right' }}>{label}</span>
-              <kbd style={{ flexShrink: 0, fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 700, color: accent, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '4px 10px', whiteSpace: 'nowrap' }}>{keys}</kbd>
+              <kbd style={{ flexShrink: 0, fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 700, color: accent, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)', padding: '4px 10px', whiteSpace: 'nowrap' }}>{keys}</kbd>
             </div>
           ))}
         </div>
@@ -707,7 +707,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
           {(Object.keys(LANG_LABELS) as Lang[]).map((l) => {
             const on = lang === l;
             return (
-              <button key={l} onClick={() => setLang(l)} style={{ background: on ? accent : 'var(--btn)', color: on ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${on ? accent : 'var(--border-2)'}`, fontWeight: on ? 800 : 600, padding: '10px 16px', borderRadius: 10, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{LANG_LABELS[l]}</button>
+              <button key={l} onClick={() => setLang(l)} style={{ background: on ? accent : 'var(--btn)', color: on ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${on ? accent : 'var(--border-2)'}`, fontWeight: on ? 800 : 600, padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{LANG_LABELS[l]}</button>
             );
           })}
         </div>
@@ -736,7 +736,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
               className="dh-btn"
               onClick={() => set('boardScale', suggestBoardScale())}
               title={tr.settings.autoBtnTitle}
-              style={{ height: 40, padding: '0 14px', borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
+              style={{ height: 40, padding: '0 14px', borderRadius: 'var(--radius-md)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}
             >
               {tr.settings.autoBtn}
             </button>
@@ -759,7 +759,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         const on = cfg[t.key] !== false; // Default-an-Schalter: „an", solange nicht ausdrücklich aus
         return (
           <Row key={t.key} label={t.label} sub={t.sub}>
-            <button onClick={() => set(t.key, !on)} role="switch" aria-checked={on} aria-label={t.label} style={{ position: 'relative', width: 46, height: 26, borderRadius: 999, background: on ? accent : 'var(--btn)', border: on ? 'none' : '1px solid var(--border-2)', cursor: 'pointer', flexShrink: 0, transition: 'background .15s var(--ease-out)', padding: 0 }}>
+            <button onClick={() => set(t.key, !on)} role="switch" aria-checked={on} aria-label={t.label} style={{ position: 'relative', width: 46, height: 26, borderRadius: 'var(--radius-pill)', background: on ? accent : 'var(--btn)', border: on ? 'none' : '1px solid var(--border-2)', cursor: 'pointer', flexShrink: 0, transition: 'background .15s var(--ease-out)', padding: 0 }}>
               <span style={{ position: 'absolute', top: 2, left: 2, transform: on ? 'translateX(20px)' : 'none', width: 22, height: 22, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.4)', transition: 'transform .15s var(--ease-out)' }} />
             </button>
           </Row>
@@ -772,8 +772,8 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     <Section title={tr.settings.secBackup}>
       <Row label={tr.settings.backupRow} sub={tr.settings.backupRowSub}>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          <button className="dh-btn" onClick={doExport} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.exportBtn}</button>
-          <label className="dh-btn" style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button className="dh-btn" onClick={doExport} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.exportBtn}</button>
+          <label className="dh-btn" style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
             {tr.settings.importBtn}
             <input type="file" accept="application/json,.json" onChange={onImportFile} style={{ display: 'none' }} />
           </label>
@@ -784,20 +784,20 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         <>
           <Row label={tr.settings.autoBackupRow} sub={tr.settings.autoBackupSub}>
             <button onClick={() => set('autoBackup', !cfg.autoBackup)} role="switch" aria-checked={!!cfg.autoBackup}
-              style={{ flexShrink: 0, width: 46, height: 26, borderRadius: 999, background: cfg.autoBackup ? accent : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative', cursor: 'pointer', padding: 0 }}>
+              style={{ flexShrink: 0, width: 46, height: 26, borderRadius: 'var(--radius-pill)', background: cfg.autoBackup ? accent : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative', cursor: 'pointer', padding: 0 }}>
               <span style={{ position: 'absolute', top: 2, left: cfg.autoBackup ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff' }} />
             </button>
           </Row>
           {cfg.autoBackup && (
             <Row label={tr.settings.backupTimeRow} sub={tr.settings.backupTimeSub}>
               <input type="time" aria-label={tr.settings.backupTimeRow} value={cfg.backupTime || '20:00'} onChange={(e) => set('backupTime', e.target.value)}
-                style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '9px 12px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 700, outline: 'none' }} />
+                style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '9px 12px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 700, outline: 'none' }} />
             </Row>
           )}
           {cfg.autoBackup && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', fontSize: 12, color: 'var(--text-4)', padding: '2px 2px 6px' }}>
               <span>{s.lastBackupAt ? tr.settings.lastBackup(new Date(s.lastBackupAt).toLocaleString(tr.format.dateLocale)) : tr.settings.noAutoBackupYet}{s.backupMsg ? ` · ${s.backupMsg}` : ''}</span>
-              <button className="dh-btn" onClick={() => void s.runBackup()} style={{ marginLeft: 'auto', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '7px 13px', borderRadius: 9, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.backupNow}</button>
+              <button className="dh-btn" onClick={() => void s.runBackup()} style={{ marginLeft: 'auto', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '7px 13px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.backupNow}</button>
             </div>
           )}
         </>
@@ -815,7 +815,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
           {([['first', tr.settings.firstLast], ['last', tr.settings.lastFirst]] as const).map(([val, label]) => {
             const on = (cfg.nameOrder ?? 'first') === val;
             return (
-              <button key={val} onClick={() => s.setDeviceSetting('nameOrder', val)} style={{ background: on ? accent : 'var(--btn)', color: on ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${on ? accent : 'var(--border-2)'}`, fontWeight: on ? 800 : 600, padding: '10px 16px', borderRadius: 10, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{label}</button>
+              <button key={val} onClick={() => s.setDeviceSetting('nameOrder', val)} style={{ background: on ? accent : 'var(--btn)', color: on ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${on ? accent : 'var(--border-2)'}`, fontWeight: on ? 800 : 600, padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{label}</button>
             );
           })}
         </div>
@@ -827,14 +827,14 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     // Board-Rechner laufen über nummerierte Board-Konten: Anmeldung als „Board N" → automatisch im Kiosk.
     <Section title={tr.settings.secBoard}>
       <Row label={tr.settings.boardAccountsRow} sub={tr.settings.boardAccountsSub}>
-        <button onClick={() => s.go('users')} className="dh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.toUsers}</button>
+        <button onClick={() => s.go('users')} className="dh-btn" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.toUsers}</button>
       </Row>
       <Row label={tr.settings.boardWindowRow} sub={tr.settings.boardWindowSub}>
         {ed('boardMatchWindow', seg('boardMatchWindow', [{ label: tr.settings.matchdayOnly, val: 0 }, { label: tr.settings.plusDay(1), val: 1 }, { label: tr.settings.plusDay(2), val: 2 }, { label: tr.settings.plusDay(3), val: 3 }], '9px 14px'))}
       </Row>
       <Row label={tr.settings.remoteRow} sub={tr.settings.remoteSub}>
         <button onClick={() => canEdit && set('remoteEnabled', cfg.remoteEnabled === false)} role="switch" aria-checked={cfg.remoteEnabled !== false}
-          style={{ flexShrink: 0, width: 46, height: 26, borderRadius: 999, background: cfg.remoteEnabled !== false ? accent : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative', cursor: canEdit ? 'pointer' : 'default', opacity: canEdit ? 1 : 0.5, padding: 0 }}>
+          style={{ flexShrink: 0, width: 46, height: 26, borderRadius: 'var(--radius-pill)', background: cfg.remoteEnabled !== false ? accent : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative', cursor: canEdit ? 'pointer' : 'default', opacity: canEdit ? 1 : 0.5, padding: 0 }}>
           <span style={{ position: 'absolute', top: 2, left: cfg.remoteEnabled !== false ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff' }} />
         </button>
       </Row>
@@ -891,19 +891,19 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         <span style={{ fontSize: 14, fontWeight: 800, color: accent }}>{activeSeasonObj ? activeSeasonObj.name : '—'}</span>
       </Row>
       <Row label={tr.settings.exportSeasonRow} sub={tr.settings.exportSeasonSub}>
-        <button className="dh-btn" onClick={() => s.exportSeason()} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.exportBtn}</button>
+        <button className="dh-btn" onClick={() => s.exportSeason()} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.exportBtn}</button>
       </Row>
       <Row label={tr.settings.closeSeasonRow} sub={tr.settings.closeSeasonSub}>
         {!closeConfirm ? (
-          <button onClick={() => setCloseConfirm(true)} style={{ background: 'transparent', border: '1px solid color-mix(in srgb, var(--gold) 50%, transparent)', color: 'var(--gold)', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.closeDots}</button>
+          <button onClick={() => setCloseConfirm(true)} style={{ background: 'transparent', border: '1px solid color-mix(in srgb, var(--gold) 50%, transparent)', color: 'var(--gold)', padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.closeDots}</button>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
             <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600, textAlign: 'right', maxWidth: 320 }}>
               {tr.settings.closeConfirmText(activeSeasonObj ? activeSeasonObj.name : '')}
             </span>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setCloseConfirm(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
-              <button onClick={() => { s.closeSeason(); setCloseConfirm(false); }} style={{ background: 'var(--gold)', border: 'none', color: 'var(--gold-ink)', padding: '9px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.closeNow}</button>
+              <button onClick={() => setCloseConfirm(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '9px 14px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
+              <button onClick={() => { s.closeSeason(); setCloseConfirm(false); }} style={{ background: 'var(--gold)', border: 'none', color: 'var(--gold-ink)', padding: '9px 16px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.closeNow}</button>
             </div>
           </div>
         )}
@@ -911,15 +911,15 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
       {(activeSeasonLeagues.length > 0 || activeSeasonTeams.length > 0) && (
         <Row label={tr.settings.resetLeaguesRow} sub={tr.settings.resetLeaguesSub}>
           {!resetConfirm ? (
-            <button onClick={() => setResetConfirm(true)} style={{ background: 'transparent', border: '1px solid color-mix(in srgb, var(--danger) 50%, transparent)', color: 'var(--danger)', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.resetDots}</button>
+            <button onClick={() => setResetConfirm(true)} style={{ background: 'transparent', border: '1px solid color-mix(in srgb, var(--danger) 50%, transparent)', color: 'var(--danger)', padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.resetDots}</button>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
               <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600, textAlign: 'right', maxWidth: 340, lineHeight: 1.5 }}>
                 <b style={{ color: 'var(--danger)' }}>{tr.settings.attention}</b>{tr.settings.resetConfirmA(activeSeasonLeagues.length, activeSeasonTeams.length, activeSeasonObj ? activeSeasonObj.name : '')}<b>{tr.settings.irrevDeleted}</b>{tr.settings.resetConfirmB}
               </span>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => setResetConfirm(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
-                <button onClick={() => { s.resetSeasonData(); setResetConfirm(false); }} style={{ background: 'var(--danger)', border: 'none', color: '#fff', padding: '9px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.deleteNow}</button>
+                <button onClick={() => setResetConfirm(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '9px 14px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
+                <button onClick={() => { s.resetSeasonData(); setResetConfirm(false); }} style={{ background: 'var(--danger)', border: 'none', color: '#fff', padding: '9px 16px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.deleteNow}</button>
               </div>
             </div>
           )}
@@ -929,14 +929,14 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         {!pruneConfirm ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             {pruneMsg && <span style={{ fontSize: 12, color: 'var(--success)', fontWeight: 600 }}>{pruneMsg}</span>}
-            <select value={pruneKeep} onChange={(e) => { setPruneKeep(e.target.value as typeof pruneKeep); setPruneMsg(''); }} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '9px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, fontWeight: 600 }}>
+            <select value={pruneKeep} onChange={(e) => { setPruneKeep(e.target.value as typeof pruneKeep); setPruneMsg(''); }} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '9px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, fontWeight: 600 }}>
               <option value="1y">{tr.settings.keep1y}</option>
               <option value="6m">{tr.settings.keep6m}</option>
               <option value="3m">{tr.settings.keep3m}</option>
               <option value="1m">{tr.settings.keep1m}</option>
               <option value="all">{tr.settings.keepNone}</option>
             </select>
-            <button onClick={() => { setPruneMsg(''); setPruneConfirm(true); }} disabled={prunableCount === 0} style={{ background: 'transparent', border: '1px solid color-mix(in srgb, var(--danger) 50%, transparent)', color: 'var(--danger)', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: prunableCount === 0 ? 'not-allowed' : 'pointer', opacity: prunableCount === 0 ? 0.5 : 1, fontFamily: 'inherit' }}>{tr.settings.deleteN(prunableCount)}</button>
+            <button onClick={() => { setPruneMsg(''); setPruneConfirm(true); }} disabled={prunableCount === 0} style={{ background: 'transparent', border: '1px solid color-mix(in srgb, var(--danger) 50%, transparent)', color: 'var(--danger)', padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: prunableCount === 0 ? 'not-allowed' : 'pointer', opacity: prunableCount === 0 ? 0.5 : 1, fontFamily: 'inherit' }}>{tr.settings.deleteN(prunableCount)}</button>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
@@ -944,8 +944,8 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
               <b style={{ color: 'var(--danger)' }}>{tr.settings.attention}</b>{tr.settings.pruneConfirmA(prunableCount, pruneCutoff.split('-').reverse().join('.'))}<b>{tr.settings.irrevDeleted}</b>{tr.settings.pruneConfirmB}
             </span>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setPruneConfirm(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
-              <button onClick={() => { const n = s.pruneEvents(pruneCutoff); setPruneConfirm(false); setPruneMsg(n > 0 ? tr.settings.prunedN(n) : tr.settings.prunedNone); }} style={{ background: 'var(--danger)', border: 'none', color: '#fff', padding: '9px 16px', borderRadius: 9, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.deleteNow}</button>
+              <button onClick={() => setPruneConfirm(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '9px 14px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
+              <button onClick={() => { const n = s.pruneEvents(pruneCutoff); setPruneConfirm(false); setPruneMsg(n > 0 ? tr.settings.prunedN(n) : tr.settings.prunedNone); }} style={{ background: 'var(--danger)', border: 'none', color: '#fff', padding: '9px 16px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.deleteNow}</button>
             </div>
           </div>
         )}
@@ -953,7 +953,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
       {activeIsEmpty && otherSeasons.length > 0 && (
         <Row label={tr.settings.carryRow} sub={tr.settings.carrySub}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
-            <select value={carrySrc} onChange={(e) => setCarrySource(e.target.value)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '8px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, fontWeight: 600 }}>
+            <select value={carrySrc} onChange={(e) => setCarrySource(e.target.value)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '8px 12px', color: 'var(--text)', fontFamily: 'inherit', fontSize: 13, fontWeight: 600 }}>
               {otherSeasons.map((se) => <option key={se.id} value={se.id}>{tr.settings.fromSeason(se.name)}</option>)}
             </select>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-2)', cursor: 'pointer' }}>
@@ -962,7 +962,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-2)', cursor: 'pointer' }}>
               <input type="checkbox" checked={carryLeagues} onChange={(e) => setCarryLeagues(e.target.checked)} /> {tr.settings.carryLeagues}
             </label>
-            <button onClick={() => s.carryOverSeason({ fromSeasonId: carrySrc, teams: carryTeams, leagues: carryLeagues })} disabled={!carrySrc || (!carryTeams && !carryLeagues)} style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '10px 16px', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: (!carrySrc || (!carryTeams && !carryLeagues)) ? 'not-allowed' : 'pointer', opacity: (!carrySrc || (!carryTeams && !carryLeagues)) ? 0.5 : 1, fontFamily: 'inherit' }}>{tr.settings.takeOver}</button>
+            <button onClick={() => s.carryOverSeason({ fromSeasonId: carrySrc, teams: carryTeams, leagues: carryLeagues })} disabled={!carrySrc || (!carryTeams && !carryLeagues)} style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 800, cursor: (!carrySrc || (!carryTeams && !carryLeagues)) ? 'not-allowed' : 'pointer', opacity: (!carrySrc || (!carryTeams && !carryLeagues)) ? 0.5 : 1, fontFamily: 'inherit' }}>{tr.settings.takeOver}</button>
           </div>
         </Row>
       )}
@@ -972,20 +972,20 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
             {archivedSeasons.map((se) => (
               <div key={se.id} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-2)' }}>{se.name}</span>
-                {se.offloaded && <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--gold)', background: 'color-mix(in srgb, var(--gold) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 40%, transparent)', padding: '2px 7px', borderRadius: 6 }}>{tr.settings.offloadedBadge}</span>}
-                <button className="dh-btn" onClick={() => s.exportSeason(se.id)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.exportShort}</button>
+                {se.offloaded && <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--gold)', background: 'color-mix(in srgb, var(--gold) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 40%, transparent)', padding: '2px 7px', borderRadius: 'var(--radius-xs)' }}>{tr.settings.offloadedBadge}</span>}
+                <button className="dh-btn" onClick={() => s.exportSeason(se.id)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 12px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.exportShort}</button>
                 {se.offloaded ? (
-                  <label className="dh-btn" style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <label className="dh-btn" style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '6px 12px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                     {tr.settings.reimport}
                     <input type="file" accept="application/json,.json" onChange={onReimportFile} style={{ display: 'none' }} />
                   </label>
                 ) : offloadConfirm === se.id ? (
                   <span style={{ display: 'inline-flex', gap: 6 }}>
-                    <button onClick={() => setOffloadConfirm(null)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
-                    <button onClick={() => { s.offloadSeason(se.id); setOffloadConfirm(null); setSeasonMsg(tr.settings.offloadedMsg(se.name)); }} style={{ background: 'var(--danger)', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.offloadConfirm}</button>
+                    <button onClick={() => setOffloadConfirm(null)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '6px 10px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
+                    <button onClick={() => { s.offloadSeason(se.id); setOffloadConfirm(null); setSeasonMsg(tr.settings.offloadedMsg(se.name)); }} style={{ background: 'var(--danger)', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.offloadConfirm}</button>
                   </span>
                 ) : (
-                  <button onClick={() => { setOffloadConfirm(se.id); setSeasonMsg(''); }} style={{ background: 'transparent', border: '1px solid color-mix(in srgb, var(--danger) 50%, transparent)', color: 'var(--danger)', padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.offload}</button>
+                  <button onClick={() => { setOffloadConfirm(se.id); setSeasonMsg(''); }} style={{ background: 'transparent', border: '1px solid color-mix(in srgb, var(--danger) 50%, transparent)', color: 'var(--danger)', padding: '6px 12px', borderRadius: 'var(--radius-sm)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.settings.offload}</button>
                 )}
               </div>
             ))}
@@ -1038,7 +1038,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
       <p style={{ margin: '0 0 22px', fontSize: 14, color: 'var(--text-3)' }}>{canEdit ? tr.settings.autoSaved : tr.settings.centralOnly}</p>
 
       {!canEdit && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '12px 16px', marginBottom: 18, fontSize: 13, color: 'var(--text-3)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 16px', marginBottom: 18, fontSize: 13, color: 'var(--text-3)' }}>
           <IconUsers size={17} />
           <span>{tr.settings.readOnlyNote}</span>
         </div>
@@ -1058,7 +1058,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
           return (
             <button key={c.key} {...ip} onClick={() => setActiveKey(c.key)} title={tr.leagues.dragToReorder} style={{
               display: 'flex', alignItems: 'center', gap: 6, background: on ? accent : 'var(--surface)', color: on ? 'var(--accent-fg)' : 'var(--text-2)',
-              border: `1px solid ${isTarget ? accent : (on ? accent : 'var(--border-2)')}`, fontWeight: on ? 800 : 600, padding: '9px 14px', borderRadius: 999, fontSize: 13,
+              border: `1px solid ${isTarget ? accent : (on ? accent : 'var(--border-2)')}`, fontWeight: on ? 800 : 600, padding: '9px 14px', borderRadius: 'var(--radius-pill)', fontSize: 13,
               cursor: dragging ? 'grabbing' : 'grab', fontFamily: 'inherit', whiteSpace: 'nowrap', opacity: dragging ? 0.55 : 1,
               boxShadow: isTarget ? `0 0 0 3px color-mix(in srgb, ${accent} 22%, transparent)` : 'none', transition: 'box-shadow .12s, opacity .12s', ...ip.style,
             }}>

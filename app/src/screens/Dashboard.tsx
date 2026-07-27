@@ -101,7 +101,7 @@ function VereinDashboard() {
     { label: tr.dashboard.accounts, value: String(s.accounts.length), delta: tr.dashboard.usersRightsArrow, icon: '🔑', iconBg: 'rgba(155,109,255,.12)', screen: 'users' },
   ];
 
-  const cardStyle: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 22px' };
+  const cardStyle: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px 22px' };
   const sectionTitle: React.CSSProperties = { fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 14 };
 
   // ── Admin: Schnellanlage (direkt aus dem Dashboard anlegen) ──
@@ -117,8 +117,8 @@ function VereinDashboard() {
       <div style={sectionTitle}>{tr.dashboard.quickCreate}</div>
       <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
         {quickCreate.map((q) => (
-          <button key={q.label} className="dh-hover-border" onClick={q.onClick} style={{ display: 'flex', alignItems: 'center', gap: 13, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '14px 16px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
-            <div style={{ width: 40, height: 40, borderRadius: 11, background: `color-mix(in srgb, ${q.color} 16%, transparent)`, color: q.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{q.icon}</div>
+          <button key={q.label} className="dh-hover-border" onClick={q.onClick} style={{ display: 'flex', alignItems: 'center', gap: 13, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '14px 16px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <div style={{ width: 40, height: 40, borderRadius: 'var(--radius-md)', background: `color-mix(in srgb, ${q.color} 16%, transparent)`, color: q.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{q.icon}</div>
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <IconPlus size={13} style={{ color: 'var(--text-4)' }} />
@@ -145,8 +145,8 @@ function VereinDashboard() {
       <div style={sectionTitle}>{tr.dashboard.adminSection}</div>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {adminLinks.map((l) => (
-          <button key={l.label} className="dh-row" onClick={() => s.go(l.screen)} style={{ display: 'flex', alignItems: 'center', gap: 13, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', borderRadius: 10, padding: '11px 6px', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--text)' }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--text-2)' }}>{l.icon}</div>
+          <button key={l.label} className="dh-row" onClick={() => s.go(l.screen)} style={{ display: 'flex', alignItems: 'center', gap: 13, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', borderRadius: 'var(--radius-md)', padding: '11px 6px', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--text)' }}>
+            <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'var(--btn)', border: '1px solid var(--border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--text-2)' }}>{l.icon}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 14, fontWeight: 600 }}>{l.label}</div>
               <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 1 }}>{l.sub}</div>
@@ -167,7 +167,7 @@ function VereinDashboard() {
           const k = teamKind(team); const kc = TEAM_KINDS[k].color;
           const d = fx!.date ? new Date(fx!.date + 'T00:00') : null;
           return (
-            <div key={team.id + fx!.fixtureId} className="dh-hover-border" style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '11px 12px', border: '1px solid var(--border-2)', borderRadius: 12, background: 'var(--btn)' }}>
+            <div key={team.id + fx!.fixtureId} className="dh-hover-border" style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '11px 12px', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', background: 'var(--btn)' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 46, flexShrink: 0, borderRight: `2px solid ${kc}`, paddingRight: 11 }}>
                 <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em' }}>{d ? MON3[d.getMonth()] : '—'}</span>
                 <span style={{ fontFamily: 'var(--font-num)', fontSize: 20, fontWeight: 800, lineHeight: 1.05 }}>{d ? d.getDate() : '–'}</span>
@@ -182,7 +182,7 @@ function VereinDashboard() {
                 </div>
               </div>
               {canManage && (
-                <button onClick={() => s.openLineupAt(fx!.leagueIndex, fx!.fixtureId)} className="dh-btn" style={{ flexShrink: 0, background: fx!.hasLineup ? 'var(--btn)' : 'color-mix(in srgb, var(--accent) 14%, transparent)', border: `1px solid ${fx!.hasLineup ? 'var(--border-2)' : 'color-mix(in srgb, var(--accent) 40%, transparent)'}`, color: fx!.hasLineup ? 'var(--text-2)' : 'var(--accent)', padding: '8px 13px', borderRadius: 10, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{fx!.hasLineup ? tr.dashboard.lineupView : tr.dashboard.lineupDo}</button>
+                <button onClick={() => s.openLineupAt(fx!.leagueIndex, fx!.fixtureId)} className="dh-btn" style={{ flexShrink: 0, background: fx!.hasLineup ? 'var(--btn)' : 'color-mix(in srgb, var(--accent) 14%, transparent)', border: `1px solid ${fx!.hasLineup ? 'var(--border-2)' : 'color-mix(in srgb, var(--accent) 40%, transparent)'}`, color: fx!.hasLineup ? 'var(--text-2)' : 'var(--accent)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{fx!.hasLineup ? tr.dashboard.lineupView : tr.dashboard.lineupDo}</button>
               )}
             </div>
           );
@@ -201,7 +201,7 @@ function VereinDashboard() {
           const scoreColor = r.outcome === 'S' ? 'var(--success)' : r.outcome === 'U' ? 'var(--gold)' : 'var(--danger-soft)';
           return (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 6px', borderBottom: '1px solid var(--hairline)' }}>
-              <div style={{ width: 5, height: 30, borderRadius: 3, background: barColor }} />
+              <div style={{ width: 5, height: 30, borderRadius: 'var(--radius-xs)', background: barColor }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>{r.opp}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{r.leagueName}</div>
@@ -231,7 +231,7 @@ function VereinDashboard() {
           { v: String(myAgg.c140), l: '140+' },
           { v: String(myAgg.c100), l: '100+' },
         ].map((b) => (
-          <div key={b.l} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, padding: '10px 12px' }}>
+          <div key={b.l} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '10px 12px' }}>
             <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800 }}>{b.v}</div>
             <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, marginTop: 2 }}>{b.l}</div>
           </div>
@@ -241,7 +241,7 @@ function VereinDashboard() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {myAgg.recent.slice(0, 4).map((g, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 4px', borderBottom: '1px solid var(--hairline)' }}>
-              <span style={{ width: 5, height: 26, borderRadius: 3, background: g.won ? 'var(--success)' : 'var(--danger)', flexShrink: 0 }} />
+              <span style={{ width: 5, height: 26, borderRadius: 'var(--radius-xs)', background: g.won ? 'var(--success)' : 'var(--danger)', flexShrink: 0 }} />
               <span style={{ flex: 1, fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{g.opp || '—'}</span>
               <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{g.avg ? g.avg.toFixed(1) : ''}</span>
               <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: g.won ? 'var(--success)' : 'var(--danger-soft)', width: 44, textAlign: 'right' }}>{g.score}</span>
@@ -271,7 +271,7 @@ function VereinDashboard() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {rows.map((row, idx) => (
-                    <div key={row.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 6px', borderRadius: 7, background: row.own ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent' }}>
+                    <div key={row.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 6px', borderRadius: 'var(--radius-xs)', background: row.own ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent' }}>
                       <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 800, color: 'var(--text-4)', width: 18, textAlign: 'right' }}>{idx + 1}</span>
                       <span style={{ flex: 1, fontSize: 13, fontWeight: row.own ? 700 : 500, color: row.own ? 'var(--text)' : 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.name}</span>
                       <span style={{ fontSize: 11, color: 'var(--text-4)', width: 30, textAlign: 'center' }}>{row.sp}</span>
@@ -284,7 +284,7 @@ function VereinDashboard() {
           );
         })}
       </div>
-      <button className="dh-hover-border" onClick={() => s.go('leagues')} style={{ width: '100%', marginTop: 14, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: 11, borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.toLeagues}</button>
+      <button className="dh-hover-border" onClick={() => s.go('leagues')} style={{ width: '100%', marginTop: 14, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: 11, borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.toLeagues}</button>
     </div>
   ) : null;
 
@@ -301,7 +301,7 @@ function VereinDashboard() {
           <div style={{ fontSize: 13, color: 'var(--text-3)', fontWeight: 600, marginTop: 4 }}>{subtitle}</div>
         </div>
         {p.play && (
-          <button className="dh-primary" onClick={() => s.goSetup()} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '13px 22px', borderRadius: 13, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)', whiteSpace: 'nowrap' }}>
+          <button className="dh-primary" onClick={() => s.goSetup()} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '13px 22px', borderRadius: 'var(--radius-md)', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)', whiteSpace: 'nowrap' }}>
             <IconTarget size={18} sw={2.2} />
             Darts Counter
           </button>
@@ -310,22 +310,22 @@ function VereinDashboard() {
 
       {/* TERMINE */}
       {dEvents.some((e) => e.scope === scope) && (
-        <div style={{ marginBottom: 18, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 22px' }}>
+        <div style={{ marginBottom: 18, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px 22px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, marginBottom: 16, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--text-3)' }}>
               <IconCalendarSmall size={18} sw={2} />
               <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>{tr.dashboard.events}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ display: 'flex', gap: 2, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 9, padding: 2 }}>
+              <div style={{ display: 'flex', gap: 2, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)', padding: 2 }}>
                 {([['week', tr.dashboard.week], ['month', tr.dashboard.month], ['all', tr.dashboard.all]] as const).map(([key, label]) => {
                   const on = range === key;
                   return (
-                    <button key={key} onClick={() => s.setSetting('dashRange', key)} style={{ background: on ? accent : 'transparent', color: on ? 'var(--accent-fg)' : 'var(--text-3)', fontWeight: on ? 800 : 600, border: 'none', padding: '6px 12px', borderRadius: 7, fontSize: 12, minHeight: 44, cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
+                    <button key={key} onClick={() => s.setSetting('dashRange', key)} style={{ background: on ? accent : 'transparent', color: on ? 'var(--accent-fg)' : 'var(--text-3)', fontWeight: on ? 800 : 600, border: 'none', padding: '6px 12px', borderRadius: 'var(--radius-xs)', fontSize: 12, minHeight: 44, cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
                   );
                 })}
               </div>
-              <button className="dh-hover-border" onClick={() => s.go('calendar')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 15px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.openCalendar}</button>
+              <button className="dh-hover-border" onClick={() => s.go('calendar')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 15px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.openCalendar}</button>
             </div>
           </div>
           {events.length === 0 && (() => {
@@ -344,7 +344,7 @@ function VereinDashboard() {
           })()}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '8px 18px' }}>
             {events.map((ev) => (
-              <PressableRow key={ev.id} className="dh-hover-border dh-row" onClick={() => s.openEditEvent(ev.id)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 10px', borderRadius: 12, cursor: 'pointer', border: '1px solid transparent' }}>
+              <PressableRow key={ev.id} className="dh-hover-border dh-row" onClick={() => s.openEditEvent(ev.id)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 10px', borderRadius: 'var(--radius-md)', cursor: 'pointer', border: '1px solid transparent' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: 50, flexShrink: 0, borderRight: `2px solid ${ev.color}`, paddingRight: 12 }}>
                   <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em' }}>{ev.mon}</span>
                   <span style={{ fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, lineHeight: 1.05, letterSpacing: '-.02em' }}>{ev.day}</span>
@@ -357,7 +357,7 @@ function VereinDashboard() {
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>{ev.meta}</div>
                 </div>
-                <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, color: ev.color, background: ev.typeBg, padding: '4px 9px', borderRadius: 6, letterSpacing: '.03em', whiteSpace: 'nowrap' }}>{ev.typeLabel}</span>
+                <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, color: ev.color, background: ev.typeBg, padding: '4px 9px', borderRadius: 'var(--radius-xs)', letterSpacing: '.03em', whiteSpace: 'nowrap' }}>{ev.typeLabel}</span>
               </PressableRow>
             ))}
           </div>
@@ -368,10 +368,10 @@ function VereinDashboard() {
       {isAdmin && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16, marginBottom: 18 }}>
           {statCards.map((c) => (
-            <button key={c.label} className="dh-hover-border" onClick={() => s.go(c.screen)} style={{ textAlign: 'left', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '18px 20px', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button key={c.label} className="dh-hover-border" onClick={() => s.go(c.screen)} style={{ textAlign: 'left', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '18px 20px', cursor: 'pointer', fontFamily: 'inherit' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>{c.label}</span>
-                <div style={{ width: 30, height: 30, borderRadius: 9, background: c.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>{c.icon}</div>
+                <div style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: c.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>{c.icon}</div>
               </div>
               <div style={{ fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, marginTop: 12, letterSpacing: '-.02em', color: 'var(--text)' }}>{c.value}</div>
               <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginTop: 3 }}>{c.delta}</div>
@@ -457,7 +457,7 @@ function LocalDashboard() {
     ...quickTrain.map((m) => ({ key: m.id, color: m.color, iconPath: m.icon, title: m.name, sub: tr.common.training, onClick: () => s.openTrainSetup(m.id) })),
   ];
 
-  const cardStyle: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '20px 22px' };
+  const cardStyle: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px 22px' };
   const sectionTitle: React.CSSProperties = { fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 14 };
 
   return (
@@ -472,7 +472,7 @@ function LocalDashboard() {
           </div>
           <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{greetFn(now)}</h1>
         </div>
-        <button className="dh-primary" onClick={() => s.goSetup()} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '13px 22px', borderRadius: 13, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)', whiteSpace: 'nowrap' }}>
+        <button className="dh-primary" onClick={() => s.goSetup()} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '13px 22px', borderRadius: 'var(--radius-md)', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)', whiteSpace: 'nowrap' }}>
           <IconTarget size={18} sw={2.2} />
           Darts Counter
         </button>
@@ -483,8 +483,8 @@ function LocalDashboard() {
         <div style={sectionTitle}>{tr.dashboard.quickstart}</div>
         <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
           {quickItems.map((it) => (
-            <button key={it.key} className="dh-hover-border" onClick={it.onClick} style={{ display: 'flex', alignItems: 'center', gap: 13, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '14px 16px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 11, background: `color-mix(in srgb, ${it.color} 16%, transparent)`, color: it.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <button key={it.key} className="dh-hover-border" onClick={it.onClick} style={{ display: 'flex', alignItems: 'center', gap: 13, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '14px 16px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 'var(--radius-md)', background: `color-mix(in srgb, ${it.color} 16%, transparent)`, color: it.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {it.iconPath
                   ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={it.iconPath} /></svg>
                   : <IconTarget size={20} sw={2.2} />}
@@ -508,12 +508,12 @@ function LocalDashboard() {
                 <IconCalendarSmall size={18} sw={2} />
                 <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>{tr.dashboard.nextEvents}</span>
               </div>
-              <button className="dh-hover-border" onClick={() => s.go('calendar')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '8px 13px', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.openCalendar}</button>
+              <button className="dh-hover-border" onClick={() => s.go('calendar')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.openCalendar}</button>
             </div>
             {events.length === 0 && <div style={{ padding: '14px 6px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.dashboard.noUpcomingEvents}</div>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {events.map((ev) => (
-                <PressableRow key={ev.id} className="dh-hover-border dh-row" onClick={() => s.openEditEvent(ev.id)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 10px', borderRadius: 12, cursor: 'pointer', border: '1px solid transparent' }}>
+                <PressableRow key={ev.id} className="dh-hover-border dh-row" onClick={() => s.openEditEvent(ev.id)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 10px', borderRadius: 'var(--radius-md)', cursor: 'pointer', border: '1px solid transparent' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: 50, flexShrink: 0, borderRight: `2px solid ${ev.color}`, paddingRight: 12 }}>
                     <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em' }}>{ev.mon}</span>
                     <span style={{ fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, lineHeight: 1.05, letterSpacing: '-.02em' }}>{ev.day}</span>
@@ -526,7 +526,7 @@ function LocalDashboard() {
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>{ev.meta}</div>
                   </div>
-                  <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, color: ev.color, background: ev.typeBg, padding: '4px 9px', borderRadius: 6, letterSpacing: '.03em', whiteSpace: 'nowrap' }}>{ev.typeLabel}</span>
+                  <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, color: ev.color, background: ev.typeBg, padding: '4px 9px', borderRadius: 'var(--radius-xs)', letterSpacing: '.03em', whiteSpace: 'nowrap' }}>{ev.typeLabel}</span>
                 </PressableRow>
               ))}
             </div>
@@ -563,8 +563,8 @@ function LocalDashboard() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {trainStats.map(({ mode, n }) => (
-                  <PressableRow key={mode.id} className="dh-row" onClick={() => s.openTrainSetup(mode.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 6px', cursor: 'pointer', borderRadius: 9 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 9, background: `color-mix(in srgb, ${mode.color} 16%, transparent)`, color: mode.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <PressableRow key={mode.id} className="dh-row" onClick={() => s.openTrainSetup(mode.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 6px', cursor: 'pointer', borderRadius: 'var(--radius-sm)' }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 'var(--radius-sm)', background: `color-mix(in srgb, ${mode.color} 16%, transparent)`, color: mode.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={mode.icon} /></svg>
                     </div>
                     <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{mode.name}</span>
@@ -573,7 +573,7 @@ function LocalDashboard() {
                 ))}
               </div>
             )}
-            <button className="dh-hover-border" onClick={() => s.go('training')} style={{ width: '100%', marginTop: 12, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: 11, borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.allTraining}</button>
+            <button className="dh-hover-border" onClick={() => s.go('training')} style={{ width: '100%', marginTop: 12, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: 11, borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.allTraining}</button>
           </div>
 
           {/* Spieler-Bestenliste */}
@@ -583,7 +583,7 @@ function LocalDashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {top.map((row, idx) => {
                 return (
-                  <PressableRow key={row.pl.id} className="dh-row" onClick={() => s.openPlayer(row.pl.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 6px', cursor: 'pointer', borderRadius: 9 }}>
+                  <PressableRow key={row.pl.id} className="dh-row" onClick={() => s.openPlayer(row.pl.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 6px', cursor: 'pointer', borderRadius: 'var(--radius-sm)' }}>
                     <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: idx === 0 && row.agg.avg ? 'var(--gold)' : 'var(--text-4)', width: 18 }}>{idx + 1}</span>
                     <Avatar photo={row.pl.photo} short={row.pl.short} avi={row.pl.avi} size={32} />
                     <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{row.pl.name}</span>

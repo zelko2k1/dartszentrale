@@ -77,17 +77,17 @@ export function Calendar() {
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button className="dh-hover-border" onClick={() => shift(-1)} title={tr.calendar.prevMonth} aria-label={tr.calendar.prevMonth} style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IconChevronLeft size={18} /></button>
-          <button className="dh-hover-border" onClick={() => setRef({ y: now.getFullYear(), m: now.getMonth() })} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '0 16px', height: 38, borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.today}</button>
-          <button className="dh-hover-border" onClick={() => shift(1)} title={tr.calendar.nextMonth} aria-label={tr.calendar.nextMonth} style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IconChevronRight size={18} /></button>
+          <button className="dh-hover-border" onClick={() => shift(-1)} title={tr.calendar.prevMonth} aria-label={tr.calendar.prevMonth} style={{ width: 38, height: 38, borderRadius: 'var(--radius-md)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IconChevronLeft size={18} /></button>
+          <button className="dh-hover-border" onClick={() => setRef({ y: now.getFullYear(), m: now.getMonth() })} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '0 16px', height: 38, borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.today}</button>
+          <button className="dh-hover-border" onClick={() => shift(1)} title={tr.calendar.nextMonth} aria-label={tr.calendar.nextMonth} style={{ width: 38, height: 38, borderRadius: 'var(--radius-md)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IconChevronRight size={18} /></button>
           {canManageEvents && (
-            <button className="dh-primary" onClick={() => s.openAddEvent()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', height: 38, padding: '0 16px', borderRadius: 10, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', marginLeft: 6 }}><IconPlus size={16} />{tr.calendar.addEvent}</button>
+            <button className="dh-primary" onClick={() => s.openAddEvent()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', height: 38, padding: '0 16px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', marginLeft: 6 }}><IconPlus size={16} />{tr.calendar.addEvent}</button>
           )}
         </div>
       </div>
 
       {isPhone ? (
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
           {monthList.length === 0 && <div style={{ padding: '30px 16px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.calendar.noEventsMonth}</div>}
           {monthList.map((e) => {
             const t = EVENT_TYPES[e.type] || { label: e.type, color: 'var(--text-3)', icon: '' };
@@ -99,7 +99,7 @@ export function Calendar() {
                   <div style={{ fontSize: 11, color: isToday ? accent : 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>{tr.format.wdShort[d.getDay()]}</div>
                   <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800, color: isToday ? accent : 'var(--text)' }}>{d.getDate()}</div>
                 </div>
-                <span style={{ width: 28, height: 28, borderRadius: 8, background: `color-mix(in srgb, ${t.color} 16%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ width: 28, height: 28, borderRadius: 'var(--radius-sm)', background: `color-mix(in srgb, ${t.color} 16%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={t.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={t.icon} /></svg>
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -111,7 +111,7 @@ export function Calendar() {
           })}
         </div>
       ) : (
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,minmax(64px,1fr))', borderBottom: '1px solid var(--border)', minWidth: 462 }}>
           {MON_FIRST.map((i) => tr.format.wdShort[i]).map((wd) => (
             <div key={wd} style={{ padding: '11px 12px', fontSize: 11, fontWeight: 700, color: 'var(--text-4)', letterSpacing: '.06em', textTransform: 'uppercase' }}>{wd}</div>
@@ -121,10 +121,10 @@ export function Calendar() {
           <div key={wi} style={{ display: 'grid', gridTemplateColumns: 'repeat(7,minmax(64px,1fr))', borderBottom: '1px solid var(--hairline)', minWidth: 462 }}>
             {wk.map((c) => (
               <div key={c.iso} className="dh-row" role="button" tabIndex={0} onClick={() => canManageEvents && s.openAddEvent(c.iso)} onKeyDown={(ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); if (canManageEvents) s.openAddEvent(c.iso); } }} style={{ minHeight: 112, padding: '7px 7px 9px', borderRight: '1px solid var(--hairline)', background: c.cellBg, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start', minWidth: 24, height: 24, padding: '0 6px', borderRadius: 7, fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: c.dayColor, background: c.dayBg }}>{c.day}</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start', minWidth: 24, height: 24, padding: '0 6px', borderRadius: 'var(--radius-xs)', fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: c.dayColor, background: c.dayBg }}>{c.day}</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
                   {c.chips.map((ch) => (
-                    <div key={ch.id} role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); if (canManageEvents) s.openEditEvent(ch.id); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); if (canManageEvents) s.openEditEvent(ch.id); } }} title={ch.title} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 6px', borderRadius: 6, background: ch.bg, cursor: 'pointer', minWidth: 0 }}>
+                    <div key={ch.id} role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); if (canManageEvents) s.openEditEvent(ch.id); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); if (canManageEvents) s.openEditEvent(ch.id); } }} title={ch.title} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 6px', borderRadius: 'var(--radius-xs)', background: ch.bg, cursor: 'pointer', minWidth: 0 }}>
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={ch.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d={ch.icon} /></svg>
                       <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ch.title}</span>
                     </div>
@@ -143,7 +143,7 @@ export function Calendar() {
           const t = EVENT_TYPES[key];
           return (
             <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <span style={{ width: 22, height: 22, borderRadius: 6, background: `color-mix(in srgb, ${t.color} 16%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={t.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={t.icon} /></svg></span>
+              <span style={{ width: 22, height: 22, borderRadius: 'var(--radius-xs)', background: `color-mix(in srgb, ${t.color} 16%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={t.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={t.icon} /></svg></span>
               <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-3)' }}>{t.label}</span>
             </div>
           );

@@ -111,8 +111,8 @@ export function Counter() {
   const activeCheckout = activePlayer ? checkoutSuggestion(cfg, activeRem) : null;
   const inputDisplay = s.input === '' ? '—' : s.input;
 
-  const headBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 13px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' };
-  const hintKbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.6, background: 'rgba(0,0,0,.18)', borderRadius: 4, padding: '1px 5px', marginLeft: 1 };
+  const headBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 13px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' };
+  const hintKbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.6, background: 'rgba(0,0,0,.18)', borderRadius: 'var(--radius-xs)', padding: '1px 5px', marginLeft: 1 };
 
   // colours are chosen per light/dark mode (cfg.accent / scoreColor / legColor are already the
   // effective values for the active mode), so we use them directly.
@@ -164,7 +164,7 @@ export function Counter() {
             const turnLabel = isActive ? tr.trainingScr.atThrow : '';
             const pips = Array.from({ length: prog.legsToWinSet }, (_, k) => k < (prog.legsSet[p.id] || 0));
             return (
-              <div key={p.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRadius: 16, background: isActive ? `color-mix(in srgb, ${accent} 9%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${isActive ? accent : 'var(--border-2)'}`, boxShadow: isActive ? `0 0 0 1px ${accent}, 0 0 46px color-mix(in srgb, ${accent} 12%, transparent)` : 'none', transition: 'border-color .18s var(--ease-out)', minWidth: 0, overflow: 'hidden' }}>
+              <div key={p.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRadius: 'var(--radius-lg)', background: isActive ? `color-mix(in srgb, ${accent} 9%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${isActive ? accent : 'var(--border-2)'}`, boxShadow: isActive ? `0 0 0 1px ${accent}, 0 0 46px color-mix(in srgb, ${accent} 12%, transparent)` : 'none', transition: 'border-color .18s var(--ease-out)', minWidth: 0, overflow: 'hidden' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 18px 0', flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
                     <Avatar photo={p.photo} short={p.short} avi={p.av} size={40} />
@@ -174,7 +174,7 @@ export function Counter() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                    {cfg.unit === 'sets' && <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(15 * cfg.legSize / 100), fontWeight: 800, color: legInk, background: `color-mix(in srgb, ${legInk} 14%, transparent)`, padding: '3px 9px', borderRadius: 999 }}>{prog.setsWon[p.id] || 0}</div>}
+                    {cfg.unit === 'sets' && <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(15 * cfg.legSize / 100), fontWeight: 800, color: legInk, background: `color-mix(in srgb, ${legInk} 14%, transparent)`, padding: '3px 9px', borderRadius: 'var(--radius-pill)' }}>{prog.setsWon[p.id] || 0}</div>}
                     <div style={{ display: 'flex', gap: 5 }}>
                       {pips.map((on, k) => <div key={k} style={{ width: Math.round(9 * cfg.legSize / 100), height: Math.round(9 * cfg.legSize / 100), borderRadius: '50%', background: on ? legInk : 'transparent', border: `2px solid ${on ? legInk : 'var(--border-strong)'}` }} />)}
                     </div>
@@ -187,7 +187,7 @@ export function Counter() {
                   </div>
                   {/* checkout suggestion — centred under the score */}
                   {cfg.showCheckout && co && (
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0, maxWidth: '100%', background: 'color-mix(in srgb, var(--gold) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 32%, transparent)', color: coInk, padding: '5px 12px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{co}</div>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0, maxWidth: '100%', background: 'color-mix(in srgb, var(--gold) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 32%, transparent)', color: coInk, padding: '5px 12px', borderRadius: 'var(--radius-pill)', fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{co}</div>
                   )}
                 </div>
               </div>
@@ -225,45 +225,45 @@ export function Counter() {
               <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', paddingLeft: 2, flexShrink: 0 }}>{tr.counter.quickScore}</div>
               <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gridAutoRows: '1fr', gap: 8, minHeight: 0 }}>
                 {quickChips.map((q, i) => (
-                  <button key={i} onClick={(e) => { e.currentTarget.blur(); s.quick(q); }} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 14, fontFamily: 'var(--font-num)', fontSize: 'clamp(15px,2.8vh,23px)', fontWeight: 800, cursor: 'pointer', minHeight: 0 }}>{q}</button>
+                  <button key={i} onClick={(e) => { e.currentTarget.blur(); s.quick(q); }} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 'var(--radius-lg)', fontFamily: 'var(--font-num)', fontSize: 'clamp(15px,2.8vh,23px)', fontWeight: 800, cursor: 'pointer', minHeight: 0 }}>{q}</button>
                 ))}
               </div>
             </div>
           )}
           <div style={{ width: 340, display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0, minHeight: 0 }}>
             <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', paddingLeft: 2, flexShrink: 0 }}>{tr.counter.inputLabel}</div>
-            <div style={{ flex: '2 1 0', minHeight: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 14, padding: 'clamp(4px,0.9vh,10px) 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ flex: '2 1 0', minHeight: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 'clamp(4px,0.9vh,10px) 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 13, color: 'var(--text-3)', fontWeight: 600 }}>{activePlayer?.name}</span>
               <span style={{ fontFamily: 'var(--font-num)', fontSize: 'clamp(18px,2.8vh,30px)', fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 70, textAlign: 'right' }}>{inputDisplay}</span>
             </div>
             <div style={{ flex: '14 1 0', minHeight: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gridAutoRows: '1fr', gap: 8, minHeight: 0 }}>
                 {keypad.map((k) => (
-                  <button key={k} onClick={() => s.pressDigit(k)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-num)', fontSize: 'clamp(20px,3vh,26px)', fontWeight: 700, cursor: 'pointer', minHeight: 0 }}>{k}</button>
+                  <button key={k} onClick={() => s.pressDigit(k)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-num)', fontSize: 'clamp(20px,3vh,26px)', fontWeight: 700, cursor: 'pointer', minHeight: 0 }}>{k}</button>
                 ))}
-                <button onClick={() => s.pressClear()} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', minHeight: 0 }}>C</button>
-                <button onClick={() => s.pressDigit('0')} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-num)', fontSize: 'clamp(20px,3vh,26px)', fontWeight: 700, cursor: 'pointer', minHeight: 0 }}>0</button>
-                <button onClick={() => s.pressDel()} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', minHeight: 0 }}>
+                <button onClick={() => s.pressClear()} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', minHeight: 0 }}>C</button>
+                <button onClick={() => s.pressDigit('0')} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-num)', fontSize: 'clamp(20px,3vh,26px)', fontWeight: 700, cursor: 'pointer', minHeight: 0 }}>0</button>
+                <button onClick={() => s.pressDel()} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', minHeight: 0 }}>
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z" /><path d="M18 9l-6 6M12 9l6 6" /></svg>
                 </button>
               </div>
-              <button onClick={() => s.pressEnter()} style={{ background: accent, border: 'none', color: accFg, borderRadius: 13, padding: 'clamp(11px,1.9vh,15px) 0', fontSize: 'clamp(15px,2.1vh,18px)', fontWeight: 800, letterSpacing: '.02em', cursor: 'pointer', boxShadow: `0 6px 18px color-mix(in srgb, ${accent} 22%, transparent)`, flexShrink: 0 }}>{tr.counter.enterBtn}</button>
+              <button onClick={() => s.pressEnter()} style={{ background: accent, border: 'none', color: accFg, borderRadius: 'var(--radius-md)', padding: 'clamp(11px,1.9vh,15px) 0', fontSize: 'clamp(15px,2.1vh,18px)', fontWeight: 800, letterSpacing: '.02em', cursor: 'pointer', boxShadow: `0 6px 18px color-mix(in srgb, ${accent} 22%, transparent)`, flexShrink: 0 }}>{tr.counter.enterBtn}</button>
             </div>
           </div>
         </div>
       ) : (
-        <div style={{ flexShrink: 0, margin: '0 12px 12px', display: 'flex', alignItems: 'center', gap: 18, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 14, padding: '14px 20px' }}>
+        <div style={{ flexShrink: 0, margin: '0 12px 12px', display: 'flex', alignItems: 'center', gap: 18, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: '14px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
             <span style={{ width: 9, height: 9, borderRadius: '50%', background: accent, boxShadow: `0 0 10px ${accent}` }} />
             <span style={{ fontSize: 15, fontWeight: 700 }}>{activePlayer?.name}</span>
             <span style={{ fontSize: 13, color: 'var(--text-4)' }}>{tr.counter.throwsRest(activeRem)}</span>
           </div>
-          {activeCheckout && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'color-mix(in srgb, var(--gold) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 32%, transparent)', color: coInk, padding: '5px 12px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)' }}>{activeCheckout}</div>}
+          {activeCheckout && <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'color-mix(in srgb, var(--gold) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 32%, transparent)', color: coInk, padding: '5px 12px', borderRadius: 'var(--radius-pill)', fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)' }}>{activeCheckout}</div>}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
             <span style={{ fontFamily: 'var(--font-num)', fontSize: 38, fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 78, textAlign: 'right' }}>{inputDisplay}</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 10, whiteSpace: 'nowrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', whiteSpace: 'nowrap' }}>
               <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>{tr.counter.typeScoreThen}</span>
-              <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: accentInk, background: `color-mix(in srgb, ${accent} 12%, transparent)`, padding: '2px 8px', borderRadius: 5 }}>↵ Enter</span>
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: accentInk, background: `color-mix(in srgb, ${accent} 12%, transparent)`, padding: '2px 8px', borderRadius: 'var(--radius-xs)' }}>↵ Enter</span>
             </div>
           </div>
         </div>
@@ -282,15 +282,15 @@ export function Counter() {
         <Overlay z={45}>
           {s.hint.auto ? (
             // Selbst-ausblendende Feier (Short Leg): kein Knopf, ganze Fläche zum Wegtippen.
-            <div onClick={() => s.closeHint()} style={{ cursor: 'pointer', background: 'var(--surface)', border: `2px solid ${accent}`, borderRadius: 22, padding: '30px 48px', textAlign: 'center', boxShadow: `0 24px 60px rgba(0,0,0,.5), 0 0 0 6px color-mix(in srgb, ${accent} 14%, transparent)` }}>
+            <div onClick={() => s.closeHint()} style={{ cursor: 'pointer', background: 'var(--surface)', border: `2px solid ${accent}`, borderRadius: 'var(--radius-xl)', padding: '30px 48px', textAlign: 'center', boxShadow: `0 24px 60px rgba(0,0,0,.5), 0 0 0 6px color-mix(in srgb, ${accent} 14%, transparent)` }}>
               <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '.01em', color: accent, marginBottom: 6, lineHeight: 1.1 }}>{s.hint.title}</div>
               <div style={{ fontSize: 22, fontWeight: 800 }}>{s.hint.body}</div>
             </div>
           ) : (
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 28, maxWidth: 420, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 28, maxWidth: 420, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
               <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{s.hint.title}</div>
               <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.55, marginBottom: 24 }}>{s.hint.body}</div>
-              <button onClick={() => s.closeHint()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 32px', borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.gotIt}</button>
+              <button onClick={() => s.closeHint()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 32px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.gotIt}</button>
             </div>
           )}
         </Overlay>
@@ -305,7 +305,7 @@ export function Counter() {
   );
 }
 
-const phoneIconBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, cursor: 'pointer' };
+const phoneIconBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 'var(--radius-md)', cursor: 'pointer' };
 
 // „Spiel abbrechen?" – vollständig per Tastatur bedienbar: ◄ ► (bzw. ▲ ▼ / Tab) wechseln die Auswahl,
 // Enter/Leertaste bestätigt die markierte Schaltfläche, Esc = weiterspielen. Der Fokus steht anfangs sicher
@@ -327,12 +327,12 @@ function AbortConfirm() {
   const ring = (on: boolean, color: string): React.CSSProperties => (on ? { boxShadow: `0 0 0 3px color-mix(in srgb, ${color} 55%, transparent)` } : {});
   return (
     <Overlay z={40}>
-      <div onKeyDown={onKey} style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 28, maxWidth: 400, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+      <div onKeyDown={onKey} style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 28, maxWidth: 400, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
         <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{tr.counter.abortTitle}</div>
         <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>{tr.counter.abortBody}</div>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-          <button ref={keepRef} onClick={() => s.cancelAbort()} onMouseEnter={() => setSel(0)} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 0, 'var(--text)') }}>{tr.counter.keepPlaying}</button>
-          <button ref={abortRef} onClick={() => s.confirmAbort()} onMouseEnter={() => setSel(1)} style={{ flex: 1, background: 'var(--danger)', border: 'none', color: '#fff', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 1, 'var(--danger)') }}>{tr.counter.abort}</button>
+          <button ref={keepRef} onClick={() => s.cancelAbort()} onMouseEnter={() => setSel(0)} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 0, 'var(--text)') }}>{tr.counter.keepPlaying}</button>
+          <button ref={abortRef} onClick={() => s.confirmAbort()} onMouseEnter={() => setSel(1)} style={{ flex: 1, background: 'var(--danger)', border: 'none', color: '#fff', padding: 13, borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 1, 'var(--danger)') }}>{tr.counter.abort}</button>
         </div>
         {/* Tastatur-Hinweis (nur Desktop, wo eine Tastatur da ist) – analog „Wer beginnt?": Badges + kurze Labels. */}
         {cfg.device === 'desktop' && (
@@ -349,7 +349,7 @@ function AbortConfirm() {
 
 // Kleine Tasten-Badge (Stil wie im „Wer beginnt?"-Dialog).
 function Kbd({ children }: { children: React.ReactNode }) {
-  return <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px', lineHeight: 1.4 }}>{children}</kbd>;
+  return <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xs)', padding: '2px 7px', lineHeight: 1.4 }}>{children}</kbd>;
 }
 
 // Integrierter, beschriftungsloser Klapp-Pfeil (rechtsbündig) als schmale Kopfleiste einer auf-/zuklappbaren
@@ -385,21 +385,21 @@ function RestEntryBox() {
   const submit = () => { if (valid) s.submitRestEntry(val); };
   return (
     <Overlay z={47}>
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 26, width: 360, maxWidth: '92vw', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 26, width: 360, maxWidth: '92vw', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
         <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 4 }}>{tr.counter.restTitle}</div>
         <div style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 18 }}>{cp?.name}{tr.counter.restCurrent1}<b style={{ color: 'var(--text)', fontFamily: 'var(--font-num)' }}>{curRem}</b>{tr.counter.restCurrent2}</div>
         <input
           autoFocus type="text" inputMode="numeric" value={val} placeholder={tr.counter.restPlaceholder}
           onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); else if (e.key === 'Escape') s.closeRestEntry(); }}
-          style={{ width: '100%', background: 'var(--btn)', border: `1px solid ${val !== '' && !valid ? 'var(--danger)' : 'var(--border-2)'}`, borderRadius: 12, padding: '12px 14px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 26, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
+          style={{ width: '100%', background: 'var(--btn)', border: `1px solid ${val !== '' && !valid ? 'var(--danger)' : 'var(--border-2)'}`, borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 26, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }}
         />
         <div style={{ fontSize: 13, height: 18, marginTop: 10, textAlign: 'center', color: val !== '' && !valid ? 'var(--danger)' : 'var(--text-4)' }}>
           {val === '' ? tr.counter.restHintEmpty : (scored != null ? tr.counter.restScored(scored) : tr.counter.restInvalid)}
         </div>
         <div style={{ display: 'flex', gap: 12, marginTop: 18 }}>
-          <button onClick={() => s.closeRestEntry()} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.cancel}</button>
-          <button onClick={submit} disabled={!valid} style={{ flex: 1, background: valid ? accent : 'var(--surface-3)', border: 'none', color: valid ? accFg : 'var(--text-4)', padding: 13, borderRadius: 11, fontSize: 14, fontWeight: 800, cursor: valid ? 'pointer' : 'default', fontFamily: 'inherit' }}>{tr.trainingScr.enter}</button>
+          <button onClick={() => s.closeRestEntry()} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.cancel}</button>
+          <button onClick={submit} disabled={!valid} style={{ flex: 1, background: valid ? accent : 'var(--surface-3)', border: 'none', color: valid ? accFg : 'var(--text-4)', padding: 13, borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: valid ? 'pointer' : 'default', fontFamily: 'inherit' }}>{tr.trainingScr.enter}</button>
         </div>
       </div>
     </Overlay>
@@ -426,7 +426,7 @@ function FKeyLegend() {
   return (
     <div className="dh-tactile" style={{ flexShrink: 0, display: 'flex', flexWrap: 'wrap', gap: 6, padding: '0 12px 10px' }}>
       {items.map((it) => (
-        <button key={it.k} onClick={(e) => { e.currentTarget.blur(); it.onClick(); }} disabled={!it.enabled} title={`${it.k} · ${it.label}`} style={{ flex: '1 1 60px', minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 8, padding: '5px 4px', cursor: it.enabled ? 'pointer' : 'default', opacity: it.enabled ? 1 : 0.4, fontFamily: 'inherit' }}>
+        <button key={it.k} onClick={(e) => { e.currentTarget.blur(); it.onClick(); }} disabled={!it.enabled} title={`${it.k} · ${it.label}`} style={{ flex: '1 1 60px', minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)', padding: '5px 4px', cursor: it.enabled ? 'pointer' : 'default', opacity: it.enabled ? 1 : 0.4, fontFamily: 'inherit' }}>
           <span style={{ fontSize: 11, fontWeight: 800, color: accentInk, letterSpacing: '.04em' }}>{it.k}</span>
           <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{it.label}</span>
         </button>
@@ -472,7 +472,7 @@ function ScoreSheet({ open, onToggle }: { open: boolean; onToggle: () => void })
     if (v >= 180) wrap = { background: 'var(--gold)', color: 'var(--gold-ink)', border: '1.5px solid var(--gold)' };
     else if (v >= 140) wrap = { border: `1.6px solid ${accent}`, color: accent };
     else if (v >= 100) wrap = { border: '1.5px solid var(--border-strong)', color: 'var(--text)' };
-    if (wrap) return <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 34, padding: '2px 9px', borderRadius: 999, fontWeight: 800, ...wrap }}>{v}</span>;
+    if (wrap) return <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 34, padding: '2px 9px', borderRadius: 'var(--radius-pill)', fontWeight: 800, ...wrap }}>{v}</span>;
     return <span>{v}</span>;
   };
 
@@ -487,7 +487,7 @@ function ScoreSheet({ open, onToggle }: { open: boolean; onToggle: () => void })
   });
 
   return (
-    <div style={{ flex: open ? 1 : '0 0 auto', minWidth: 0, display: 'flex', flexDirection: 'column', border: '1px solid var(--border-2)', borderRadius: 16, background: 'var(--surface-2)', overflow: 'hidden' }}>
+    <div style={{ flex: open ? 1 : '0 0 auto', minWidth: 0, display: 'flex', flexDirection: 'column', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', background: 'var(--surface-2)', overflow: 'hidden' }}>
       {/* integrierter Klapp-Pfeil (ohne Beschriftung), rechtsbündig in der Ecke */}
       <CollapseArrow open={open} onToggle={onToggle} />
       {open && (
@@ -534,7 +534,7 @@ function SheetStats() {
   const cfg = s.settings;
   const statsOpen = cfg.statsOpen !== false;
   return (
-    <div style={{ flexShrink: 0, borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-2)', background: 'var(--surface-2)' }}>
+    <div style={{ flexShrink: 0, borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border-2)', background: 'var(--surface-2)' }}>
       {/* integrierter Klapp-Pfeil (ohne Beschriftung), rechtsbündig in der Ecke */}
       <CollapseArrow open={statsOpen} onToggle={() => s.setSetting('statsOpen', !statsOpen)} />
       {statsOpen && (
@@ -575,7 +575,7 @@ function HistoryBox({ open, onToggle }: { open: boolean; onToggle: () => void })
   }, [s.allThrows.length]);
 
   return (
-    <div style={{ flex: open ? 1 : '0 0 auto', display: 'flex', flexDirection: 'column', borderRadius: 16, background: 'var(--surface-2)', border: '1px solid var(--border-2)', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
+    <div style={{ flex: open ? 1 : '0 0 auto', display: 'flex', flexDirection: 'column', borderRadius: 'var(--radius-lg)', background: 'var(--surface-2)', border: '1px solid var(--border-2)', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
       {/* integrierter Klapp-Pfeil (ohne Beschriftung), rechtsbündig in der Ecke */}
       <CollapseArrow open={open} onToggle={onToggle} />
       {open && (
@@ -599,7 +599,7 @@ function HistoryBox({ open, onToggle }: { open: boolean; onToggle: () => void })
                   </div>
                   <div className="dh-history-scroll" style={{ flex: 1, overflowY: 'auto', minHeight: 0, padding: '4px 8px 8px' }}>
                     {rows.map((r, k) => (
-                      <div key={k} style={{ display: 'grid', gridTemplateColumns: '34px 1fr 1fr', gap: 4, padding: '6px 10px', borderRadius: 6, background: r.checkout ? `color-mix(in srgb, ${accent} 12%, transparent)` : 'transparent' }}>
+                      <div key={k} style={{ display: 'grid', gridTemplateColumns: '34px 1fr 1fr', gap: 4, padding: '6px 10px', borderRadius: 'var(--radius-xs)', background: r.checkout ? `color-mix(in srgb, ${accent} 12%, transparent)` : 'transparent' }}>
                         <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-5)' }}>{r.round}</span>
                         <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, textAlign: 'right', color: r.bust ? 'var(--danger)' : 'var(--text)' }}>{r.scored}</span>
                         <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, textAlign: 'right', color: r.checkout ? accent : 'var(--text-3)' }}>{r.rest}</span>
@@ -640,31 +640,31 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
   const matchInfo = cfg.unit === 'sets' ? tr.counter.matchInfoPhone(cfg.bestOfSets) : `Leg ${leg} · BO${cfg.bestOf}`;
   const others = s.gamePlayers.filter((_, i) => i !== curIdx);
   // fill = keys grow to fill available height (landscape, where the deck owns a full column)
-  const keyBtn = (fill: boolean): React.CSSProperties => ({ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-num)', fontSize: 26, fontWeight: 700, cursor: 'pointer', minHeight: fill ? 0 : 54 });
+  const keyBtn = (fill: boolean): React.CSSProperties => ({ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-num)', fontSize: 26, fontWeight: 700, cursor: 'pointer', minHeight: fill ? 0 : 54 });
 
   const activeCard = (
-    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', borderRadius: 18, background: `color-mix(in srgb, ${accent} 9%, var(--surface-2))`, border: `1px solid ${accent}`, padding: '14px 16px', overflow: 'hidden' }}>
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', borderRadius: 'var(--radius-lg)', background: `color-mix(in srgb, ${accent} 9%, var(--surface-2))`, border: `1px solid ${accent}`, padding: '14px 16px', overflow: 'hidden' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
           {active
             ? <Avatar photo={active.photo} short={active.short} avi={active.av} size={34} />
-            : <div style={{ width: 34, height: 34, borderRadius: 9, background: 'var(--surface-3)', flexShrink: 0 }} />}
+            : <div style={{ width: 34, height: 34, borderRadius: 'var(--radius-sm)', background: 'var(--surface-3)', flexShrink: 0 }} />}
           <div style={{ fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{active?.name}</div>
         </div>
-        {cfg.unit === 'sets' && <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: accentInk, background: `color-mix(in srgb, ${accent} 14%, transparent)`, padding: '3px 9px', borderRadius: 999, flexShrink: 0 }}>{(active && prog.setsWon[active.id]) || 0}</div>}
+        {cfg.unit === 'sets' && <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: accentInk, background: `color-mix(in srgb, ${accent} 14%, transparent)`, padding: '3px 9px', borderRadius: 'var(--radius-pill)', flexShrink: 0 }}>{(active && prog.setsWon[active.id]) || 0}</div>}
         <div style={{ fontSize: 10, color: accentInk, fontWeight: 800, letterSpacing: '.08em', flexShrink: 0 }}>{tr.trainingScr.atThrow}</div>
       </div>
       <div style={{ flex: 1, width: '100%', minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', containerType: 'size' }}>
         <div style={{ fontFamily: 'var(--font-score)', fontWeight: 800, fontSize: `min(${Math.round(150 * cfg.scoreScale / 100)}cqh, ${Math.round(46 * cfg.scoreScale / 100)}cqw)`, lineHeight: 1, letterSpacing: '-.03em', color: scoreInk, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', ...scoreOutline }}>{rem}</div>
       </div>
       {cfg.showCheckout && co && (
-        <div style={{ alignSelf: 'center', display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0, background: 'color-mix(in srgb, var(--gold) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 32%, transparent)', color: coInk, padding: '5px 14px', borderRadius: 999, fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)' }}>{co}</div>
+        <div style={{ alignSelf: 'center', display: 'inline-flex', alignItems: 'center', gap: 7, flexShrink: 0, background: 'color-mix(in srgb, var(--gold) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 32%, transparent)', color: coInk, padding: '5px 14px', borderRadius: 'var(--radius-pill)', fontSize: 13, fontWeight: 700, fontFamily: 'var(--font-num)' }}>{co}</div>
       )}
     </div>
   );
 
   const opponentRow = (
-    <button onClick={() => setShowDetail(true)} style={{ flexShrink: 0, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 12, padding: '10px 14px', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--text)' }}>
+    <button onClick={() => setShowDetail(true)} style={{ flexShrink: 0, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '10px 14px', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--text)' }}>
       <span style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, fontSize: 13, color: 'var(--text-3)', overflow: 'hidden' }}>
         {others.map((p) => (
           <span key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
@@ -684,7 +684,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
 
   const deck = (fill: boolean) => (
     <div className="dh-tactile" style={{ display: 'flex', flexDirection: 'column', gap: fill ? 6 : 8, minHeight: 0, ...(fill ? { flex: 1 } : { flexShrink: 0 }) }}>
-      <div style={{ flexShrink: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 12, padding: fill ? '6px 16px' : '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ flexShrink: 0, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: fill ? '6px 16px' : '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>{tr.counter.enterThrow}</span>
         <span style={{ fontFamily: 'var(--font-num)', fontSize: fill ? 24 : 28, fontWeight: 800, color: accentInk, letterSpacing: '-.02em', minWidth: 60, textAlign: 'right' }}>{inputDisplay}</span>
       </div>
@@ -701,11 +701,11 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
       {cfg.showQuick && (
         <div style={{ flexShrink: 0, display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 7 }}>
           {[180, 140, 100].map((q) => (
-            <button key={q} onClick={(e) => { e.currentTarget.blur(); s.quick(q); }} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 10, padding: fill ? '8px 0' : '11px 0', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>{q}</button>
+            <button key={q} onClick={(e) => { e.currentTarget.blur(); s.quick(q); }} style={{ background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 'var(--radius-md)', padding: fill ? '8px 0' : '11px 0', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, cursor: 'pointer' }}>{q}</button>
           ))}
         </div>
       )}
-      <button onClick={() => s.pressEnter()} style={{ flexShrink: 0, background: accent, border: 'none', color: accFg, borderRadius: 13, padding: fill ? '11px 0' : '15px 0', fontSize: 16, fontWeight: 800, letterSpacing: '.02em', cursor: 'pointer' }}>{tr.counter.enterBtn}</button>
+      <button onClick={() => s.pressEnter()} style={{ flexShrink: 0, background: accent, border: 'none', color: accFg, borderRadius: 'var(--radius-md)', padding: fill ? '11px 0' : '15px 0', fontSize: 16, fontWeight: 800, letterSpacing: '.02em', cursor: 'pointer' }}>{tr.counter.enterBtn}</button>
     </div>
   );
 
@@ -748,7 +748,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
       {/* detail overlay (stats & history) */}
       {showDetail && (
         <Overlay z={35}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: 18, width: '92vw', maxWidth: 460, maxHeight: '84vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 18, width: '92vw', maxWidth: 460, maxHeight: '84vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
               <div style={{ fontSize: 16, fontWeight: 800 }}>{tr.counter.detailTitle}</div>
               <button onClick={() => setShowDetail(false)} style={phoneIconBtn} aria-label={tr.trainingScr.close}><IconX size={18} sw={2} /></button>
@@ -757,7 +757,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
               {s.gamePlayers.map((p) => {
                 const rows = scoreList(slice, p.id);
                 return (
-                  <div key={p.id} style={{ border: '1px solid var(--border-2)', borderRadius: 12, overflow: 'hidden' }}>
+                  <div key={p.id} style={{ border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--surface-2)' }}>
                       <span style={{ fontSize: 14, fontWeight: 700 }}>{p.name}</span>
                       <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: accentInk }}>{sc[p.id]}</span>
@@ -773,7 +773,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
                     <div style={{ maxHeight: 150, overflowY: 'auto', padding: '4px 8px 8px' }}>
                       {rows.length === 0 && <div style={{ fontSize: 12, color: 'var(--text-4)', padding: '8px 6px' }}>{tr.counter.noThrows}</div>}
                       {rows.map((r, i) => (
-                        <div key={i} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 1fr', gap: 4, padding: '5px 8px', borderRadius: 6, background: r.checkout ? `color-mix(in srgb, ${accent} 12%, transparent)` : 'transparent' }}>
+                        <div key={i} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 1fr', gap: 4, padding: '5px 8px', borderRadius: 'var(--radius-xs)', background: r.checkout ? `color-mix(in srgb, ${accent} 12%, transparent)` : 'transparent' }}>
                           <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-5)' }}>{r.round}</span>
                           <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, textAlign: 'right', color: r.bust ? 'var(--danger)' : 'var(--text)' }}>{r.scored}</span>
                           <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, textAlign: 'right', color: r.checkout ? accent : 'var(--text-3)' }}>{r.rest}</span>
@@ -800,7 +800,7 @@ function WhoStarts() {
   const tr = useT();
   return (
     <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,10,12,.86)', backdropFilter: 'blur(7px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 48 }}>
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 20, padding: '32px 34px', width: 520, maxWidth: '92vw', boxShadow: '0 30px 70px rgba(0,0,0,.55)' }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xl)', padding: '32px 34px', width: 520, maxWidth: '92vw', boxShadow: '0 30px 70px rgba(0,0,0,.55)' }}>
         {!s.bullMode ? (
           <>
             <div style={{ textAlign: 'center', marginBottom: 22 }}>
@@ -809,17 +809,17 @@ function WhoStarts() {
             </div>
             <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
               {s.gamePlayers.map((p, i) => (
-                <button key={p.id} className="dh-hover-border" onClick={() => s.chooseStarter(i)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, background: 'var(--btn)', color: 'var(--text)', border: '2px solid var(--border-2)', borderRadius: 15, padding: '20px 12px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                <button key={p.id} className="dh-hover-border" onClick={() => s.chooseStarter(i)} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, background: 'var(--btn)', color: 'var(--text)', border: '2px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: '20px 12px', cursor: 'pointer', fontFamily: 'inherit' }}>
                   <Avatar photo={p.photo} short={p.short} avi={p.av} size={54} circle />
                   <div style={{ fontSize: 15, fontWeight: 700, textAlign: 'center', lineHeight: 1.25 }}>{p.name}</div>
-                  <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 7, padding: '3px 10px' }}>{i + 1}</kbd>
+                  <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xs)', padding: '3px 10px' }}>{i + 1}</kbd>
                 </button>
               ))}
             </div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <button className="dh-hover-border" onClick={() => s.openBullOff()} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 13, padding: 14, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
+              <button className="dh-hover-border" onClick={() => s.openBullOff()} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: 14, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
                 <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#E0594B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#19A463' }} /></span>
-                {tr.counter.bullOff} <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 6, padding: '2px 7px' }}>B</kbd>
+                {tr.counter.bullOff} <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xs)', padding: '2px 7px' }}>B</kbd>
               </button>
             </div>
           </>
@@ -830,10 +830,10 @@ function WhoStarts() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {s.gamePlayers.map((p, i) => {
                 return (
-                  <button key={p.id} className="dh-hover-border" onClick={() => s.chooseStarter(i)} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--btn)', color: 'var(--text)', border: '1px solid var(--border-2)', borderRadius: 13, padding: '14px 18px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                  <button key={p.id} className="dh-hover-border" onClick={() => s.chooseStarter(i)} style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--btn)', color: 'var(--text)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '14px 18px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
                     <Avatar photo={p.photo} short={p.short} avi={p.av} size={42} circle />
                     <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 16, fontWeight: 700 }}>{p.name}</div><div style={{ fontSize: 12, color: 'var(--text-4)' }}>{tr.counter.closerBull}</div></div>
-                    <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 7, padding: '4px 9px' }}>{i + 1}</kbd>
+                    <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 800, color: 'var(--text-2)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xs)', padding: '4px 9px' }}>{i + 1}</kbd>
                   </button>
                 );
               })}
@@ -867,14 +867,14 @@ function FinishPrompt() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <Overlay z={55}>
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 18, padding: '28px 32px', textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: '28px 32px', textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
         <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 18 }}>{tr.counter.finishPromptTitle}</div>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
           {[1, 2, 3].map((d) => {
             const off = d < min;
             return (
               <button key={d} disabled={off} onClick={() => s.resolveFinish(d)}
-                style={{ width: 74, height: 74, borderRadius: 16, background: 'var(--surface-2)', border: `2px solid ${off ? 'var(--border-2)' : accent}`, color: off ? 'var(--text-5)' : 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, cursor: off ? 'not-allowed' : 'pointer', opacity: off ? 0.4 : 1 }}>{d}</button>
+                style={{ width: 74, height: 74, borderRadius: 'var(--radius-lg)', background: 'var(--surface-2)', border: `2px solid ${off ? 'var(--border-2)' : accent}`, color: off ? 'var(--text-5)' : 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, cursor: off ? 'not-allowed' : 'pointer', opacity: off ? 0.4 : 1 }}>{d}</button>
             );
           })}
         </div>
@@ -932,7 +932,7 @@ function WinOverlay() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const kbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.7, background: 'rgba(0,0,0,.22)', borderRadius: 5, padding: '1px 6px', marginLeft: 7 };
+  const kbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.7, background: 'rgba(0,0,0,.22)', borderRadius: 'var(--radius-xs)', padding: '1px 6px', marginLeft: 7 };
   return (
     <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,10,12,.86)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 30 }}>
       <div style={{ textAlign: 'center', maxWidth: 440, padding: '0 24px' }}>
@@ -949,7 +949,7 @@ function WinOverlay() {
           <button
             onClick={() => s.setSetting('matchStatsOpen', !statsOpen)}
             title={tr.counter.matchStats}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.15)', color: 'rgba(255,255,255,.75)', padding: '8px 16px', borderRadius: 10, fontSize: 12, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', marginBottom: statsOpen ? 14 : 26 }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.15)', color: 'rgba(255,255,255,.75)', padding: '8px 16px', borderRadius: 'var(--radius-md)', fontSize: 12, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', marginBottom: statsOpen ? 14 : 26 }}
           >
             {tr.counter.matchStats}
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ transform: statsOpen ? 'rotate(180deg)' : 'none', transition: 'transform .18s var(--ease-out)' }}><path d="M6 9l6 6 6-6" /></svg>
@@ -957,7 +957,7 @@ function WinOverlay() {
           </button>
         </div>
         {statsOpen && (
-          <div style={{ margin: '0 auto 26px', maxWidth: 360, border: '1px solid rgba(255,255,255,.12)', borderRadius: 14, background: 'rgba(255,255,255,.04)', padding: '12px 14px' }}>
+          <div style={{ margin: '0 auto 26px', maxWidth: 360, border: '1px solid rgba(255,255,255,.12)', borderRadius: 'var(--radius-lg)', background: 'rgba(255,255,255,.04)', padding: '12px 14px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: `1.15fr repeat(${players.length}, 1fr)`, columnGap: 10, rowGap: 7, alignItems: 'center' }}>
               <div />
               {players.map((p) => <div key={p.id} style={{ fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,.7)', textAlign: 'right', letterSpacing: '.04em' }}>{p.short}</div>)}
@@ -980,12 +980,12 @@ function WinOverlay() {
         )}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
           {s.gameTournament ? (
-            <button onClick={() => s.leaveTournamentMatch()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 30px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.tournament.backToTournament}<span style={{ ...kbd, background: 'rgba(0,0,0,.28)' }}>↵</span></button>
+            <button onClick={() => s.leaveTournamentMatch()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 30px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.tournament.backToTournament}<span style={{ ...kbd, background: 'rgba(0,0,0,.28)' }}>↵</span></button>
           ) : (
             <>
-              <button onClick={() => s.endGameTo('dashboard')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.toDashboard}<span style={kbd}>1</span></button>
-              <button onClick={() => s.endGameTo('setup')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.newGame}<span style={kbd}>2</span></button>
-              <button onClick={() => s.rematch()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 28px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.rematch}<span style={{ ...kbd, background: 'rgba(0,0,0,.28)' }}>3</span></button>
+              <button onClick={() => s.endGameTo('dashboard')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.toDashboard}<span style={kbd}>1</span></button>
+              <button onClick={() => s.endGameTo('setup')} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.newGame}<span style={kbd}>2</span></button>
+              <button onClick={() => s.rematch()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 28px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.rematch}<span style={{ ...kbd, background: 'rgba(0,0,0,.28)' }}>3</span></button>
             </>
           )}
         </div>

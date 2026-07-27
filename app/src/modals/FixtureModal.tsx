@@ -14,12 +14,12 @@ export function FixtureModal() {
   const chip = (id: string, name: string, selected: boolean, disabled: boolean, onClick: () => void) => (
     <button key={id} onClick={disabled ? undefined : onClick} disabled={disabled} style={{
       background: selected ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1.5px solid ${selected ? 'var(--accent)' : 'var(--border-2)'}`,
-      color: disabled ? 'var(--text-5)' : selected ? 'var(--success)' : 'var(--text-2)', padding: '8px 13px', borderRadius: 999,
+      color: disabled ? 'var(--text-5)' : selected ? 'var(--success)' : 'var(--text-2)', padding: '8px 13px', borderRadius: 'var(--radius-pill)',
       fontSize: 13, fontWeight: 700, cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit', opacity: disabled ? 0.5 : 1,
     }}>{name}</button>
   );
 
-  const numInput: React.CSSProperties = { width: 80, boxSizing: 'border-box', textAlign: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 12, padding: 14, color: 'var(--text)', fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-num)' };
+  const numInput: React.CSSProperties = { width: 80, boxSizing: 'border-box', textAlign: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: 14, color: 'var(--text)', fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-num)' };
 
   return (
     <Modal onClose={() => s.closeFixtureModal()} width={500} z={63} style={{ maxHeight: '88vh', overflow: 'auto' }}>
@@ -38,23 +38,23 @@ export function FixtureModal() {
       <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
         <div style={{ flex: 1 }}>
           <FieldLabel>{tr.modals.date}</FieldLabel>
-          <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setFixtureField('date', e.target.value)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+          <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setFixtureField('date', e.target.value)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
         </div>
         <div style={{ width: 130 }}>
           <FieldLabel>{tr.modals.time}</FieldLabel>
-          <input className="dh-input" type="time" value={m.time} onChange={(e) => s.setFixtureField('time', e.target.value)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+          <input className="dh-input" type="time" value={m.time} onChange={(e) => s.setFixtureField('time', e.target.value)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
         </div>
       </div>
 
       <FieldLabel>{tr.modals.place}</FieldLabel>
-      <input className="dh-input" value={m.loc} onChange={(e) => s.setFixtureField('loc', e.target.value)} placeholder={tr.modals.placePh2} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 11, padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 18 }} />
+      <input className="dh-input" value={m.loc} onChange={(e) => s.setFixtureField('loc', e.target.value)} placeholder={tr.modals.placePh2} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 18 }} />
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 16px', background: 'var(--btn)', borderRadius: 12, marginBottom: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 16px', background: 'var(--btn)', borderRadius: 'var(--radius-md)', marginBottom: 16 }}>
         <div>
           <div style={{ fontSize: 14, fontWeight: 600 }}>{m.played ? tr.modals.resultEntered : tr.modals.notPlayedYet}</div>
           <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>{tr.modals.resultManualHint}</div>
         </div>
-        <button onClick={() => s.setFixtureField('played', !m.played)} style={{ position: 'relative', width: 44, height: 24, borderRadius: 999, background: m.played ? 'var(--accent)' : 'var(--border-2)', border: 'none', cursor: 'pointer', flexShrink: 0, padding: 0 }}>
+        <button onClick={() => s.setFixtureField('played', !m.played)} style={{ position: 'relative', width: 44, height: 24, borderRadius: 'var(--radius-pill)', background: m.played ? 'var(--accent)' : 'var(--border-2)', border: 'none', cursor: 'pointer', flexShrink: 0, padding: 0 }}>
           <span style={{ position: 'absolute', top: 2, left: 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'transform .15s', transform: m.played ? 'translateX(20px)' : 'translateX(0)' }} />
         </button>
       </div>
