@@ -373,6 +373,9 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const set = s.setSetting;
   const p = perm(cfg, s.accounts, s.session);
   const accent = cfg.accent;
+  // 'classic' = frei konfigurierbar (Einzeloptionen sichtbar). Ein Gestalt-Theme fixiert Modus/Akzent/
+  // Hintergrund/Font → diese Zeilen werden ausgeblendet (das Theme bestimmt den Look).
+  const isClassic = (cfg.skin ?? 'classic') === 'classic';
   const tr = useT();
   const lang = useLang();
   const isVerein = cfg.appMode === 'verein';
@@ -712,23 +715,39 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
           })}
         </div>
       </Row>
-      <Row label={tr.settings.displayMode} sub={tr.settings.displayModeSub}>
-        {ed('mode', seg('mode', [{ label: tr.settings.dark, val: 'dark' }, { label: tr.settings.light, val: 'light' }]))}
+      {/* Gestalt-Theme: fertiger Komplett-Look oder „Klassisch" (alles selbst einstellbar). Gerätelokal. */}
+      <Row label={tr.settings.skinRow} sub={tr.settings.skinRowSub}>
+        {ed('skin', seg('skin', [
+          { label: tr.settings.skinClassic, val: 'classic' },
+          { label: tr.settings.skinTheme01, val: 'theme01' },
+          { label: tr.settings.skinTheme02, val: 'theme02' },
+          { label: tr.settings.skinTheme03, val: 'theme03' },
+          { label: tr.settings.skinTheme07, val: 'theme07' },
+        ], '10px 14px'))}
       </Row>
+      {isClassic && (
+        <Row label={tr.settings.displayMode} sub={tr.settings.displayModeSub}>
+          {ed('mode', seg('mode', [{ label: tr.settings.dark, val: 'dark' }, { label: tr.settings.light, val: 'light' }]))}
+        </Row>
+      )}
       <Row label={tr.settings.counterViewRow} sub={tr.settings.counterViewSub}>
         {ed('counterView', seg('counterView', [{ label: tr.settings.bigNumber, val: 'big' }, { label: tr.settings.sheet, val: 'sheet' }]))}
       </Row>
-      <Row label={tr.settings.accentColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.accentColorSub}>{ed('accent', colorPicker('accent', false))}</Row>
-      <Row label={tr.settings.scoreColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.scoreColorSub}>{ed('scoreColor', colorPicker('scoreColor', true))}</Row>
-      <Row label={tr.settings.legColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.legColorSub}>{ed('legColor', colorPicker('legColor', true))}</Row>
-      <Row label={tr.settings.background} sub={tr.settings.backgroundSub}>
-        {ed('theme', seg('theme', cfg.mode === 'light'
-          ? [{ label: tr.settings.themeMint, val: 'midnight' }, { label: tr.settings.themeSand, val: 'charcoal' }, { label: tr.settings.themeFog, val: 'slate' }]
-          : [{ label: tr.settings.themeMidnight, val: 'midnight' }, { label: tr.settings.themeCharcoal, val: 'charcoal' }, { label: tr.settings.themeSlate, val: 'slate' }], '10px 14px'))}
-      </Row>
-      <Row label={tr.settings.font} sub={tr.settings.fontSub}>
-        {ed('font', seg('font', (Object.keys(FONTS) as (keyof typeof FONTS)[]).map((f) => ({ label: f, val: f as SettingsType['font'], fam: FONTS[f] }))))}
-      </Row>
+      {isClassic && <Row label={tr.settings.accentColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.accentColorSub}>{ed('accent', colorPicker('accent', false))}</Row>}
+      {isClassic && <Row label={tr.settings.scoreColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.scoreColorSub}>{ed('scoreColor', colorPicker('scoreColor', true))}</Row>}
+      {isClassic && <Row label={tr.settings.legColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.legColorSub}>{ed('legColor', colorPicker('legColor', true))}</Row>}
+      {isClassic && (
+        <Row label={tr.settings.background} sub={tr.settings.backgroundSub}>
+          {ed('theme', seg('theme', cfg.mode === 'light'
+            ? [{ label: tr.settings.themeMint, val: 'midnight' }, { label: tr.settings.themeSand, val: 'charcoal' }, { label: tr.settings.themeFog, val: 'slate' }]
+            : [{ label: tr.settings.themeMidnight, val: 'midnight' }, { label: tr.settings.themeCharcoal, val: 'charcoal' }, { label: tr.settings.themeSlate, val: 'slate' }], '10px 14px'))}
+        </Row>
+      )}
+      {isClassic && (
+        <Row label={tr.settings.font} sub={tr.settings.fontSub}>
+          {ed('font', seg('font', (Object.keys(FONTS) as (keyof typeof FONTS)[]).map((f) => ({ label: f, val: f as SettingsType['font'], fam: FONTS[f] }))))}
+        </Row>
+      )}
       <Row label={tr.settings.boardScaleRow} sub={tr.settings.boardScaleSub}>
         {ed('boardScale', (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

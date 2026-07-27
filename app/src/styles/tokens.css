@@ -34,6 +34,41 @@
   --scrim:rgba(24,20,12,.5); --shadow-card:0 20px 50px rgba(60,55,40,.18);
   --nav-active:color-mix(in srgb, var(--accent) 14%, transparent); --nav-active-fg:var(--accent); --bar:rgba(248,246,240,.7);
 }
+/* ── Gestalt-Themes ("Skins") ─────────────────────────────────────────────────────────────────────────
+   Jedes Skin liegt auf dem Wrapper zusammen mit data-theme (Modus) und überschreibt NUR die abweichenden
+   Tokens der jeweiligen Basis (dark bzw. light). Steht bewusst NACH den Basis-Blöcken → gewinnt bei gleicher
+   Spezifität. 'classic' hat keinen Block (= Basis unverändert). Akzent/Font/Hintergrund kommen aus dem JS
+   (SKINS in constants.ts), nicht aus dem CSS. */
+/* theme01 „Board-Nacht" – dunkle Tiefnacht-Neutrals (Hue 255), gerundet */
+[data-skin="theme01"] {
+  --sidebar:oklch(12% 0.02 255); --bg:oklch(14% 0.02 255); --surface:oklch(17% 0.022 255); --surface-2:oklch(19% 0.022 255); --surface-3:oklch(22% 0.024 255); --btn:oklch(25% 0.024 255);
+  --border:oklch(31% 0.02 255); --border-2:oklch(37% 0.02 255); --border-strong:oklch(46% 0.022 255); --hairline:oklch(27% 0.018 255);
+  --text:oklch(95% 0.01 255); --text-2:oklch(80% 0.014 255); --text-3:oklch(69% 0.014 255); --text-4:oklch(61% 0.014 255); --text-5:oklch(57% 0.014 255);
+  --counter-bg:oklch(13% 0.02 255); --bar:oklch(15% 0.02 255 / 0.72);
+}
+/* theme02 „Espresso" – warmes Kakao-Braun (Hue 55), gerundet */
+[data-skin="theme02"] {
+  --sidebar:oklch(14% 0.018 55); --bg:oklch(16% 0.02 55); --surface:oklch(19% 0.022 55); --surface-2:oklch(21% 0.022 55); --surface-3:oklch(24% 0.024 55); --btn:oklch(27% 0.026 55);
+  --border:oklch(33% 0.022 55); --border-2:oklch(39% 0.022 55); --border-strong:oklch(48% 0.024 55); --hairline:oklch(29% 0.02 55);
+  --text:oklch(95% 0.012 75); --text-2:oklch(80% 0.016 70); --text-3:oklch(69% 0.016 68); --text-4:oklch(61% 0.016 68); --text-5:oklch(57% 0.016 68);
+  --counter-bg:oklch(14% 0.02 55); --bar:oklch(16% 0.02 55 / 0.72);
+}
+/* theme03 „Salbei" – helles Elfenbein-Papier (Hue 82), kantig */
+[data-skin="theme03"] {
+  --sidebar:oklch(98.5% 0.008 82); --bg:oklch(96.5% 0.012 82); --surface:oklch(99% 0.005 82); --surface-2:oklch(94.5% 0.014 80); --surface-3:oklch(92% 0.016 78); --btn:oklch(93.5% 0.016 78);
+  --border:oklch(86% 0.014 80); --border-2:oklch(80% 0.016 78); --border-strong:oklch(60% 0.018 76); --hairline:oklch(91% 0.012 80);
+  --text:oklch(28% 0.014 70); --text-2:oklch(43% 0.016 72); --text-3:oklch(52% 0.016 74); --text-4:oklch(57% 0.014 74); --text-5:oklch(61% 0.014 74);
+  --counter-bg:oklch(95.5% 0.012 82); --bar:oklch(97.5% 0.008 82 / 0.8);
+  --radius-xs:0; --radius-sm:0; --radius-md:0; --radius-lg:0; --radius-xl:0;
+}
+/* theme07 „Porzellan" – kühles Porzellan/Bone (Hue 245), kantig */
+[data-skin="theme07"] {
+  --sidebar:oklch(99% 0.004 245); --bg:oklch(96.5% 0.006 245); --surface:oklch(99.5% 0.003 245); --surface-2:oklch(95% 0.008 245); --surface-3:oklch(92.5% 0.01 245); --btn:oklch(94% 0.01 245);
+  --border:oklch(87% 0.01 245); --border-2:oklch(82% 0.012 245); --border-strong:oklch(68% 0.014 245); --hairline:oklch(92% 0.008 245);
+  --text:oklch(24% 0.02 250); --text-2:oklch(40% 0.02 248); --text-3:oklch(50% 0.018 248); --text-4:oklch(55% 0.018 248); --text-5:oklch(59% 0.016 248);
+  --counter-bg:oklch(95.5% 0.006 245); --bar:oklch(98% 0.005 245 / 0.75);
+  --radius-xs:0; --radius-sm:0; --radius-md:0; --radius-lg:0; --radius-xl:0;
+}
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; }
 #root { height: 100%; }

@@ -1,5 +1,5 @@
 import type { Account, League, LeagueTeam, Settings, Player, Team, EventItem, Match, Fixture, TeamKind, Season, LineupPosition } from '../data/types';
-import { FONTS, THEMES_DARK, THEMES_LIGHT } from '../data/constants';
+import { FONTS, THEMES_DARK, THEMES_LIGHT, activeSkin } from '../data/constants';
 import { parseIso } from '../lib/format';
 
 // ── Saison-Helfer ──
@@ -279,10 +279,30 @@ export function accentFg(accent: string): string {
   const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return lum > 0.62 ? '#06160d' : '#fff';
 }
+// Effektiver Hell/Dunkel-Modus: ein aktives Skin erzwingt seinen Modus, sonst die eigene Einstellung.
+export function effectiveMode(settings: Pick<Settings, 'mode' | 'skin'>): 'dark' | 'light' {
+  const sk = activeSkin(settings);
+  return sk ? sk.mode : (settings.mode === 'light' ? 'light' : 'dark');
+}
+// Live-Farben (accent/scoreColor/legColor) für den aktiven Modus. Ein Skin überschreibt den Akzent fest und
+// neutralisiert Score-/Leg-Overrides (Theme-Look). Ohne Skin: die pro-Modus gespeicherten Werte (classic).
+export function deriveLiveColors(settings: Settings): { accent: string; scoreColor: string | null; legColor: string | null } {
+  const sk = activeSkin(settings);
+  if (sk) return { accent: sk.accent, scoreColor: null, legColor: null };
+  const light = settings.mode === 'light';
+  return {
+    accent: (light ? settings.accentLight : settings.accentDark) || settings.accent,
+    scoreColor: light ? settings.scoreColorLight : settings.scoreColorDark,
+    legColor: light ? settings.legColorLight : settings.legColorDark,
+  };
+}
 export function rootBg(settings: Settings): string {
+  const sk = activeSkin(settings);
+  if (sk) return sk.bg;
   const set = settings.mode === 'light' ? THEMES_LIGHT : THEMES_DARK;
   return set[settings.theme] || set.midnight;
 }
 export function fontFam(settings: Settings): string {
-  return FONTS[settings.font] || FONTS.Inter;
+  const sk = activeSkin(settings);
+  return FONTS[sk ? sk.font : settings.font] || FONTS.Inter;
 }

@@ -20,6 +20,7 @@ export const DEFAULT_SETTINGS: Settings = {
   accent: '#2BD377',
   mode: 'dark',
   theme: 'midnight',
+  skin: 'classic',
   font: 'Archivo',
   scoreScale: 100,
   scoreArea: 58,

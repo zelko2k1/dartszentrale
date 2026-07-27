@@ -17,7 +17,7 @@ import {
 import {
   DEFAULT_SETTINGS, seedPlayers, seedTeams, seedAccounts, seedLeagues, seedEvents, seedSeasons, withDefaultPlayers, isSeedPlayer,
 } from '../data/seed';
-import { activeSeason as pickActiveSeason, computeStandings, aggregateFor, inSeason } from './selectors';
+import { activeSeason as pickActiveSeason, computeStandings, aggregateFor, inSeason, deriveLiveColors } from './selectors';
 import {
   newTrainGame, applyTurn as tApplyTurn, trainMeta,
   TRAIN_BEST, isBetterBest, trainCelebration,
@@ -685,10 +685,8 @@ export const useStore = create<AppState>((set, get) => ({
     const devuiRec = devui as unknown as Record<string, unknown>;
     const settingsRec = settings as unknown as Record<string, unknown>;
     for (const k of DEVICE_UI_KEYS) { const v = devuiRec[k as string]; if (v !== undefined) settingsRec[k as string] = v; }
-    // sync live colours to the active mode
-    settings.accent = (settings.mode === 'light' ? settings.accentLight : settings.accentDark) || settings.accent;
-    settings.scoreColor = settings.mode === 'light' ? settings.scoreColorLight : settings.scoreColorDark;
-    settings.legColor = settings.mode === 'light' ? settings.legColorLight : settings.legColorDark;
+    // sync live colours to the active mode (ein aktives Skin überschreibt den Akzent fest, siehe deriveLiveColors)
+    { const live = deriveLiveColors(settings); settings.accent = live.accent; settings.scoreColor = live.scoreColor; settings.legColor = live.legColor; }
     // shortcuts must be Strg+Alt+<letter/digit> — reset any legacy/invalid value
     // Kürzel = Alt + Buchstabe/Ziffer (optional Strg). Standard Alt+N / Alt+5 / Alt+3; alte Strg+Alt-Standards migrieren.
     normalizeShortcuts(settings);
@@ -1024,11 +1022,11 @@ export const useStore = create<AppState>((set, get) => ({
       if (key === 'accent') { if (light) settings.accentLight = val as string; else settings.accentDark = val as string; }
       else if (key === 'scoreColor') { if (light) settings.scoreColorLight = val as string | null; else settings.scoreColorDark = val as string | null; }
       else if (key === 'legColor') { if (light) settings.legColorLight = val as string | null; else settings.legColorDark = val as string | null; }
-      else if (key === 'mode') {
-        const m = val as 'dark' | 'light';
-        settings.accent = (m === 'light' ? settings.accentLight : settings.accentDark) || settings.accent;
-        settings.scoreColor = m === 'light' ? settings.scoreColorLight : settings.scoreColorDark;
-        settings.legColor = m === 'light' ? settings.legColorLight : settings.legColorDark;
+      // Modus- ODER Skin-Wechsel: Live-Farben neu ableiten. Ein Skin erzwingt den Akzent (Theme-Look), bei
+      // Rückwahl auf 'classic' kommen die pro-Modus gespeicherten Werte zurück (nicht-destruktiv).
+      if (key === 'mode' || key === 'skin') {
+        const live = deriveLiveColors(settings);
+        settings.accent = live.accent; settings.scoreColor = live.scoreColor; settings.legColor = live.legColor;
       }
       // Gerätelokale UI-Keys (Eingabe-Modus, Hell/Dunkel, Größen) bleiben auf DIESEM Gerät: eigener
       // localStorage-Key statt vereinsweitem Server-Sync (Mischbetrieb PC/Tablet/Board).
