@@ -337,7 +337,7 @@ function TwoFactorSettings() {
 
 // „Geräte hinzufügen": zeigt die Server-Adresse als QR-Code (Tablets/Handys scannen) — nutzt den
 // vendored QR-Encoder aus der 2FA-Arbeit. Board-PCs legen die Adresse als Lesezeichen/Kiosk an.
-function JoinDevicesPanel() {
+function JoinDevicesPanel({ children }: { children?: ReactNode }) {
   const tr = useT();
   const [url, setUrl] = useState(() => {
     try { return localStorage.getItem('darts_join_url') || window.location.origin; } catch { return window.location.origin; }
@@ -363,6 +363,7 @@ function JoinDevicesPanel() {
           )}
         </div>
       </Row>
+      {children}
     </Section>
   );
 }
@@ -373,6 +374,9 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const set = s.setSetting;
   const p = perm(cfg, s.accounts, s.session);
   const accent = cfg.accent;
+  // 'classic' = frei konfigurierbar (Einzeloptionen sichtbar). Ein Gestalt-Theme fixiert Modus/Akzent/
+  // Hintergrund/Font → diese Zeilen werden ausgeblendet (das Theme bestimmt den Look).
+  const isClassic = (cfg.skin ?? 'classic') === 'classic';
   const tr = useT();
   const lang = useLang();
   const isVerein = cfg.appMode === 'verein';
@@ -712,23 +716,39 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
           })}
         </div>
       </Row>
-      <Row label={tr.settings.displayMode} sub={tr.settings.displayModeSub}>
-        {ed('mode', seg('mode', [{ label: tr.settings.dark, val: 'dark' }, { label: tr.settings.light, val: 'light' }]))}
+      {/* Gestalt-Theme: fertiger Komplett-Look oder „Klassisch" (alles selbst einstellbar). Gerätelokal. */}
+      <Row label={tr.settings.skinRow} sub={tr.settings.skinRowSub}>
+        {ed('skin', seg('skin', [
+          { label: tr.settings.skinClassic, val: 'classic' },
+          { label: tr.settings.skinTheme01, val: 'theme01' },
+          { label: tr.settings.skinTheme02, val: 'theme02' },
+          { label: tr.settings.skinTheme03, val: 'theme03' },
+          { label: tr.settings.skinTheme07, val: 'theme07' },
+        ], '10px 14px'))}
       </Row>
+      {isClassic && (
+        <Row label={tr.settings.displayMode} sub={tr.settings.displayModeSub}>
+          {ed('mode', seg('mode', [{ label: tr.settings.dark, val: 'dark' }, { label: tr.settings.light, val: 'light' }]))}
+        </Row>
+      )}
       <Row label={tr.settings.counterViewRow} sub={tr.settings.counterViewSub}>
         {ed('counterView', seg('counterView', [{ label: tr.settings.bigNumber, val: 'big' }, { label: tr.settings.sheet, val: 'sheet' }]))}
       </Row>
-      <Row label={tr.settings.accentColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.accentColorSub}>{ed('accent', colorPicker('accent', false))}</Row>
-      <Row label={tr.settings.scoreColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.scoreColorSub}>{ed('scoreColor', colorPicker('scoreColor', true))}</Row>
-      <Row label={tr.settings.legColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.legColorSub}>{ed('legColor', colorPicker('legColor', true))}</Row>
-      <Row label={tr.settings.background} sub={tr.settings.backgroundSub}>
-        {ed('theme', seg('theme', cfg.mode === 'light'
-          ? [{ label: tr.settings.themeMint, val: 'midnight' }, { label: tr.settings.themeSand, val: 'charcoal' }, { label: tr.settings.themeFog, val: 'slate' }]
-          : [{ label: tr.settings.themeMidnight, val: 'midnight' }, { label: tr.settings.themeCharcoal, val: 'charcoal' }, { label: tr.settings.themeSlate, val: 'slate' }], '10px 14px'))}
-      </Row>
-      <Row label={tr.settings.font} sub={tr.settings.fontSub}>
-        {ed('font', seg('font', (Object.keys(FONTS) as (keyof typeof FONTS)[]).map((f) => ({ label: f, val: f as SettingsType['font'], fam: FONTS[f] }))))}
-      </Row>
+      {isClassic && <Row label={tr.settings.accentColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.accentColorSub}>{ed('accent', colorPicker('accent', false))}</Row>}
+      {isClassic && <Row label={tr.settings.scoreColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.scoreColorSub}>{ed('scoreColor', colorPicker('scoreColor', true))}</Row>}
+      {isClassic && <Row label={tr.settings.legColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.legColorSub}>{ed('legColor', colorPicker('legColor', true))}</Row>}
+      {isClassic && (
+        <Row label={tr.settings.background} sub={tr.settings.backgroundSub}>
+          {ed('theme', seg('theme', cfg.mode === 'light'
+            ? [{ label: tr.settings.themeMint, val: 'midnight' }, { label: tr.settings.themeSand, val: 'charcoal' }, { label: tr.settings.themeFog, val: 'slate' }]
+            : [{ label: tr.settings.themeMidnight, val: 'midnight' }, { label: tr.settings.themeCharcoal, val: 'charcoal' }, { label: tr.settings.themeSlate, val: 'slate' }], '10px 14px'))}
+        </Row>
+      )}
+      {isClassic && (
+        <Row label={tr.settings.font} sub={tr.settings.fontSub}>
+          {ed('font', seg('font', (Object.keys(FONTS) as (keyof typeof FONTS)[]).map((f) => ({ label: f, val: f as SettingsType['font'], fam: FONTS[f] }))))}
+        </Row>
+      )}
       <Row label={tr.settings.boardScaleRow} sub={tr.settings.boardScaleSub}>
         {ed('boardScale', (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -832,13 +852,6 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
       <Row label={tr.settings.boardWindowRow} sub={tr.settings.boardWindowSub}>
         {ed('boardMatchWindow', seg('boardMatchWindow', [{ label: tr.settings.matchdayOnly, val: 0 }, { label: tr.settings.plusDay(1), val: 1 }, { label: tr.settings.plusDay(2), val: 2 }, { label: tr.settings.plusDay(3), val: 3 }], '9px 14px'))}
       </Row>
-      <Row label={tr.settings.remoteRow} sub={tr.settings.remoteSub}>
-        <button onClick={() => canEdit && set('remoteEnabled', cfg.remoteEnabled === false)} role="switch" aria-checked={cfg.remoteEnabled !== false}
-          style={{ flexShrink: 0, width: 46, height: 26, borderRadius: 'var(--radius-pill)', background: cfg.remoteEnabled !== false ? accent : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative', cursor: canEdit ? 'pointer' : 'default', opacity: canEdit ? 1 : 0.5, padding: 0 }}>
-          <span style={{ position: 'absolute', top: 2, left: cfg.remoteEnabled !== false ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff' }} />
-        </button>
-      </Row>
-      {p.admin && <WatchTvPanel />}
     </Section>
   );
 
@@ -1004,7 +1017,17 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     { key: 'rechtliches', label: tr.settings.secLegal, show: isVerein && p.manageClub, node: rechtlichesNode },
     { key: 'benutzer', label: tr.dashboard.usersRights, show: isVerein && p.manageUsers, node: benutzerNode },
     { key: 'board', label: tr.settings.secBoard, show: isVerein && p.manageUsers, node: boardNode },
-    { key: 'geraete', label: tr.settings.secDevices, show: isVerein && p.manageUsers, node: <JoinDevicesPanel /> },
+    { key: 'geraete', label: tr.settings.secDevices, show: isVerein && p.manageUsers, node: (
+      <JoinDevicesPanel>
+        <Row label={tr.settings.remoteRow} sub={tr.settings.remoteSub}>
+          <button onClick={() => canEdit && set('remoteEnabled', cfg.remoteEnabled === false)} role="switch" aria-checked={cfg.remoteEnabled !== false}
+            style={{ flexShrink: 0, width: 46, height: 26, borderRadius: 'var(--radius-pill)', background: cfg.remoteEnabled !== false ? accent : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative', cursor: canEdit ? 'pointer' : 'default', opacity: canEdit ? 1 : 0.5, padding: 0 }}>
+            <span style={{ position: 'absolute', top: 2, left: cfg.remoteEnabled !== false ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff' }} />
+          </button>
+        </Row>
+        {p.admin && <WatchTvPanel />}
+      </JoinDevicesPanel>
+    ) },
     { key: 'konto', label: tr.settings.secAccount, show: isVerein && !!s.session && !s.accounts.find((a) => a.id === s.session)?.isBoard, node: kontoNode },
     { key: 'eingabe', label: tr.settings.secInput, show: true, node: eingabeNode },
     { key: 'darstellung', label: tr.settings.secAppearance, show: true, node: darstellungNode },

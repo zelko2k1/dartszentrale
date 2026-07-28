@@ -9,7 +9,6 @@ import {
 import { IconBack, IconUndo, IconRefresh, IconX } from '../lib/icons';
 import { formatCombo, comboFromEvent } from '../lib/shortcut';
 import { useDevice } from '../lib/useIsPhone';
-import { BoardScale } from '../components/BoardScale';
 import { useT } from '../i18n';
 
 export function Counter() {
@@ -26,6 +25,11 @@ export function Counter() {
   const over = matchOver(slice);
   const leg = currentLeg(slice);
   const isTablet = cfg.device !== 'desktop';
+  // Board-Gesamtgröße: skaliert GEZIELT die Distanz-Lese-Elemente (Restscore-Band + Spielername), NICHT die
+  // ganze App. Früher zoomte BoardScale den kompletten Baum – dabei wuchsen die fixen Bedien-Leisten mit und
+  // quetschten das Score-Band bis auf null (Restscore verschwand). Jetzt: Chrome bleibt normal, der Score bekommt
+  // per Flex-Gewicht mehr Fläche (Verlauf/Statistik weichen), der Name wächst per Faktor. Nur Board (desktop) > 100 %.
+  const boardMul = cfg.device === 'desktop' ? Math.max(1, (cfg.boardScale ?? 100) / 100) : 1;
 
   // keyboard
   useEffect(() => {
@@ -133,7 +137,6 @@ export function Counter() {
   }, [s.allThrows.length]);
 
   return (
-    <BoardScale>
     <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: 'var(--counter-bg)', fontFamily: 'inherit' }}>
       {isPhone ? (
         <PhoneCounter landscape={isPhoneLandscape} />
@@ -155,8 +158,9 @@ export function Counter() {
 
       {/* board */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 12, minHeight: 0 }}>
-        {/* SCORE band */}
-        <div style={{ flex: sheetMode ? (cfg.showHistory && sheetOpen ? 40 : 100) : (cfg.showHistory ? cfg.scoreArea : 100), display: 'flex', gap: 12, minHeight: 0 }}>
+        {/* SCORE band — Board-Gesamtgröße (boardMul) hebt das Flex-Gewicht des Score-Bandes an, während Verlauf/
+            Statistik unten per /boardMul zusätzlich weichen → der cq-gemessene Restscore füllt spürbar mehr Fläche. */}
+        <div style={{ flex: sheetMode ? (cfg.showHistory && sheetOpen ? cfg.scoreArea * boardMul : 100) : (cfg.showHistory ? cfg.scoreArea * boardMul : 100), display: 'flex', gap: 12, minHeight: 0 }}>
           {s.gamePlayers.map((p, i) => {
             const isActive = i === curIdx && !over;
             const rem = sc[p.id];
@@ -167,10 +171,10 @@ export function Counter() {
               <div key={p.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRadius: 'var(--radius-lg)', background: isActive ? `color-mix(in srgb, ${accent} 9%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${isActive ? accent : 'var(--border-2)'}`, boxShadow: isActive ? `0 0 0 1px ${accent}, 0 0 46px color-mix(in srgb, ${accent} 12%, transparent)` : 'none', transition: 'border-color .18s var(--ease-out)', minWidth: 0, overflow: 'hidden' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 18px 0', flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 11, minWidth: 0 }}>
-                    <Avatar photo={p.photo} short={p.short} avi={p.av} size={40} />
+                    <Avatar photo={p.photo} short={p.short} avi={p.av} size={Math.round(40 * boardMul)} />
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: Math.round(17 * cfg.headerSize / 100), fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.15 }}>{p.name}</div>
-                      <div style={{ fontSize: 11, color: accentInk, fontWeight: 700, height: 14, letterSpacing: '.04em' }}>{turnLabel}</div>
+                      <div style={{ fontSize: Math.round(17 * cfg.headerSize / 100 * boardMul), fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: 1.15 }}>{p.name}</div>
+                      <div style={{ fontSize: Math.round(11 * boardMul), color: accentInk, fontWeight: 700, height: Math.round(14 * boardMul), letterSpacing: '.04em' }}>{turnLabel}</div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
@@ -198,7 +202,7 @@ export function Counter() {
         {/* Aufschrieb-Ansicht (n01-Stil): ersetzt die Wurf-Liste; die Statistik-Box bleibt darunter
             wie gewohnt über den „Statistik-Box"-Schalter (showStats) an-/abwählbar. */}
         {sheetMode && (cfg.showHistory || cfg.showStats) && (
-          <div style={{ flex: cfg.showHistory && sheetOpen ? '60 1 0' : '0 0 auto', display: 'flex', flexDirection: 'column', minHeight: 0, marginTop: 8, gap: 8 }}>
+          <div style={{ flex: cfg.showHistory && sheetOpen ? `${(100 - cfg.scoreArea) / boardMul} 1 0` : '0 0 auto', display: 'flex', flexDirection: 'column', minHeight: 0, marginTop: 8, gap: 8 }}>
             {/* Aufschrieb-Box (= Wurf-Verlauf): über den „Wurf-Verlauf"-Schalter (showHistory) an-/abwählbar;
                 Klapp-Pfeil ist in die Box integriert (bleibt zugeklappt als schmale Leiste sichtbar). */}
             {cfg.showHistory && <ScoreSheet open={sheetOpen} onToggle={() => s.setSetting('sheetOpen', !sheetOpen)} />}
@@ -209,7 +213,7 @@ export function Counter() {
             integriertem Klapp-Pfeil; die Statistik-Box bleibt separat über „showStats" schaltbar. */}
         {!sheetMode && (cfg.showHistory || cfg.showStats) && (
           <>
-            <div style={{ flex: cfg.showHistory && historyOpen ? `${100 - cfg.scoreArea} 1 0` : '0 0 auto', display: 'flex', flexDirection: 'column', gap: 8, minHeight: 0, marginTop: 8 }}>
+            <div style={{ flex: cfg.showHistory && historyOpen ? `${(100 - cfg.scoreArea) / boardMul} 1 0` : '0 0 auto', display: 'flex', flexDirection: 'column', gap: 8, minHeight: 0, marginTop: 8 }}>
               {cfg.showHistory && <HistoryBox open={historyOpen} onToggle={() => s.setSetting('historyOpen', !historyOpen)} />}
               {cfg.showStats && <SheetStats />}
             </div>
@@ -301,7 +305,6 @@ export function Counter() {
       {over && <WinOverlay />}
       {s.finishPrompt && <FinishPrompt />}
     </div>
-    </BoardScale>
   );
 }
 

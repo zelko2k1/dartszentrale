@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, lazy, Suspense } from 'react';
 import { useStore } from './store/useStore';
-import { rootBg, fontFam, accentFg } from './store/selectors';
+import { rootBg, fontFam, accentFg, effectiveMode } from './store/selectors';
 import { useDevice } from './lib/useIsPhone';
 import { comboFromEvent } from './lib/shortcut';
 import { Logo } from './lib/icons';
@@ -148,7 +148,10 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.pbMode, s.settings.autoBackup, s.settings.backupTime]);
 
-  const themeMode = s.settings.mode === 'light' ? 'light' : 'dark';
+  // Effektiver Modus + Skin: ein aktives Gestalt-Theme erzwingt seinen Modus und liefert über data-skin die
+  // Palette/Radius (tokens.css). Akzent/Font/Hintergrund folgen bereits skin-bewusst aus dem Store/den Selektoren.
+  const themeMode = effectiveMode(s.settings);
+  const skinAttr = s.settings.skin && s.settings.skin !== 'classic' ? s.settings.skin : undefined;
   const isVerein = s.settings.appMode === 'verein';
   const needsLogin = isVerein && !s.session;
   const isCounter = s.screen === 'counter';
@@ -244,6 +247,7 @@ export default function App() {
   return (
     <div
       data-theme={themeMode}
+      data-skin={skinAttr}
       style={{
         height: '100vh', width: '100%', background: 'var(--bg)', color: 'var(--text)',
         fontFamily: fontFam(s.settings), overflow: 'hidden', display: 'flex',

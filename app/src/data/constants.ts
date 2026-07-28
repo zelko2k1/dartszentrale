@@ -41,7 +41,7 @@ export const DEVICE_LOCAL_SETTING_KEYS: (keyof Settings)[] = [
   'kiosk', 'boardName', 'nameOrder',
   // Geräteklassen-Mischbetrieb (PC ↔ Tablet): Eingabe-Modus, Hell/Dunkel, alle Größen & die
   // Counter-Ansicht (Restscore vs. Aufschrieb) pro Gerät.
-  'mode', 'scoreArea', 'scoreScale', 'statsSize', 'headerSize', 'deckSize', 'legSize', 'boardScale', 'counterView', 'sheetOpen', 'historyOpen', 'statsOpen', 'matchStatsOpen',
+  'mode', 'skin', 'scoreArea', 'scoreScale', 'statsSize', 'headerSize', 'deckSize', 'legSize', 'boardScale', 'counterView', 'sheetOpen', 'historyOpen', 'statsOpen', 'matchStatsOpen',
   // Auto-Backup ist pro Installation (dieses Gerät liefert die App via serve-dist aus) → gerätelokal.
   'autoBackup', 'backupTime',
 ];
@@ -50,8 +50,35 @@ export const DEVICE_LOCAL_SETTING_KEYS: (keyof Settings)[] = [
 // für sich, unabhängig von den vereinsweiten club_config-Settings. (pbUrl/appMode haben eigene Keys; kiosk/
 // boardName/nameOrder liegen in LS.device – siehe useStore.)
 export const DEVICE_UI_KEYS: (keyof Settings)[] = [
-  'device', 'dashRange', 'mode', 'scoreArea', 'scoreScale', 'statsSize', 'headerSize', 'deckSize', 'legSize', 'boardScale', 'counterView', 'sheetOpen', 'historyOpen', 'statsOpen', 'matchStatsOpen',
+  'device', 'dashRange', 'mode', 'skin', 'scoreArea', 'scoreScale', 'statsSize', 'headerSize', 'deckSize', 'legSize', 'boardScale', 'counterView', 'sheetOpen', 'historyOpen', 'statsOpen', 'matchStatsOpen',
 ];
+
+// ── Gestalt-Themes ("Skins") ──────────────────────────────────────────────────────────────────────
+// Fertige Komplett-Looks. 'classic' fehlt hier bewusst: es ist die frei konfigurierbare Basis (kein Override).
+// Jedes Skin erzwingt Modus + Akzent + Font + Hintergrundverlauf; die Palette/Radius kommen aus tokens.css
+// über [data-skin="…"]. Das Overlay ist zerstörungsfrei — die klassischen Einstellungen bleiben gespeichert.
+export interface Skin {
+  mode: 'dark' | 'light';
+  accent: string;              // fester Akzent (Hex)
+  font: Settings['font'];      // erzwungene Schrift
+  bg: string;                  // Hintergrundverlauf (ersetzt rootBg)
+}
+export type SkinId = Settings['skin'];
+export const SKIN_IDS: SkinId[] = ['classic', 'theme01', 'theme02', 'theme03', 'theme07'];
+export const SKINS: Record<Exclude<SkinId, 'classic'>, Skin> = {
+  // Board-Nacht: kühle Tiefnacht (Hue 255) + Cyan, dark, Archivo, gerundet.
+  theme01: { mode: 'dark', accent: '#33C6E8', font: 'Archivo', bg: 'radial-gradient(135% 95% at 50% -18%, oklch(22% 0.05 255) 0%, oklch(13% 0.02 255) 60%)' },
+  // Espresso: warmes Kakao-Braun (Hue 55) + Teal, dark, Archivo, gerundet.
+  theme02: { mode: 'dark', accent: '#2FBFA8', font: 'Archivo', bg: 'radial-gradient(135% 95% at 50% -18%, oklch(25% 0.045 60) 0%, oklch(14% 0.02 55) 60%)' },
+  // Salbei: sanftes Elfenbein-Papier (Hue 82) + gedämpftes Salbei-Grün, light, Archivo, kantig.
+  theme03: { mode: 'light', accent: '#4E8C7A', font: 'Archivo', bg: 'radial-gradient(135% 95% at 50% -18%, oklch(98% 0.014 82) 0%, oklch(94.5% 0.016 80) 62%)' },
+  // Porzellan: kühles Porzellan/Bone (Hue 245) + Navy-Ink, light, Rubik, kantig.
+  theme07: { mode: 'light', accent: '#26478F', font: 'Rubik', bg: 'radial-gradient(135% 95% at 50% -18%, oklch(98.5% 0.01 245) 0%, oklch(94% 0.012 245) 62%)' },
+};
+// Aktives Skin oder null (= classic). Zentral, damit Selektoren/Store/UI dieselbe Logik nutzen.
+export function activeSkin(settings: Pick<Settings, 'skin'>): Skin | null {
+  return settings.skin && settings.skin !== 'classic' ? SKINS[settings.skin] : null;
+}
 
 export const AVATARS: { bg: string; fg: string }[] = [
   { bg: 'linear-gradient(135deg,#19A463,#0f6b40)', fg: '#fff' },

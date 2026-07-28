@@ -289,6 +289,11 @@ export interface Settings {
   accent: string;
   mode: 'dark' | 'light';
   theme: 'midnight' | 'charcoal' | 'slate';
+  // Gestalt-Theme ("Skin"): 'classic' = alles über die Einzeloptionen (Akzent/Modus/Hintergrund/Font) selbst
+  // einstellbar. Die anderen Werte sind fertige Komplett-Looks (Palette + Radius + Akzent + Font + Modus), die
+  // diese Einzeloptionen NICHT-DESTRUKTIV überlagern — bei Rückwahl auf 'classic' kommen die eigenen Werte zurück.
+  // GERÄTELOKAL (wie mode): jedes Gerät (PC/Tablet/Board) wählt sein Theme selbst.
+  skin: 'classic' | 'theme01' | 'theme02' | 'theme03' | 'theme07';
   font: 'Inter' | 'Archivo' | 'Rubik' | 'Oswald' | 'Space Grotesk';
   scoreScale: number;
   scoreArea: number;
