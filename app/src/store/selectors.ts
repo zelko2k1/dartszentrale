@@ -77,10 +77,10 @@ export interface PlayerAggregate {
 export function aggregateFor(player: { id: string; name: string }, matches: Match[]): PlayerAggregate {
   const records: PlayerRecords = { bestAvg: 0, best180: 0, best100: 0, bestCo: null, bestF9: null, longestWinStreak: 0 };
   const out: PlayerAggregate = { games: 0, wins: 0, losses: 0, avg: 0, darts: 0, c180: 0, c140: 0, c100: 0, c60: 0, high: 0, shortLegs: 0, shortLegDarts: [], co: null, f9: null, history: [], records, recent: [] };
-  // Lebenszeit-Ø & First-9: nach geworfenen Darts GEWICHTET (längere Partien zählen stärker) statt „Mittel
-  // der Match-Mittel". Exakt wäre die Gewichtung nach Aufnahmen — die werden pro Match nicht gespeichert,
-  // darts ist der beste vorhandene Proxy. Fallback auf ungewichtetes Mittel für Alt-Matches ohne darts-Feld.
-  // co (Checkout-Quote) bleibt einfaches Mittel: ohne gespeicherte Chancen/Treffer nicht sauber gewichtbar.
+  // Lebenszeit-Ø & First-9: nach geworfenen Darts GEWICHTET statt „Mittel der Match-Mittel". Da avg3 eine
+  // echte Punkte/Darts-Rate ist (siehe counter.average), ergibt Σ(avg3·darts)/Σdarts exakt den Gesamt-Ø.
+  // Fallback auf ungewichtetes Mittel für Alt-Matches ohne darts-Feld. co (Checkout-Quote) bleibt einfaches
+  // Mittel: ohne gespeicherte Chancen/Treffer nicht sauber gewichtbar.
   let avgW = 0, avgWD = 0, avgSum = 0, avgN = 0;
   let f9W = 0, f9WD = 0, f9Sum = 0, f9N = 0;
   let coSum = 0, coN = 0;
@@ -118,6 +118,22 @@ export function aggregateFor(player: { id: string; name: string }, matches: Matc
   });
   out.recent = out.history.slice(-6).reverse().map((g) => ({ opp: g.opp, won: g.won, avg: g.avg, score: g.score, date: g.date }));
   return out;
+}
+
+// ── Kopf-an-Kopf: Bilanz je Gegner aus der (bereits aggregierten) Historie ──
+export interface H2HRow { opp: string; games: number; wins: number; losses: number; avg: number; }
+export function headToHead(history: PlayerGame[]): H2HRow[] {
+  const map = new Map<string, { games: number; wins: number; aW: number; aWD: number; aSum: number; aN: number }>();
+  for (const g of history) {
+    if (!g.opp || g.opp === '—') continue; // Gastspiele/ohne Gegnername nicht werten
+    const e = map.get(g.opp) || { games: 0, wins: 0, aW: 0, aWD: 0, aSum: 0, aN: 0 };
+    e.games++; if (g.won) e.wins++;
+    if (g.avg) { e.aSum += g.avg; e.aN++; if (g.darts > 0) { e.aW += g.avg * g.darts; e.aWD += g.darts; } }
+    map.set(g.opp, e);
+  }
+  return [...map.entries()]
+    .map(([opp, e]) => ({ opp, games: e.games, wins: e.wins, losses: e.games - e.wins, avg: e.aWD ? e.aW / e.aWD : (e.aN ? e.aSum / e.aN : 0) }))
+    .sort((a, b) => b.games - a.games || b.wins - a.wins || a.opp.localeCompare(b.opp));
 }
 
 // ── Dashboard-Kennzahlen ──

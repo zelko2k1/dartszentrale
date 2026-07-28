@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useStore } from '../store/useStore';
-import { aggregateFor, inSeason } from '../store/selectors';
+import { aggregateFor, inSeason, headToHead } from '../store/selectors';
 import { Avatar } from '../components/Avatar';
 import { IconBack } from '../lib/icons';
 import { useIsPhone } from '../lib/useIsPhone';
@@ -12,10 +12,23 @@ export function PlayerDetail() {
   const isPhone = useIsPhone(); // Hooks vor dem early return aufrufen (rules-of-hooks)
   const [seasonId, setSeasonId] = useState<string>('all'); // 'all' = alle Saisons (Lebenszeit)
   const [slOpen, setSlOpen] = useState(false);             // Short-Leg-Verteilung ein-/ausgeklappt
+  const [startFilter, setStartFilter] = useState<'all' | number>('all'); // Spieltyp (Startpunktzahl)
+  const [compFilter, setCompFilter] = useState<'all' | 'league' | 'free'>('all'); // Liga vs. frei
+  const [formMetric, setFormMetric] = useState<'avg' | 'co' | 'f9' | 'c180'>('avg'); // Formkurve: Kennzahl
   const player = s.players.find((p) => p.id === s.selectedPlayerId) || s.players[0];
   if (!player) { return <div style={{ padding: '28px 32px' }}>{tr.playerDetail.noneSelected}</div>; }
-  const scopedMatches = seasonId === 'all' ? s.matches : inSeason(s.matches, seasonId);
-  const agg = aggregateFor(player, scopedMatches);
+  // Filter: Saison → Spieltyp (Startpunktzahl) → Wettbewerb (Liga = mit leagueId, Frei = ohne).
+  let filtered = seasonId === 'all' ? s.matches : inSeason(s.matches, seasonId);
+  if (startFilter !== 'all') filtered = filtered.filter((m) => m.startScore === startFilter);
+  if (compFilter === 'league') filtered = filtered.filter((m) => !!m.leagueId);
+  else if (compFilter === 'free') filtered = filtered.filter((m) => !m.leagueId);
+  const agg = aggregateFor(player, filtered);
+  const h2h = headToHead(agg.history);
+  const selStyle: CSSProperties = { background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '8px 12px', color: 'var(--text)', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', outline: 'none' };
+  // Formkurve-Kennzahlen (nur die, die Werte tragen): Ø immer; CO/F9 nur wenn vorhanden; 180 immer.
+  const metricOpts = ([['avg', 'Ø'], ['co', 'CO'], ['f9', 'F9'], ['c180', '180']] as const)
+    .filter(([k]) => k === 'avg' || k === 'c180' || agg.history.some((g) => g[k as 'co' | 'f9'] != null));
+  const metricVal = (g: typeof agg.history[number]) => formMetric === 'avg' ? g.avg : formMetric === 'c180' ? g.c180 : (g[formMetric] ?? 0);
   const rec = agg.records;
   const records: { value: string; label: string; color: string }[] = [
     { value: rec.bestAvg ? rec.bestAvg.toFixed(1) : '–', label: tr.playerDetail.recBestAvg, color: 'var(--cat-6)' },
@@ -57,14 +70,26 @@ export function PlayerDetail() {
           <IconBack size={15} />
           {tr.playerDetail.allPlayers}
         </button>
-        {/* Saison-Filter nur im Vereinsmodus — im Einzelboard-/Lokalmodus gibt es keine Saisons. */}
-        {s.settings.appMode === 'verein' && s.seasons.length > 0 && (
-          <select value={seasonId} onChange={(e) => setSeasonId(e.target.value)} title={tr.playerDetail.statsPeriod}
-            style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '8px 12px', color: 'var(--text)', fontSize: 13, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', outline: 'none' }}>
-            <option value="all">{tr.playerDetail.allSeasons}</option>
-            {s.seasons.map((se) => <option key={se.id} value={se.id}>{se.name}</option>)}
+        {/* Filter: Spieltyp (immer) · Wettbewerb + Saison nur im Vereinsmodus. */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <select value={String(startFilter)} onChange={(e) => setStartFilter(e.target.value === 'all' ? 'all' : +e.target.value)} title={tr.playerDetail.gameTypeFilter} style={selStyle}>
+            <option value="all">{tr.playerDetail.gameTypeFilter}: {tr.playerDetail.filterAll}</option>
+            {[301, 501, 701, 1001].map((v) => <option key={v} value={v}>{v}</option>)}
           </select>
-        )}
+          {s.settings.appMode === 'verein' && (
+            <select value={compFilter} onChange={(e) => setCompFilter(e.target.value as 'all' | 'league' | 'free')} title={tr.playerDetail.compFilter} style={selStyle}>
+              <option value="all">{tr.playerDetail.compFilter}: {tr.playerDetail.filterAll}</option>
+              <option value="league">{tr.playerDetail.compLeague}</option>
+              <option value="free">{tr.playerDetail.compFree}</option>
+            </select>
+          )}
+          {s.settings.appMode === 'verein' && s.seasons.length > 0 && (
+            <select value={seasonId} onChange={(e) => setSeasonId(e.target.value)} title={tr.playerDetail.statsPeriod} style={selStyle}>
+              <option value="all">{tr.playerDetail.allSeasons}</option>
+              {s.seasons.map((se) => <option key={se.id} value={se.id}>{se.name}</option>)}
+            </select>
+          )}
+        </div>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 24 }}>
@@ -159,21 +184,30 @@ export function PlayerDetail() {
 
       <div style={{ display: 'grid', gridTemplateColumns: isPhone ? 'minmax(0, 1fr)' : '1.4fr 1fr', gap: 18, alignItems: 'start' }}>
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 22 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>{tr.playerDetail.formTitle}</span>
-            <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600 }}>{agg.history.length > 24 ? tr.playerDetail.last24 : tr.common.gamesCount(agg.history.length)}</span>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {metricOpts.map(([k, lbl]) => {
+                const on = formMetric === k;
+                return <button key={k} onClick={() => setFormMetric(k)} style={{ background: on ? 'var(--accent)' : 'var(--btn)', color: on ? 'var(--accent-fg)' : 'var(--text-3)', border: `1px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 'var(--radius-sm)', padding: '4px 9px', fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'var(--font-num)' }}>{lbl}</button>;
+              })}
+            </div>
           </div>
           {agg.history.length === 0 ? (
             <div style={{ height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-4)', fontSize: 13, border: '1px dashed var(--border-2)', borderRadius: 'var(--radius-md)' }}>{tr.playerDetail.nonePlayed}</div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: agg.history.length > 14 ? 3 : 8, height: 140 }}>
               {agg.history.slice(-24).map((f, i, arr) => {
-                const vals = arr.map((x) => x.avg); const mx = Math.max(...vals, 1); const mn = Math.min(...vals) - 4;
-                const h = Math.round(((f.avg - mn) / (mx - mn || 1)) * 100);
+                const vals = arr.map(metricVal);
+                const zoom = formMetric === 'avg' || formMetric === 'f9';
+                const mn = zoom ? Math.min(...vals) - 4 : 0;
+                const mx = Math.max(...vals, mn + 1);
+                const v = metricVal(f);
+                const h = Math.round(((v - mn) / (mx - mn || 1)) * 100);
                 return (
-                  <div key={i} title={`${f.avg.toFixed(1)} · ${f.won ? tr.common.winLetter : tr.common.lossLetter} vs. ${f.opp}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, height: '100%', justifyContent: 'flex-end' }}>
-                    {arr.length <= 14 && <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, color: 'var(--text-4)', fontWeight: 700 }}>{f.avg ? f.avg.toFixed(0) : '0'}</span>}
-                    <div style={{ width: '100%', height: `${h}%`, borderRadius: '4px 4px 0 0', background: i === arr.length - 1 ? s.settings.accent : (f.won ? 'linear-gradient(180deg,#2a6e4a,#1c4a32)' : 'linear-gradient(180deg,#6e2a2a,#4a1c1c)') }} />
+                  <div key={i} title={`${v.toFixed(zoom ? 1 : 0)} · ${f.won ? tr.common.winLetter : tr.common.lossLetter} vs. ${f.opp}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, height: '100%', justifyContent: 'flex-end' }}>
+                    {arr.length <= 14 && <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, color: 'var(--text-4)', fontWeight: 700 }}>{v.toFixed(0)}</span>}
+                    <div style={{ width: '100%', height: `${Math.max(h, 2)}%`, borderRadius: '4px 4px 0 0', background: i === arr.length - 1 ? s.settings.accent : (f.won ? 'linear-gradient(180deg,#2a6e4a,#1c4a32)' : 'linear-gradient(180deg,#6e2a2a,#4a1c1c)') }} />
                   </div>
                 );
               })}
@@ -197,6 +231,28 @@ export function PlayerDetail() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Kopf-an-Kopf: Bilanz gegen benannte Gegner (Gastspiele ohne Namen bleiben außen vor). */}
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '18px 20px', marginTop: 20 }}>
+        <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 14 }}>{tr.playerDetail.h2hTitle}</div>
+        {h2h.length === 0 ? (
+          <div style={{ fontSize: 13, color: 'var(--text-4)', padding: '8px 4px' }}>{tr.playerDetail.h2hEmpty}</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {h2h.slice(0, 10).map((r) => (
+              <div key={r.opp} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 4px', borderBottom: '1px solid var(--hairline)' }}>
+                <span style={{ flex: 1, fontSize: 13, fontWeight: 600, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.opp}</span>
+                <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800 }}>
+                  <span style={{ color: 'var(--success)' }}>{r.wins}</span>
+                  <span style={{ color: 'var(--text-4)' }}>–</span>
+                  <span style={{ color: 'var(--danger-soft)' }}>{r.losses}</span>
+                </span>
+                <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-3)', width: 66, textAlign: 'right' }}>Ø {r.avg ? r.avg.toFixed(1) : '–'}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

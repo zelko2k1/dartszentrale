@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeStandings, aggregateFor } from './selectors';
+import { computeStandings, aggregateFor, headToHead } from './selectors';
 import type { League, LeagueTeam, Fixture, Match, MatchPlayerStat } from '../data/types';
 
 function team(id: string, name: string, own = false): LeagueTeam {
@@ -113,5 +113,27 @@ describe('aggregateFor', () => {
     const agg = aggregateFor(me, matches);
     expect(agg.f9).toBeCloseTo(57.27, 1);  // (60·100 + 30·10)/110
     expect(agg.co).toBe(30);               // (40 + 20) / 2
+  });
+});
+
+describe('headToHead', () => {
+  const me = { id: 'p1', name: 'Me' };
+
+  it('bundles the record per opponent, most games first', () => {
+    const matches = [
+      match('2026-01-01', { avg3: 60, darts: 90 }, { name: 'Anna' }),   // win vs Anna
+      match('2026-01-02', { avg3: 40, darts: 90 }, { name: 'Anna' }),   // win vs Anna (winnerName='Me')
+      { date: '2026-01-03', scoreLine: '1-3', winnerName: 'Bibi', perPlayer: [pstat({ name: 'Me', avg3: 50, darts: 90 }), pstat({ name: 'Bibi' })] } as unknown as Match,
+    ];
+    const rows = headToHead(aggregateFor(me, matches).history);
+    expect(rows.map((r) => r.opp)).toEqual(['Anna', 'Bibi']); // Anna (2 Spiele) vor Bibi (1)
+    expect(rows[0]).toMatchObject({ opp: 'Anna', games: 2, wins: 2, losses: 0 });
+    expect(rows[0].avg).toBeCloseTo(50, 5);                    // (60·90 + 40·90)/180
+    expect(rows[1]).toMatchObject({ opp: 'Bibi', games: 1, wins: 0, losses: 1 });
+  });
+
+  it('ignores guest games without an opponent name', () => {
+    const matches = [match('2026-01-01', { avg3: 50, darts: 90 }, { name: '' })];
+    expect(headToHead(aggregateFor(me, matches).history)).toEqual([]);
   });
 });

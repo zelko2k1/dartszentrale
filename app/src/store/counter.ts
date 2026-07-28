@@ -55,9 +55,14 @@ export function matchOver(s: CounterSlice) { return progress(s).over; }
 export function winner(s: CounterSlice) { const id = progress(s).winnerId; return s.gamePlayers.find((p) => p.id === id) || null; }
 
 export function average(s: CounterSlice, pid: string | number) {
+  // Echter 3-Dart-Average = erzielte Punkte / geworfene Darts × 3. Die tatsächliche Dartzahl je Aufnahme
+  // liegt vor (normal 3; Checkout = Finish-Dartzahl aus F10–F12 bzw. der Nachfrage). Punkte/Aufnahme würde
+  // effiziente Checkouts (<3 Darts) unterschätzen. Fallback t.darts||3 für Alt-/Live-Aufnahmen ohne Zahl.
   const ts = s.allThrows.filter((t) => t.playerId === pid);
   if (!ts.length) return 0;
-  return ts.reduce((a, t) => a + (t.bust ? 0 : t.score), 0) / ts.length;
+  const points = ts.reduce((a, t) => a + (t.bust ? 0 : t.score), 0);
+  const darts = ts.reduce((a, t) => a + (t.darts || 3), 0);
+  return darts ? (points / darts) * 3 : 0;
 }
 export function first9(s: CounterSlice, pid: string | number) {
   // Erste 9 Darts (3 Aufnahmen) des AKTUELLEN Legs – nicht des gesamten Matches.

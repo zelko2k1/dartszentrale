@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { CounterSlice } from './counter';
-import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner, checkoutCelebration, checkoutAchievement, avgCheckoutDarts, minCheckoutDarts, totalDarts, bestShortLeg } from './counter';
+import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner, checkoutCelebration, checkoutAchievement, avgCheckoutDarts, minCheckoutDarts, totalDarts, bestShortLeg, average } from './counter';
 import type { GamePlayer, Settings, Throw } from '../data/types';
 
 // Minimal settings factory — only the fields the counter logic reads.
@@ -294,4 +294,26 @@ describe('minCheckoutDarts — kleinste mögliche Finish-Dartzahl (Double Out)',
   it('100 erst ab 2 Darts', () => { expect(minCheckoutDarts(s, 100)).toBe(2); });
   it('40 (D20) schon mit 1 Dart', () => { expect(minCheckoutDarts(s, 40)).toBe(1); });
   it('50 (Bull) schon mit 1 Dart', () => { expect(minCheckoutDarts(s, 50)).toBe(1); });
+});
+
+describe('average — echter 3-Dart-Average (Punkte/Darts×3)', () => {
+  it('belohnt Checkouts mit weniger als 3 Darts', () => {
+    const s = slice({ allThrows: [
+      turn('a', 100),
+      turn('a', 100),
+      turn('a', 40, { checkout: true, darts: 2 }), // Finish mit 2 Darts
+    ] });
+    // 240 Punkte / 8 Darts × 3 = 90  (Punkte-pro-Aufnahme wäre 80)
+    expect(average(s, 'a')).toBe(90);
+  });
+  it('zählt Busts als geworfene Darts mit 0 Punkten', () => {
+    const s = slice({ allThrows: [
+      turn('a', 60),
+      turn('a', 0, { bust: true }), // 3 Darts, 0 Punkte
+    ] });
+    expect(average(s, 'a')).toBe(30); // 60 / 6 × 3
+  });
+  it('ist 0 ohne Aufnahmen', () => {
+    expect(average(slice(), 'a')).toBe(0);
+  });
 });
