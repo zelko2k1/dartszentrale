@@ -354,7 +354,7 @@ function JoinDevicesPanel({ children }: { children?: ReactNode }) {
       <Row label={tr.settings.joinAddr} sub={tr.settings.joinAddrSub} top>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
           {valid && <img src={dataUri} width={184} height={184} alt={tr.settings.joinQrAlt} style={{ background: '#fff', borderRadius: 'var(--radius-md)', padding: 8 }} />}
-          <input value={url} onChange={(e) => setAndSave(e.target.value)} placeholder="http://192.168.0.10:8090" style={field} />
+          <input value={url} onChange={(e) => setAndSave(e.target.value)} aria-label={tr.settings.joinAddr} placeholder="http://192.168.0.10:8090" style={field} />
           <button style={btn} onClick={() => { void navigator.clipboard?.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}>{copied ? tr.settings.copied : tr.settings.copyAddr}</button>
           {isLocalOnly && (
             <div style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600, maxWidth: 320, textAlign: 'right' }}>

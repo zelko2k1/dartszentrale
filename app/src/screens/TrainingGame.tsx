@@ -395,7 +395,7 @@ function HalvePanel({ accent }: { accent: string }) {
   return (
     <div>
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <input autoFocus type="text" inputMode="numeric" value={val} placeholder={tr.trainingScr.pointsPlaceholder}
+        <input autoFocus type="text" inputMode="numeric" value={val} aria-label={tr.trainingScr.pointsPlaceholder} placeholder={tr.trainingScr.pointsPlaceholder}
           onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
           onKeyDown={(e) => { if (e.key === 'Enter') { if (val === '') miss(); else submit(); } }}
           style={{ flex: 1, minWidth: 120, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '13px 16px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
@@ -417,7 +417,7 @@ function ScorePanel({ accent }: { accent: string }) {
   return (
     <div>
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
-        <input autoFocus type="text" inputMode="numeric" value={val} placeholder={tr.trainingScr.turnPlaceholder}
+        <input autoFocus type="text" inputMode="numeric" value={val} aria-label={tr.trainingScr.turnPlaceholder} placeholder={tr.trainingScr.turnPlaceholder}
           onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
           style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '13px 16px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />

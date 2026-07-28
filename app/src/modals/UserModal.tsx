@@ -91,16 +91,16 @@ export function UserModal() {
       <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
         <div style={{ flex: 1 }}>
           <FieldLabel>{tr.modals.firstName}</FieldLabel>
-          <input className="dh-input" value={m.first} onChange={(e) => s.setUserField('first', e.target.value)} placeholder={tr.modals.firstPh2} style={inputStyle} />
+          <input className="dh-input" value={m.first} onChange={(e) => s.setUserField('first', e.target.value)} aria-label={tr.modals.firstName} placeholder={tr.modals.firstPh2} style={inputStyle} />
         </div>
         <div style={{ flex: 1 }}>
           <FieldLabel>{tr.modals.lastName}</FieldLabel>
-          <input className="dh-input" value={m.last} onChange={(e) => s.setUserField('last', e.target.value)} placeholder={tr.modals.lastPh2} style={inputStyle} />
+          <input className="dh-input" value={m.last} onChange={(e) => s.setUserField('last', e.target.value)} aria-label={tr.modals.lastName} placeholder={tr.modals.lastPh2} style={inputStyle} />
         </div>
       </div>
 
       <FieldLabel>{tr.login.email}</FieldLabel>
-      <input className="dh-input" type="email" value={m.email} onChange={(e) => s.setUserField('email', e.target.value)} placeholder="name@verein.de" style={{ ...inputStyle, marginBottom: emailOwner ? 8 : 18 }} />
+      <input className="dh-input" type="email" value={m.email} onChange={(e) => s.setUserField('email', e.target.value)} aria-label={tr.login.email} placeholder="name@verein.de" style={{ ...inputStyle, marginBottom: emailOwner ? 8 : 18 }} />
       {emailOwner && (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', padding: '10px 12px', fontSize: 12.5, lineHeight: 1.45, marginBottom: 18 }}>
           <span style={{ flexShrink: 0, fontWeight: 800 }}>⚠</span>
@@ -111,12 +111,12 @@ export function UserModal() {
       {s.pbMode && (
         <>
           <FieldLabel note={m.mode === 'edit' ? tr.modals.pwNoteEdit : tr.modals.pwNoteNew}>{tr.modals.loginPw}</FieldLabel>
-          <input className="dh-input" type="password" value={m.password} onChange={(e) => s.setUserField('password', e.target.value)} placeholder={m.mode === 'edit' ? '••••••••' : tr.modals.pwPh} autoComplete="new-password" style={{ ...inputStyle, marginBottom: 18 }} />
+          <input className="dh-input" type="password" value={m.password} onChange={(e) => s.setUserField('password', e.target.value)} aria-label={tr.modals.loginPw} placeholder={m.mode === 'edit' ? '••••••••' : tr.modals.pwPh} autoComplete="new-password" style={{ ...inputStyle, marginBottom: 18 }} />
         </>
       )}
 
       <FieldLabel note={tr.modals.optional}>{tr.modals.position}</FieldLabel>
-      <input className="dh-input" value={m.position} onChange={(e) => s.setUserField('position', e.target.value)} placeholder={tr.modals.positionPh} style={{ ...inputStyle, marginBottom: 18 }} />
+      <input className="dh-input" value={m.position} onChange={(e) => s.setUserField('position', e.target.value)} aria-label={tr.modals.position} placeholder={tr.modals.positionPh} style={{ ...inputStyle, marginBottom: 18 }} />
 
       <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 8 }}>{tr.modals.roleRights}</label>
       {m.isBoard ? (

@@ -17,16 +17,16 @@ export function EventModal() {
       <ModalTitle>{m.mode === 'edit' ? tr.modals.eventEdit : tr.modals.eventNew}</ModalTitle>
 
       <FieldLabel>{tr.modals.titleLabel}</FieldLabel>
-      <input className="dh-input" value={m.title} onChange={(e) => s.setEventField('title', e.target.value)} placeholder={tr.modals.eventTitlePh} style={{ ...inputStyle, fontSize: 15, marginBottom: 18 }} />
+      <input className="dh-input" value={m.title} onChange={(e) => s.setEventField('title', e.target.value)} aria-label={tr.modals.titleLabel} placeholder={tr.modals.eventTitlePh} style={{ ...inputStyle, fontSize: 15, marginBottom: 18 }} />
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
         <div style={{ flex: 1 }}>
           <FieldLabel>{tr.modals.date}</FieldLabel>
-          <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setEventField('date', e.target.value)} style={{ ...inputStyle, fontSize: 14 }} />
+          <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setEventField('date', e.target.value)} aria-label={tr.modals.date} style={{ ...inputStyle, fontSize: 14 }} />
         </div>
         <div style={{ width: 120 }}>
           <FieldLabel>{tr.modals.time}</FieldLabel>
-          <input className="dh-input" type="time" value={m.time} onChange={(e) => s.setEventField('time', e.target.value)} style={{ ...inputStyle, fontSize: 14 }} />
+          <input className="dh-input" type="time" value={m.time} onChange={(e) => s.setEventField('time', e.target.value)} aria-label={tr.modals.time} style={{ ...inputStyle, fontSize: 14 }} />
         </div>
       </div>
 
@@ -43,7 +43,7 @@ export function EventModal() {
       </div>
 
       <FieldLabel note={tr.modals.optional}>{tr.modals.place}</FieldLabel>
-      <input className="dh-input" value={m.loc} onChange={(e) => s.setEventField('loc', e.target.value)} placeholder={tr.modals.placePh} style={{ ...inputStyle, fontSize: 15, marginBottom: 18 }} />
+      <input className="dh-input" value={m.loc} onChange={(e) => s.setEventField('loc', e.target.value)} aria-label={tr.modals.place} placeholder={tr.modals.placePh} style={{ ...inputStyle, fontSize: 15, marginBottom: 18 }} />
 
       {m.mode === 'add' && (
         <>
@@ -59,7 +59,7 @@ export function EventModal() {
           {m.repeat !== 'none' && (
             <div style={{ marginBottom: 24 }}>
               <FieldLabel>{tr.modals.repeatUntil}</FieldLabel>
-              <input className="dh-input" type="date" value={m.until} min={m.date} onChange={(e) => s.setEventField('until', e.target.value)} style={{ ...inputStyle, fontSize: 14 }} />
+              <input className="dh-input" type="date" value={m.until} min={m.date} onChange={(e) => s.setEventField('until', e.target.value)} aria-label={tr.modals.repeatUntil} style={{ ...inputStyle, fontSize: 14 }} />
               {(!m.until || m.until < m.date) && <div style={{ fontSize: 11.5, color: 'var(--warn)', marginTop: 6 }}>{tr.modals.repeatUntilWarn}</div>}
             </div>
           )}

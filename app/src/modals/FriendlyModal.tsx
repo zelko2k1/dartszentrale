@@ -39,7 +39,7 @@ export function FriendlyModal() {
           })}
         </div>
       ) : (
-        <input className="dh-input" value={m.ownTeam} onChange={(e) => s.setFriendlyField('ownTeam', e.target.value)} placeholder={tr.modals.ownTeamPh} style={{ ...inputStyle, marginBottom: 16 }} />
+        <input className="dh-input" value={m.ownTeam} onChange={(e) => s.setFriendlyField('ownTeam', e.target.value)} aria-label={tr.modals.ownTeam} placeholder={tr.modals.ownTeamPh} style={{ ...inputStyle, marginBottom: 16 }} />
       )}
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '12px 16px', background: 'var(--btn)', borderRadius: 'var(--radius-md)', marginBottom: 16 }}>
@@ -50,7 +50,7 @@ export function FriendlyModal() {
       </div>
 
       <FieldLabel>{tr.modals.opponent}</FieldLabel>
-      <input className="dh-input" value={m.opponent} onChange={(e) => s.setFriendlyField('opponent', e.target.value)} placeholder={tr.modals.opponentPh} style={{ ...inputStyle, marginBottom: 8 }} />
+      <input className="dh-input" value={m.opponent} onChange={(e) => s.setFriendlyField('opponent', e.target.value)} aria-label={tr.modals.opponent} placeholder={tr.modals.opponentPh} style={{ ...inputStyle, marginBottom: 8 }} />
       {matches.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 180, overflowY: 'auto', marginBottom: 16 }}>
           {matches.map((n) => {
@@ -65,15 +65,15 @@ export function FriendlyModal() {
       <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
         <div style={{ flex: 1 }}>
           <FieldLabel>{tr.modals.date}</FieldLabel>
-          <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setFriendlyField('date', e.target.value)} style={inputStyle} />
+          <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setFriendlyField('date', e.target.value)} aria-label={tr.modals.date} style={inputStyle} />
         </div>
         <div style={{ width: 130 }}>
           <FieldLabel>{tr.modals.time}</FieldLabel>
-          <input className="dh-input" type="time" value={m.time} onChange={(e) => s.setFriendlyField('time', e.target.value)} style={inputStyle} />
+          <input className="dh-input" type="time" value={m.time} onChange={(e) => s.setFriendlyField('time', e.target.value)} aria-label={tr.modals.time} style={inputStyle} />
         </div>
       </div>
       <FieldLabel>{tr.modals.place}</FieldLabel>
-      <input className="dh-input" value={m.loc} onChange={(e) => s.setFriendlyField('loc', e.target.value)} placeholder={tr.modals.placePh} style={{ ...inputStyle, marginBottom: 18 }} />
+      <input className="dh-input" value={m.loc} onChange={(e) => s.setFriendlyField('loc', e.target.value)} aria-label={tr.modals.place} placeholder={tr.modals.placePh} style={{ ...inputStyle, marginBottom: 18 }} />
 
       <ModalFooter onCancel={() => s.closeFriendly()} onSave={() => s.saveFriendly()} saveDisabled={!canSave} saveLabel={tr.modals.create} />
       <div style={{ fontSize: 11, color: 'var(--text-5)', marginTop: 10, lineHeight: 1.5 }}>

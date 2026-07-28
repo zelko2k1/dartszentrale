@@ -115,7 +115,7 @@ export function CounterSetup() {
             <div style={{ fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{headName}</div>
           </div>
         </div>
-        <input value={su[guestKey] || ''} onChange={(e) => s.setSetup(guestKey, e.target.value)} placeholder={tr.counter.guestPlaceholder} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: `1px solid ${guest ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 'var(--radius-md)', padding: '9px 11px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', marginBottom: 8 }} />
+        <input value={su[guestKey] || ''} onChange={(e) => s.setSetup(guestKey, e.target.value)} aria-label={tr.counter.guestPlaceholder} placeholder={tr.counter.guestPlaceholder} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: `1px solid ${guest ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 'var(--radius-md)', padding: '9px 11px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', marginBottom: 8 }} />
         {players.length > 6 && !guest && (
           <div style={{ marginBottom: 8 }}>
             <SearchInput value={pQuery[idx]} onChange={(v) => { setPQuery((cur) => ({ ...cur, [idx]: v })); setHi((h) => ({ ...h, [idx]: 0 })); }} placeholder={tr.counter.searchPlaceholder} width="100%" inputRef={searchRefs[idx]} onKeyDown={onSearchKey(idx)} />

@@ -57,15 +57,15 @@ export function PlayerModal() {
       <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
         <div style={{ flex: 1 }}>
           <FieldLabel>{tr.modals.firstName}</FieldLabel>
-          <input className="dh-input" value={m.first} onChange={(e) => s.setPlayerField('first', e.target.value)} placeholder={tr.modals.firstPh} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', fontSize: 15, color: 'var(--text)', fontFamily: 'inherit' }} />
+          <input className="dh-input" value={m.first} onChange={(e) => s.setPlayerField('first', e.target.value)} aria-label={tr.modals.firstName} placeholder={tr.modals.firstPh} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', fontSize: 15, color: 'var(--text)', fontFamily: 'inherit' }} />
         </div>
         <div style={{ flex: 1 }}>
           <FieldLabel>{tr.modals.lastName}</FieldLabel>
-          <input className="dh-input" value={m.last} onChange={(e) => s.setPlayerField('last', e.target.value)} placeholder={tr.modals.lastPh} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', fontSize: 15, color: 'var(--text)', fontFamily: 'inherit' }} />
+          <input className="dh-input" value={m.last} onChange={(e) => s.setPlayerField('last', e.target.value)} aria-label={tr.modals.lastName} placeholder={tr.modals.lastPh} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', fontSize: 15, color: 'var(--text)', fontFamily: 'inherit' }} />
         </div>
       </div>
       <FieldLabel note={tr.modals.shortNote}>{tr.modals.shortLabel}</FieldLabel>
-      <input className="dh-input" value={m.short} onChange={(e) => s.setPlayerField('short', e.target.value)} placeholder={tr.modals.shortPh} maxLength={3} style={{ width: 140, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', fontSize: 15, color: 'var(--text)', fontFamily: 'var(--font-num)', textTransform: 'uppercase', marginBottom: 26 }} />
+      <input className="dh-input" value={m.short} onChange={(e) => s.setPlayerField('short', e.target.value)} aria-label={tr.modals.shortLabel} placeholder={tr.modals.shortPh} maxLength={3} style={{ width: 140, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', fontSize: 15, color: 'var(--text)', fontFamily: 'var(--font-num)', textTransform: 'uppercase', marginBottom: 26 }} />
       {confirmDel ? (
         <div style={{ background: 'color-mix(in srgb, var(--danger) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 32%, transparent)', borderRadius: 'var(--radius-md)', padding: '14px 16px' }}>
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>{tr.modals.deleteConfirmTitle(fullName || tr.modals.playerFallback)}</div>

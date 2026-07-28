@@ -38,16 +38,16 @@ export function FixtureModal() {
       <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
         <div style={{ flex: 1 }}>
           <FieldLabel>{tr.modals.date}</FieldLabel>
-          <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setFixtureField('date', e.target.value)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+          <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setFixtureField('date', e.target.value)} aria-label={tr.modals.date} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
         </div>
         <div style={{ width: 130 }}>
           <FieldLabel>{tr.modals.time}</FieldLabel>
-          <input className="dh-input" type="time" value={m.time} onChange={(e) => s.setFixtureField('time', e.target.value)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+          <input className="dh-input" type="time" value={m.time} onChange={(e) => s.setFixtureField('time', e.target.value)} aria-label={tr.modals.time} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
         </div>
       </div>
 
       <FieldLabel>{tr.modals.place}</FieldLabel>
-      <input className="dh-input" value={m.loc} onChange={(e) => s.setFixtureField('loc', e.target.value)} placeholder={tr.modals.placePh2} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 18 }} />
+      <input className="dh-input" value={m.loc} onChange={(e) => s.setFixtureField('loc', e.target.value)} aria-label={tr.modals.place} placeholder={tr.modals.placePh2} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 18 }} />
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 16px', background: 'var(--btn)', borderRadius: 'var(--radius-md)', marginBottom: 16 }}>
         <div>
@@ -64,9 +64,9 @@ export function FixtureModal() {
           <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 2 }}>{tr.modals.resultGames}</label>
           <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 8 }}>{tr.modals.resultGamesHint}</div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 6 }}>
-            <input className="dh-input" value={m.hs} onChange={(e) => s.setFixtureField('hs', e.target.value)} inputMode="numeric" placeholder="0" style={numInput} />
+            <input className="dh-input" value={m.hs} onChange={(e) => s.setFixtureField('hs', e.target.value)} inputMode="numeric" aria-label={tr.teams.home} placeholder="0" style={numInput} />
             <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-4)' }}>:</span>
-            <input className="dh-input" value={m.as} onChange={(e) => s.setFixtureField('as', e.target.value)} inputMode="numeric" placeholder="0" style={numInput} />
+            <input className="dh-input" value={m.as} onChange={(e) => s.setFixtureField('as', e.target.value)} inputMode="numeric" aria-label={tr.modals.guest} placeholder="0" style={numInput} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 22, fontSize: 11, color: 'var(--text-5)', fontWeight: 600 }}>
             <span style={{ width: 80, textAlign: 'center' }}>{tr.teams.home}</span><span style={{ width: 8 }} /><span style={{ width: 80, textAlign: 'center' }}>{tr.modals.guest}</span>

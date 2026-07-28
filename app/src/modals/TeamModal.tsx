@@ -60,11 +60,11 @@ export function TeamModal() {
       <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
         <div style={{ flex: 1.4 }}>
           <FieldLabel>{tr.modals.teamName}</FieldLabel>
-          <input className="dh-input" value={m.name} onChange={(e) => s.setTeamField('name', e.target.value)} placeholder={tr.modals.teamNameEgPh} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+          <input className="dh-input" value={m.name} onChange={(e) => s.setTeamField('name', e.target.value)} aria-label={tr.modals.teamName} placeholder={tr.modals.teamNameEgPh} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
         </div>
         <div style={{ flex: 1 }}>
           <FieldLabel note={tr.modals.optional}>{tr.modals.leagueField}</FieldLabel>
-          <input className="dh-input" value={m.league} onChange={(e) => s.setTeamField('league', e.target.value)} placeholder={tr.modals.leagueNamePh} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+          <input className="dh-input" value={m.league} onChange={(e) => s.setTeamField('league', e.target.value)} aria-label={tr.modals.leagueField} placeholder={tr.modals.leagueNamePh} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
         </div>
       </div>
 

@@ -30,11 +30,11 @@ export function LeagueModal() {
       <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
         <div style={{ flex: 1.6 }}>
           <FieldLabel>{tr.modals.leagueName}</FieldLabel>
-          <input className="dh-input" value={m.name} onChange={(e) => s.setLeagueField('name', e.target.value)} placeholder={tr.modals.leagueNamePh} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+          <input className="dh-input" value={m.name} onChange={(e) => s.setLeagueField('name', e.target.value)} aria-label={tr.modals.leagueName} placeholder={tr.modals.leagueNamePh} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
         </div>
         <div style={{ flex: 1 }}>
           <FieldLabel>{tr.common.season}</FieldLabel>
-          <input className="dh-input" value={m.season} onChange={(e) => s.setLeagueField('season', e.target.value)} placeholder="2025/26" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+          <input className="dh-input" value={m.season} onChange={(e) => s.setLeagueField('season', e.target.value)} aria-label={tr.common.season} placeholder="2025/26" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
         </div>
       </div>
 
@@ -61,11 +61,11 @@ export function LeagueModal() {
         <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
           <div style={{ flex: 1 }}>
             <FieldLabel note={tr.modals.perMatch}>{tr.modals.singles}</FieldLabel>
-            <input className="dh-input" type="number" min={0} max={12} value={m.singlesCount} onChange={(e) => s.setLeagueCount('singlesCount', parseInt(e.target.value, 10) || 0)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+            <input className="dh-input" type="number" min={0} max={12} value={m.singlesCount} onChange={(e) => s.setLeagueCount('singlesCount', parseInt(e.target.value, 10) || 0)} aria-label={tr.modals.singles} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
           </div>
           <div style={{ flex: 1 }}>
             <FieldLabel note={tr.modals.perMatch}>{tr.modals.doubles}</FieldLabel>
-            <input className="dh-input" type="number" min={0} max={12} value={m.doublesCount} onChange={(e) => s.setLeagueCount('doublesCount', parseInt(e.target.value, 10) || 0)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+            <input className="dh-input" type="number" min={0} max={12} value={m.doublesCount} onChange={(e) => s.setLeagueCount('doublesCount', parseInt(e.target.value, 10) || 0)} aria-label={tr.modals.doubles} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
           </div>
         </div>
       ) : (
@@ -101,7 +101,7 @@ export function LeagueModal() {
 
       <div style={{ borderTop: '1px solid var(--hairline)', paddingTop: 16, marginBottom: 20 }}>
         <FieldLabel note={tr.modals.optional}>{tr.modals.nuligaUrl}</FieldLabel>
-        <input className="dh-input" value={m.nuligaUrl} onChange={(e) => s.setLeagueField('nuligaUrl', e.target.value)} placeholder="https://…liga.nu/…/groupPage?championship=…&group=…" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit' }} />
+        <input className="dh-input" value={m.nuligaUrl} onChange={(e) => s.setLeagueField('nuligaUrl', e.target.value)} aria-label={tr.modals.nuligaUrl} placeholder="https://…liga.nu/…/groupPage?championship=…&group=…" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit' }} />
         <div style={{ fontSize: 11.5, color: 'var(--text-4)', marginTop: 7, lineHeight: 1.5 }}>
           {tr.modals.nuligaHintA}<b>{tr.modals.nuligaHintB}</b>{tr.modals.nuligaHintC}
         </div>
