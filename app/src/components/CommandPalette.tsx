@@ -67,8 +67,8 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
   };
 
   return (
-    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.72)', backdropFilter: 'blur(4px)', zIndex: 120, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: '14vh' }}>
-      <div role="dialog" aria-modal="true" aria-label={tr.settings.scPalette} onClick={(e) => e.stopPropagation()} onKeyDown={onKey} style={{ width: 'min(560px, 92vw)', background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', boxShadow: '0 24px 60px rgba(0,0,0,.5)', overflow: 'hidden' }}>
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', backdropFilter: 'blur(4px)', zIndex: 120, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: '14vh' }}>
+      <div role="dialog" aria-modal="true" aria-label={tr.settings.scPalette} onClick={(e) => e.stopPropagation()} onKeyDown={onKey} style={{ width: 'min(560px, 92vw)', background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
         <div style={{ padding: 12, borderBottom: '1px solid var(--hairline)' }}>
           <SearchInput value={q} onChange={(v) => { setQ(v); setHi(0); }} placeholder={tr.palette.placeholder} width="100%" inputRef={inputRef} />
         </div>

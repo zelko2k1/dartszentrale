@@ -102,8 +102,8 @@ export function RulesModal() {
   const rules = MODE_RULES[id];
   if (!mode || !rules) return null;
   return (
-    <div onClick={(e) => { if (e.target === e.currentTarget) s.closeRules(); }} style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.78)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 62, padding: 24 }}>
-      <div className="dh-pop" style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xl)', padding: 28, width: 480, maxWidth: '92vw', boxShadow: '0 30px 70px rgba(0,0,0,.55)' }}>
+    <div onClick={(e) => { if (e.target === e.currentTarget) s.closeRules(); }} style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 62, padding: 24 }}>
+      <div className="dh-pop" style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xl)', padding: 28, width: 480, maxWidth: '92vw', boxShadow: 'var(--shadow-card)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
           <div style={{ width: 48, height: 48, borderRadius: 'var(--radius-md)', background: `color-mix(in srgb, ${mode.color} 16%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={mode.color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={mode.icon} /></svg>

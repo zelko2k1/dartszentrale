@@ -286,12 +286,12 @@ export function Counter() {
         <Overlay z={45}>
           {s.hint.auto ? (
             // Selbst-ausblendende Feier (Short Leg): kein Knopf, ganze Fläche zum Wegtippen.
-            <div onClick={() => s.closeHint()} style={{ cursor: 'pointer', background: 'var(--surface)', border: `2px solid ${accent}`, borderRadius: 'var(--radius-xl)', padding: '30px 48px', textAlign: 'center', boxShadow: `0 24px 60px rgba(0,0,0,.5), 0 0 0 6px color-mix(in srgb, ${accent} 14%, transparent)` }}>
+            <div onClick={() => s.closeHint()} style={{ cursor: 'pointer', background: 'var(--surface)', border: `2px solid ${accent}`, borderRadius: 'var(--radius-xl)', padding: '30px 48px', textAlign: 'center', boxShadow: `var(--shadow-card), 0 0 0 6px color-mix(in srgb, ${accent} 14%, transparent)` }}>
               <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '.01em', color: accent, marginBottom: 6, lineHeight: 1.1 }}>{s.hint.title}</div>
               <div style={{ fontSize: 22, fontWeight: 800 }}>{s.hint.body}</div>
             </div>
           ) : (
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 28, maxWidth: 420, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 28, maxWidth: 420, textAlign: 'center', boxShadow: 'var(--shadow-card)' }}>
               <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{s.hint.title}</div>
               <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.55, marginBottom: 24 }}>{s.hint.body}</div>
               <button onClick={() => s.closeHint()} style={{ background: accent, border: 'none', color: accFg, padding: '13px 32px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.counter.gotIt}</button>
@@ -330,7 +330,7 @@ function AbortConfirm() {
   const ring = (on: boolean, color: string): React.CSSProperties => (on ? { boxShadow: `0 0 0 3px color-mix(in srgb, ${color} 55%, transparent)` } : {});
   return (
     <Overlay z={40}>
-      <div onKeyDown={onKey} style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 28, maxWidth: 400, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+      <div onKeyDown={onKey} style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 28, maxWidth: 400, textAlign: 'center', boxShadow: 'var(--shadow-card)' }}>
         <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{tr.counter.abortTitle}</div>
         <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>{tr.counter.abortBody}</div>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
@@ -388,7 +388,7 @@ function RestEntryBox() {
   const submit = () => { if (valid) s.submitRestEntry(val); };
   return (
     <Overlay z={47}>
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 26, width: 360, maxWidth: '92vw', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 26, width: 360, maxWidth: '92vw', boxShadow: 'var(--shadow-card)' }}>
         <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 4 }}>{tr.counter.restTitle}</div>
         <div style={{ fontSize: 13, color: 'var(--text-3)', marginBottom: 18 }}>{cp?.name}{tr.counter.restCurrent1}<b style={{ color: 'var(--text)', fontFamily: 'var(--font-num)' }}>{curRem}</b>{tr.counter.restCurrent2}</div>
         <input
@@ -751,7 +751,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
       {/* detail overlay (stats & history) */}
       {showDetail && (
         <Overlay z={35}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 18, width: '92vw', maxWidth: 460, maxHeight: '84vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 18, width: '92vw', maxWidth: 460, maxHeight: '84vh', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-card)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
               <div style={{ fontSize: 16, fontWeight: 800 }}>{tr.counter.detailTitle}</div>
               <button onClick={() => setShowDetail(false)} style={phoneIconBtn} aria-label={tr.trainingScr.close}><IconX size={18} sw={2} /></button>
@@ -795,15 +795,15 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
 }
 
 function Overlay({ children, z }: { children: React.ReactNode; z: number }) {
-  return <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,10,12,.82)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: z }}>{children}</div>;
+  return <div style={{ position: 'absolute', inset: 0, background: 'var(--scrim)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: z }}>{children}</div>;
 }
 
 function WhoStarts() {
   const s = useStore();
   const tr = useT();
   return (
-    <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,10,12,.86)', backdropFilter: 'blur(7px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 48 }}>
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xl)', padding: '32px 34px', width: 520, maxWidth: '92vw', boxShadow: '0 30px 70px rgba(0,0,0,.55)' }}>
+    <div style={{ position: 'absolute', inset: 0, background: 'var(--scrim)', backdropFilter: 'blur(7px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 48 }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xl)', padding: '32px 34px', width: 520, maxWidth: '92vw', boxShadow: 'var(--shadow-card)' }}>
         {!s.bullMode ? (
           <>
             <div style={{ textAlign: 'center', marginBottom: 22 }}>
@@ -870,7 +870,7 @@ function FinishPrompt() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <Overlay z={55}>
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: '28px 32px', textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: '28px 32px', textAlign: 'center', boxShadow: 'var(--shadow-card)' }}>
         <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 18 }}>{tr.counter.finishPromptTitle}</div>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
           {[1, 2, 3].map((d) => {
@@ -937,7 +937,7 @@ function WinOverlay() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const kbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.7, background: 'rgba(0,0,0,.22)', borderRadius: 'var(--radius-xs)', padding: '1px 6px', marginLeft: 7 };
   return (
-    <div style={{ position: 'absolute', inset: 0, background: 'rgba(8,10,12,.86)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 30 }}>
+    <div style={{ position: 'absolute', inset: 0, background: 'var(--scrim)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 30 }}>
       <div style={{ textAlign: 'center', maxWidth: 440, padding: '0 24px' }}>
         <div style={{ width: 96, height: 96, borderRadius: '50%', background: 'radial-gradient(circle,color-mix(in srgb, var(--gold) 25%, transparent),color-mix(in srgb, var(--gold) 5%, transparent))', border: '1px solid color-mix(in srgb, var(--gold) 40%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 22px' }}>
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z" /></svg>

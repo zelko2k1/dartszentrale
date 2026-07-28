@@ -361,8 +361,8 @@ export default function App() {
       )}
 
       {exitOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.82)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 96 }}>
-          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 26, width: '92vw', maxWidth: 420, boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 96 }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 26, width: '92vw', maxWidth: 420, boxShadow: 'var(--shadow-card)' }}>
             <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>{tr.app.leaveBoardMode}</div>
             <div style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 18 }}>{tr.app.exitInfo}</div>
             <input className="dh-input" type="email" inputMode="email" autoCapitalize="off" autoCorrect="off" spellCheck={false} value={exitForm.email} onChange={(e) => setExitForm((f) => ({ ...f, email: e.target.value, err: '' }))} placeholder={tr.login.email} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 10 }} />
@@ -396,8 +396,8 @@ function NewGameConfirm() {
   };
   const ring = (on: boolean, color: string): React.CSSProperties => (on ? { boxShadow: `0 0 0 3px color-mix(in srgb, ${color} 55%, transparent)` } : {});
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.82)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 90 }}>
-      <div onKeyDown={onKey} style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 28, width: '92vw', maxWidth: 400, textAlign: 'center', boxShadow: '0 24px 60px rgba(0,0,0,.5)' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 90 }}>
+      <div onKeyDown={onKey} style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 28, width: '92vw', maxWidth: 400, textAlign: 'center', boxShadow: 'var(--shadow-card)' }}>
         <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{tr.app.newGameConfirmTitle}</div>
         <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>{tr.counter.abortBody}</div>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
