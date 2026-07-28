@@ -24,6 +24,13 @@ input::placeholder, textarea::placeholder { color: var(--text-5); }
 .dh-primary:hover { filter: brightness(1.06); }
 .dh-primary:active { transform: translateY(1px); }
 
+/* Touch-Ziele: auf Grob-Zeigern (Board-Tablet, Handy) mindestens 44×44px — am Board Pflicht (PRODUCT.md).
+   Nur bei pointer: coarse; Desktop-Maus (pointer: fine) bleibt kompakt. min-* übersteuert kleinere
+   inline width/height, ohne die Optik anzufassen; Buttons zentrieren ihren Inhalt selbst vertikal. */
+@media (pointer: coarse) {
+  .dh-tap { min-width: 44px; min-height: 44px; }
+}
+
 /* Inputs Fokus */
 .dh-input { transition: border-color .15s var(--ease-out), box-shadow .15s var(--ease-out); outline: none; }
 .dh-input:focus { border-color: var(--border-strong); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }

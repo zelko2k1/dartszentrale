@@ -110,9 +110,9 @@ export function Login() {
 
         {(impressum || datenschutz) && (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, marginTop: 18, fontSize: 12 }}>
-            {impressum && <button className="dh-focus" onClick={() => setLegal('impressum')} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, padding: 4, borderRadius: 'var(--radius-xs)', textDecoration: 'underline' }}>{tr.login.impressum}</button>}
+            {impressum && <button className="dh-focus dh-tap" onClick={() => setLegal('impressum')} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, padding: 4, borderRadius: 'var(--radius-xs)', textDecoration: 'underline' }}>{tr.login.impressum}</button>}
             {impressum && datenschutz && <span style={{ color: 'var(--text-5)' }}>·</span>}
-            {datenschutz && <button className="dh-focus" onClick={() => setLegal('datenschutz')} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, padding: 4, borderRadius: 'var(--radius-xs)', textDecoration: 'underline' }}>{tr.login.datenschutz}</button>}
+            {datenschutz && <button className="dh-focus dh-tap" onClick={() => setLegal('datenschutz')} style={{ background: 'none', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 12, padding: 4, borderRadius: 'var(--radius-xs)', textDecoration: 'underline' }}>{tr.login.datenschutz}</button>}
           </div>
         )}
       </div>

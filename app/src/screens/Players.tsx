@@ -62,13 +62,13 @@ export function Players() {
                       <IconUserCheck size={15} />
                     </span>
                   ) : (
-                    <button onClick={(e) => { e.stopPropagation(); s.openAddUserForPlayer(pl.id); }} title={tr.players.createUser} aria-label={tr.players.createUser} className="dh-btn" style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                    <button onClick={(e) => { e.stopPropagation(); s.openAddUserForPlayer(pl.id); }} title={tr.players.createUser} aria-label={tr.players.createUser} className="dh-btn dh-tap" style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                       <IconUserCheck size={15} />
                     </button>
                   )
                 )}
                 {p.managePlayers && (
-                  <button onClick={(e) => { e.stopPropagation(); s.openEditPlayer(pl.id); }} title={tr.common.edit} aria-label={tr.common.edit} className="dh-btn" style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <button onClick={(e) => { e.stopPropagation(); s.openEditPlayer(pl.id); }} title={tr.common.edit} aria-label={tr.common.edit} className="dh-btn dh-tap" style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
                     <IconEdit size={15} />
                   </button>
                 )}

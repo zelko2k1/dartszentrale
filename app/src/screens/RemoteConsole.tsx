@@ -504,7 +504,7 @@ function PickerSheet({ title, onClose, children }: { title: string; onClose: () 
     <div style={{ position: 'fixed', inset: 0, background: '#0b0d0f', zIndex: 40, display: 'flex', flexDirection: 'column', padding: 'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)' }}>
       <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderBottom: '1px solid #1c2228' }}>
         <div style={{ flex: 1, fontWeight: 800, fontSize: 16 }}>{title}</div>
-        <button onClick={onClose} aria-label="Schließen" className="rc-ghost" style={{ width: 40, height: 40, borderRadius: 'var(--radius-md)', fontSize: 20 }}>×</button>
+        <button onClick={onClose} aria-label="Schließen" className="rc-ghost dh-tap" style={{ width: 40, height: 40, borderRadius: 'var(--radius-md)', fontSize: 20 }}>×</button>
       </div>
       <div className="rc-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8, padding: 16 }}>
         {children}

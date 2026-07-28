@@ -183,7 +183,7 @@ export function CounterSetup() {
         <div style={{ padding: '0 24px 22px', maxHeight: '85vh', overflowY: 'auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, background: 'var(--surface)', padding: '20px 0 6px', zIndex: 1 }}>
             <div style={{ fontSize: 16, fontWeight: 800 }}>{tr.counter.gameType}</div>
-            <button onClick={closeType} title={tr.counter.closeEsc} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 'var(--radius-sm)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button onClick={closeType} title={tr.counter.closeEsc} className="dh-tap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 'var(--radius-sm)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', cursor: 'pointer', fontFamily: 'inherit' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
             </button>
           </div>

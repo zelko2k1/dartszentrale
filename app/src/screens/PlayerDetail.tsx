@@ -67,7 +67,7 @@ export function PlayerDetail() {
   return (
     <div style={{ padding: '28px 32px', maxWidth: 1080, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
-        <button onClick={() => s.go('players')} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>
+        <button onClick={() => s.go('players')} className="dh-tap" style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>
           <IconBack size={15} />
           {tr.playerDetail.allPlayers}
         </button>
