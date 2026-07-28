@@ -10,7 +10,7 @@ import { FriendlyModal } from './FriendlyModal';
 import { EventModal } from './EventModal';
 import { ImportModal } from './ImportModal';
 import { NuligaSyncModal } from './NuligaSyncModal';
-import { RulesModal } from '../screens/Training';
+import { RulesModal } from './RulesModal';
 
 export function Modals() {
   const s = useStore();
