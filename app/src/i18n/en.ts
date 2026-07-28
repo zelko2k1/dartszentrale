@@ -626,6 +626,7 @@ export const en: Dict = {
     winRate: 'Win rate',
     gamesX01: 'Games (X01)',
     checkoutRate: 'Checkout rate',
+    dartsThrown: 'Darts thrown',
     scoringTitle: 'Turns · Scoring',
     darts: 'darts',
     bestShortLeg: 'Best short leg',

@@ -35,6 +35,7 @@ export function PlayerDetail() {
     { value: String(agg.losses), label: tr.common.losses, color: 'var(--cat-8)' },
     { value: agg.co != null ? agg.co + '%' : '–', label: tr.playerDetail.checkoutRate, color: 'var(--cat-1)' },
     { value: agg.high ? String(agg.high) : '–', label: tr.dashboard.highFinish, color: 'var(--text)' },
+    { value: agg.darts ? String(agg.darts) : '–', label: tr.playerDetail.dartsThrown, color: 'var(--text)' },
   ];
   const scoring: { value: string; label: string; color: string }[] = [
     { value: String(agg.c60), label: '60+', color: 'var(--cat-1)' },

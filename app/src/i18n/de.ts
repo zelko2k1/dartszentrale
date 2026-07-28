@@ -661,6 +661,7 @@ export const de = {
     winRate: 'Siegquote',
     gamesX01: 'Spiele (X01)',
     checkoutRate: 'Checkout-Quote',
+    dartsThrown: 'Darts geworfen',
     scoringTitle: 'Aufnahmen · Scoring',
     darts: 'Darts',
     bestShortLeg: 'Bestes Short Leg',

@@ -367,7 +367,7 @@ export function trainModeName(modeId: string): string {
 //  kind 'min'  → weniger ist besser (Darts bis fertig)
 //  kind 'wins' → kumulierter Sieg-Zähler (Elimination/Killer)
 // value(g,id) liefert den Rohwert des Spielers (id = TrainPlayer.id) am Spielende, oder null wenn nicht
-// wertbar (z. B. ATC nicht durchgespielt). Cricket hat bewusst keinen Bestwert (MPR wird nicht erfasst).
+// wertbar (z. B. ATC nicht durchgespielt). Cricket wird als MPR (Marks pro Dart) gewertet, siehe unten.
 export type BestKind = 'max' | 'min' | 'wins';
 export interface BestMeta { kind: BestKind; value: (g: TrainGame, id: string) => number | null; format: (v: number) => string; }
 export const TRAIN_BEST: Record<string, BestMeta> = {
