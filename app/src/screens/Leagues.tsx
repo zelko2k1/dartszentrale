@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { computeStandings, perm, inSeason } from '../store/selectors';
 import { initials } from '../lib/format';
 import { IconPlus, IconUsersSmall } from '../lib/icons';
+import { PrimaryButton } from '../components/ui';
 import { PressableRow } from '../components/PressableRow';
 import { useIsPhone } from '../lib/useIsPhone';
 import { useReorder } from '../lib/useReorder';
@@ -95,10 +96,7 @@ export function Leagues() {
               <IconPlus size={16} />
               {tr.leagues.friendly}
             </button>
-            <button className="dh-primary" onClick={() => s.openAddLeague()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
-              <IconPlus size={17} />
-              {tr.leagues.addLeague}
-            </button>
+            <PrimaryButton onClick={() => s.openAddLeague()}><IconPlus size={17} />{tr.leagues.addLeague}</PrimaryButton>
           </div>
         )}
       </div>

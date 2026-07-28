@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { aggregateFor, perm } from '../store/selectors';
 import { Avatar } from '../components/Avatar';
 import { IconPlus, IconEdit, IconUserCheck } from '../lib/icons';
+import { PrimaryButton } from '../components/ui';
 import { SearchInput } from '../components/SearchInput';
 import { compareName, matchesQuery, nameParts } from '../lib/people';
 import { useT } from '../i18n';
@@ -28,10 +29,7 @@ export function Players() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <SearchInput value={query} onChange={setQuery} placeholder={tr.players.search} />
           {p.managePlayers && (
-            <button className="dh-primary" onClick={() => s.openAddPlayer()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
-              <IconPlus size={17} />
-              {tr.players.addPlayer}
-            </button>
+            <PrimaryButton onClick={() => s.openAddPlayer()}><IconPlus size={17} />{tr.players.addPlayer}</PrimaryButton>
           )}
         </div>
       </div>

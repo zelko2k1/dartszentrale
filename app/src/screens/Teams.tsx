@@ -5,6 +5,7 @@ import { Avatar } from '../components/Avatar';
 import { aggregateFor, teamRoster, perm, nextOwnFixture, inSeason } from '../store/selectors';
 import { initials, shortLong, todayIso } from '../lib/format';
 import { IconPlus, IconEdit } from '../lib/icons';
+import { PrimaryButton } from '../components/ui';
 import { TeamKindIcon } from '../modals/TeamModal';
 import { SearchInput } from '../components/SearchInput';
 import { PressableRow } from '../components/PressableRow';
@@ -47,10 +48,7 @@ export function Teams() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, marginBottom: 24, flexWrap: 'wrap' }}>
         <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{tr.nav.teams}</h1>
         {canManage && (
-          <button className="dh-primary" onClick={() => s.openAddTeam()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
-            <IconPlus size={17} />
-            {tr.teams.addTeam}
-          </button>
+          <PrimaryButton onClick={() => s.openAddTeam()}><IconPlus size={17} />{tr.teams.addTeam}</PrimaryButton>
         )}
       </div>
 

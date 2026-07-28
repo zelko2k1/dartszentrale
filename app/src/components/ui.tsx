@@ -1,7 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { ROLES } from '../data/constants';
 import type { Role } from '../data/types';
-import { accentFg } from '../store/selectors';
 
 // Avatar lebt jetzt in components/Avatar.tsx (mit Profilfoto + Fallback).
 
@@ -18,16 +17,15 @@ export function RoleBadge({ role, style }: { role: Role; style?: CSSProperties }
 }
 
 // ── Primärbutton (Akzent-Grün) ──
-export function PrimaryButton({ children, onClick, accent = '#19A463', style, disabled, title }: {
-  children: ReactNode; onClick?: () => void; accent?: string; style?: CSSProperties; disabled?: boolean; title?: string;
+export function PrimaryButton({ children, onClick, style, disabled, title }: {
+  children: ReactNode; onClick?: () => void; style?: CSSProperties; disabled?: boolean; title?: string;
 }) {
   return (
     <button className="dh-primary" onClick={onClick} disabled={disabled} title={title} style={{
-      display: 'inline-flex', alignItems: 'center', gap: 8, background: disabled ? 'var(--btn)' : accent,
-      color: disabled ? 'var(--text-5)' : accentFg(accent), border: 'none', padding: '11px 18px',
-      borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: disabled ? 'default' : 'pointer',
-      fontFamily: 'inherit', boxShadow: disabled ? 'none' : '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)',
-      whiteSpace: 'nowrap', ...style,
+      display: 'inline-flex', alignItems: 'center', gap: 8,
+      background: disabled ? 'var(--btn)' : 'var(--accent)', color: disabled ? 'var(--text-5)' : 'var(--accent-fg)',
+      border: 'none', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800,
+      cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', ...style,
     }}>{children}</button>
   );
 }
