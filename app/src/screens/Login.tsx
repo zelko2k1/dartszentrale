@@ -17,6 +17,7 @@ export function Login() {
   const [legal, setLegal] = useState<null | 'impressum' | 'datenschutz'>(null);
   const legalTitle = legal === 'impressum' ? tr.login.impressumTitle : tr.login.datenschutzTitle;
   const legalText = legal === 'impressum' ? impressum : datenschutz;
+  const busy = s.loginForm.busy; // während der Anmeldung: Button sperren + Feedback, kein Doppel-Submit
 
   return (
     <div style={{
@@ -50,7 +51,7 @@ export function Login() {
             id="login-email"
             className="dh-input" type="email" value={s.loginForm.email} placeholder="name@verein.de"
             onChange={(e) => s.setLoginField('email', e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') s.loginEmail(); }}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !busy) s.loginEmail(); }}
             style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 14 }}
           />
 
@@ -59,7 +60,7 @@ export function Login() {
             id="login-pw"
             className="dh-input" type="password" value={s.loginForm.pw} placeholder="••••••••"
             onChange={(e) => s.setLoginField('pw', e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') s.loginEmail(); }}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !busy) s.loginEmail(); }}
             style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 6 }}
           />
 
@@ -71,7 +72,7 @@ export function Login() {
                 className="dh-input" type="text" inputMode="numeric" autoComplete="one-time-code" autoFocus
                 value={s.loginForm.code} placeholder="123456"
                 onChange={(e) => s.setLoginField('code', e.target.value.replace(/\s/g, ''))}
-                onKeyDown={(e) => { if (e.key === 'Enter') s.loginEmail(); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' && !busy) s.loginEmail(); }}
                 style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 18, letterSpacing: '.25em', fontFamily: 'var(--font-num, monospace)', marginBottom: 6 }}
               />
               <div style={{ fontSize: 11, color: 'var(--text-5)', margin: '2px 2px 0' }}>{tr.login.codeHint}</div>
@@ -80,7 +81,7 @@ export function Login() {
 
           {s.loginForm.err && <div style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600, margin: '6px 2px 0' }}>{s.loginForm.err}</div>}
 
-          <button className="dh-primary" onClick={() => s.loginEmail()} style={{ width: '100%', marginTop: 16, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 'var(--radius-md)', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{s.loginForm.mfaStep ? tr.login.confirm : tr.login.signIn}</button>
+          <button className="dh-primary" onClick={() => s.loginEmail()} disabled={busy} style={{ width: '100%', marginTop: 16, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 'var(--radius-md)', fontSize: 15, fontWeight: 800, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1, fontFamily: 'inherit' }}>{busy ? tr.login.signingIn : (s.loginForm.mfaStep ? tr.login.confirm : tr.login.signIn)}</button>
 
           {demos.length > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '22px 0 16px' }}>

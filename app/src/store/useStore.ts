@@ -217,7 +217,7 @@ export interface AppState {
   screen: Screen;
   selectedPlayerId: string | null;
   session: string | null;
-  loginForm: { email: string; pw: string; code: string; mfaStep: boolean; err: string };
+  loginForm: { email: string; pw: string; code: string; mfaStep: boolean; err: string; busy: boolean };
   now: number;
 
   // Datenquelle (lokal = localStorage, verein = PocketBase wenn VITE_PB_URL gesetzt)
@@ -589,7 +589,7 @@ export const useStore = create<AppState>((set, get) => ({
   selectedPlayerId: null,
   session: null,
   twoFAUserIds: [],
-  loginForm: { email: '', pw: '', code: '', mfaStep: false, err: '' },
+  loginForm: { email: '', pw: '', code: '', mfaStep: false, err: '', busy: false },
   now: Date.now(),
 
   provider: createProvider('local'),
@@ -966,7 +966,7 @@ export const useStore = create<AppState>((set, get) => ({
     const acc = get().accounts.find((a) => a.id === id);
     if (!acc || !acc.active) return;
     write(LS.session, id);
-    set({ session: id, screen: 'dashboard', loginForm: { email: '', pw: '', code: '', mfaStep: false, err: '' } });
+    set({ session: id, screen: 'dashboard', loginForm: { email: '', pw: '', code: '', mfaStep: false, err: '', busy: false } });
   },
   loginEmail() {
     const st = get();
@@ -976,24 +976,26 @@ export const useStore = create<AppState>((set, get) => ({
       // { ok:false, mfaRequired } — dann blendet die Login-Seite das Code-Feld ein und ruft
       // loginEmail() erneut auf, diesmal mit dem 6-stelligen Code (oder Backup-Code).
       const code = st.loginForm.mfaStep ? st.loginForm.code.trim() : undefined;
+      if (st.loginForm.busy) return; // Doppel-Submit verhindern, solange die Anmeldung läuft
+      set((s) => ({ loginForm: { ...s.loginForm, busy: true, err: '' } }));
       void st.provider.login(email, st.loginForm.pw, code).then((res) => {
         if (!res.ok) {
           // 2FA erforderlich: Code-Feld einblenden. `error` gesetzt = voriger Code war falsch/gesperrt.
-          set((s) => ({ loginForm: { ...s.loginForm, mfaStep: true, err: res.error || '' } }));
+          set((s) => ({ loginForm: { ...s.loginForm, mfaStep: true, err: res.error || '', busy: false } }));
           return;
         }
         const user = res.user;
         if (!user.active) { // Zusatzabsicherung (Server blockt inaktive bereits).
           void st.provider.logout();
-          set((s) => ({ session: null, loginForm: { ...s.loginForm, err: dict().storeMsg.accountDeactivated } }));
+          set((s) => ({ session: null, loginForm: { ...s.loginForm, err: dict().storeMsg.accountDeactivated, busy: false } }));
           return;
         }
-        set({ session: user.id, screen: 'dashboard', loginForm: { email: '', pw: '', code: '', mfaStep: false, err: '' } });
+        set({ session: user.id, screen: 'dashboard', loginForm: { email: '', pw: '', code: '', mfaStep: false, err: '', busy: false } });
         void applySnapshot(get, set); // Daten + persönliche Einstellungen des Nutzers nachladen
       }).catch((e: unknown) => {
         // Echter Auth-Fehler: server-seitige Meldung (deutsch) anzeigen, sonst generisch.
         const msg = (e as { response?: { message?: string } })?.response?.message;
-        set((s) => ({ loginForm: { ...s.loginForm, err: msg || dict().storeMsg.loginFailed } }));
+        set((s) => ({ loginForm: { ...s.loginForm, err: msg || dict().storeMsg.loginFailed, busy: false } }));
       });
       return;
     }
@@ -2826,7 +2828,7 @@ async function applySnapshot(get: () => AppState, set: SetFn) {
       const me = snap.accounts.find((a) => a.id === sessionId);
       if (!me || me.active === false) {
         void get().provider.logout();
-        set({ session: null, screen: 'dashboard', loginForm: { email: '', pw: '', code: '', mfaStep: false, err: dict().storeMsg.accountDeactivatedNow } });
+        set({ session: null, screen: 'dashboard', loginForm: { email: '', pw: '', code: '', mfaStep: false, err: dict().storeMsg.accountDeactivatedNow, busy: false } });
         return;
       }
     }

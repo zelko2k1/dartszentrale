@@ -1261,6 +1261,7 @@ export const en: Dict = {
   login: {
     management: 'Club management',
     signIn: 'Sign in',
+    signingIn: 'Signing in …',
     signInSub: 'Sign in with your club account',
     email: 'Email',
     password: 'Password',
