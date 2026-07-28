@@ -188,7 +188,10 @@ Zuschauer **ohne** eigene Spiellogik rendern können:
 
 - Der Host schreibt `state` **debounced** (z. B. 100–150 ms) nach jeder relevanten Zustandsänderung —
   analog zum bestehenden `persistLive()` (`useStore.ts:2447`), nur zusätzlich in die Session.
-- **Zuschauer** rendern daraus ein read-only Board (Wiederverwendung `components/BoardPanel`/`BoardScale`).
+- **Zuschauer** rendern daraus ein read-only Board (Wiederverwendung `components/BoardPanel`). Für die
+  Fernlesbarkeit **nicht** den früheren `BoardScale`-Zoom nutzen — der wurde entfernt, weil er unter CSS
+  `zoom` das Score-Band bis zum Kollaps zusammenquetschte. Stattdessen die Distanz-Elemente (Restscore,
+  Namen) gezielt skalieren, wie in Counter/TrainingGame über den `boardMul`-Faktor.
 - **Remote** rendert daraus die Score-/Checkout-Anzeige und darüber das schon existierende
   Handy-Keypad-Layout (`PhoneCounter`, `Counter.tsx:520`) — nur dass Tasten Befehle senden statt lokal
   zu mutieren.
