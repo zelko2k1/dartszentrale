@@ -9,7 +9,6 @@ import {
   type TrainGame, type TrainPlayer, type StandRow,
 } from '../store/training';
 import { IconBack, IconUndo, IconX } from '../lib/icons';
-import { BoardScale } from '../components/BoardScale';
 import { comboFromEvent, formatCombo } from '../lib/shortcut';
 import { useT, dict } from '../i18n';
 
@@ -55,7 +54,6 @@ export function TrainingGame() {
     : tr.trainingScr.roundN(g.round);
 
   return (
-    <BoardScale>
     <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: s.settings.mode === 'light' ? 'var(--bg)' : 'var(--counter-bg)', fontFamily: 'inherit' }}>
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)', flexShrink: 0 }}>
@@ -114,26 +112,28 @@ export function TrainingGame() {
         </div>
       )}
     </div>
-    </BoardScale>
   );
 }
 
 function PlayerCard({ row, active, accent }: { row: StandRow; active: boolean; accent: string }) {
   const tr = useT();
+  // Board-Gesamtgröße skaliert gezielt Namen + Score-Werte (Distanz-Lesbarkeit); Chrome/Deck bleiben normal.
+  const cfg = useStore((s) => s.settings);
+  const boardMul = cfg.device === 'desktop' ? Math.max(1, (cfg.boardScale ?? 100) / 100) : 1;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, borderRadius: 'var(--radius-lg)', padding: '14px 16px', background: active ? `color-mix(in srgb, ${accent} 9%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${active ? accent : 'var(--border-2)'}`, boxShadow: active ? `0 0 0 1px ${accent}` : 'none', opacity: row.eliminated ? 0.5 : 1 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-        <Avatar photo={row.player.photo} short={row.player.short} avi={row.player.av} size={36} />
+        <Avatar photo={row.player.photo} short={row.player.short} avi={row.player.av} size={Math.round(36 * boardMul)} />
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.player.name}</div>
-          {active && <div style={{ fontSize: 10, color: accent, fontWeight: 800, letterSpacing: '.06em' }}>{tr.trainingScr.atThrow}</div>}
+          <div style={{ fontSize: Math.round(14 * boardMul), fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.player.name}</div>
+          {active && <div style={{ fontSize: Math.round(10 * boardMul), color: accent, fontWeight: 800, letterSpacing: '.06em' }}>{tr.trainingScr.atThrow}</div>}
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-        <div style={{ fontFamily: 'var(--font-num)', fontSize: 28, fontWeight: 800, color: active ? accent : 'var(--text)', lineHeight: 1 }}>{row.primary}</div>
-        {row.secondary && <div style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: 'var(--text-4)' }}>{row.secondary}</div>}
+        <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(28 * boardMul), fontWeight: 800, color: active ? accent : 'var(--text)', lineHeight: 1 }}>{row.primary}</div>
+        {row.secondary && <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(13 * boardMul), fontWeight: 700, color: 'var(--text-4)' }}>{row.secondary}</div>}
       </div>
-      {row.sub && <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600 }}>{row.sub}</div>}
+      {row.sub && <div style={{ fontSize: Math.round(11 * boardMul), color: 'var(--text-4)', fontWeight: 600 }}>{row.sub}</div>}
     </div>
   );
 }
@@ -166,7 +166,11 @@ function MatrixBoard({ headLabel, cols, rows, accent, renderCell, footer }: {
   renderCell: (colIndex: number, rowIndex: number) => React.ReactNode;
   footer?: { label: string; values: React.ReactNode[] };
 }) {
-  const grid = `58px repeat(${cols.length}, minmax(58px, 1fr))`;
+  // Board-Gesamtgröße skaliert gezielt die Kopf-Readouts (Name + Punktestand + Avatar) für Distanz-Lesbarkeit;
+  // das dichte Detail-Raster darunter bleibt (wird aus der Nähe gelesen und scrollt bei Bedarf).
+  const cfg = useStore((s) => s.settings);
+  const boardMul = cfg.device === 'desktop' ? Math.max(1, (cfg.boardScale ?? 100) / 100) : 1;
+  const grid = `58px repeat(${cols.length}, minmax(${Math.round(58 * boardMul)}px, 1fr))`;
   const cellBase: React.CSSProperties = { background: 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' };
   const activeBg = `color-mix(in srgb, ${accent} 10%, var(--surface-2))`;
   const rowBg = `color-mix(in srgb, ${accent} 5%, var(--surface-2))`;
@@ -180,12 +184,12 @@ function MatrixBoard({ headLabel, cols, rows, accent, renderCell, footer }: {
           return (
             <div key={i} style={{ ...cellBase, flexDirection: 'column', gap: 4, padding: '9px 6px', background: c.active ? activeBg : 'var(--surface-2)', borderBottom: c.active ? `2px solid ${accent}` : '2px solid transparent', opacity: c.eliminated ? 0.5 : 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, maxWidth: '100%' }}>
-                <Avatar photo={c.player.photo} short={c.player.short} avi={c.player.av} size={22} />
-                <span style={{ fontSize: 12, fontWeight: 700, color: c.active ? accent : 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.player.name}</span>
+                <Avatar photo={c.player.photo} short={c.player.short} avi={c.player.av} size={Math.round(22 * boardMul)} />
+                <span style={{ fontSize: Math.round(12 * boardMul), fontWeight: 700, color: c.active ? accent : 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.player.name}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-                <div style={{ fontFamily: 'var(--font-num)', fontSize: 17, fontWeight: 800, color: c.active ? accent : 'var(--text)', lineHeight: 1 }}>{c.primary}</div>
-                {c.secondary && <div style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 700, color: 'var(--text-4)' }}>{c.secondary}</div>}
+                <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(17 * boardMul), fontWeight: 800, color: c.active ? accent : 'var(--text)', lineHeight: 1 }}>{c.primary}</div>
+                {c.secondary && <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(11 * boardMul), fontWeight: 700, color: 'var(--text-4)' }}>{c.secondary}</div>}
               </div>
             </div>
           );
