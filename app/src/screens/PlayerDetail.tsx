@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from 'react';
 import { useStore } from '../store/useStore';
 import { aggregateFor, inSeason, headToHead } from '../store/selectors';
+import { trainModeName, TRAIN_BEST } from '../store/training';
 import { Avatar } from '../components/Avatar';
 import { IconBack } from '../lib/icons';
 import { useIsPhone } from '../lib/useIsPhone';
@@ -254,6 +255,39 @@ export function PlayerDetail() {
           </div>
         )}
       </div>
+
+      {/* Trainings-Verlauf: Bestwert + Mini-Verlauf je trainiertem Modus (aus trainingBests[].log). */}
+      {player.trainingBests && Object.keys(player.trainingBests).length > 0 && (
+        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '18px 20px', marginTop: 20 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 14 }}>{tr.playerDetail.trainingTitle}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {Object.entries(player.trainingBests).map(([modeId, tb]) => {
+              const meta = TRAIN_BEST[modeId];
+              const log = tb.log || [];
+              const fmt = (v: number) => meta ? meta.format(v) : String(v);
+              return (
+                <div key={modeId} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{ width: 128, minWidth: 128 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{trainModeName(modeId)}</div>
+                    <div style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-4)', fontWeight: 700 }}>{tr.playerDetail.trainingBest}: {fmt(tb.value)}</div>
+                  </div>
+                  {log.length > 0 ? (
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', gap: 2, height: 40 }}>
+                      {log.slice(-16).map((e, i, arr) => {
+                        const vals = arr.map((x) => x.value); const mn = Math.min(...vals, 0); const mx = Math.max(...vals, mn + 1);
+                        const h = Math.round(((e.value - mn) / (mx - mn || 1)) * 100);
+                        return <div key={i} title={`${fmt(e.value)} · ${e.date}`} style={{ flex: 1, height: `${Math.max(h, 6)}%`, borderRadius: '3px 3px 0 0', background: e.won ? 'var(--success)' : 'var(--cat-3)' }} />;
+                      })}
+                    </div>
+                  ) : (
+                    <div style={{ flex: 1, fontSize: 12, color: 'var(--text-5)' }}>–</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

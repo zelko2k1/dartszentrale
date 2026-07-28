@@ -2,6 +2,7 @@
 // Jeder Modus teilt sich ein gemeinsames TrainGame-Modell; die Spiel-spezifische
 // Logik liegt in initData() / applyTurn() / standings() (Switch nach modeId).
 import { TRAIN_MODES, CRICKET_TARGETS, CHECKOUTS } from '../data/constants';
+import type { TrainingBest } from '../data/types';
 import { dict } from '../i18n';
 
 // id = spielinterne Slot-ID (t{slot}_{pid}); pid = echte Spieler-ID (für persönliche Bestwerte am Spieler-Datensatz).
@@ -387,6 +388,25 @@ export function isBetterBest(kind: BestKind, newV: number, prev: number | undefi
   if (prev === undefined) return kind === 'wins' ? newV > 0 : true;
   if (kind === 'min') return newV < prev;
   return newV > prev; // 'max' und 'wins' (wins: newV=1 nur bei Sieg)
+}
+
+export const TRAIN_LOG_MAX = 40; // je Modus die letzten N Ergebnisse für den Trainings-Verlauf
+
+// Ein Trainingsergebnis in Bestwert + Verlauf einpflegen (rein, testbar). Hängt raw an den Verlauf (auf
+// TRAIN_LOG_MAX begrenzt) und fortschreibt den Bestwert: 'wins' akkumuliert Siege, sonst nur bei echter
+// Verbesserung. improved=true nur bei neuem Rekord (für das Feier-Badge, nicht bei 'wins').
+export function applyTrainingResult(
+  prev: TrainingBest | undefined, kind: BestKind, raw: number, date: string, won: boolean,
+): { next: TrainingBest; improved: boolean } {
+  const log = [...(prev?.log || []), won ? { value: raw, date, won: true } : { value: raw, date }].slice(-TRAIN_LOG_MAX);
+  if (kind === 'wins') {
+    return { next: { value: (prev?.value || 0) + (won ? 1 : 0), date, log }, improved: false };
+  }
+  const improved = isBetterBest(kind, raw, prev?.value);
+  return {
+    next: { value: improved ? raw : (prev?.value ?? raw), date: improved ? date : (prev?.date ?? date), log },
+    improved,
+  };
 }
 
 // ── Live-Feiern ────────────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { newTrainGame, applyTurn, TRAIN_BEST, isBetterBest, trainCelebration, ATC_SEQ, type TrainPlayer } from './training';
+import { newTrainGame, applyTurn, TRAIN_BEST, isBetterBest, applyTrainingResult, TRAIN_LOG_MAX, trainCelebration, ATC_SEQ, type TrainPlayer } from './training';
 
 function tp(slot: number, pid: string, name = pid): TrainPlayer {
   return { id: `t${slot}_${pid}`, pid, name, short: name.slice(0, 2).toUpperCase(), av: 0 };
@@ -99,5 +99,37 @@ describe('trainCelebration', () => {
     const armed = applyTurn(g, { kind: 'killer', darts: [cur.id, null, null] });
     expect(armed.data.isKiller![cur.id]).toBe(true);
     expect(trainCelebration(g, armed, { kind: 'killer', darts: [cur.id, null, null] })).not.toBeNull();
+  });
+});
+
+describe('applyTrainingResult — Bestwert + Verlauf', () => {
+  it('max: neuer Rekord aktualisiert Wert und hängt an den Verlauf', () => {
+    const r = applyTrainingResult({ value: 50, date: '2026-01-01', log: [{ value: 50, date: '2026-01-01' }] }, 'max', 70, '2026-01-02', false);
+    expect(r.improved).toBe(true);
+    expect(r.next.value).toBe(70);
+    expect(r.next.log?.map((e) => e.value)).toEqual([50, 70]);
+  });
+  it('max: schwächeres Ergebnis behält Bestwert, wird aber protokolliert', () => {
+    const r = applyTrainingResult({ value: 70, date: '2026-01-02' }, 'max', 40, '2026-01-03', false);
+    expect(r.improved).toBe(false);
+    expect(r.next.value).toBe(70);
+    expect(r.next.log?.map((e) => e.value)).toEqual([40]);
+  });
+  it('min: kleiner ist besser', () => {
+    const r = applyTrainingResult({ value: 21, date: '2026-01-01' }, 'min', 18, '2026-01-02', false);
+    expect(r.improved).toBe(true);
+    expect(r.next.value).toBe(18);
+  });
+  it('wins: akkumuliert Siege, kein Rekord-Badge', () => {
+    const r = applyTrainingResult({ value: 2, date: '2026-01-01' }, 'wins', 1, '2026-01-02', true);
+    expect(r.improved).toBe(false);
+    expect(r.next.value).toBe(3);
+    expect(r.next.log?.at(-1)).toMatchObject({ value: 1, won: true });
+  });
+  it('begrenzt den Verlauf auf TRAIN_LOG_MAX', () => {
+    let best = undefined as Parameters<typeof applyTrainingResult>[0];
+    for (let i = 0; i < TRAIN_LOG_MAX + 5; i++) best = applyTrainingResult(best, 'max', i, '2026-01-01', false).next;
+    expect(best?.log?.length).toBe(TRAIN_LOG_MAX);
+    expect(best?.log?.at(-1)?.value).toBe(TRAIN_LOG_MAX + 4); // jüngstes behalten
   });
 });

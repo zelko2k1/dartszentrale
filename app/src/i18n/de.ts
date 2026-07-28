@@ -669,6 +669,8 @@ export const de = {
     compFree: 'Frei',
     h2hTitle: 'Kopf-an-Kopf',
     h2hEmpty: 'Noch keine Bilanz gegen benannte Gegner.',
+    trainingTitle: 'Trainings-Verlauf',
+    trainingBest: 'Bestwert',
     scoringTitle: 'Aufnahmen · Scoring',
     darts: 'Darts',
     bestShortLeg: 'Bestes Short Leg',

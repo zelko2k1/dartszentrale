@@ -20,7 +20,7 @@ import {
 import { activeSeason as pickActiveSeason, computeStandings, aggregateFor, inSeason, deriveLiveColors } from './selectors';
 import {
   newTrainGame, applyTurn as tApplyTurn, trainMeta,
-  TRAIN_BEST, isBetterBest, trainCelebration,
+  TRAIN_BEST, applyTrainingResult, trainCelebration,
   type TrainGame, type TrainPlayer, type TurnInput,
 } from './training';
 import {
@@ -2561,19 +2561,16 @@ function recordTrainingResult(get: () => AppState, set: SetFn, g: TrainGame) {
   const st = get();
   const today = new Date().toISOString().slice(0, 10);
   const flash: string[] = [];
-  const nextBest = new Map<string, TrainingBest>(); // pid → neuer Bestwert
+  const nextBest = new Map<string, TrainingBest>(); // pid → Bestwert + Verlauf (jedes Ergebnis, nicht nur Rekorde)
   for (const tp of g.players) {
     const raw = meta.value(g, tp.id);
-    if (raw == null) continue;
+    if (raw == null) continue; // unfertige Partie (z. B. ATC nicht durch) → kein Verlaufseintrag
     const player = st.players.find((p) => p.id === tp.pid);
-    const prev = player?.trainingBests?.[g.modeId]?.value;
-    if (meta.kind === 'wins') {
-      // Siege immer akkumulieren (kein „Rekord"-Badge), aber nur bei tatsächlichem Sieg fortschreiben.
-      if (raw > 0) nextBest.set(tp.pid, { value: (prev || 0) + 1, date: today });
-    } else if (isBetterBest(meta.kind, raw, prev)) {
-      nextBest.set(tp.pid, { value: raw, date: today });
-      flash.push(tp.id); // echter neuer Bestwert → im Overlay feiern
-    }
+    const prev = player?.trainingBests?.[g.modeId];
+    const won = g.winnerIds.includes(tp.id);
+    const { next, improved } = applyTrainingResult(prev, meta.kind, raw, today, won);
+    nextBest.set(tp.pid, next);
+    if (improved) flash.push(tp.id); // echter neuer Bestwert → im Overlay feiern
   }
   if (nextBest.size === 0) { set({ trainBestFlash: flash }); return; }
   const players = st.players.map((p) => {

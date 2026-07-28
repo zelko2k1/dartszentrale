@@ -634,6 +634,8 @@ export const en: Dict = {
     compFree: 'Free',
     h2hTitle: 'Head-to-head',
     h2hEmpty: 'No record against named opponents yet.',
+    trainingTitle: 'Training progress',
+    trainingBest: 'Best',
     scoringTitle: 'Turns · Scoring',
     darts: 'darts',
     bestShortLeg: 'Best short leg',

@@ -42,7 +42,10 @@ export interface SeasonSnapshot {
 // Persönlicher Trainings-Bestwert je Spielmodus (am Spieler-Datensatz gespeichert → im Verein
 // board-übergreifend synchron, lokal im Browser). value = die Kopfkennzahl des Modus (z. B. Doppel-Quote %,
 // Höchstfinish, Darts, Punkte, Runs, Siege); date = ISO-Datum, an dem der Bestwert erzielt wurde.
-export interface TrainingBest { value: number; date: string; }
+export interface TrainingLogEntry { value: number; date: string; won?: boolean; }
+// Bestwert je Modus + Verlauf (letzte N Ergebnisse). log liegt IM selben json-Feld trainingBests →
+// keine Schema-Änderung, im Vereinsmodus synchron. Alt-Datensätze ohne log bleiben gültig.
+export interface TrainingBest { value: number; date: string; log?: TrainingLogEntry[]; }
 
 export interface Player {
   id: string;

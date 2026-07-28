@@ -15,7 +15,7 @@
 
 ### `players` (Base)
 `name` · `short` (text, max 3) · `avi` (number) · `locked` (bool) · `photo` (file, 160×160-Thumb) ·
-`trainingBests` (json: Map `modeId` → `{value, date}`, persönliche Trainings-Bestwerte, board-übergreifend)
+`trainingBests` (json: Map `modeId` → `{value, date, log?[]}` — Bestwert + Verlauf der letzten Ergebnisse; persönlich, board-übergreifend)
 
 ### `seasons` (Base) — Saison-Klammer
 `name` · `status` (`active` | `archived`) · `startDate` · `endDate` · `offloaded` (bool)
