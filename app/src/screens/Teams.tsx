@@ -4,8 +4,8 @@ import { TEAM_KINDS, teamKind } from '../data/constants';
 import { Avatar } from '../components/Avatar';
 import { aggregateFor, teamRoster, perm, nextOwnFixture, inSeason } from '../store/selectors';
 import { initials, shortLong, todayIso } from '../lib/format';
-import { IconPlus, IconEdit } from '../lib/icons';
-import { PrimaryButton } from '../components/ui';
+import { IconPlus, IconEdit, IconUsers } from '../lib/icons';
+import { PrimaryButton, EmptyState } from '../components/ui';
 import { TeamKindIcon } from '../modals/TeamModal';
 import { SearchInput } from '../components/SearchInput';
 import { PressableRow } from '../components/PressableRow';
@@ -102,7 +102,7 @@ export function Teams() {
                 <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>{tr.teams.squad}</span>
                 {members.length > 0 && <SearchInput value={query} onChange={setQuery} placeholder={tr.teams.searchSquad} width={200} />}
               </div>
-              {members.length === 0 && <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--text-4)' }}>{tr.teams.noneInSquad}</div>}
+              {members.length === 0 && <EmptyState icon={<IconUsers size={22} />}>{tr.teams.noneInSquad}</EmptyState>}
               {members.length > 0 && roster.length === 0 && <div style={{ padding: '24px 20px', fontSize: 13, color: 'var(--text-4)' }}>{tr.players.noMatch(query)}</div>}
               {roster.map((m) => {
                 const agg = aggregateFor(m, s.matches);

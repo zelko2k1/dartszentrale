@@ -268,7 +268,7 @@ function VereinDashboard() {
                 {lg.season && <span style={{ fontSize: 11, color: 'var(--text-4)' }}>· {lg.season}</span>}
               </div>
               {rows.length === 0 ? (
-                <div style={{ fontSize: 12, color: 'var(--text-4)', padding: '4px 2px' }}>{tr.dashboard.noTeamsYet}</div>
+                <EmptyState compact icon={<IconShield size={17} />}>{tr.dashboard.noTeamsYet}</EmptyState>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {rows.map((row, idx) => (

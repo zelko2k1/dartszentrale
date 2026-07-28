@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { computeStandings, perm, inSeason } from '../store/selectors';
 import { initials } from '../lib/format';
-import { IconPlus, IconUsersSmall } from '../lib/icons';
-import { PrimaryButton } from '../components/ui';
+import { IconPlus, IconUsersSmall, IconTrophy, IconTarget } from '../lib/icons';
+import { PrimaryButton, EmptyState } from '../components/ui';
 import { PressableRow } from '../components/PressableRow';
 import { useIsPhone } from '../lib/useIsPhone';
 import { useReorder } from '../lib/useReorder';
@@ -178,7 +178,7 @@ export function Leagues() {
               <div role="row" style={{ display: 'grid', gridTemplateColumns: tblCols, gap: 5, padding: isPhone ? '12px 12px' : '13px 18px', borderBottom: '1px solid var(--border)', fontSize: 11, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', minWidth: tblMinW }}>
                 <span role="columnheader">#</span><span role="columnheader">{tr.leagues.thTeam}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thPlayed}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thWin}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thDraw}</span><span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thLoss}</span>{!isPhone && <span role="columnheader" style={{ textAlign: 'center' }}>{tr.leagues.thLegs}</span>}{!isPhone && <span role="columnheader" style={{ textAlign: 'center' }}>+/−</span>}<span role="columnheader" style={{ textAlign: 'right' }}>{tr.leagues.thPts}</span>
               </div>
-              {standings.length === 0 && <div style={{ padding: '30px 18px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.leagues.noResultsYet}</div>}
+              {standings.length === 0 && <EmptyState icon={<IconTrophy size={22} />}>{tr.leagues.noResultsYet}</EmptyState>}
               {standings.map((t, i) => {
                 const diff = t.lf - t.la;
                 const posColor = i < 2 ? 'var(--success)' : (standings.length > 4 && i >= standings.length - 1) ? 'var(--danger-soft)' : 'var(--text-3)';
@@ -208,7 +208,7 @@ export function Leagues() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                 <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>{tr.leagues.fixturesTitle}</div>
               </div>
-              {fxSorted.length === 0 && <div style={{ padding: '24px 4px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.leagues.noFixtures}</div>}
+              {fxSorted.length === 0 && <EmptyState icon={<IconTarget size={22} />}>{tr.leagues.noFixtures}</EmptyState>}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {fxRender.map((f) => {
                   const played = !!f.played;
