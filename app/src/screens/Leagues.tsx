@@ -258,7 +258,7 @@ export function Leagues() {
                           <span key={h.name} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)', padding: '3px 9px', fontSize: 12, color: 'var(--text-2)' }}>
                             {h.name}
                             {h.c180 > 0 && <b style={{ color: 'var(--cat-8)', fontFamily: 'var(--font-num)' }}>{h.c180}×180</b>}
-                            {h.shortLegs > 0 && <b style={{ color: '#2bd3c0', fontFamily: 'var(--font-num)' }} title={tr.leagues.slTitle}>{h.shortLegs}× SL</b>}
+                            {h.shortLegs > 0 && <b style={{ color: 'var(--cat-3)', fontFamily: 'var(--font-num)' }} title={tr.leagues.slTitle}>{h.shortLegs}× SL</b>}
                             {h.highFinish >= HF_MIN && <b style={{ color: 'var(--cat-4)', fontFamily: 'var(--font-num)' }} title={tr.leagues.hfTitle}>{h.highFinish} HF</b>}
                           </span>
                         ))}

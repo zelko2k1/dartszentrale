@@ -48,7 +48,7 @@ export function BoardPanel() {
 
   const a = assignment;
   return wrap(
-    <div style={{ background: 'linear-gradient(135deg,#13241b,var(--surface) 70%)', border: '1px solid #234032', borderRadius: 'var(--radius-lg)', padding: '18px 20px' }}>
+    <div style={{ background: 'linear-gradient(135deg, color-mix(in srgb, var(--cat-6) 12%, var(--surface)), var(--surface) 70%)', border: '1px solid color-mix(in srgb, var(--cat-6) 24%, var(--border-2))', borderRadius: 'var(--radius-lg)', padding: '18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
         <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--accent-fg)', background: 'var(--accent)', padding: '4px 11px', borderRadius: 'var(--radius-sm)' }}>{boardName}</span>
         <span style={{ fontSize: 14, fontWeight: 700 }}>{a.ownTeamName}</span>

@@ -114,7 +114,7 @@ export function Statistics() {
               <span style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{l.name}</span>
             </div>
             <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 800, color: 'var(--success)' }}>{l.avg}</span>
-            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: '#2bd3c0' }}>{l.f9}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--cat-3)' }}>{l.f9}</span>
             <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{l.sp}</span>
             <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: 'var(--success)' }}>{l.sw}</span>
             <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 700, color: 'var(--danger)' }}>{l.sn}</span>
@@ -122,7 +122,7 @@ export function Statistics() {
             <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--success)' }}>{l.s100}</span>
             <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--gold)' }}>{l.s140}</span>
             <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--danger)' }}>{l.s180}</span>
-            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: '#2bd3c0' }}>{l.shortLegs}</span>
+            <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--cat-3)' }}>{l.shortLegs}</span>
             <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text)' }}>{l.checkout}</span>
             <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text)' }}>{l.highFinish}</span>
           </PressableRow>

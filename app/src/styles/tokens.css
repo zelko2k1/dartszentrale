@@ -30,7 +30,7 @@
   --info:#1a66c4; --warn:#8a5e00;
   /* Kategoriale Stat-Palette (Dataviz): fürs helle Papier abgedunkelte Hues, alle ≥3:1 als Text
      auf --btn (#ece9de); CVD-geprüft (validate_palette.js, alle Checks PASS). */
-  --cat-1:#2166c9; --cat-2:#c15a1c; --cat-3:#0d8f74; --cat-4:#8f6200; --cat-5:#b23a72; --cat-6:#0f8a3f; --cat-7:#5f3fb3; --cat-8:#bf3a2c;
+  --cat-1:#2166c9; --cat-2:#c15a1c; --cat-3:#0a7d64; --cat-4:#8f6200; --cat-5:#b23a72; --cat-6:#0f8a3f; --cat-7:#5f3fb3; --cat-8:#bf3a2c;
   --scrim:rgba(24,20,12,.5); --shadow-card:0 20px 50px rgba(60,55,40,.18);
   --nav-active:color-mix(in srgb, var(--accent) 14%, transparent); --nav-active-fg:var(--accent); --bar:rgba(248,246,240,.7);
 }

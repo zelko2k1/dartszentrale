@@ -208,7 +208,7 @@ export function PlayerDetail() {
                 return (
                   <div key={i} title={`${v.toFixed(zoom ? 1 : 0)} · ${f.won ? tr.common.winLetter : tr.common.lossLetter} vs. ${f.opp}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, height: '100%', justifyContent: 'flex-end' }}>
                     {arr.length <= 14 && <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, color: 'var(--text-4)', fontWeight: 700 }}>{v.toFixed(0)}</span>}
-                    <div style={{ width: '100%', height: `${Math.max(h, 2)}%`, borderRadius: '4px 4px 0 0', background: i === arr.length - 1 ? s.settings.accent : (f.won ? 'linear-gradient(180deg,#2a6e4a,#1c4a32)' : 'linear-gradient(180deg,#6e2a2a,#4a1c1c)') }} />
+                    <div style={{ width: '100%', height: `${Math.max(h, 2)}%`, borderRadius: '4px 4px 0 0', background: i === arr.length - 1 ? s.settings.accent : (f.won ? 'color-mix(in srgb, var(--cat-6) 72%, var(--surface-2))' : 'color-mix(in srgb, var(--cat-8) 72%, var(--surface-2))') }} />
                   </div>
                 );
               })}

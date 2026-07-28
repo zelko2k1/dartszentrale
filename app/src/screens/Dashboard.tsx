@@ -95,10 +95,10 @@ function VereinDashboard() {
   const subtitle = u ? `${roleLabel}${s.settings.clubName ? ' · ' + s.settings.clubName : ''}` : (s.settings.clubName || tr.dashboard.clubOverview);
 
   const statCards: { label: string; value: string; delta: string; icon: string; iconBg: string; screen: Parameters<typeof s.go>[0] }[] = [
-    { label: tr.dashboard.players, value: String(metrics.playerCount), delta: tr.dashboard.manageArrow, icon: '👥', iconBg: 'rgba(59,158,255,.12)', screen: 'players' },
-    { label: tr.dashboard.teams, value: String(metrics.teamCount), delta: tr.dashboard.manageArrow, icon: '🛡', iconBg: 'rgba(25,164,99,.12)', screen: 'teams' },
-    { label: tr.dashboard.competitions, value: String(leaguesView.length), delta: tr.dashboard.leagueCupArrow, icon: '🏆', iconBg: 'rgba(242,184,41,.12)', screen: 'leagues' },
-    { label: tr.dashboard.accounts, value: String(s.accounts.length), delta: tr.dashboard.usersRightsArrow, icon: '🔑', iconBg: 'rgba(155,109,255,.12)', screen: 'users' },
+    { label: tr.dashboard.players, value: String(metrics.playerCount), delta: tr.dashboard.manageArrow, icon: '👥', iconBg: 'color-mix(in srgb, var(--cat-1) 14%, transparent)', screen: 'players' },
+    { label: tr.dashboard.teams, value: String(metrics.teamCount), delta: tr.dashboard.manageArrow, icon: '🛡', iconBg: 'color-mix(in srgb, var(--cat-6) 14%, transparent)', screen: 'teams' },
+    { label: tr.dashboard.competitions, value: String(leaguesView.length), delta: tr.dashboard.leagueCupArrow, icon: '🏆', iconBg: 'color-mix(in srgb, var(--cat-4) 14%, transparent)', screen: 'leagues' },
+    { label: tr.dashboard.accounts, value: String(s.accounts.length), delta: tr.dashboard.usersRightsArrow, icon: '🔑', iconBg: 'color-mix(in srgb, var(--cat-7) 14%, transparent)', screen: 'users' },
   ];
 
   const cardStyle: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px 22px' };
@@ -106,11 +106,11 @@ function VereinDashboard() {
 
   // ── Admin: Schnellanlage (direkt aus dem Dashboard anlegen) ──
   const quickCreate: { label: string; sub: string; color: string; icon: React.ReactNode; onClick: () => void }[] = [
-    { label: tr.dashboard.players, sub: tr.dashboard.qcPlayerSub, color: '#3B9EFF', icon: <IconUserCheck size={20} />, onClick: () => s.openAddPlayer() },
-    { label: tr.dashboard.qcUser, sub: tr.dashboard.qcUserSub, color: '#9b6dff', icon: <IconUsers size={20} />, onClick: () => s.openAddUser() },
-    { label: tr.dashboard.qcTeam, sub: tr.dashboard.qcTeamSub, color: '#19A463', icon: <IconShield size={20} />, onClick: () => s.openAddTeam() },
-    { label: tr.dashboard.qcComp, sub: tr.dashboard.qcCompSub, color: '#F2B829', icon: <IconTrophy size={20} />, onClick: () => s.openAddLeague() },
-    { label: tr.dashboard.qcEvent, sub: tr.dashboard.qcEventSub, color: '#2BD3C0', icon: <IconCalendarSmall size={20} sw={2} />, onClick: () => s.openAddEvent() },
+    { label: tr.dashboard.players, sub: tr.dashboard.qcPlayerSub, color: 'var(--cat-1)', icon: <IconUserCheck size={20} />, onClick: () => s.openAddPlayer() },
+    { label: tr.dashboard.qcUser, sub: tr.dashboard.qcUserSub, color: 'var(--cat-7)', icon: <IconUsers size={20} />, onClick: () => s.openAddUser() },
+    { label: tr.dashboard.qcTeam, sub: tr.dashboard.qcTeamSub, color: 'var(--cat-6)', icon: <IconShield size={20} />, onClick: () => s.openAddTeam() },
+    { label: tr.dashboard.qcComp, sub: tr.dashboard.qcCompSub, color: 'var(--cat-4)', icon: <IconTrophy size={20} />, onClick: () => s.openAddLeague() },
+    { label: tr.dashboard.qcEvent, sub: tr.dashboard.qcEventSub, color: 'var(--cat-3)', icon: <IconCalendarSmall size={20} sw={2} />, onClick: () => s.openAddEvent() },
   ];
   const QuickCreateCard = (
     <div style={cardStyle}>

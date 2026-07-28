@@ -68,7 +68,7 @@ export function WatchTvPanel() {
         </button>
       </div>
 
-      {err && <div style={{ color: '#E0594B', fontWeight: 700, fontSize: 12, marginTop: 10 }}>{err}</div>}
+      {err && <div style={{ color: 'var(--danger)', fontWeight: 700, fontSize: 12, marginTop: 10 }}>{err}</div>}
 
       {enabled && url && (
         <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginTop: 14, flexWrap: 'wrap' }}>
