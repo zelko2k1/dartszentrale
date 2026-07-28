@@ -146,7 +146,7 @@ export function PlayerDetail() {
         {slOpen && (
           <div style={{ marginTop: 16, borderTop: '1px solid var(--hairline)', paddingTop: 16 }}>
             {slSorted.length === 0 ? (
-              <div style={{ fontSize: 12.5, color: 'var(--text-4)', lineHeight: 1.5 }}>
+              <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-4)', lineHeight: 1.5 }}>
                 {agg.shortLegs ? tr.playerDetail.slNoDetail : tr.playerDetail.slNone}
                 {tr.playerDetail.slFromNow}
               </div>
@@ -159,7 +159,7 @@ export function PlayerDetail() {
                     return (
                       <div key={darts} style={{ display: 'flex', alignItems: 'baseline', gap: 6, background: best ? 'color-mix(in srgb, var(--cat-3) 14%, transparent)' : 'var(--btn)', border: `1px solid ${best ? 'var(--cat-3)' : 'var(--border-2)'}`, borderRadius: 'var(--radius-md)', padding: '8px 12px' }}>
                         <span style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800, color: best ? 'var(--cat-3)' : 'var(--text)' }}>{darts}</span>
-                        <span style={{ fontSize: 10.5, color: 'var(--text-4)', fontWeight: 700 }}>{tr.playerDetail.darts}</span>
+                        <span style={{ fontSize: 'var(--fs-2xs)', color: 'var(--text-4)', fontWeight: 700 }}>{tr.playerDetail.darts}</span>
                         <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: 'var(--text-3)', marginLeft: 4 }}>{cnt}×</span>
                       </div>
                     );

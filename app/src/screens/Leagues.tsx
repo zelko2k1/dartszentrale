@@ -236,13 +236,13 @@ export function Leagues() {
                     {isOwn && canEdit && (
                       <div style={{ display: 'flex', gap: 8, padding: '10px 14px', borderTop: '1px solid var(--hairline)' }}>
                         <button onClick={() => s.openLineup(f.id)} title={tr.dashboard.lineupView}
-                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flex: 1, background: hasLineup ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--btn)', border: `1px solid ${hasLineup ? 'var(--accent)' : 'var(--border-2)'}`, color: hasLineup ? 'var(--accent)' : 'var(--text-3)', padding: '8px 10px', borderRadius: 'var(--radius-sm)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flex: 1, background: hasLineup ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--btn)', border: `1px solid ${hasLineup ? 'var(--accent)' : 'var(--border-2)'}`, color: hasLineup ? 'var(--accent)' : 'var(--text-3)', padding: '8px 10px', borderRadius: 'var(--radius-sm)', fontSize: 'var(--fs-sm)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                           <IconUsersSmall size={14} />
                           {hasLineup ? tr.dashboard.lineupView : tr.dashboard.lineupDo}
                         </button>
                         {hasLineup && (
                           <button onClick={() => s.openResult(f.id)} title={tr.leagues.resultTitle}
-                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 10px', borderRadius: 'var(--radius-sm)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 10px', borderRadius: 'var(--radius-sm)', fontSize: 'var(--fs-sm)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
                             {tr.leagues.result}
                           </button>
@@ -268,7 +268,7 @@ export function Leagues() {
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><path d="M12 9v4M12 17h.01" /></svg>
                           {tr.leagues.nuligaDiffers}
                         </span>
-                        <span style={{ fontSize: 12.5, color: 'var(--text-2)' }}>
+                        <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)' }}>
                           {tr.leagues.ownResult} <b style={{ fontFamily: 'var(--font-num)' }}>{f.hs}:{f.as}</b> ({f.resultSource === 'counter' ? tr.leagues.srcCounter : tr.leagues.srcManual}) · nuLiga <b style={{ fontFamily: 'var(--font-num)' }}>{f.nuligaConflict.hs}:{f.nuligaConflict.as}</b>
                         </span>
                         {canEdit && (

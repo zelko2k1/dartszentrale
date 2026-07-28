@@ -64,7 +64,7 @@ function TournamentTile() {
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 17, fontWeight: 800 }}>{t.tileName}</div>
-        <div style={{ fontSize: 12.5, color: 'var(--text-4)', marginTop: 3, lineHeight: 1.4 }}>{t.tileDesc}</div>
+        <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-4)', marginTop: 3, lineHeight: 1.4 }}>{t.tileDesc}</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
         {tournaments.length > 0 && (

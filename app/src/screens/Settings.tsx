@@ -639,7 +639,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
             {([[tr.settings.newGameShortcut, cfg.newGameKey || 'alt+n'], [tr.settings.quickBo5Short, cfg.quickBo5Key || 'alt+5'], [tr.settings.quickBo3Short, cfg.quickBo3Key || 'alt+3']] as const).map(([label, combo]) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: 13, color: 'var(--text-3)' }}>{label}</span>
-                <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 12.5, fontWeight: 700, color: accent, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)', padding: '4px 10px' }}>{formatCombo(combo)}</kbd>
+                <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-sm)', fontWeight: 700, color: accent, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)', padding: '4px 10px' }}>{formatCombo(combo)}</kbd>
               </div>
             ))}
           </div>

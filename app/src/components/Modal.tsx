@@ -42,13 +42,13 @@ export function Modal({ children, onClose, width = 440, z = 60, style, label }: 
 }
 
 export function ModalTitle({ children }: { children: ReactNode }) {
-  return <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 22 }}>{children}</div>;
+  return <div style={{ fontSize: 'var(--fs-lg)', fontWeight: 800, marginBottom: 22 }}>{children}</div>;
 }
 
 // htmlFor koppelt das Label programmatisch an sein Feld (Screenreader-Name). Caller setzt dieselbe id am Input.
 export function FieldLabel({ children, note, htmlFor }: { children: ReactNode; note?: ReactNode; htmlFor?: string }) {
   return (
-    <label htmlFor={htmlFor} style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 6 }}>
+    <label htmlFor={htmlFor} style={{ display: 'block', fontSize: 'var(--fs-xs)', color: 'var(--text-3)', fontWeight: 700, marginBottom: 6 }}>
       {children}{note && <span style={{ color: 'var(--text-5)', fontWeight: 500 }}> {note}</span>}
     </label>
   );

@@ -183,7 +183,7 @@ function VereinDashboard() {
                 </div>
               </div>
               {canManage && (
-                <button onClick={() => s.openLineupAt(fx!.leagueIndex, fx!.fixtureId)} className="dh-btn" style={{ flexShrink: 0, background: fx!.hasLineup ? 'var(--btn)' : 'color-mix(in srgb, var(--accent) 14%, transparent)', border: `1px solid ${fx!.hasLineup ? 'var(--border-2)' : 'color-mix(in srgb, var(--accent) 40%, transparent)'}`, color: fx!.hasLineup ? 'var(--text-2)' : 'var(--accent)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{fx!.hasLineup ? tr.dashboard.lineupView : tr.dashboard.lineupDo}</button>
+                <button onClick={() => s.openLineupAt(fx!.leagueIndex, fx!.fixtureId)} className="dh-btn" style={{ flexShrink: 0, background: fx!.hasLineup ? 'var(--btn)' : 'color-mix(in srgb, var(--accent) 14%, transparent)', border: `1px solid ${fx!.hasLineup ? 'var(--border-2)' : 'color-mix(in srgb, var(--accent) 40%, transparent)'}`, color: fx!.hasLineup ? 'var(--text-2)' : 'var(--accent)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sm)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{fx!.hasLineup ? tr.dashboard.lineupView : tr.dashboard.lineupDo}</button>
               )}
             </div>
           );

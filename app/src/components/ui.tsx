@@ -61,11 +61,11 @@ export function StatTile({ label, value, sub, icon, iconBg = 'var(--btn)', value
   return (
     <div className="dh-hover-border" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '18px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-4)' }}>{label}</span>
+        <span style={{ fontSize: 'var(--fs-xs)', fontWeight: 600, color: 'var(--text-4)' }}>{label}</span>
         {icon && <span style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>{icon}</span>}
       </div>
       <div style={{ fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, lineHeight: 1, color: valueColor }}>{value}</div>
-      {sub && <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 10 }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-4)', marginTop: 10 }}>{sub}</div>}
     </div>
   );
 }
@@ -84,8 +84,8 @@ export function EmptyState({ icon, title, children, action, compact, style }: {
       {icon && (
         <div style={{ width: compact ? 34 : 46, height: compact ? 34 : 46, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-4)', flexShrink: 0 }}>{icon}</div>
       )}
-      {title && <div style={{ fontSize: compact ? 14 : 16, fontWeight: 700, color: 'var(--text-2)' }}>{title}</div>}
-      {children && <div style={{ fontSize: 13, color: 'var(--text-4)', lineHeight: 1.5, maxWidth: 340 }}>{children}</div>}
+      {title && <div style={{ fontSize: compact ? 'var(--fs-base)' : 'var(--fs-md)', fontWeight: 700, color: 'var(--text-2)' }}>{title}</div>}
+      {children && <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-4)', lineHeight: 1.5, maxWidth: 340 }}>{children}</div>}
       {action && <div style={{ marginTop: 2 }}>{action}</div>}
     </div>
   );
@@ -98,8 +98,8 @@ export function PageHeader({ title, sub, action, style }: {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, ...style }}>
       <div>
-        <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{title}</h1>
-        {sub && <div style={{ fontSize: 14, color: 'var(--text-3)', marginTop: 6, maxWidth: 560 }}>{sub}</div>}
+        <h1 style={{ margin: 0, fontSize: 'var(--fs-xl)', fontWeight: 800, letterSpacing: '-.02em' }}>{title}</h1>
+        {sub && <div style={{ fontSize: 'var(--fs-base)', color: 'var(--text-3)', marginTop: 6, maxWidth: 560 }}>{sub}</div>}
       </div>
       {action}
     </div>

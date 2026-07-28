@@ -109,7 +109,7 @@ export function Calendar() {
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</div>
-                  <div style={{ fontSize: 11.5, color: 'var(--text-4)', fontWeight: 600, marginTop: 1 }}>{[t.label, e.time, e.loc].filter(Boolean).join(' · ')}</div>
+                  <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-4)', fontWeight: 600, marginTop: 1 }}>{[t.label, e.time, e.loc].filter(Boolean).join(' · ')}</div>
                 </div>
               </PressableRow>
             );
