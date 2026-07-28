@@ -4,6 +4,8 @@ import { Avatar } from '../components/Avatar';
 import { useIsPhone } from '../lib/useIsPhone';
 import { useT } from '../i18n';
 import { PressableRow } from '../components/PressableRow';
+import { EmptyState } from '../components/ui';
+import { IconTarget } from '../lib/icons';
 
 const COLS = '26px 1fr 54px 48px 34px 30px 30px 44px 46px 46px 40px 40px 46px 44px';
 
@@ -99,7 +101,7 @@ export function Statistics() {
               </div>
             </PressableRow>
           ))}
-          {rows.length === 0 && <div style={{ padding: '30px 18px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.dashboard.noPlayers}</div>}
+          {rows.length === 0 && <EmptyState icon={<IconTarget size={22} />} title={tr.stats.emptyTitle}>{tr.stats.emptyHint}</EmptyState>}
         </div>
       ) : (
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
@@ -127,7 +129,7 @@ export function Statistics() {
             <span style={{ textAlign: 'right', fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text)' }}>{l.highFinish}</span>
           </PressableRow>
         ))}
-        {rows.length === 0 && <div style={{ padding: '30px 18px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.dashboard.noPlayers}</div>}
+        {rows.length === 0 && <EmptyState icon={<IconTarget size={22} />} title={tr.stats.emptyTitle}>{tr.stats.emptyHint}</EmptyState>}
       </div>
       )}
     </div>

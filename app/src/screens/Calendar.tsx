@@ -3,7 +3,8 @@ import { useStore } from '../store/useStore';
 import { EVENT_TYPES, EVENT_TYPE_ALL } from '../data/constants';
 import { perm, inSeason, upcomingEvents } from '../store/selectors';
 import { shortLong } from '../lib/format';
-import { IconChevronLeft, IconChevronRight, IconPlus } from '../lib/icons';
+import { IconChevronLeft, IconChevronRight, IconPlus, IconCalendar } from '../lib/icons';
+import { EmptyState } from '../components/ui';
 import { useIsPhone } from '../lib/useIsPhone';
 import { useT } from '../i18n';
 import { PressableRow } from '../components/PressableRow';
@@ -88,7 +89,11 @@ export function Calendar() {
 
       {isPhone ? (
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
-          {monthList.length === 0 && <div style={{ padding: '30px 16px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.calendar.noEventsMonth}</div>}
+          {monthList.length === 0 && (
+            <EmptyState icon={<IconCalendar size={22} />} action={canManageEvents ? (
+              <button className="dh-primary dh-tap" onClick={() => s.openAddEvent()} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}><IconPlus size={16} />{tr.calendar.addEvent}</button>
+            ) : undefined}>{tr.calendar.noEventsMonth}</EmptyState>
+          )}
           {monthList.map((e) => {
             const t = EVENT_TYPES[e.type] || { label: e.type, color: 'var(--text-3)', icon: '' };
             const d = new Date(e.date + 'T00:00:00');

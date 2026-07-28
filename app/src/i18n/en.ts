@@ -690,6 +690,8 @@ export const en: Dict = {
   stats: {
     title: 'Statistics · Leaderboard',
     subtitle: 'P / W / L only count X01 singles (1 v 1).',
+    emptyTitle: 'No stats yet',
+    emptyHint: 'Once X01 games are scored on the counter, the leaderboard and player stats show up here.',
     exportCsv: 'Export CSV',
     offloadedBadge: 'OFFLOADED',
     offloadedInfo: 'Detail data offloaded — values come from the frozen snapshot of this season.',

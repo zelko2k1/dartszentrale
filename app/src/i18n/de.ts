@@ -725,6 +725,8 @@ export const de = {
   stats: {
     title: 'Statistiken · Bestenliste',
     subtitle: 'Sp / S / N zählen nur X01-Einzelspiele (1 gegen 1).',
+    emptyTitle: 'Noch keine Auswertung',
+    emptyHint: 'Sobald am Counter X01-Spiele gewertet werden, erscheinen hier Bestenliste und Spieler-Statistiken.',
     exportCsv: 'CSV exportieren',
     offloadedBadge: 'AUSGELAGERT',
     offloadedInfo: 'Detaildaten ausgelagert — Werte stammen aus dem eingefrorenen Schnappschuss dieser Saison.',

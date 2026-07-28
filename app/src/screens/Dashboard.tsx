@@ -8,7 +8,8 @@ import {
 import { longDate, greeting as greetFn, shortLong, todayIso } from '../lib/format';
 import { useT } from '../i18n';
 import { LiveClock } from '../components/LiveClock';
-import { IconTarget, IconCalendarSmall, IconUsers, IconUserCheck, IconShield, IconTrophy, IconSettings, IconChevronRight, IconPlus } from '../lib/icons';
+import { IconTarget, IconCalendarSmall, IconUsers, IconUserCheck, IconShield, IconTrophy, IconSettings, IconChevronRight, IconPlus, IconClock, IconTraining } from '../lib/icons';
+import { EmptyState } from '../components/ui';
 import { TeamKindIcon } from '../modals/TeamModal';
 import { useIsPhone } from '../lib/useIsPhone';
 
@@ -161,7 +162,7 @@ function VereinDashboard() {
   const UpcomingCard = (
     <div style={cardStyle}>
       <div style={sectionTitle}>{personalView ? tr.dashboard.yourUpcoming : tr.dashboard.upcoming}</div>
-      {upcoming.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-4)', padding: '6px 4px' }}>{tr.dashboard.noUpcoming}</div>}
+      {upcoming.length === 0 && <EmptyState compact icon={<IconClock size={17} />}>{tr.dashboard.noUpcoming}</EmptyState>}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {upcoming.map(({ team, fx }) => {
           const k = teamKind(team); const kc = TEAM_KINDS[k].color;
@@ -195,7 +196,7 @@ function VereinDashboard() {
     <div style={cardStyle}>
       <div style={sectionTitle}>{tr.dashboard.recentResults}</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {results.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-4)', padding: '8px 6px' }}>{tr.dashboard.noResults}</div>}
+        {results.length === 0 && <EmptyState compact icon={<IconTrophy size={17} />}>{tr.dashboard.noResults}</EmptyState>}
         {results.map((r, i) => {
           const barColor = r.outcome === 'S' ? 'var(--success)' : r.outcome === 'U' ? 'var(--gold)' : 'var(--danger)';
           const scoreColor = r.outcome === 'S' ? 'var(--success)' : r.outcome === 'U' ? 'var(--gold)' : 'var(--danger-soft)';
@@ -510,7 +511,7 @@ function LocalDashboard() {
               </div>
               <button className="dh-hover-border" onClick={() => s.go('calendar')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.openCalendar}</button>
             </div>
-            {events.length === 0 && <div style={{ padding: '14px 6px', textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>{tr.dashboard.noUpcomingEvents}</div>}
+            {events.length === 0 && <EmptyState compact icon={<IconCalendarSmall size={17} />}>{tr.dashboard.noUpcomingEvents}</EmptyState>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {events.map((ev) => (
                 <PressableRow key={ev.id} className="dh-hover-border dh-row" onClick={() => s.openEditEvent(ev.id)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 10px', borderRadius: 'var(--radius-md)', cursor: 'pointer', border: '1px solid transparent' }}>
@@ -535,7 +536,7 @@ function LocalDashboard() {
           {/* Zuletzt gespielt */}
           <div style={cardStyle}>
             <div style={sectionTitle}>{tr.dashboard.recentlyPlayed}</div>
-            {recent.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-4)', padding: '8px 6px' }}>{tr.dashboard.noGamesYet}</div>}
+            {recent.length === 0 && <EmptyState compact icon={<IconTarget size={17} />}>{tr.dashboard.noGamesYet}</EmptyState>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {recent.map((m) => {
                 const dateStr = new Date(m.date).toLocaleDateString(tr.format.dateLocale, { weekday: 'short', day: 'numeric', month: 'short' });
@@ -559,7 +560,7 @@ function LocalDashboard() {
           <div style={cardStyle}>
             <div style={sectionTitle}>{tr.dashboard.trainingStats}</div>
             {trainStats.length === 0 ? (
-              <div style={{ fontSize: 13, color: 'var(--text-4)', padding: '4px 6px 12px' }}>{tr.dashboard.noTrainingYet}</div>
+              <EmptyState compact icon={<IconTraining size={17} />}>{tr.dashboard.noTrainingYet}</EmptyState>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {trainStats.map(({ mode, n }) => (
@@ -579,7 +580,7 @@ function LocalDashboard() {
           {/* Spieler-Bestenliste */}
           <div style={cardStyle}>
             <div style={sectionTitle}>{tr.dashboard.leaderboard}</div>
-            {top.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-4)', padding: '8px 6px' }}>{tr.dashboard.noPlayers}</div>}
+            {top.length === 0 && <EmptyState compact icon={<IconUsers size={17} />}>{tr.dashboard.noPlayers}</EmptyState>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {top.map((row, idx) => {
                 return (

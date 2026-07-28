@@ -73,12 +73,23 @@ export function StatTile({ label, value, sub, icon, iconBg = 'var(--btn)', value
 }
 
 // ── Leerzustand ──
-export function EmptyState({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+// Icon-Kreis + optionaler Titel + Beschreibung + optionale Aktion. `compact` für Widget-Leeren (kleiner,
+// randlos, da die Karte/Sektion schon den Rahmen + Überschrift stellt); Standard für Content-Flächen.
+export function EmptyState({ icon, title, children, action, compact, style }: {
+  icon?: ReactNode; title?: ReactNode; children?: ReactNode; action?: ReactNode; compact?: boolean; style?: CSSProperties;
+}) {
   return (
     <div style={{
-      border: '1px dashed var(--border-2)', borderRadius: 'var(--radius-lg)', padding: '28px 22px', textAlign: 'center',
-      color: 'var(--text-4)', fontSize: 13, ...style,
-    }}>{children}</div>
+      display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
+      gap: compact ? 8 : 12, padding: compact ? '20px 16px' : '36px 24px', ...style,
+    }}>
+      {icon && (
+        <div style={{ width: compact ? 34 : 46, height: compact ? 34 : 46, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-4)', flexShrink: 0 }}>{icon}</div>
+      )}
+      {title && <div style={{ fontSize: compact ? 14 : 16, fontWeight: 700, color: 'var(--text-2)' }}>{title}</div>}
+      {children && <div style={{ fontSize: 13, color: 'var(--text-4)', lineHeight: 1.5, maxWidth: 340 }}>{children}</div>}
+      {action && <div style={{ marginTop: 2 }}>{action}</div>}
+    </div>
   );
 }
 
