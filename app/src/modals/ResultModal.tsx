@@ -15,7 +15,7 @@ export function ResultModal() {
   const open = m.rows.length - ownWins - oppWins;
 
   const resBtn = (active: boolean, color: string, label: string, onClick: () => void) => (
-    <button onClick={onClick} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, background: active ? color : 'var(--btn)', color: active ? '#fff' : 'var(--text-3)', border: `1px solid ${active ? color : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '7px 12px', borderRadius: 'var(--radius-sm)', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{label}</button>
+    <button onClick={onClick} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: 44, background: active ? color : 'var(--btn)', color: active ? '#fff' : 'var(--text-3)', border: `1px solid ${active ? color : 'var(--border-2)'}`, fontWeight: active ? 800 : 600, padding: '7px 12px', borderRadius: 'var(--radius-sm)', fontSize: 'var(--fs-meta)', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{label}</button>
   );
 
   return (
@@ -24,7 +24,7 @@ export function ResultModal() {
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
         <strong style={{ color: 'var(--text)' }}>{m.ownTeamName}</strong>
-        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '2px 8px', borderRadius: 'var(--radius-xs)' }}>{m.ownIsHome ? tr.teams.home : tr.teams.away}</span>
+        <span style={{ fontSize: 'var(--fs-badge)', fontWeight: 700, color: 'var(--accent-ink)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '2px 8px', borderRadius: 'var(--radius-xs)' }}>{m.ownIsHome ? tr.teams.home : tr.teams.away}</span>
         <span style={{ color: 'var(--text-5)' }}>{tr.teams.versus}</span>
         <strong style={{ color: 'var(--text-2)' }}>{m.oppName}</strong>
       </div>
@@ -32,24 +32,24 @@ export function ResultModal() {
       {/* Live-Stand: gewonnene Spiele */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: '14px 18px', marginBottom: 18 }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, color: ownWins >= oppWins ? 'var(--success)' : 'var(--text)' }}>{ownWins}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.ownTeamName}</div>
+          <div style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-stat)', fontWeight: 800, color: ownWins >= oppWins ? 'var(--success)' : 'var(--text)' }}>{ownWins}</div>
+          <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-4)', fontWeight: 700, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.ownTeamName}</div>
         </div>
-        <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-5)' }}>:</span>
+        <span style={{ fontSize: 'var(--fs-heading)', fontWeight: 800, color: 'var(--text-5)' }}>:</span>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, color: oppWins > ownWins ? 'var(--danger-soft)' : 'var(--text)' }}>{oppWins}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.oppName}</div>
+          <div style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-stat)', fontWeight: 800, color: oppWins > ownWins ? 'var(--danger-soft)' : 'var(--text)' }}>{oppWins}</div>
+          <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-4)', fontWeight: 700, maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.oppName}</div>
         </div>
-        {open > 0 && <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--text-5)' }}>{tr.modals.openCount(open)}</span>}
+        {open > 0 && <span style={{ marginLeft: 8, fontSize: 'var(--fs-meta)', color: 'var(--text-5)' }}>{tr.modals.openCount(open)}</span>}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
         {m.rows.map((r) => (
           <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', background: r.won ? 'transparent' : 'var(--btn)', flexWrap: 'wrap' }}>
-            <span style={{ width: 60, flexShrink: 0, fontSize: 11, fontWeight: 800, color: r.kind === 'single' ? 'var(--text-3)' : 'var(--accent)', textTransform: 'uppercase', letterSpacing: '.03em' }}>{r.label}</span>
-            <span style={{ flex: 1, minWidth: 120, fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 7 }}>
+            <span style={{ width: 60, flexShrink: 0, fontSize: 'var(--fs-badge)', fontWeight: 800, color: r.kind === 'single' ? 'var(--text-3)' : 'var(--accent)', textTransform: 'uppercase', letterSpacing: '.03em' }}>{r.label}</span>
+            <span style={{ flex: 1, minWidth: 120, fontSize: 'var(--fs-body)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 7 }}>
               {r.playerNames.join(' / ') || <span style={{ color: 'var(--text-5)' }}>—</span>}
-              {r.auto && <span title={tr.modals.autoTitle} style={{ fontSize: 9, fontWeight: 800, color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '1px 6px', borderRadius: 'var(--radius-xs)', letterSpacing: '.04em' }}>AUTO</span>}
+              {r.auto && <span title={tr.modals.autoTitle} style={{ fontSize: 'var(--fs-badge)', fontWeight: 800, color: 'var(--accent-ink)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '1px 6px', borderRadius: 'var(--radius-xs)', letterSpacing: '.04em' }}>AUTO</span>}
             </span>
             <div style={{ display: 'flex', gap: 6 }}>
               {resBtn(r.won === 'own', 'var(--success)', tr.modals.win, () => s.setResultWon(r.id, 'own'))}
@@ -59,7 +59,7 @@ export function ResultModal() {
         ))}
       </div>
 
-      <div style={{ fontSize: 11, color: 'var(--text-5)', lineHeight: 1.5, marginBottom: 16 }}>
+      <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-5)', lineHeight: 1.5, marginBottom: 16 }}>
         {tr.modals.resultFootnote(ownWins, oppWins)}
       </div>
 

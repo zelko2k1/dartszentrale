@@ -40,14 +40,14 @@ export function TournamentBoardOverlay() {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'var(--scrim)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xl)', padding: '34px 40px', width: 560, maxWidth: '94vw', textAlign: 'center', boxShadow: '0 30px 80px rgba(0,0,0,.6)' }}>
-        <div style={{ fontSize: 13, color: '#F2B829', fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase' }}>{tt.board(boardNumber)} · {hit.t.name}</div>
-        <div style={{ fontSize: 13, color: hit.stuck ? '#E0594B' : 'var(--text-4)', fontWeight: 700, marginTop: 4 }}>{hit.stuck ? tt.boardResume : tt.boardNextMatch}</div>
+        <div style={{ fontSize: 'var(--fs-sub)', color: '#F2B829', fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase' }}>{tt.board(boardNumber)} · {hit.t.name}</div>
+        <div style={{ fontSize: 'var(--fs-sub)', color: hit.stuck ? '#E0594B' : 'var(--text-4)', fontWeight: 700, marginTop: 4 }}>{hit.stuck ? tt.boardResume : tt.boardNextMatch}</div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, margin: '26px 0 30px' }}>
-          <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-.02em', flex: 1, textAlign: 'right' }}>{home}</div>
-          <div style={{ fontSize: 16, color: 'var(--text-4)', fontWeight: 700, fontFamily: 'var(--font-num)' }}>{tt.vs}</div>
-          <div style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-.02em', flex: 1, textAlign: 'left' }}>{away}</div>
+          <div style={{ fontSize: 'var(--fs-stat)', fontWeight: 800, letterSpacing: '-.02em', flex: 1, textAlign: 'right' }}>{home}</div>
+          <div style={{ fontSize: 'var(--fs-lead)', color: 'var(--text-4)', fontWeight: 700, fontFamily: 'var(--font-num)' }}>{tt.vs}</div>
+          <div style={{ fontSize: 'var(--fs-stat)', fontWeight: 800, letterSpacing: '-.02em', flex: 1, textAlign: 'left' }}>{away}</div>
         </div>
-        <button onClick={() => s.startTournamentMatch(m.id, boardNumber, hit.t.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: '#F2B829', border: 'none', color: '#06160d', padding: '15px 34px', borderRadius: 'var(--radius-md)', fontSize: 17, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, #F2B829 30%, transparent)' }}>
+        <button onClick={() => s.startTournamentMatch(m.id, boardNumber, hit.t.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: '#F2B829', border: 'none', color: '#06160d', padding: '15px 34px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-title)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, #F2B829 30%, transparent)' }}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
           {hit.stuck ? tt.boardStartAgain : tt.boardStart}
         </button>

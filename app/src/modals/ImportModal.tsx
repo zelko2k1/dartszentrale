@@ -71,7 +71,7 @@ export function ImportModal() {
     <button onClick={onClick} className="dh-btn" style={{
       background: primary ? 'var(--accent)' : 'var(--btn)', border: primary ? 'none' : '1px solid var(--border-2)',
       color: primary ? 'var(--accent-fg)' : 'var(--text)', padding: '11px 18px', borderRadius: 'var(--radius-md)',
-      fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+      fontSize: 'var(--fs-body)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
     }}>{label}</button>
   );
 
@@ -83,8 +83,8 @@ export function ImportModal() {
         // ── Ergebnis ──
         <>
           <div style={{ background: 'color-mix(in srgb, var(--success) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--success) 40%, transparent)', borderRadius: 'var(--radius-lg)', padding: 20, marginBottom: 18 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 12, color: 'var(--success)' }}>{tr.modals.importDone}</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 18px', fontSize: 14 }}>
+            <div style={{ fontSize: 'var(--fs-lead)', fontWeight: 800, marginBottom: 12, color: 'var(--success)' }}>{tr.modals.importDone}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 18px', fontSize: 'var(--fs-body)' }}>
               <Stat label={tr.modals.statLeaguesNew} value={result.leaguesNew} />
               <Stat label={tr.modals.statLeaguesExisting} value={result.leaguesExisting} />
               <Stat label={tr.modals.statTeamsLeague} value={result.teamsNew} />
@@ -100,7 +100,7 @@ export function ImportModal() {
         </>
       ) : (
         <>
-          <div style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.6, marginBottom: 16 }}>
+          <div style={{ fontSize: 'var(--fs-sub)', color: 'var(--text-3)', lineHeight: 1.6, marginBottom: 16 }}>
             {tr.modals.importIntro}
           </div>
 
@@ -124,26 +124,26 @@ export function ImportModal() {
               style={{
                 width: '100%', boxSizing: 'border-box', minHeight: 120, resize: 'vertical', marginBottom: 16,
                 background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: 12,
-                color: 'var(--text)', fontSize: 12, fontFamily: 'var(--font-num)',
+                color: 'var(--text)', fontSize: 'var(--fs-meta)', fontFamily: 'var(--font-num)',
               }}
             />
           )}
 
           {fileName && !paste && (
-            <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 12 }}>{tr.modals.fileLabel}<strong style={{ color: 'var(--text-2)' }}>{fileName}</strong></div>
+            <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', marginBottom: 12 }}>{tr.modals.fileLabel}<strong style={{ color: 'var(--text-2)' }}>{fileName}</strong></div>
           )}
 
           {error && (
-            <div style={{ background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', padding: 14, fontSize: 13, marginBottom: 16 }}>{error}</div>
+            <div style={{ background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', padding: 14, fontSize: 'var(--fs-sub)', marginBottom: 16 }}>{error}</div>
           )}
 
           {warning && (
-            <div style={{ background: 'color-mix(in srgb, var(--warn) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--warn) 45%, transparent)', color: 'var(--warn)', borderRadius: 'var(--radius-md)', padding: 14, fontSize: 13, marginBottom: 16, lineHeight: 1.5 }}>⚠️ {warning}</div>
+            <div style={{ background: 'color-mix(in srgb, var(--warn) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--warn) 45%, transparent)', color: 'var(--warn)', borderRadius: 'var(--radius-md)', padding: 14, fontSize: 'var(--fs-sub)', marginBottom: 16, lineHeight: 1.5 }}>⚠️ {warning}</div>
           )}
 
           {parsed && parsed.total > 0 && (
             <>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 18px', fontSize: 13, marginBottom: 14 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 18px', fontSize: 'var(--fs-sub)', marginBottom: 14 }}>
                 <span><strong style={{ color: 'var(--text)' }}>{parsed.total}</strong> <span style={{ color: 'var(--text-4)' }}>{tr.modals.fixturesWord}</span></span>
                 <span><strong style={{ color: 'var(--text)' }}>{parsed.groups.length}</strong> <span style={{ color: 'var(--text-4)' }}>{tr.modals.groupsWord}</span></span>
                 {parsed.skipped > 0 && <span style={{ color: 'var(--text-4)' }}>{tr.modals.skippedWord(parsed.skipped)}</span>}
@@ -155,7 +155,7 @@ export function ImportModal() {
                 if (si.willSwitchActive) {
                   // Achtung: Import wechselt die aktive Saison → alte wird archiviert.
                   return (
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: 'color-mix(in srgb, var(--gold) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 45%, transparent)', borderRadius: 'var(--radius-md)', padding: '12px 14px', marginBottom: 16, fontSize: 13, lineHeight: 1.5, color: 'var(--text-2)' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: 'color-mix(in srgb, var(--gold) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 45%, transparent)', borderRadius: 'var(--radius-md)', padding: '12px 14px', marginBottom: 16, fontSize: 'var(--fs-sub)', lineHeight: 1.5, color: 'var(--text-2)' }}>
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><path d="M12 9v4M12 17h.01" /></svg>
                       <span>
                         {tr.modals.seasonInto}<strong style={{ color: 'var(--text)' }}>{si.targetName}</strong>{si.targetExists ? '' : tr.modals.willCreate}.
@@ -166,7 +166,7 @@ export function ImportModal() {
                 }
                 // Unkritisch: gleiche/aktive Saison oder neue Saison ohne bestehende aktive.
                 return (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '10px 14px', marginBottom: 16, fontSize: 13, color: 'var(--text-3)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '10px 14px', marginBottom: 16, fontSize: 'var(--fs-sub)', color: 'var(--text-3)' }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M8 7V3m8 4V3M3 11h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" /></svg>
                     <span>{tr.modals.seasonInto2}{si.targetExists ? tr.modals.seasonIntoActive : tr.modals.seasonIntoNew} <strong style={{ color: 'var(--text)' }}>{si.targetName}</strong>{si.targetExists ? '' : tr.modals.willCreateActive}.</span>
                   </div>
@@ -179,10 +179,10 @@ export function ImportModal() {
                   return (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderBottom: i < parsed.groups.length - 1 ? '1px solid var(--hairline)' : 'none' }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{g.name}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-4)' }}>{tr.common.season} {g.season}</div>
+                        <div style={{ fontSize: 'var(--fs-sub)', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{g.name}</div>
+                        <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-4)' }}>{tr.common.season} {g.season}</div>
                       </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-4)', textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-4)', textAlign: 'right', flexShrink: 0 }}>
                         {teamCount(g)} {tr.modals.teamsAbbrev} · {g.fixtures.length} {tr.modals.fixturesAbbrev} · {played} {tr.modals.resultsAbbrev}
                       </div>
                     </div>
@@ -192,13 +192,13 @@ export function ImportModal() {
 
               {conflicts.length > 0 && (
                 <div style={{ background: 'color-mix(in srgb, var(--gold) 8%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 40%, transparent)', borderRadius: 'var(--radius-md)', padding: '12px 14px', marginBottom: 16 }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--warn)', marginBottom: 6 }}>⚠ {tr.modals.teamAssignTitle(conflicts.length)}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-4)', lineHeight: 1.5, marginBottom: 12 }}>{tr.modals.teamAssignIntro}</div>
+                  <div style={{ fontSize: 'var(--fs-sub)', fontWeight: 800, color: 'var(--warn)', marginBottom: 6 }}>⚠ {tr.modals.teamAssignTitle(conflicts.length)}</div>
+                  <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', lineHeight: 1.5, marginBottom: 12 }}>{tr.modals.teamAssignIntro}</div>
                   {conflicts.map((c) => (
                     <div key={c.key} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '8px 0', borderTop: '1px solid var(--hairline)' }}>
                       <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.leagueName}</div>
-                        <div style={{ fontSize: 12, color: 'var(--text-4)' }}>
+                        <div style={{ fontSize: 'var(--fs-sub)', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.leagueName}</div>
+                        <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)' }}>
                           {tr.modals.teamExisting}: <strong style={{ color: 'var(--text-2)' }}>{c.existingName}</strong>
                           {'  ·  '}{tr.modals.teamImported}: <strong style={{ color: 'var(--text-2)' }}>{c.importedName}</strong>
                         </div>
@@ -211,7 +211,7 @@ export function ImportModal() {
                             <button key={opt} onClick={() => setResolutions((r) => ({ ...r, [c.key]: opt }))} style={{
                               background: active ? 'var(--accent)' : 'var(--btn)', border: active ? 'none' : '1px solid var(--border-2)',
                               color: active ? 'var(--accent-fg)' : 'var(--text-3)', padding: '6px 12px', borderRadius: 'var(--radius-sm)',
-                              fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
+                              fontSize: 'var(--fs-meta)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
                             }}>{label}</button>
                           );
                         })}
@@ -221,7 +221,7 @@ export function ImportModal() {
                 </div>
               )}
 
-              <div style={{ fontSize: 11, color: 'var(--text-5)', lineHeight: 1.5, marginBottom: 16 }}>
+              <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-5)', lineHeight: 1.5, marginBottom: 16 }}>
                 {tr.modals.importNote}
               </div>
 

@@ -4,6 +4,7 @@ import { aggregateFor, perm } from '../store/selectors';
 import { Avatar } from '../components/Avatar';
 import { IconPlus, IconEdit, IconUserCheck } from '../lib/icons';
 import { PrimaryButton } from '../components/ui';
+import { PressableRow } from '../components/PressableRow';
 import { SearchInput } from '../components/SearchInput';
 import { compareName, matchesQuery, nameParts } from '../lib/people';
 import { useT } from '../i18n';
@@ -25,7 +26,7 @@ export function Players() {
   return (
     <div style={{ padding: '28px 32px', maxWidth: 1100, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
-        <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{tr.nav.players}</h1>
+        <h1 style={{ margin: 0, fontSize: 'var(--fs-page)', fontWeight: 800, letterSpacing: '-.02em' }}>{tr.nav.players}</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <SearchInput value={query} onChange={setQuery} placeholder={tr.players.search} />
           {p.managePlayers && (
@@ -36,13 +37,13 @@ export function Players() {
 
       {s.players.length === 0 && (
         <div style={{ background: 'var(--surface)', border: '1px dashed var(--border-strong)', borderRadius: 'var(--radius-lg)', padding: 48, textAlign: 'center', color: 'var(--text-3)' }}>
-          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>{tr.players.emptyTitle}</div>
-          <div style={{ fontSize: 13, color: 'var(--text-4)' }}>{tr.players.emptyHint}</div>
+          <div style={{ fontSize: 'var(--fs-lead)', fontWeight: 600, marginBottom: 6 }}>{tr.players.emptyTitle}</div>
+          <div style={{ fontSize: 'var(--fs-sub)', color: 'var(--text-4)' }}>{tr.players.emptyHint}</div>
         </div>
       )}
 
       {s.players.length > 0 && players.length === 0 && (
-        <div style={{ background: 'var(--surface)', border: '1px dashed var(--border-strong)', borderRadius: 'var(--radius-lg)', padding: 36, textAlign: 'center', color: 'var(--text-4)', fontSize: 14 }}>
+        <div style={{ background: 'var(--surface)', border: '1px dashed var(--border-strong)', borderRadius: 'var(--radius-lg)', padding: 36, textAlign: 'center', color: 'var(--text-4)', fontSize: 'var(--fs-body)' }}>
           {tr.players.noMatch(query)}
         </div>
       )}
@@ -52,7 +53,7 @@ export function Players() {
           const agg = aggregateFor(pl, s.matches);
           const linked = linkedPlayerIds.has(pl.id);
           return (
-            <div key={pl.id} className="dh-hover-border" role="button" tabIndex={0} onClick={() => s.openPlayer(pl.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); s.openPlayer(pl.id); } }} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 20, cursor: 'pointer', position: 'relative' }}>
+            <div key={pl.id} className="dh-hover-border" onClick={() => s.openPlayer(pl.id)} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 20, cursor: 'pointer', position: 'relative' }}>
               <div style={{ position: 'absolute', top: 14, right: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
                 {isVerein && p.manageUsers && (
                   linked ? (
@@ -74,18 +75,18 @@ export function Players() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 13, marginBottom: 16, paddingRight: 64 }}>
                 <Avatar photo={pl.photo} short={pl.short} avi={pl.avi} size={46} />
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pl.name}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{tr.common.gamesCount(agg.games)}</div>
+                  <PressableRow onClick={() => s.openPlayer(pl.id)} style={{ fontSize: 'var(--fs-lead)', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pl.name}</PressableRow>
+                  <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)' }}>{tr.common.gamesCount(agg.games)}</div>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <div style={{ flex: 1, background: 'var(--btn)', borderRadius: 'var(--radius-md)', padding: '9px 11px' }}>
-                  <div style={{ fontFamily: 'var(--font-num)', fontSize: 17, fontWeight: 800 }}>{agg.avg ? agg.avg.toFixed(1) : '–'}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>{tr.common.avg3}</div>
+                  <div style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-title)', fontWeight: 800 }}>{agg.avg ? agg.avg.toFixed(1) : '–'}</div>
+                  <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>{tr.common.avg3}</div>
                 </div>
                 <div style={{ flex: 1, background: 'var(--btn)', borderRadius: 'var(--radius-md)', padding: '9px 11px' }}>
-                  <div style={{ fontFamily: 'var(--font-num)', fontSize: 17, fontWeight: 800, color: 'var(--gold)' }}>{agg.wins}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>{tr.common.wins}</div>
+                  <div style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-title)', fontWeight: 800, color: 'var(--gold-text)' }}>{agg.wins}</div>
+                  <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase' }}>{tr.common.wins}</div>
                 </div>
               </div>
             </div>

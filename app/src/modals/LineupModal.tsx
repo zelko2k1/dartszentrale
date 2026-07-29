@@ -6,6 +6,7 @@ import { compareName, nameParts } from '../lib/people';
 import { IconPlus, IconTrash } from '../lib/icons';
 import type { Player } from '../data/types';
 import { useT } from '../i18n';
+import { SectionHeading } from '../components/ui';
 
 export function LineupModal() {
   const s = useStore();
@@ -24,15 +25,15 @@ export function LineupModal() {
 
   const selectStyle: React.CSSProperties = {
     flex: 1, minWidth: 0, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)',
-    borderRadius: 'var(--radius-sm)', padding: '9px 10px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', cursor: 'pointer',
+    borderRadius: 'var(--radius-sm)', padding: '9px 10px', color: 'var(--text)', fontSize: 'var(--fs-sub)', fontFamily: 'inherit', cursor: 'pointer',
   };
   const boardStyle: React.CSSProperties = {
     width: 80, flexShrink: 0, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)',
-    borderRadius: 'var(--radius-sm)', padding: '9px 8px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit',
+    borderRadius: 'var(--radius-sm)', padding: '9px 8px', color: 'var(--text)', fontSize: 'var(--fs-sub)', fontFamily: 'inherit',
   };
   const iconBtn: React.CSSProperties = {
     width: 28, height: 28, flexShrink: 0, borderRadius: 'var(--radius-xs)', background: 'var(--btn)', border: '1px solid var(--border-2)',
-    color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13,
+    color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'var(--fs-sub)',
   };
 
   const PlayerSelect = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
@@ -52,15 +53,15 @@ export function LineupModal() {
     <Modal onClose={() => s.closeLineup()} width={600} z={64} label={tr.dashboard.lineupView} style={{ maxHeight: '88vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <ModalTitle>{tr.dashboard.lineupView}</ModalTitle>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-3)', marginBottom: 16, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 'var(--fs-sub)', color: 'var(--text-3)', marginBottom: 16, flexWrap: 'wrap' }}>
         <strong style={{ color: 'var(--text)' }}>{m.ownTeamName}</strong>
-        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '2px 8px', borderRadius: 'var(--radius-xs)' }}>{m.ownIsHome ? tr.teams.home : tr.teams.away}</span>
+        <span style={{ fontSize: 'var(--fs-badge)', fontWeight: 700, color: 'var(--accent-ink)', background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid color-mix(in srgb, var(--accent) 40%, transparent)', padding: '2px 8px', borderRadius: 'var(--radius-xs)' }}>{m.ownIsHome ? tr.teams.home : tr.teams.away}</span>
         <span style={{ color: 'var(--text-5)' }}>{tr.teams.versus}</span>
         <strong style={{ color: 'var(--text-2)' }}>{m.oppName}</strong>
       </div>
 
       {roster.length === 0 && (
-        <div style={{ background: 'var(--btn)', border: '1px dashed var(--border-strong)', borderRadius: 'var(--radius-md)', padding: 20, textAlign: 'center', color: 'var(--text-4)', fontSize: 13, marginBottom: 18 }}>
+        <div style={{ background: 'var(--btn)', border: '1px dashed var(--border-strong)', borderRadius: 'var(--radius-md)', padding: 20, textAlign: 'center', color: 'var(--text-4)', fontSize: 'var(--fs-sub)', marginBottom: 18 }}>
           {tr.modals.noRoster}
         </div>
       )}
@@ -68,9 +69,9 @@ export function LineupModal() {
       {/* Scrollbarer Bereich (Spiele + Ersatz) – Kopf & Speichern-Fuß bleiben fix. */}
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', margin: '0 -4px', padding: '2px 4px' }}>
 
-      <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>{tr.modals.gameOrder}</div>
+      <SectionHeading level={3} style={{ marginBottom: 8 }}>{tr.modals.gameOrder}</SectionHeading>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
-        {m.positions.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-4)', padding: '8px 2px' }}>{tr.modals.noGames}</div>}
+        {m.positions.length === 0 && <div style={{ fontSize: 'var(--fs-sub)', color: 'var(--text-4)', padding: '8px 2px' }}>{tr.modals.noGames}</div>}
         {m.positions.map((p, idx) => {
           const label = p.kind === 'single' ? tr.modals.singleN(++sNo) : tr.modals.doubleN(++dNo);
           return (
@@ -79,7 +80,7 @@ export function LineupModal() {
                 <button onClick={() => s.moveLineupPosition(p.id, -1)} disabled={idx === 0} title={tr.modals.up} aria-label={tr.modals.up} style={{ ...iconBtn, minWidth: 44, minHeight: 44, width: 44, height: 44, opacity: idx === 0 ? 0.35 : 1 }}>▲</button>
                 <button onClick={() => s.moveLineupPosition(p.id, 1)} disabled={idx === m.positions.length - 1} title={tr.modals.down} aria-label={tr.modals.down} style={{ ...iconBtn, minWidth: 44, minHeight: 44, width: 44, height: 44, opacity: idx === m.positions.length - 1 ? 0.35 : 1 }}>▼</button>
               </div>
-              <span style={{ width: 62, flexShrink: 0, fontSize: 11, fontWeight: 800, color: p.kind === 'single' ? 'var(--text-3)' : 'var(--accent)', textTransform: 'uppercase', letterSpacing: '.03em' }}>{label}</span>
+              <span style={{ width: 62, flexShrink: 0, fontSize: 'var(--fs-badge)', fontWeight: 800, color: p.kind === 'single' ? 'var(--text-3)' : 'var(--accent)', textTransform: 'uppercase', letterSpacing: '.03em' }}>{label}</span>
               <PlayerSelect value={p.playerIds[0] || ''} onChange={(v) => s.setLineupPositionPlayer(p.id, 0, v)} />
               {p.kind === 'double' && <PlayerSelect value={p.playerIds[1] || ''} onChange={(v) => s.setLineupPositionPlayer(p.id, 1, v)} />}
               <input value={p.board || ''} onChange={(e) => s.setLineupPositionBoard(p.id, e.target.value.replace(/[^0-9]/g, '').slice(0, 2))} inputMode="numeric" placeholder={tr.modals.boardNoPh} title={tr.modals.boardNoTitle} aria-label={tr.modals.boardNoTitle} style={boardStyle} />
@@ -90,22 +91,22 @@ export function LineupModal() {
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 22 }}>
-        <button onClick={() => s.addLineupPosition('single')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--btn)', border: '1px dashed var(--border-strong)', color: 'var(--text-2)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}><IconPlus size={14} />{tr.modals.singles}</button>
-        <button onClick={() => s.addLineupPosition('double')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--btn)', border: '1px dashed var(--border-strong)', color: 'var(--text-2)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}><IconPlus size={14} />{tr.modals.doubles}</button>
+        <button onClick={() => s.addLineupPosition('single')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--btn)', border: '1px dashed var(--border-strong)', color: 'var(--text-2)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}><IconPlus size={14} />{tr.modals.singles}</button>
+        <button onClick={() => s.addLineupPosition('double')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--btn)', border: '1px dashed var(--border-strong)', color: 'var(--text-2)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}><IconPlus size={14} />{tr.modals.doubles}</button>
       </div>
 
       {roster.length > 0 && (
         <>
-          <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', marginBottom: 8 }}>{tr.modals.subs}</div>
+          <SectionHeading level={3} style={{ marginBottom: 8 }}>{tr.modals.subs}</SectionHeading>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
-            {m.substitutes.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-4)', padding: '4px 2px' }}>{tr.modals.noSubs}</div>}
+            {m.substitutes.length === 0 && <div style={{ fontSize: 'var(--fs-sub)', color: 'var(--text-4)', padding: '4px 2px' }}>{tr.modals.noSubs}</div>}
             {m.substitutes.map((id, i) => {
               const p = playerById(id); if (!p) return null;
               return (
                 <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ width: 28, flexShrink: 0, fontSize: 12, fontWeight: 800, color: 'var(--accent)' }}>E{i + 1}</span>
+                  <span style={{ width: 28, flexShrink: 0, fontSize: 'var(--fs-meta)', fontWeight: 800, color: 'var(--accent)' }}>E{i + 1}</span>
                   <Avatar photo={p.photo} short={p.short} avi={p.avi} size={26} circle />
-                  <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{p.name}</span>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 'var(--fs-body)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
                   <button onClick={() => s.moveSubstitute(id, -1)} disabled={i === 0} title={tr.modals.up} aria-label={tr.modals.up} style={{ ...iconBtn, minWidth: 44, minHeight: 44, opacity: i === 0 ? 0.35 : 1 }}>▲</button>
                   <button onClick={() => s.moveSubstitute(id, 1)} disabled={i === m.substitutes.length - 1} title={tr.modals.down} aria-label={tr.modals.down} style={{ ...iconBtn, minWidth: 44, minHeight: 44, opacity: i === m.substitutes.length - 1 ? 0.35 : 1 }}>▼</button>
                   <button onClick={() => s.toggleSubstitute(id)} title={tr.modals.removeFromSubs} aria-label={tr.modals.removeFromSubs} style={{ ...iconBtn, minWidth: 44, minHeight: 44 }}><IconTrash size={14} /></button>
@@ -120,7 +121,7 @@ export function LineupModal() {
                   <button key={p.id} onClick={() => s.toggleSubstitute(p.id)} title={tr.modals.addAsSub}
                     style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-pill)', padding: '5px 12px 5px 6px', cursor: 'pointer', fontFamily: 'inherit' }}>
                     <Avatar photo={p.photo} short={p.short} avi={p.avi} size={22} circle />
-                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-2)' }}>{p.name}</span>
+                    <span style={{ fontSize: 'var(--fs-sub)', fontWeight: 600, color: 'var(--text-2)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
                     <IconPlus size={13} />
                   </button>
                 );
@@ -141,8 +142,8 @@ export function LineupModal() {
           style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, background: m.boardLive ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--btn)', border: `1px solid ${m.boardLive ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 'var(--radius-md)', padding: '10px 14px', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', boxSizing: 'border-box' }}
         >
           <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: 'block', fontSize: 13, fontWeight: 800, color: 'var(--text)' }}>{tr.modals.sendToBoards}</span>
-            <span style={{ display: 'block', fontSize: 12, color: 'var(--text-4)', lineHeight: 1.4 }}>{tr.modals.sendToBoardsSub}</span>
+            <span style={{ display: 'block', fontSize: 'var(--fs-sub)', fontWeight: 800, color: 'var(--text)' }}>{tr.modals.sendToBoards}</span>
+            <span style={{ display: 'block', fontSize: 'var(--fs-meta)', color: 'var(--text-4)', lineHeight: 1.4 }}>{tr.modals.sendToBoardsSub}</span>
           </span>
           <span style={{ flexShrink: 0, width: 40, height: 22, borderRadius: 'var(--radius-pill)', background: m.boardLive ? 'var(--accent)' : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative' }}>
             <span style={{ position: 'absolute', top: 2, left: m.boardLive ? 20 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff' }} />

@@ -39,10 +39,22 @@ const listeners = new Set<() => void>();
 
 export function getLang(): Lang { return current; }
 
+/**
+ * Hält <html lang> auf der tatsächlichen Sprache. index.html liefert fest `de` aus; ohne diese
+ * Kopplung liest ein Screenreader die englische Oberfläche mit deutscher Aussprache vor
+ * (WCAG 3.1.1). Auch der Erststart muss synchronisiert werden — die Browser-Erkennung kann
+ * `en` ergeben, ohne dass je jemand die Sprache umgestellt hat.
+ */
+function syncDocumentLang(l: Lang): void {
+  if (typeof document !== 'undefined') document.documentElement.lang = l;
+}
+syncDocumentLang(current);
+
 export function setLang(l: Lang): void {
   if (l === current) return;
   current = l;
   try { localStorage.setItem(LS_LANG, l); } catch { /* ignore */ }
+  syncDocumentLang(l);
   listeners.forEach((fn) => fn());
 }
 

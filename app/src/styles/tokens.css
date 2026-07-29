@@ -2,40 +2,79 @@
 :root, [data-theme="dark"] {
   --sidebar:#0a0c0e; --bg:#0d0f12; --surface:#14181c; --surface-2:#13171c; --surface-3:#161b20; --btn:#1a2026;
   --border:#232a31; --border-2:#2a333c; --border-strong:#3a434d; --hairline:#1c2229;
-  /* text-4/-5 auf WCAG-AA angehoben (Mikro-Labels ≥4.5:1 auf surface-2/-3) */
-  --text:#ECEAE3; --text-2:#aeb4bd; --text-3:#8a9099; --text-4:#8c939d; --text-5:#838a93;
-  --success:#7fd7a6; --danger-soft:#c98b86; --danger:#e0594b;
-  /* Spiel-Semantik: Gold (180/High Finish/Checkout), Sieg-Grün, Score-Kontur, Counter-Canvas */
-  --gold:#F2B829; --gold-ink:#1a1206; --co-ink:#F2B829; --win-good:#2BD377; --score-stroke:rgba(0,0,0,.6); --counter-bg:#0c0e11;
+  /* Text-Leiter: jede Stufe ≥4.5:1 gegen JEDE Fläche dieses Themes — auch gegen --sidebar,
+     die dunkelste. Die Stufen sind in OKLCH-Lightness gleichmäßig verteilt (77→72→68→63),
+     damit die Hierarchie sichtbar bleibt; vorher lagen -3 und -4 bei 65 %/66 % praktisch
+     aufeinander und -4 war sogar HELLER als -3, die Leiter war also verdreht. */
+  --text:#ECEAE3; --text-2:#aeb4bd; --text-3:#a0a6af; --text-4:#9198a2; --text-5:#838a93;
+  --success:#7fd7a6; --danger-soft:#c98b86; --danger:#f36a5a;
+  /* Spiel-Semantik: Gold (180/High Finish/Checkout), Sieg-Grün, Score-Kontur, Counter-Canvas.
+     Gold hat ZWEI Rollen, die auseinandergehalten werden müssen:
+       --gold       = Fläche (180er-Chip, Glanz, Verlauf) — dazu gehört --gold-ink als Schrift darauf
+       --gold-text  = Gold als Schrift/Ikone AUF einer normalen Fläche (Kapitäns-Badge, 140er-Spalte,
+                      Rang 1, Formbalken). Im Dunkelmodus identisch mit --gold, im Hellmodus abgedunkelt.
+     Der Checkout-Vorschlag im Counter nutzt dasselbe Token — ein eigenes --co-ink gab es früher,
+     es wäre als :root-Alias auf var(--gold-text) in die Kaskadenfalle gelaufen (var() löst am
+     deklarierenden Element auf, also am html-Knoten mit dem DUNKLEN Wert, und vererbt ihn hell weiter). */
+  --gold:#F2B829; --gold-ink:#1a1206; --gold-text:#F2B829; --win-good:#2BD377; --score-stroke:rgba(0,0,0,.6); --counter-bg:#0c0e11;
   /* Status-Semantik (app-weit): Info (blau, z. B. verknüpft/Vize), Warnung (amber) — je Theme AA */
-  --info:#4c9dff; --warn:#e0a83a;
+  --info:#4c9dff; --warn:#f19d4c;   /* bewusst nach Orange gedreht: als #e0a83a lag die Warnung nur 4° vom Gold entfernt */
   /* Kategoriale Stat-Palette (Dataviz): 8 unterscheidbare Hues für Stat-Identität. Dark-Stufe = helle,
      text-lesbare Töne auf dunklem Grund; CVD-geprüft (validate_palette.js). Reihenfolge = CVD-Sicherheit. */
-  --cat-1:#4c9dff; --cat-2:#f07a3d; --cat-3:#2bd3c0; --cat-4:#F2B829; --cat-5:#e87ba4; --cat-6:#2bd377; --cat-7:#b48aff; --cat-8:#e0594b;
+  --cat-1:#4c9dff; --cat-2:#f07a3d; --cat-3:#2bd3c0; --cat-4:#F2B829; --cat-5:#e87ba4; --cat-6:#2bd377; --cat-7:#b48aff; --cat-8:#f36a5a;
   --scrim:rgba(6,8,10,.72); --shadow-card:0 24px 60px rgba(0,0,0,.5);
   /* Radius-Skala (themeunabhängig; ein Theme darf sie via [data-theme="…"] überschreiben, z. B. kantiger) */
   --radius-xs:6px; --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-xl:20px; --radius-pill:999px;
-  /* Typo-Rollen-Skala (themeunabhängig) — stabile UI-Rollen für Operate. Große Display-/Zahl-Größen
-     (Restscore, Board-Zoom) sind rollenspezifisch und bewusst NICHT Teil dieser Leiter. */
-  --fs-2xs:11px; --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-md:16px; --fs-lg:20px; --fs-xl:27px;
+  /* ── Typo-Rollen-Leiter (themeunabhängig) ──────────────────────────────────────────────────────
+     Acht Stufen, jede mit EINER Aufgabe. Die Namen benennen die Rolle, nicht die Größe: wer eine
+     Kartenüberschrift setzt, greift zu --fs-lead und muss nicht wissen, dass daran 16px hängen.
+
+       --fs-badge    Badge, Chip, Mikro-Label (versal, fett)   ← zugleich die Lesbarkeitsgrenze
+       --fs-meta     Sektionsüberschrift, Metadaten
+       --fs-sub      Sekundärtext, Unterzeile
+       --fs-body     Fließtext, Bedienelemente, Zeilenlabel
+       --fs-lead     betonter Text, Karten-/Panelüberschrift
+       --fs-title    Dialog- und Panel-Titel
+       --fs-heading  hervorgehobene Überschrift (Login, Overlays)
+       --fs-page     Seitentitel (h1)
+
+     11px ist der Boden: darunter lag die App mit 9px und 10px auf 44 Stellen — am Board aus
+     Wurfentfernung nicht mehr lesbar. Zwischen 17 und 28 lagen elf verschiedene Größen für drei
+     Rollen; die Leiter macht daraus --fs-title / --fs-heading / --fs-page.
+
+     Darüber liegen drei Display-Stufen (siehe unten) für große Zahlen und Momente. */
+  --fs-badge:11px; --fs-meta:12px; --fs-sub:13px; --fs-body:14px;
+  --fs-lead:16px; --fs-title:18px; --fs-heading:22px; --fs-page:27px;
+  /* Display-Stufen: große Zahlen und Momente. Sie stehen bewusst weit über der Textleiter —
+     --fs-stat trägt Kennzahlen (Kachelwert, Ergebnis), --fs-display die Feier-Überschrift,
+     --fs-hero den größten Augenblick (Spielgewinn). Die MITSKALIERENDEN Größen (Restscore am
+     Board, Board-Zoom, clamp()-Overlays) hängen an Nutzereinstellung bzw. Viewport und bleiben
+     zu Recht außerhalb jeder festen Leiter. */
+  --fs-stat:30px; --fs-display:34px; --fs-hero:38px;
   --ease-out:cubic-bezier(.16,1,.3,1); /* :root → global, themeunabhängig */
-  --nav-active:color-mix(in srgb, var(--accent) 16%, transparent); --nav-active-fg:var(--accent); --bar:rgba(13,15,18,.55);
+  --nav-active:color-mix(in srgb, var(--accent) 16%, transparent); --nav-active-fg:var(--accent); /* App.tsx überschreibt mit einem lesbaren Ableger (accentText) */ --bar:rgba(13,15,18,.55);
 }
 [data-theme="light"] {
   --sidebar:#ffffff; --bg:#edeae1; --surface:#ffffff; --surface-2:#f7f5ef; --surface-3:#f0ede4; --btn:#ece9de;
   --border:#e3e0d4; --border-2:#dad6c8; --border-strong:#c2bdac; --hairline:#ece9df;
-  /* text-4/-5 auf WCAG-AA angehoben (Mikro-Labels ≥4.5:1 auf hellem Papier) */
-  --text:#1c1f24; --text-2:#474c54; --text-3:#5c616a; --text-4:#656b74; --text-5:#767c85;
-  --danger-soft:#b5483b; --success:#178a52; --danger:#c0392b;
-  /* Spiel-Semantik: co-ink dunkler fürs helle Papier; Gold/Sieg-Grün sitzen nur auf dem dunklen Overlay */
-  --gold:#F2B829; --gold-ink:#1a1206; --co-ink:#8a5e00; --win-good:#2BD377; --score-stroke:rgba(0,0,0,.45); --counter-bg:#edeae1;
+  /* Text-Leiter, ≥4.5:1 gegen JEDE Fläche — der harte Fall ist --surface (#ffffff).
+     -5 sitzt exakt auf der AA-Grenze, -3/-4 verteilen sich gleichmäßig darüber
+     (41→45→48→52 L%). Auf hellem Papier ist der Spielraum knapp: mehr als vier
+     unterscheidbare Stufen gibt der Kontrastbedarf nicht her. */
+  --text:#1c1f24; --text-2:#474c54; --text-3:#50555e; --text-4:#595f68; --text-5:#626871;
+  --danger-soft:#a2362a; --success:#006a34; --danger:#ad2519;
+  /* Spiel-Semantik: die Goldfläche bleibt (sie trägt --gold-ink), aber Gold als SCHRIFT muss fürs
+     helle Papier abgedunkelt werden — als #F2B829 stand es bei 1,48–1,80:1 auf allen hellen Flächen.
+     --win-good sitzt ausschließlich auf dem dunklen Sieg-Overlay und bleibt deshalb unverändert. */
+  --gold:#F2B829; --gold-ink:#1a1206; --gold-text:#7e5300; --win-good:#2BD377; --score-stroke:rgba(0,0,0,.45); --counter-bg:#edeae1;
   /* Status-Semantik: dunklere Blau-/Amber-Werte fürs helle Papier (AA auf surface-2) */
-  --info:#1a66c4; --warn:#8a5e00;
-  /* Kategoriale Stat-Palette (Dataviz): fürs helle Papier abgedunkelte Hues, alle ≥3:1 als Text
-     auf --btn (#ece9de); CVD-geprüft (validate_palette.js, alle Checks PASS). */
-  --cat-1:#2166c9; --cat-2:#c15a1c; --cat-3:#0a7d64; --cat-4:#8f6200; --cat-5:#b23a72; --cat-6:#0f8a3f; --cat-7:#5f3fb3; --cat-8:#bf3a2c;
+  --info:#0459b5; --warn:#8b4b15;   /* Warnung und --gold-text waren im Hellmodus BYTEGLEICH (#8a5e00) — jetzt 21° auseinander */
+  /* Kategoriale Skala fürs helle Papier: ≥4.5:1 als SCHRIFT auf jeder Fläche — nicht nur 3:1.
+     Die Skala trägt inzwischen auch Text (First9-Spalte, Trainingsmodi, Termintypen, Rollen),
+     nicht nur Diagramm-Marken. Prüfbar mit `node scripts/validate-palette.mjs`. */
+  --cat-1:#0f57b9; --cat-2:#9f3b00; --cat-3:#006850; --cat-4:#7f5300; --cat-5:#a32b65; --cat-6:#006b20; --cat-7:#5f3fb3; --cat-8:#ac261a;
   --scrim:rgba(24,20,12,.5); --shadow-card:0 20px 50px rgba(60,55,40,.18);
-  --nav-active:color-mix(in srgb, var(--accent) 14%, transparent); --nav-active-fg:var(--accent); --bar:rgba(248,246,240,.7);
+  --nav-active:color-mix(in srgb, var(--accent) 14%, transparent); --nav-active-fg:var(--accent); /* App.tsx überschreibt mit einem lesbaren Ableger (accentText) */ --bar:rgba(248,246,240,.7);
 }
 /* ── Gestalt-Themes ("Skins") ─────────────────────────────────────────────────────────────────────────
    Jedes Skin liegt auf dem Wrapper zusammen mit data-theme (Modus) und überschreibt NUR die abweichenden
@@ -46,31 +85,50 @@
 [data-skin="theme01"] {
   --sidebar:oklch(12% 0.02 255); --bg:oklch(14% 0.02 255); --surface:oklch(17% 0.022 255); --surface-2:oklch(19% 0.022 255); --surface-3:oklch(22% 0.024 255); --btn:oklch(25% 0.024 255);
   --border:oklch(31% 0.02 255); --border-2:oklch(37% 0.02 255); --border-strong:oklch(46% 0.022 255); --hairline:oklch(27% 0.018 255);
-  --text:oklch(95% 0.01 255); --text-2:oklch(80% 0.014 255); --text-3:oklch(69% 0.014 255); --text-4:oklch(61% 0.014 255); --text-5:oklch(57% 0.014 255);
+  --text:oklch(95% 0.01 255); --text-2:oklch(80% 0.014 255); --text-3:oklch(74% 0.014 255); --text-4:oklch(69% 0.014 255); --text-5:oklch(63% 0.014 255);
   --counter-bg:oklch(13% 0.02 255); --bar:oklch(15% 0.02 255 / 0.72);
+  /* Die Sidebar dieses Skins ist tiefer als die Basis → --danger muss hier eigens nachziehen. */
+  --danger:#f56c5c;
+  /* Die Flächen dieses Skins weichen von der Basis ab → kategoriale Skala zieht nach (Text-Kontrast). */
+  --cat-8:#f56c5c;
 }
 /* theme02 „Espresso" – warmes Kakao-Braun (Hue 55), gerundet */
 [data-skin="theme02"] {
   --sidebar:oklch(14% 0.018 55); --bg:oklch(16% 0.02 55); --surface:oklch(19% 0.022 55); --surface-2:oklch(21% 0.022 55); --surface-3:oklch(24% 0.024 55); --btn:oklch(27% 0.026 55);
   --border:oklch(33% 0.022 55); --border-2:oklch(39% 0.022 55); --border-strong:oklch(48% 0.024 55); --hairline:oklch(29% 0.02 55);
-  --text:oklch(95% 0.012 75); --text-2:oklch(80% 0.016 70); --text-3:oklch(69% 0.016 68); --text-4:oklch(61% 0.016 68); --text-5:oklch(57% 0.016 68);
+  --text:oklch(95% 0.012 75); --text-2:oklch(80% 0.016 70); --text-3:oklch(75% 0.016 68); --text-4:oklch(70% 0.016 68); --text-5:oklch(65% 0.016 68);
   --counter-bg:oklch(14% 0.02 55); --bar:oklch(16% 0.02 55 / 0.72);
+  --danger:#fe7464;
+  /* Die Flächen dieses Skins weichen von der Basis ab → kategoriale Skala zieht nach (Text-Kontrast). */
+  --cat-8:#fe7464;
+  --cat-1:#4e9fff;
+  --cat-2:#f47e41;
+  --cat-5:#e97ca5;
+  --danger-soft:#ce908b;
+  --info:#4e9fff;
 }
 /* theme03 „Salbei" – helles Elfenbein-Papier (Hue 82), kantig */
 [data-skin="theme03"] {
   --sidebar:oklch(98.5% 0.008 82); --bg:oklch(96.5% 0.012 82); --surface:oklch(99% 0.005 82); --surface-2:oklch(94.5% 0.014 80); --surface-3:oklch(92% 0.016 78); --btn:oklch(93.5% 0.016 78);
   --border:oklch(86% 0.014 80); --border-2:oklch(80% 0.016 78); --border-strong:oklch(60% 0.018 76); --hairline:oklch(91% 0.012 80);
-  --text:oklch(28% 0.014 70); --text-2:oklch(43% 0.016 72); --text-3:oklch(52% 0.016 74); --text-4:oklch(57% 0.014 74); --text-5:oklch(61% 0.014 74);
+  --text:oklch(28% 0.014 70); --text-2:oklch(43% 0.016 72); --text-3:oklch(46% 0.016 74); --text-4:oklch(48% 0.014 74); --text-5:oklch(51% 0.014 74);
   --counter-bg:oklch(95.5% 0.012 82); --bar:oklch(97.5% 0.008 82 / 0.8);
+  /* Dieses Skin ist heller als die helle Basis → Semantik-Farben ziehen eigens nach. */
+  --success:#006731; --danger:#a92016; --danger-soft:#9e3228; --warn:#884812; --info:#0056b2; --gold-text:#7c5000;
   --radius-xs:0; --radius-sm:0; --radius-md:0; --radius-lg:0; --radius-xl:0;
+  /* Die Flächen dieses Skins weichen von der Basis ab → kategoriale Skala zieht nach (Text-Kontrast). */
+  --cat-1:#0954b6; --cat-2:#9c3800; --cat-3:#00654d; --cat-4:#7c5000; --cat-5:#9f2762; --cat-6:#00671d; --cat-8:#a92217;
 }
 /* theme07 „Porzellan" – kühles Porzellan/Bone (Hue 245), kantig */
 [data-skin="theme07"] {
   --sidebar:oklch(99% 0.004 245); --bg:oklch(96.5% 0.006 245); --surface:oklch(99.5% 0.003 245); --surface-2:oklch(95% 0.008 245); --surface-3:oklch(92.5% 0.01 245); --btn:oklch(94% 0.01 245);
   --border:oklch(87% 0.01 245); --border-2:oklch(82% 0.012 245); --border-strong:oklch(68% 0.014 245); --hairline:oklch(92% 0.008 245);
-  --text:oklch(24% 0.02 250); --text-2:oklch(40% 0.02 248); --text-3:oklch(50% 0.018 248); --text-4:oklch(55% 0.018 248); --text-5:oklch(59% 0.016 248);
+  --text:oklch(24% 0.02 250); --text-2:oklch(40% 0.02 248); --text-3:oklch(44% 0.018 248); --text-4:oklch(47% 0.018 248); --text-5:oklch(51% 0.016 248);
   --counter-bg:oklch(95.5% 0.006 245); --bar:oklch(98% 0.005 245 / 0.75);
+  --success:#006832; --danger:#ab2217; --danger-soft:#a03429; --warn:#894914; --info:#0257b4; --gold-text:#7d5100;
   --radius-xs:0; --radius-sm:0; --radius-md:0; --radius-lg:0; --radius-xl:0;
+  /* Die Flächen dieses Skins weichen von der Basis ab → kategoriale Skala zieht nach (Text-Kontrast). */
+  --cat-1:#0d56b8; --cat-2:#9d3900; --cat-3:#00674f; --cat-4:#7d5100; --cat-5:#a02864; --cat-6:#00691d; --cat-8:#aa2419;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; }

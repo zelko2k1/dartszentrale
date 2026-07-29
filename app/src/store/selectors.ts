@@ -298,10 +298,134 @@ export function hexRgb(hex: string): [number, number, number] {
   const v = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
   return [parseInt(v.slice(0, 2), 16), parseInt(v.slice(2, 4), 16), parseInt(v.slice(4, 6), 16)];
 }
+
+// ── Farb-Mathematik ───────────────────────────────────────────────────────────
+// Der Akzent ist frei wählbar (10 Presets + Skins), also müssen alle davon abgeleiteten
+// Rollen — Schrift auf der Akzentfläche, Fokus-Ring, Kontur — GERECHNET werden statt
+// geraten. Grundlage ist die echte WCAG-Relativluminanz (nicht die alte YIQ-Helligkeit,
+// die z. B. beim Standard-Akzent #2BD377 weiße Schrift mit 1,97:1 wählte).
+const srgbToLin = (c: number): number => {
+  const s = c / 255;
+  return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+};
+function relLuminance(hex: string): number {
+  const [r, g, b] = hexRgb(hex);
+  return 0.2126 * srgbToLin(r) + 0.7152 * srgbToLin(g) + 0.0722 * srgbToLin(b);
+}
+/** WCAG-Kontrastverhältnis zweier Hex-Farben (1…21). */
+export function contrastRatio(a: string, b: string): number {
+  const l1 = relLuminance(a), l2 = relLuminance(b);
+  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+}
+
+// OKLCH ↔ sRGB — nur für das Nachführen der Lightness bei erhaltenem Farbton.
+const clamp01 = (x: number): number => Math.min(1, Math.max(0, x));
+const linToSrgb = (c: number): number => (c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
+function oklchToHex(L: number, C: number, hDeg: number): string {
+  const h = (hDeg * Math.PI) / 180;
+  const a = C * Math.cos(h), b2 = C * Math.sin(h);
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b2) ** 3;
+  const m = (L - 0.1055613458 * a - 0.0638541728 * b2) ** 3;
+  const s = (L - 0.0894841775 * a - 1.2914855480 * b2) ** 3;
+  return '#' + [
+    +4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+    -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
+  ].map((v) => Math.round(clamp01(linToSrgb(v)) * 255).toString(16).padStart(2, '0')).join('');
+}
+function hexToOklch(hex: string): [number, number, number] {
+  const [r, g, b] = hexRgb(hex).map(srgbToLin);
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  const L = 0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s;
+  const A = 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s;
+  const B = 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s;
+  let h = (Math.atan2(B, A) * 180) / Math.PI;
+  if (h < 0) h += 360;
+  return [L, Math.hypot(A, B), h];
+}
+
+// Die extremste Fläche je Modus über ALLE Themes (inkl. Skins): dunkel die tiefste
+// Sidebar von theme01, hell das weiße --surface. Wer gegen die besteht, besteht überall.
+const CANVAS_REF: Record<'dark' | 'light', string> = { dark: '#02060d', light: '#ffffff' };
+// Ungünstigste Fläche je Modus, auf der eine AKZENT-TÖNUNG liegen kann.
+//
+// Eine Tönung liegt farblich zwischen Fläche und Akzent. Für helle Schrift auf dunklem Grund ist
+// deshalb die HELLSTE Fläche der harte Fall (dort wird die Tönung am hellsten), für dunkle
+// Schrift die DUNKELSTE. Ich hatte das zuerst andersherum und deshalb gegen die dunkelste
+// Sidebar gerechnet — die Board-Badges fielen prompt durch (4,29:1).
+// Werte aus tokens.css ermittelt: dunkel theme02 --btn, hell theme03 --surface-3.
+const NAV_BASE: Record<'dark' | 'light', string> = { dark: '#31231a', light: '#ebe3d9' };
+const RING_MIN = 3.2;   // WCAG 1.4.11 verlangt 3:1 für Bedienelemente; etwas Puffer
+const FILL_MIN = 1.5;   // darunter verschwindet die Akzentfläche in der Fläche dahinter
+
+const INK_DARK = '#06160d';
+const INK_LIGHT = '#ffffff';
+/**
+ * Schrift auf einer Akzentfläche: nimmt den besseren von zwei Inks statt einen
+ * Helligkeits-Schwellwert zu raten. Damit ist jeder denkbare Akzent AA-fest.
+ */
 export function accentFg(accent: string): string {
-  const [r, g, b] = hexRgb(accent);
-  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return lum > 0.62 ? '#06160d' : '#fff';
+  return contrastRatio(accent, INK_DARK) >= contrastRatio(accent, INK_LIGHT) ? INK_DARK : INK_LIGHT;
+}
+/**
+ * Fokus-Ring aus dem Akzent: bleibt der Akzent, solange er gegen die Fläche
+ * mindestens 3,2:1 schafft. Sonst wandert nur die OKLCH-Lightness, bis er es tut —
+ * Farbton und Sättigung bleiben, der Ring gehört sichtbar zum Theme.
+ * (Im Hellmodus scheitern 8 der 10 Presets ungefiltert, u. a. der Standard-Grünton.)
+ */
+export function accentRing(accent: string, mode: 'dark' | 'light'): string {
+  const ref = CANVAS_REF[mode];
+  if (contrastRatio(accent, ref) >= RING_MIN) return accent;
+  const [L, C, h] = hexToOklch(accent);
+  const dir = mode === 'light' ? -1 : 1;
+  for (let i = 1; i <= 900; i++) {
+    const cand = oklchToHex(clamp01(L + dir * i * 0.001), C, h);
+    if (contrastRatio(cand, ref) >= RING_MIN) return cand;
+  }
+  return mode === 'light' ? '#000000' : '#ffffff';
+}
+/** Mischt zwei Hex-Farben linear in sRGB (wie CSS color-mix in srgb). */
+function mixHex(a: string, b: string, ratioA: number): string {
+  const [ar, ag, ab] = hexRgb(a), [br, bg, bb] = hexRgb(b);
+  const m = (x: number, y: number) => Math.round(x * ratioA + y * (1 - ratioA));
+  return '#' + [m(ar, br), m(ag, bg), m(ab, bb)].map((v) => v.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Der Akzent als SCHRIFT auf einer hellen Akzent-Tönung (aktiver Navigationseintrag).
+ *
+ * `--nav-active` ist `color-mix(accent 14–16 %, transparent)` — im Hellmodus also fast weiß.
+ * Der rohe Akzent darauf ergab beim Standard-Grün 1,77:1; axe hat das im Browser gefunden,
+ * die Token-Prüfung nicht: hier steht Akzent auf einer LAUFZEIT-Mischung desselben Akzents,
+ * eine Paarung, die in keiner Token-Matrix vorkommt.
+ *
+ * Wie beim Fokus-Ring wandert nur die OKLCH-Lightness, bis 4,5:1 stehen — Farbton bleibt,
+ * der aktive Eintrag bleibt erkennbar „in Akzentfarbe".
+ */
+export function accentText(accent: string, mode: 'dark' | 'light'): string {
+  // Gegen die TÖNUNG rechnen, nicht gegen die Fläche darunter: --nav-active mischt den Akzent
+  // mit 16 % in den Untergrund, und diese Mischung drückt den Kontrast noch einmal.
+  // Als Untergrund die UNGÜNSTIGSTE Seitenleiste des Modus (theme03 „Salbei" ist warmes
+  // Elfenbein statt Weiß und damit der harte Fall) — wer dort besteht, besteht überall.
+  const ref = mixHex(accent, NAV_BASE[mode], 0.16);
+  if (contrastRatio(accent, ref) >= 4.5) return accent;
+  const [L, C, h] = hexToOklch(accent);
+  const dir = mode === 'light' ? -1 : 1;
+  for (let i = 1; i <= 900; i++) {
+    const cand = oklchToHex(clamp01(L + dir * i * 0.001), C, h);
+    if (contrastRatio(cand, ref) >= 4.5) return cand;
+  }
+  return mode === 'light' ? '#000000' : '#ffffff';
+}
+/**
+ * Hauchdünne Kontur für Akzentflächen, die sonst mit dem Untergrund verschmelzen —
+ * betrifft genau die entarteten Fälle (Akzent Weiß im Hellmodus, Schwarz im Dunkelmodus).
+ * Alle anderen Akzente bekommen `transparent`, bleiben also unverändert randlos.
+ */
+export function accentEdge(accent: string, mode: 'dark' | 'light'): string {
+  return contrastRatio(accent, CANVAS_REF[mode]) >= FILL_MIN ? 'transparent' : accentRing(accent, mode);
 }
 // Effektiver Hell/Dunkel-Modus: ein aktives Skin erzwingt seinen Modus, sonst die eigene Einstellung.
 export function effectiveMode(settings: Pick<Settings, 'mode' | 'skin'>): 'dark' | 'light' {

@@ -19,8 +19,12 @@ input::placeholder, textarea::placeholder { color: var(--text-5); }
 .dh-btn:hover { background: var(--surface-3); }
 .dh-btn-ghost:hover { background: rgba(255,255,255,.04); }
 
-/* Primärbutton (Akzent-Grün) */
-.dh-primary { transition: filter .15s var(--ease-out), box-shadow .15s var(--ease-out), transform .05s var(--ease-out); }
+/* Primärbutton (Akzentfläche).
+   --accent-edge ist normalerweise `transparent` und ändert nichts. Nur wenn die Akzentfläche
+   mit dem Untergrund verschmilzt (Akzent Weiß im Hellmodus, Schwarz im Dunkelmodus) setzt
+   App.tsx eine echte Farbe → der Button behält seine Form. inset statt border, damit die
+   Maße der vielen inline-gestylten Primärbuttons unverändert bleiben. */
+.dh-primary { transition: filter .15s var(--ease-out), box-shadow .15s var(--ease-out), transform .05s var(--ease-out); box-shadow: inset 0 0 0 1px var(--accent-edge, transparent); }
 .dh-primary:hover { filter: brightness(1.06); }
 .dh-primary:active { transform: translateY(1px); }
 
@@ -33,15 +37,18 @@ input::placeholder, textarea::placeholder { color: var(--text-5); }
 
 /* Inputs Fokus */
 .dh-input { transition: border-color .15s var(--ease-out), box-shadow .15s var(--ease-out); outline: none; }
-.dh-input:focus { border-color: var(--border-strong); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+.dh-input:focus { border-color: var(--border-strong); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-ring, var(--accent)) 22%, transparent); }
 
 /* Tastatur-Fokus als un-abschaltbare Grundregel (Härtung, WCAG 2.4.7): JEDES interaktive Element
-   zeigt bei Keyboard-Navigation einen Akzent-Ring – auch die vielen inline-gestylten Buttons/Inputs,
+   zeigt bei Keyboard-Navigation einen Ring – auch die vielen inline-gestylten Buttons/Inputs,
    die outline:none setzen. :where() hält die Spezifität bei 0 (leicht überschreibbar); !important
    schlägt das inline outline:none. Nur :focus-visible → Mausklicks bleiben ringfrei. Komponenten mit
-   eigener Fokus-Anzeige (Abbrechen-/Neu-Dialog per ring()) bekommen ihn additiv obendrauf. */
+   eigener Fokus-Anzeige (Abbrechen-/Neu-Dialog per ring()) bekommen ihn additiv obendrauf.
+   Die Ringfarbe ist NICHT der rohe Akzent, sondern --focus-ring (App.tsx, accentRing()): der Akzent
+   selbst schafft im Hellmodus bei 8 von 10 Presets keine 3:1 gegen die Fläche und wäre dort
+   unsichtbar. --focus-ring behält den Farbton und schiebt nur die Helligkeit so weit, bis er trägt. */
 :where(button, a[href], input, select, textarea, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
-  outline: 2px solid var(--accent) !important;
+  outline: 2px solid var(--focus-ring, var(--accent)) !important;
   outline-offset: 2px;
 }
 
@@ -69,6 +76,18 @@ input::placeholder, textarea::placeholder { color: var(--text-5); }
 .dh-dialog[open] { animation: dh-pop .18s var(--ease-out) both; }
 
 a { color: inherit; text-decoration: none; }
+
+/* Nur für Screenreader: sichtbar für assistive Technik, unsichtbar am Board.
+   Kein display:none und kein visibility:hidden — beide nähmen den Text auch dem Screenreader. */
+.dh-sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
 
 /* Reduced Motion — intentionale Alternative, kein Kahlschlag.
    Räumliche Eingänge (Modal/Dialog, starten bei opacity:0 mit fill:both) erscheinen per kurzem

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, lazy, Suspense } from 'react';
 import { useStore } from './store/useStore';
-import { rootBg, fontFam, accentFg, effectiveMode } from './store/selectors';
+import { rootBg, fontFam, accentFg, accentRing, accentEdge, accentText, effectiveMode } from './store/selectors';
 import { useDevice } from './lib/useIsPhone';
 import { comboFromEvent } from './lib/shortcut';
 import { Logo } from './lib/icons';
@@ -88,10 +88,6 @@ export default function App() {
   useEffect(() => { init(); }, [init]);
   // Host für „Remote & Live": veröffentlicht im Board-/Kiosk-Modus automatisch eine Live-Session.
   useLiveHost();
-  useEffect(() => {
-    const t = setInterval(() => useStore.setState({ now: Date.now() }), 30000);
-    return () => clearInterval(t);
-  }, []);
   // Dokumenttitel (auch in der Edge-App-Leiste) — im Verein mit Vereinsname, sonst nur "DartsZentrale"
   useEffect(() => {
     const club = s.settings.clubName.trim();
@@ -173,16 +169,18 @@ export default function App() {
   const kioskInTraining = s.screen === 'training' || s.screen === 'trainSetup' || s.screen === 'trainGame' || s.screen === 'tournamentSetup' || s.screen === 'tournament';
   const kioskInSettings = s.screen === 'settings';
   const kioskTab = (label: string, active: boolean, onClick: () => void, hint?: string) => (
-    <button onClick={onClick} title={hint ? `${label} (${hint})` : label} style={{ display: 'flex', alignItems: 'center', gap: 7, background: active ? 'var(--accent)' : 'var(--surface-3)', color: active ? 'var(--accent-fg)' : 'var(--text-3)', border: `1px solid ${active ? 'var(--accent)' : 'var(--border-2)'}`, padding: '7px 14px', borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+    <button onClick={onClick} title={hint ? `${label} (${hint})` : label} style={{ display: 'flex', alignItems: 'center', gap: 7, background: active ? 'var(--accent)' : 'var(--surface-3)', color: active ? 'var(--accent-fg)' : 'var(--text-3)', border: `1px solid ${active ? 'var(--accent)' : 'var(--border-2)'}`, padding: '7px 14px', borderRadius: 'var(--radius-sm)', fontSize: 'var(--fs-sub)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
       {label}
-      {hint && <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.65, background: active ? 'rgba(0,0,0,.16)' : 'var(--btn)', borderRadius: 'var(--radius-xs)', padding: '1px 5px' }}>{hint}</span>}
+      {/* Auf dem aktiven Tab OHNE eigenen Untergrund: ein dunkler Schleier über der
+          Akzentfläche senkte den geprüften Kontrast der Tab-Schrift auf 3,94:1. */}
+      {hint && <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-badge)', fontWeight: 700, color: 'inherit', background: active ? 'transparent' : 'var(--btn)', borderRadius: 'var(--radius-xs)', padding: '1px 5px' }}>{hint}</span>}
     </button>
   );
   // Schmale Viewports (Smartphone, Tablet im Hochformat) → Tabs/Verlassen in eine Seitenleiste auslagern,
   // damit sich in der Topbar nichts überlagert. isHandset greift bei Tablets nicht, daher Breiten-Schwelle.
   const narrowBar = width < 860;
   const kioskMenuItem = (label: string, active: boolean, onClick: () => void) => (
-    <button onClick={onClick} style={{ display: 'flex', alignItems: 'center', width: '100%', textAlign: 'left', background: active ? 'var(--accent)' : 'var(--btn)', color: active ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${active ? 'var(--accent)' : 'var(--border-2)'}`, padding: '13px 15px', borderRadius: 'var(--radius-md)', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
+    <button onClick={onClick} style={{ display: 'flex', alignItems: 'center', width: '100%', textAlign: 'left', background: active ? 'var(--accent)' : 'var(--btn)', color: active ? 'var(--accent-fg)' : 'var(--text-2)', border: `1px solid ${active ? 'var(--accent)' : 'var(--border-2)'}`, padding: '13px 15px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-lead)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
   );
   const openExit = () => { setKioskMenuOpen(false); setExitForm({ email: '', pw: '', err: '', busy: false }); setExitOpen(true); };
   const kioskBar = (
@@ -197,7 +195,7 @@ export default function App() {
         {isVerein && s.settings.clubLogo
           ? <img src={s.settings.clubLogo} alt={tr.sidebar.clubLogoAlt} style={{ width: 28, height: 28, borderRadius: 'var(--radius-xs)', objectFit: 'contain' }} />
           : <Logo size={28} />}
-        <div style={{ fontWeight: 800, fontSize: 15 }}>{boardNumber != null ? `Board ${boardNumber}` : tr.app.board}</div>
+        <div style={{ fontWeight: 800, fontSize: 'var(--fs-lead)' }}>{boardNumber != null ? `Board ${boardNumber}` : tr.app.board}</div>
         {!narrowBar && (
           <div style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
             {kioskTab(tr.palette.game, !kioskInTraining && !kioskInSettings, () => s.go('setup'), 'Alt+S')}
@@ -206,15 +204,15 @@ export default function App() {
           </div>
         )}
         {/* Datum + Uhrzeit mittig – nur im breiten Layout, sonst würde sie mit dem Menü-Button kollidieren. */}
-        {!narrowBar && <LiveClock mode="datetime" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: 13, fontWeight: 600, color: 'var(--text-3)', whiteSpace: 'nowrap', pointerEvents: 'none' }} />}
+        {!narrowBar && <LiveClock mode="datetime" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: 'var(--fs-sub)', fontWeight: 600, color: 'var(--text-3)', whiteSpace: 'nowrap', pointerEvents: 'none' }} />}
         <div style={{ flex: 1 }} />
         {!narrowBar && (
           <button onClick={openExit}
             title={tr.app.exitTitleBar}
-            style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
             {tr.app.leave}
-            <span style={{ fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.65, background: 'var(--btn)', borderRadius: 'var(--radius-xs)', padding: '1px 5px' }}>Alt+V</span>
+            <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-badge)', fontWeight: 700, color: 'var(--text-4)', background: 'var(--btn)', borderRadius: 'var(--radius-xs)', padding: '1px 5px' }}>Alt+V</span>
           </button>
         )}
       </header>
@@ -223,18 +221,18 @@ export default function App() {
           <div onClick={() => setKioskMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.6)', backdropFilter: 'blur(2px)', zIndex: 70 }} />
           <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: 'min(84vw, 320px)', background: 'var(--surface)', borderRight: '1px solid var(--border-2)', boxShadow: '12px 0 40px rgba(0,0,0,.5)', zIndex: 71, display: 'flex', flexDirection: 'column', padding: 16, gap: 9 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-              <div style={{ fontWeight: 800, fontSize: 16 }}>{boardNumber != null ? `Board ${boardNumber}` : tr.app.board}</div>
+              <div style={{ fontWeight: 800, fontSize: 'var(--fs-lead)' }}>{boardNumber != null ? `Board ${boardNumber}` : tr.app.board}</div>
               <button onClick={() => setKioskMenuOpen(false)} aria-label={tr.common.close} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', color: 'var(--text-3)', cursor: 'pointer' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
             </div>
-            <LiveClock mode="datetime" style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-3)', marginBottom: 6 }} />
+            <LiveClock mode="datetime" style={{ fontSize: 'var(--fs-sub)', fontWeight: 600, color: 'var(--text-3)', marginBottom: 6 }} />
             {kioskMenuItem(tr.palette.game, !kioskInTraining && !kioskInSettings, () => { s.go('setup'); setKioskMenuOpen(false); })}
             {kioskMenuItem(tr.common.training, kioskInTraining, () => { s.go('training'); setKioskMenuOpen(false); })}
             {kioskMenuItem(tr.nav.settings, kioskInSettings, () => { s.go('settings'); setKioskMenuOpen(false); })}
             <div style={{ flex: 1 }} />
             <button onClick={openExit}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 15px', borderRadius: 'var(--radius-md)', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 15px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-lead)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
               {tr.app.leaveBoardMode}
             </button>
@@ -254,6 +252,17 @@ export default function App() {
         fontVariantNumeric: 'tabular-nums', // Ziffern bündig, auch in proportionalen Schriften
         ...({
           '--accent': s.settings.accent, '--accent-fg': accentFg(s.settings.accent),
+          // Aus dem Akzent abgeleitete Rollen: der Ring bleibt sichtbar, auch wenn der
+          // Akzent selbst in der Fläche verschwindet; die Kontur greift nur im Extremfall.
+          '--focus-ring': accentRing(s.settings.accent, themeMode),
+          '--accent-edge': accentEdge(s.settings.accent, themeMode),
+          // Aktiver Navigationseintrag: Akzentschrift auf Akzent-Tönung — der rohe Akzent
+          // schafft dort im Hellmodus keine 4,5:1 (Standard-Grün lag bei 1,77:1).
+          // Akzent als SCHRIFT auf einer Akzent-Tönung (aktive Navigation, Board-Badges,
+          // Aufstellungs-Marker …). Der rohe Akzent schafft dort keine 4,5:1 — dreimal ist
+          // genau dieses Muster durch die Prüfung gerutscht, bis axe es im Browser fand.
+          '--accent-ink': accentText(s.settings.accent, themeMode),
+          '--nav-active-fg': accentText(s.settings.accent, themeMode),
           // --font-num folgt der gewählten Schrift (Konsistenz); --font-score bleibt Mono für große Spiel-Scores.
           '--font-num': fontFam(s.settings),
           '--font-score': "'JetBrains Mono','SFMono-Regular',Consolas,ui-monospace,monospace",
@@ -264,9 +273,9 @@ export default function App() {
           Auch auf Fernbedienung/Zuschauer-TV (liveRoute) aus — er würde dort über den Tasten schweben. */}
       {s.updateReady && !updateDismissed && !isCounter && !isTrainGame && !liveRoute && (
         <div style={{ position: 'fixed', bottom: 18, left: '50%', transform: 'translateX(-50%)', zIndex: 90, display: 'flex', alignItems: 'center', gap: 12, background: 'var(--surface)', border: '1px solid var(--accent)', boxShadow: '0 8px 30px rgba(0,0,0,.4)', borderRadius: 'var(--radius-md)', padding: '10px 12px 10px 16px' }}>
-          <span style={{ color: 'var(--text)', fontWeight: 600, fontSize: 14 }}>Neue Version verfügbar</span>
-          <button onClick={() => s.applyUpdate()} style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 'var(--radius-sm)', padding: '8px 14px', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>Aktualisieren</button>
-          <button onClick={() => setUpdateDismissed(true)} aria-label="Später" title="Später" style={{ background: 'transparent', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 4px' }}>×</button>
+          <span style={{ color: 'var(--text)', fontWeight: 600, fontSize: 'var(--fs-body)' }}>{tr.app.updateAvailable}</span>
+          <button onClick={() => s.applyUpdate()} style={{ background: 'var(--accent)', color: 'var(--accent-fg)', border: 'none', borderRadius: 'var(--radius-sm)', padding: '8px 14px', fontSize: 'var(--fs-sub)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.app.updateNow}</button>
+          <button onClick={() => setUpdateDismissed(true)} aria-label={tr.app.updateLater} title={tr.app.updateLater} style={{ background: 'transparent', border: 'none', color: 'var(--text-4)', cursor: 'pointer', fontSize: 'var(--fs-title)', lineHeight: 1, padding: '0 4px' }}>×</button>
         </div>
       )}
       {liveRoute?.mode === 'watch' ? (
@@ -306,7 +315,7 @@ export default function App() {
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
           <header style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)' }}>
             <button
-              onClick={() => setDrawerOpen(true)} aria-label="Menü öffnen"
+              onClick={() => setDrawerOpen(true)} aria-label={tr.app.menuOpen}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', color: 'var(--text-2)', cursor: 'pointer', flexShrink: 0 }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
@@ -314,7 +323,7 @@ export default function App() {
             {isVerein && s.settings.clubLogo
               ? <img src={s.settings.clubLogo} alt="Vereinslogo" style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', objectFit: 'contain', flexShrink: 0 }} />
               : <Logo size={30} />}
-            <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-.01em' }}>DartsZentrale</div>
+            <div style={{ fontWeight: 800, fontSize: 'var(--fs-lead)', letterSpacing: '-.01em' }}>DartsZentrale</div>
           </header>
           <main style={{ flex: 1, minWidth: 0, overflowY: 'auto', background: rootBg(s.settings), position: 'relative' }}>
             <ScreenView />
@@ -338,13 +347,26 @@ export default function App() {
       )}
       <Modals />
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      {/* Sync-Fehler: role="alert" — ein fehlgeschlagenes Speichern ist genau das, was angesagt
+          werden muss. Vorher war es ein stummes <div onClick> in festen Rot-Hexes, das per
+          Tastatur nicht wegzubekommen war. Der Hinweis nennt jetzt auch die Folge (die Änderung
+          ist NICHT gespeichert und geht beim Neuladen verloren), nicht nur das Symptom. */}
       {s.syncError && (
         <div
-          onClick={() => s.clearSyncError()}
-          style={{ position: 'fixed', bottom: 18, left: '50%', transform: 'translateX(-50%)', zIndex: 95, display: 'flex', alignItems: 'center', gap: 10, background: '#3a1714', border: '1px solid #E0594B', color: '#ffd9d3', padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 600, boxShadow: '0 12px 30px rgba(0,0,0,.45)', cursor: 'pointer', maxWidth: '92vw' }}
+          role="alert"
+          style={{ position: 'fixed', bottom: 18, left: '50%', transform: 'translateX(-50%)', zIndex: 95, display: 'flex', alignItems: 'flex-start', gap: 12, background: 'color-mix(in srgb, var(--danger) 16%, var(--surface))', border: '1px solid var(--danger)', color: 'var(--text)', padding: '12px 14px 12px 16px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', boxShadow: 'var(--shadow-card)', maxWidth: 'min(92vw, 460px)' }}
         >
-          <span>⚠ {s.syncError}</span>
-          <span style={{ opacity: .7, fontSize: 11 }}>{tr.app.tapToClose}</span>
+          <span aria-hidden="true" style={{ color: 'var(--danger)', fontSize: 'var(--fs-lead)', lineHeight: 1.35 }}>⚠</span>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: 700, lineHeight: 1.35 }}>{s.syncError}</div>
+            <div style={{ color: 'var(--text-3)', fontSize: 'var(--fs-meta)', marginTop: 3, lineHeight: 1.45 }}>{tr.app.syncErrorHint}</div>
+          </div>
+          <button
+            onClick={() => s.clearSyncError()}
+            aria-label={tr.common.close}
+            className="dh-btn dh-tap"
+            style={{ flexShrink: 0, background: 'transparent', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 'var(--radius-xs)', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'var(--fs-sub)', padding: 0 }}
+          >×</button>
         </div>
       )}
       {s.newConfirm && <NewGameConfirm />}
@@ -353,7 +375,7 @@ export default function App() {
         <button
           onClick={() => s.relockKiosk()}
           title={tr.app.relockTitle}
-          style={{ position: 'fixed', bottom: 18, right: 18, zIndex: 92, display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '12px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 10px 28px rgba(0,0,0,.4)' }}
+          style={{ position: 'fixed', bottom: 18, right: 18, zIndex: 92, display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '12px 18px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 10px 28px rgba(0,0,0,.4)' }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
           {tr.app.relock}
@@ -363,14 +385,14 @@ export default function App() {
       {exitOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 96 }}>
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 26, width: '92vw', maxWidth: 420, boxShadow: 'var(--shadow-card)' }}>
-            <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>{tr.app.leaveBoardMode}</div>
-            <div style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 18 }}>{tr.app.exitInfo}</div>
-            <input className="dh-input" type="email" inputMode="email" autoCapitalize="off" autoCorrect="off" spellCheck={false} value={exitForm.email} onChange={(e) => setExitForm((f) => ({ ...f, email: e.target.value, err: '' }))} aria-label={tr.login.email} placeholder={tr.login.email} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 10 }} />
-            <input className="dh-input" type="password" value={exitForm.pw} onChange={(e) => setExitForm((f) => ({ ...f, pw: e.target.value, err: '' }))} onKeyDown={(e) => { if (e.key === 'Enter' && !exitForm.busy) submitExit(); }} aria-label={tr.login.password} placeholder={tr.login.password} autoComplete="current-password" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: exitForm.err ? 8 : 18 }} />
-            {exitForm.err && <div style={{ fontSize: 12, color: '#E0594B', fontWeight: 600, marginBottom: 14 }}>{exitForm.err}</div>}
+            <div style={{ fontSize: 'var(--fs-title)', fontWeight: 800, marginBottom: 6 }}>{tr.app.leaveBoardMode}</div>
+            <div style={{ fontSize: 'var(--fs-sub)', color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 18 }}>{tr.app.exitInfo}</div>
+            <input className="dh-input" type="email" inputMode="email" autoCapitalize="off" autoCorrect="off" spellCheck={false} value={exitForm.email} onChange={(e) => setExitForm((f) => ({ ...f, email: e.target.value, err: '' }))} aria-label={tr.login.email} placeholder={tr.login.email} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 'var(--fs-body)', fontFamily: 'inherit', marginBottom: 10 }} />
+            <input className="dh-input" type="password" value={exitForm.pw} onChange={(e) => setExitForm((f) => ({ ...f, pw: e.target.value, err: '' }))} onKeyDown={(e) => { if (e.key === 'Enter' && !exitForm.busy) submitExit(); }} aria-label={tr.login.password} placeholder={tr.login.password} autoComplete="current-password" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 'var(--fs-body)', fontFamily: 'inherit', marginBottom: exitForm.err ? 8 : 18 }} />
+            {exitForm.err && <div style={{ fontSize: 'var(--fs-meta)', color: '#E0594B', fontWeight: 600, marginBottom: 14 }}>{exitForm.err}</div>}
             <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-              <button onClick={() => setExitOpen(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
-              <button onClick={submitExit} disabled={exitForm.busy || !exitForm.email.trim() || !exitForm.pw} style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: exitForm.busy ? 'default' : 'pointer', opacity: (exitForm.busy || !exitForm.email.trim() || !exitForm.pw) ? 0.6 : 1, fontFamily: 'inherit' }}>{exitForm.busy ? tr.app.signingIn : tr.app.signInLeave}</button>
+              <button onClick={() => setExitOpen(false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.cancel}</button>
+              <button onClick={submitExit} disabled={exitForm.busy || !exitForm.email.trim() || !exitForm.pw} style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 800, cursor: exitForm.busy ? 'default' : 'pointer', opacity: (exitForm.busy || !exitForm.email.trim() || !exitForm.pw) ? 0.6 : 1, fontFamily: 'inherit' }}>{exitForm.busy ? tr.app.signingIn : tr.app.signInLeave}</button>
             </div>
           </div>
         </div>
@@ -398,15 +420,15 @@ function NewGameConfirm() {
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'var(--scrim)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 90 }}>
       <div onKeyDown={onKey} style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 28, width: '92vw', maxWidth: 400, textAlign: 'center', boxShadow: 'var(--shadow-card)' }}>
-        <div style={{ fontSize: 19, fontWeight: 800, marginBottom: 8 }}>{tr.app.newGameConfirmTitle}</div>
-        <div style={{ fontSize: 14, color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>{tr.counter.abortBody}</div>
+        <div style={{ fontSize: 'var(--fs-title)', fontWeight: 800, marginBottom: 8 }}>{tr.app.newGameConfirmTitle}</div>
+        <div style={{ fontSize: 'var(--fs-body)', color: 'var(--text-3)', lineHeight: 1.5, marginBottom: 24 }}>{tr.counter.abortBody}</div>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-          <button ref={keepRef} onClick={() => s.cancelNew()} onMouseEnter={() => setSel(0)} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 0, 'var(--text)') }}>{tr.counter.keepPlaying}</button>
-          <button ref={newRef} onClick={() => s.confirmNew()} onMouseEnter={() => setSel(1)} style={{ flex: 1, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 1, 'var(--accent)') }}>{tr.counter.newGame}</button>
+          <button ref={keepRef} onClick={() => s.cancelNew()} onMouseEnter={() => setSel(0)} style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: 13, borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 0, 'var(--text)') }}>{tr.counter.keepPlaying}</button>
+          <button ref={newRef} onClick={() => s.confirmNew()} onMouseEnter={() => setSel(1)} style={{ flex: 1, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: 13, borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', outline: 'none', ...ring(sel === 1, 'var(--accent)') }}>{tr.counter.newGame}</button>
         </div>
         {/* Tastatur-Hinweis (nur Desktop, wo eine Tastatur da ist) – analog „Spiel abbrechen?". */}
         {s.settings.device === 'desktop' && (
-          <div style={{ marginTop: 18, display: 'flex', gap: 16, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', fontSize: 12, color: 'var(--text-4)', fontWeight: 600 }}>
+          <div style={{ marginTop: 18, display: 'flex', gap: 16, justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 600 }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><NewKbd>←</NewKbd><NewKbd>→</NewKbd> {tr.counter.abortKbdSelect}</span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><NewKbd>⏎</NewKbd> {tr.counter.abortKbdConfirm}</span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><NewKbd>Esc</NewKbd> {tr.counter.abortKbdKeep}</span>
@@ -417,5 +439,5 @@ function NewGameConfirm() {
   );
 }
 function NewKbd({ children }: { children: React.ReactNode }) {
-  return <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xs)', padding: '2px 7px', lineHeight: 1.4 }}>{children}</kbd>;
+  return <kbd style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-badge)', fontWeight: 800, color: 'var(--text-3)', background: 'var(--surface-3)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xs)', padding: '2px 7px', lineHeight: 1.4 }}>{children}</kbd>;
 }

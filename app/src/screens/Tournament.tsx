@@ -6,6 +6,7 @@ import {
 import type { Tournament as TournamentT, TournamentMatch } from '../data/types';
 import { useIsPhone } from '../lib/useIsPhone';
 import { useT, type Dict } from '../i18n';
+import { SectionHeading } from '../components/ui';
 
 const ACCENT = '#F2B829';
 
@@ -20,7 +21,7 @@ function BackToTraining() {
   const go = useStore((s) => s.go);
   const tr = useT();
   return (
-    <button onClick={() => go('training')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 18 }}>
+    <button onClick={() => go('training')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 18 }}>
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
       {tr.nav.training}
     </button>
@@ -36,23 +37,23 @@ function TournamentList() {
     <div style={{ padding: '28px 32px', maxWidth: 900, margin: '0 auto' }}>
       <BackToTraining />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, gap: 12, flexWrap: 'wrap' }}>
-        <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{t.listTitle}</h1>
-        <button onClick={() => s.openTournamentSetup()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: ACCENT, border: 'none', color: '#06160d', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+        <h1 style={{ margin: 0, fontSize: 'var(--fs-page)', fontWeight: 800, letterSpacing: '-.02em' }}>{t.listTitle}</h1>
+        <button onClick={() => s.openTournamentSetup()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: ACCENT, border: 'none', color: '#06160d', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
           {t.newTournament}
         </button>
       </div>
       {list.length === 0 ? (
-        <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--text-4)', fontSize: 15 }}>{t.empty}</div>
+        <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--text-4)', fontSize: 'var(--fs-lead)' }}>{t.empty}</div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
           {list.map((tt) => {
             const pr = tournamentProgress(tt);
             return (
               <div key={tt.id} className="dh-hover-border" role="button" tabIndex={0} onClick={() => s.openTournament(tt.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); s.openTournament(tt.id); } }} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 18, cursor: 'pointer', position: 'relative' }}>
-                <div style={{ fontSize: 16, fontWeight: 800 }}>{tt.name}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 4 }}>{tt.participants.length} · {t.progress(pr.done, pr.total)}</div>
-                <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 800, color: tt.status === 'done' ? ACCENT : 'var(--text-3)' }}>
+                <div style={{ fontSize: 'var(--fs-lead)', fontWeight: 800 }}>{tt.name}</div>
+                <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', marginTop: 4 }}>{tt.participants.length} · {t.progress(pr.done, pr.total)}</div>
+                <div style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-badge)', fontWeight: 800, color: tt.status === 'done' ? ACCENT : 'var(--text-3)' }}>
                   {tt.status === 'done' ? t.doneTitle : t.statusLive}
                 </div>
                 <button onClick={(e) => { e.stopPropagation(); if (confirm(t.deleteConfirm)) s.deleteTournament(tt.id); }} title={t.delete} aria-label={t.delete} style={{ position: 'absolute', top: 12, right: 12, width: 44, height: 44, borderRadius: 'var(--radius-xs)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-4)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -101,20 +102,20 @@ function TournamentDashboard({ t }: { t: TournamentT }) {
   for (const m of t.matches) (rounds[m.round] = rounds[m.round] || []).push(m);
   const roundNums = Object.keys(rounds).map(Number).sort((a, b) => a - b);
 
-  const th: React.CSSProperties = { fontSize: 11, color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', padding: '8px 6px', textAlign: 'center' };
-  const td: React.CSSProperties = { fontSize: 14, padding: '9px 6px', textAlign: 'center', fontFamily: 'var(--font-num)', fontWeight: 700 };
+  const th: React.CSSProperties = { fontSize: 'var(--fs-badge)', color: 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em', padding: '8px 6px', textAlign: 'center' };
+  const td: React.CSSProperties = { fontSize: 'var(--fs-body)', padding: '9px 6px', textAlign: 'center', fontFamily: 'var(--font-num)', fontWeight: 700 };
 
   return (
     <div style={{ padding: isPhone ? '18px 14px' : '28px 32px', maxWidth: 1100, margin: '0 auto' }}>
       <BackToTraining />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 18 }}>
         <div>
-          <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>{tt.tileName}</div>
-          <h1 style={{ margin: '2px 0 0', fontSize: 26, fontWeight: 800, letterSpacing: '-.02em' }}>{t.name}</h1>
+          <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>{tt.tileName}</div>
+          <h1 style={{ margin: '2px 0 0', fontSize: 'var(--fs-page)', fontWeight: 800, letterSpacing: '-.02em' }}>{t.name}</h1>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>{tt.progress(pr.done, pr.total)}</span>
-          <span style={{ fontSize: 12, color: 'var(--text-4)' }}>· {t.config.startScore} · {tt.bestOfValue(t.config.bestOf)} · {t.config.outMode === 'single' ? tt.outSingle : t.config.outMode === 'master' ? tt.outMaster : tt.outDouble}</span>
+          <span style={{ fontSize: 'var(--fs-sub)', fontWeight: 700, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>{tt.progress(pr.done, pr.total)}</span>
+          <span style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)' }}>· {t.config.startScore} · {tt.bestOfValue(t.config.bestOf)} · {t.config.outMode === 'single' ? tt.outSingle : t.config.outMode === 'master' ? tt.outMaster : tt.outDouble}</span>
           <button onClick={() => { if (confirm(tt.deleteConfirm)) { s.deleteTournament(t.id); s.go('training'); } }} title={tt.delete} aria-label={tt.delete} style={{ width: 44, height: 44, borderRadius: 'var(--radius-sm)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-4)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
           </button>
@@ -122,16 +123,16 @@ function TournamentDashboard({ t }: { t: TournamentT }) {
       </div>
 
       {champion && (
-        <div style={{ background: `color-mix(in srgb, ${ACCENT} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${ACCENT} 45%, transparent)`, borderRadius: 'var(--radius-lg)', padding: '16px 20px', marginBottom: 18, fontSize: 20, fontWeight: 800 }}>{tt.champion(champion.name)}</div>
+        <div style={{ background: `color-mix(in srgb, ${ACCENT} 14%, transparent)`, border: `1px solid color-mix(in srgb, ${ACCENT} 45%, transparent)`, borderRadius: 'var(--radius-lg)', padding: '16px 20px', marginBottom: 18, fontSize: 'var(--fs-heading)', fontWeight: 800 }}>{tt.champion(champion.name)}</div>
       )}
 
       <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : '1.15fr 1fr', gap: 18, alignItems: 'start' }}>
         {/* Spielplan */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '10px 18px 18px' }}>
-          <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', padding: '14px 0 6px' }}>{tt.schedule}</div>
+          <SectionHeading style={{ padding: '14px 0 6px' }}>{tt.schedule}</SectionHeading>
           {roundNums.map((rn) => (
             <div key={rn} style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700, margin: '10px 0 6px' }}>{tt.round(rn)}</div>
+              <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-4)', fontWeight: 700, margin: '10px 0 6px' }}>{tt.round(rn)}</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                 {rounds[rn].map((m) => {
                   const chip = statusChip(m, tr);
@@ -141,15 +142,15 @@ function TournamentDashboard({ t }: { t: TournamentT }) {
                   const canStart = m.status === 'pending' && nowPlayable.has(m.id);
                   return (
                     <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: 'var(--btn)', border: `1px solid ${canStart ? `color-mix(in srgb, ${ACCENT} 45%, transparent)` : 'var(--border-2)'}`, borderRadius: 'var(--radius-md)' }}>
-                      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 6, fontSize: 14 }}>
+                      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-body)' }}>
                         <span style={{ fontWeight: homeWin ? 800 : 600, color: awayWin ? 'var(--text-4)' : 'var(--text)' }}>{nm(m.homeId)}</span>
-                        <span style={{ color: 'var(--text-4)', fontSize: 12 }}>{tt.vs}</span>
+                        <span style={{ color: 'var(--text-4)', fontSize: 'var(--fs-meta)' }}>{tt.vs}</span>
                         <span style={{ fontWeight: awayWin ? 800 : 600, color: homeWin ? 'var(--text-4)' : 'var(--text)' }}>{nm(m.awayId)}</span>
                       </div>
                       {done ? (
-                        <span style={{ fontFamily: 'var(--font-num)', fontWeight: 800, fontSize: 15 }}>{m.result!.homeLegs}:{m.result!.awayLegs}</span>
+                        <span style={{ fontFamily: 'var(--font-num)', fontWeight: 800, fontSize: 'var(--fs-lead)' }}>{m.result!.homeLegs}:{m.result!.awayLegs}</span>
                       ) : canStart ? (
-                        <button onClick={() => s.startTournamentMatch(m.id, undefined, t.id)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: ACCENT, border: 'none', color: '#06160d', padding: '6px 12px', minHeight: 44, borderRadius: 'var(--radius-sm)', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
+                        <button onClick={() => s.startTournamentMatch(m.id, undefined, t.id)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: ACCENT, border: 'none', color: '#06160d', padding: '6px 12px', minHeight: 44, borderRadius: 'var(--radius-sm)', fontSize: 'var(--fs-sub)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4" /></svg>
                           {tt.play}
                         </button>
@@ -157,11 +158,11 @@ function TournamentDashboard({ t }: { t: TournamentT }) {
                         // Festhängende „live"-Partie (z. B. nach WLAN-Abbruch beim Anstoßen) neu ansetzen →
                         // Board frei, Overlay bietet sie erneut an.
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: chip.color }}>{chip.label}</span>
-                          <button onClick={() => { if (confirm(tt.resetConfirm)) s.resetTournamentMatch(m.id, t.id); }} title={tt.resetMatch} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '5px 9px', minHeight: 44, borderRadius: 'var(--radius-sm)', fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{tt.resetMatch}</button>
+                          <span style={{ fontSize: 'var(--fs-badge)', fontWeight: 700, color: chip.color }}>{chip.label}</span>
+                          <button onClick={() => { if (confirm(tt.resetConfirm)) s.resetTournamentMatch(m.id, t.id); }} title={tt.resetMatch} style={{ background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-3)', padding: '5px 9px', minHeight: 44, borderRadius: 'var(--radius-sm)', fontSize: 'var(--fs-badge)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{tt.resetMatch}</button>
                         </div>
                       ) : (
-                        <span style={{ fontSize: 11, fontWeight: 700, color: chip.color }}>{chip.label}</span>
+                        <span style={{ fontSize: 'var(--fs-badge)', fontWeight: 700, color: chip.color }}>{chip.label}</span>
                       )}
                     </div>
                   );
@@ -174,7 +175,7 @@ function TournamentDashboard({ t }: { t: TournamentT }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {/* Tabelle */}
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '10px 14px 16px' }}>
-            <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', padding: '14px 4px 6px' }}>{tt.standings}</div>
+            <SectionHeading style={{ padding: '14px 4px 6px' }}>{tt.standings}</SectionHeading>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
@@ -203,21 +204,21 @@ function TournamentDashboard({ t }: { t: TournamentT }) {
                 </tbody>
               </table>
             </div>
-            {pr.done === 0 && <div style={{ padding: '10px 4px 4px', fontSize: 12, color: 'var(--text-4)' }}>{tt.noResults}</div>}
+            {pr.done === 0 && <div style={{ padding: '10px 4px 4px', fontSize: 'var(--fs-meta)', color: 'var(--text-4)' }}>{tt.noResults}</div>}
           </div>
 
           {/* Highlights */}
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '10px 18px 16px' }}>
-            <div style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', padding: '14px 0 6px' }}>{tt.highlights}</div>
+            <SectionHeading style={{ padding: '14px 0 6px' }}>{tt.highlights}</SectionHeading>
             {hls.length === 0 ? (
-              <div style={{ padding: '6px 0', fontSize: 13, color: 'var(--text-4)' }}>{tt.noHighlights}</div>
+              <div style={{ padding: '6px 0', fontSize: 'var(--fs-sub)', color: 'var(--text-4)' }}>{tt.noHighlights}</div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7, maxHeight: 260, overflowY: 'auto' }}>
                 {hls.map((h, i) => {
                   const text = h.kind === '180' ? tt.hl180(h.name, h.value) : h.kind === 'shortLeg' ? tt.hlShortLeg(h.name, h.value) : tt.hlHighFinish(h.name, h.value);
                   const col = h.kind === '180' ? '#E0594B' : h.kind === 'highFinish' ? ACCENT : '#3B9EFF';
                   return (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 13 }}>
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 'var(--fs-sub)' }}>
                       <span style={{ width: 7, height: 7, borderRadius: '50%', background: col, flexShrink: 0 }} />
                       <span style={{ color: 'var(--text-2)' }}>{text}</span>
                     </div>

@@ -12,9 +12,9 @@ const teamKindDef = (k: TeamKind, color: string) => ({
   color,
 });
 export const TEAM_KINDS: Record<TeamKind, { label: string; short: string; color: string }> = {
-  league:   teamKindDef('league', '#19A463'),
-  cup:      teamKindDef('cup', '#F2B829'),
-  friendly: teamKindDef('friendly', '#2BD3C0'),
+  league:   teamKindDef('league', 'var(--cat-6)'),
+  cup:      teamKindDef('cup', 'var(--cat-4)'),
+  friendly: teamKindDef('friendly', 'var(--cat-3)'),
 };
 // Robuster Zugriff inkl. Altdaten ohne kind-Feld → Standard 'league'.
 export const teamKind = (t: { kind?: TeamKind }): TeamKind => (t.kind === 'cup' ? 'cup' : t.kind === 'friendly' ? 'friendly' : 'league');
@@ -81,20 +81,25 @@ export function activeSkin(settings: Pick<Settings, 'skin'>): Skin | null {
 }
 
 export const AVATARS: { bg: string; fg: string }[] = [
-  { bg: 'linear-gradient(135deg,#19A463,#0f6b40)', fg: '#fff' },
-  { bg: 'linear-gradient(135deg,#3B9EFF,#1c5fb0)', fg: '#fff' },
+  { bg: 'linear-gradient(135deg,#008749,#0f6b40)', fg: '#fff' },
+  { bg: 'linear-gradient(135deg,#0076d4,#1c5fb0)', fg: '#fff' },
   { bg: 'linear-gradient(135deg,#F2B829,#b8841a)', fg: '#1a1206' },
-  { bg: 'linear-gradient(135deg,#E0594B,#9c3329)', fg: '#fff' },
-  { bg: 'linear-gradient(135deg,#9b6dff,#5e3bb0)', fg: '#fff' },
-  { bg: 'linear-gradient(135deg,#2bd3c0,#147c72)', fg: '#06160d' },
-  { bg: 'linear-gradient(135deg,#7a828c,#4b525b)', fg: '#fff' },
-  { bg: 'linear-gradient(135deg,#5f8aa3,#3a5b6e)', fg: '#fff' },
+  { bg: 'linear-gradient(135deg,#cd473b,#9c3329)', fg: '#fff' },
+  { bg: 'linear-gradient(135deg,#8757e8,#5e3bb0)', fg: '#fff' },
+  { bg: 'linear-gradient(135deg,#008474,#147c72)', fg: '#fff' },
+  { bg: 'linear-gradient(135deg,#6e767f,#4b525b)', fg: '#fff' },
+  { bg: 'linear-gradient(135deg,#507a93,#3a5b6e)', fg: '#fff' },
 ];
 
 export function avatar(avi: number) {
   const n = AVATARS.length;
   return AVATARS[((avi % n) + n) % n];
 }
+
+// Tönung und Kontur eines Rollen-Badges leiten sich aus SEINEM Token ab, statt als feste
+// rgba-Werte danebenzuliegen — so folgen sie jedem Theme mit, ohne dritte Farbquelle.
+const tint = (token: string) => `color-mix(in srgb, var(${token}) 13%, transparent)`;
+const edge = (token: string) => `color-mix(in srgb, var(${token}) 40%, transparent)`;
 
 export interface RoleDef { label: string; short: string; desc: string; color: string; bg: string; bd: string; }
 const roleDef = (r: Role, color: string, bg: string, bd: string): RoleDef => ({
@@ -104,11 +109,11 @@ const roleDef = (r: Role, color: string, bg: string, bd: string): RoleDef => ({
   color, bg, bd,
 });
 export const ROLES: Record<Role, RoleDef> = {
-  admin:   roleDef('admin',   '#E0594B', 'rgba(224,89,75,.13)',   'rgba(224,89,75,.4)'),
-  captain: roleDef('captain', '#F2B829', 'rgba(242,184,41,.13)',  'rgba(242,184,41,.4)'),
-  player:  roleDef('player',  '#19A463', 'rgba(25,164,99,.13)',   'rgba(25,164,99,.4)'),
-  viewer:  roleDef('viewer',  '#3B9EFF', 'rgba(59,158,255,.13)',  'rgba(59,158,255,.4)'),
-  board:   roleDef('board',   '#7a828c', 'rgba(122,130,140,.13)', 'rgba(122,130,140,.4)'),
+  admin:   roleDef('admin',   'var(--cat-8)', tint('--cat-8'), edge('--cat-8')),
+  captain: roleDef('captain', 'var(--cat-4)', tint('--cat-4'), edge('--cat-4')),
+  player:  roleDef('player',  'var(--cat-6)', tint('--cat-6'), edge('--cat-6')),
+  viewer:  roleDef('viewer',  'var(--cat-1)', tint('--cat-1'), edge('--cat-1')),
+  board:   roleDef('board',   'var(--text-3)', tint('--text-3'), edge('--text-3')),
 };
 // Von Hand vergebbare Rollen. 'board' fehlt bewusst: die Board-Rolle wird ausschließlich an
 // Board-Rechner-Konten (isBoard) gekoppelt und kann nicht frei zugewiesen werden.
@@ -121,15 +126,15 @@ const eventTypeDef = (labelKey: keyof ReturnType<typeof dict>['eventTypes'], col
   color, icon,
 });
 export const EVENT_TYPES: Record<string, EventTypeDef> = {
-  training:    eventTypeDef('training',    '#3B9EFF', 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 8a4 4 0 100 8 4 4 0 000-8zM12 11.5a.5.5 0 100 1 .5.5 0 000-1z'),
-  ligaspiel:   eventTypeDef('ligaspiel',   '#19A463', 'M17 20v-1.5a4 4 0 00-4-4H7a4 4 0 00-4 4V20M10 10.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7M21 20v-1.5a4 4 0 00-3-3.85M15.5 3.65a3.5 3.5 0 010 6.8'),
-  verein:      eventTypeDef('verein',      '#2BD3C0', 'M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5'),
-  competition: eventTypeDef('competition', '#EC5CA8', 'M5 21V4M5 4h12l-2.5 4L17 12H5'),
-  pokal:       eventTypeDef('pokal',       '#F2B829', 'M8 21h8M12 17v4M6 4h12v5a6 6 0 01-12 0zM6 7H3.5v.5A3 3 0 006 10.4M18 7h2.5v.5A3 3 0 0118 10.4'),
-  sonstiges:   eventTypeDef('sonstiges',   '#9B6DFF', 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 7.5v5l3.2 1.9'),
-  spieltag:    eventTypeDef('ligaspiel',   '#19A463', 'M17 20v-1.5a4 4 0 00-4-4H7a4 4 0 00-4 4V20M10 10.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7M21 20v-1.5a4 4 0 00-3-3.85M15.5 3.65a3.5 3.5 0 010 6.8'),
-  spiel:       eventTypeDef('competition', '#EC5CA8', 'M5 21V4M5 4h12l-2.5 4L17 12H5'),
-  freundschaft: eventTypeDef('freundschaft', '#2BD3C0', 'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z'),
+  training:    eventTypeDef('training',    'var(--cat-1)', 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 8a4 4 0 100 8 4 4 0 000-8zM12 11.5a.5.5 0 100 1 .5.5 0 000-1z'),
+  ligaspiel:   eventTypeDef('ligaspiel',   'var(--cat-6)', 'M17 20v-1.5a4 4 0 00-4-4H7a4 4 0 00-4 4V20M10 10.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7M21 20v-1.5a4 4 0 00-3-3.85M15.5 3.65a3.5 3.5 0 010 6.8'),
+  verein:      eventTypeDef('verein',      'var(--cat-3)', 'M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5'),
+  competition: eventTypeDef('competition', 'var(--cat-5)', 'M5 21V4M5 4h12l-2.5 4L17 12H5'),
+  pokal:       eventTypeDef('pokal',       'var(--cat-4)', 'M8 21h8M12 17v4M6 4h12v5a6 6 0 01-12 0zM6 7H3.5v.5A3 3 0 006 10.4M18 7h2.5v.5A3 3 0 0118 10.4'),
+  sonstiges:   eventTypeDef('sonstiges',   'var(--cat-7)', 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 7.5v5l3.2 1.9'),
+  spieltag:    eventTypeDef('ligaspiel',   'var(--cat-6)', 'M17 20v-1.5a4 4 0 00-4-4H7a4 4 0 00-4 4V20M10 10.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7M21 20v-1.5a4 4 0 00-3-3.85M15.5 3.65a3.5 3.5 0 010 6.8'),
+  spiel:       eventTypeDef('competition', 'var(--cat-5)', 'M5 21V4M5 4h12l-2.5 4L17 12H5'),
+  freundschaft: eventTypeDef('freundschaft', 'var(--cat-3)', 'M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z'),
 };
 export const EVENT_TYPE_ALL = ['training', 'ligaspiel', 'verein', 'freundschaft', 'competition', 'pokal', 'sonstiges'];
 
@@ -146,15 +151,15 @@ const trainMode = (id: keyof ReturnType<typeof dict>['trainModes'], icon: string
   icon, color, cat, solo, versus, ready,
 });
 export const TRAIN_MODES: TrainMode[] = [
-  trainMode('doubles', 'M12 4a8 8 0 100 16 8 8 0 000-16zM12 9a3 3 0 100 6 3 3 0 000-6z', '#F2B829', 'training', true, false, true),
-  trainMode('atc', 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 7v5l3 2', '#3B9EFF', 'training', true, true, true),
-  trainMode('bobs27', 'M5 5h14v14H5zM9 9h.01M15 15h.01M12 12h.01', '#9B6DFF', 'training', true, false, true),
-  trainMode('checkout121', 'M5 21V4M5 4h11l-2 4 2 4H5', '#EC5CA8', 'training', true, false, true),
-  trainMode('cricket', 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 8a4 4 0 100 8 4 4 0 000-8z', '#19A463', 'party', true, true, true),
-  trainMode('baseball', 'M5 5a14 14 0 0114 14M5 11a8 8 0 018 8M5 17a2 2 0 012 2', '#2BD3C0', 'party', true, true, true),
-  trainMode('halveit', 'M12 3v18M5 8h7M5 16h7', '#FF8A3D', 'party', true, true, true),
-  trainMode('elimination', 'M6 18L18 6M8 6H6v2M16 18h2v-2', '#E0594B', 'party', false, true, true),
-  trainMode('killer', 'M12 2l3 6 6 .9-4.5 4.2L18 20l-6-3.2L6 20l1.5-6.9L3 8.9 9 8z', '#9B6DFF', 'party', false, true, true),
+  trainMode('doubles', 'M12 4a8 8 0 100 16 8 8 0 000-16zM12 9a3 3 0 100 6 3 3 0 000-6z', 'var(--cat-4)', 'training', true, false, true),
+  trainMode('atc', 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 7v5l3 2', 'var(--cat-1)', 'training', true, true, true),
+  trainMode('bobs27', 'M5 5h14v14H5zM9 9h.01M15 15h.01M12 12h.01', 'var(--cat-7)', 'training', true, false, true),
+  trainMode('checkout121', 'M5 21V4M5 4h11l-2 4 2 4H5', 'var(--cat-5)', 'training', true, false, true),
+  trainMode('cricket', 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 8a4 4 0 100 8 4 4 0 000-8z', 'var(--cat-6)', 'party', true, true, true),
+  trainMode('baseball', 'M5 5a14 14 0 0114 14M5 11a8 8 0 018 8M5 17a2 2 0 012 2', 'var(--cat-3)', 'party', true, true, true),
+  trainMode('halveit', 'M12 3v18M5 8h7M5 16h7', 'var(--cat-2)', 'party', true, true, true),
+  trainMode('elimination', 'M6 18L18 6M8 6H6v2M16 18h2v-2', 'var(--cat-8)', 'party', false, true, true),
+  trainMode('killer', 'M12 2l3 6 6 .9-4.5 4.2L18 20l-6-3.2L6 20l1.5-6.9L3 8.9 9 8z', 'var(--cat-7)', 'party', false, true, true),
 ];
 
 export interface ModeRule { goal: string; lines: string[]; }

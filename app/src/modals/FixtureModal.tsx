@@ -15,22 +15,22 @@ export function FixtureModal() {
     <button key={id} onClick={disabled ? undefined : onClick} disabled={disabled} style={{
       background: selected ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1.5px solid ${selected ? 'var(--accent)' : 'var(--border-2)'}`,
       color: disabled ? 'var(--text-5)' : selected ? 'var(--success)' : 'var(--text-2)', padding: '8px 13px', borderRadius: 'var(--radius-pill)',
-      fontSize: 13, fontWeight: 700, cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit', opacity: disabled ? 0.5 : 1,
+      fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: disabled ? 'default' : 'pointer', fontFamily: 'inherit', opacity: disabled ? 0.5 : 1,
     }}>{name}</button>
   );
 
-  const numInput: React.CSSProperties = { width: 80, boxSizing: 'border-box', textAlign: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: 14, color: 'var(--text)', fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-num)' };
+  const numInput: React.CSSProperties = { width: 80, boxSizing: 'border-box', textAlign: 'center', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: 14, color: 'var(--text)', fontSize: 'var(--fs-heading)', fontWeight: 800, fontFamily: 'var(--font-num)' };
 
   return (
     <Modal onClose={() => s.closeFixtureModal()} width={500} z={63} style={{ maxHeight: '88vh', overflow: 'auto' }}>
       <ModalTitle>{m.mode === 'edit' ? tr.modals.fixtureEdit : tr.modals.fixtureNew}</ModalTitle>
 
-      <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 8 }}>{tr.teams.home}</label>
+      <label style={{ display: 'block', fontSize: 'var(--fs-meta)', color: 'var(--text-3)', fontWeight: 700, marginBottom: 8 }}>{tr.teams.home}</label>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
         {teams.map((t) => chip(t.id, t.name, m.homeId === t.id, m.awayId === t.id, () => s.setFixtureField('homeId', t.id)))}
       </div>
 
-      <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 8 }}>{tr.modals.guest}</label>
+      <label style={{ display: 'block', fontSize: 'var(--fs-meta)', color: 'var(--text-3)', fontWeight: 700, marginBottom: 8 }}>{tr.modals.guest}</label>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
         {teams.map((t) => chip(t.id, t.name, m.awayId === t.id, m.homeId === t.id, () => s.setFixtureField('awayId', t.id)))}
       </div>
@@ -38,21 +38,21 @@ export function FixtureModal() {
       <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
         <div style={{ flex: 1 }}>
           <FieldLabel>{tr.modals.date}</FieldLabel>
-          <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setFixtureField('date', e.target.value)} aria-label={tr.modals.date} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+          <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setFixtureField('date', e.target.value)} aria-label={tr.modals.date} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 'var(--fs-body)', fontFamily: 'inherit' }} />
         </div>
         <div style={{ width: 130 }}>
           <FieldLabel>{tr.modals.time}</FieldLabel>
-          <input className="dh-input" type="time" value={m.time} onChange={(e) => s.setFixtureField('time', e.target.value)} aria-label={tr.modals.time} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+          <input className="dh-input" type="time" value={m.time} onChange={(e) => s.setFixtureField('time', e.target.value)} aria-label={tr.modals.time} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 'var(--fs-body)', fontFamily: 'inherit' }} />
         </div>
       </div>
 
       <FieldLabel>{tr.modals.place}</FieldLabel>
-      <input className="dh-input" value={m.loc} onChange={(e) => s.setFixtureField('loc', e.target.value)} aria-label={tr.modals.place} placeholder={tr.modals.placePh2} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit', marginBottom: 18 }} />
+      <input className="dh-input" value={m.loc} maxLength={80} onChange={(e) => s.setFixtureField('loc', e.target.value)} aria-label={tr.modals.place} placeholder={tr.modals.placePh2} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 'var(--fs-body)', fontFamily: 'inherit', marginBottom: 18 }} />
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 16px', background: 'var(--btn)', borderRadius: 'var(--radius-md)', marginBottom: 16 }}>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 600 }}>{m.played ? tr.modals.resultEntered : tr.modals.notPlayedYet}</div>
-          <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>{tr.modals.resultManualHint}</div>
+          <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600 }}>{m.played ? tr.modals.resultEntered : tr.modals.notPlayedYet}</div>
+          <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', marginTop: 2 }}>{tr.modals.resultManualHint}</div>
         </div>
         <button onClick={() => s.setFixtureField('played', !m.played)} style={{ position: 'relative', width: 44, height: 24, borderRadius: 'var(--radius-pill)', background: m.played ? 'var(--accent)' : 'var(--border-2)', border: 'none', cursor: 'pointer', flexShrink: 0, padding: 0 }}>
           <span style={{ position: 'absolute', top: 2, left: 2, width: 20, height: 20, borderRadius: '50%', background: '#fff', transition: 'transform .15s', transform: m.played ? 'translateX(20px)' : 'translateX(0)' }} />
@@ -61,14 +61,14 @@ export function FixtureModal() {
 
       {m.played && (
         <>
-          <label style={{ display: 'block', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, marginBottom: 2 }}>{tr.modals.resultGames}</label>
-          <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 8 }}>{tr.modals.resultGamesHint}</div>
+          <label style={{ display: 'block', fontSize: 'var(--fs-meta)', color: 'var(--text-3)', fontWeight: 700, marginBottom: 2 }}>{tr.modals.resultGames}</label>
+          <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', marginBottom: 8 }}>{tr.modals.resultGamesHint}</div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 6 }}>
             <input className="dh-input" value={m.hs} onChange={(e) => s.setFixtureField('hs', e.target.value)} inputMode="numeric" aria-label={tr.teams.home} placeholder="0" style={numInput} />
-            <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-4)' }}>:</span>
+            <span style={{ fontSize: 'var(--fs-heading)', fontWeight: 800, color: 'var(--text-4)' }}>:</span>
             <input className="dh-input" value={m.as} onChange={(e) => s.setFixtureField('as', e.target.value)} inputMode="numeric" aria-label={tr.modals.guest} placeholder="0" style={numInput} />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 22, fontSize: 11, color: 'var(--text-5)', fontWeight: 600 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 22, fontSize: 'var(--fs-badge)', color: 'var(--text-5)', fontWeight: 600 }}>
             <span style={{ width: 80, textAlign: 'center' }}>{tr.teams.home}</span><span style={{ width: 8 }} /><span style={{ width: 80, textAlign: 'center' }}>{tr.modals.guest}</span>
           </div>
         </>

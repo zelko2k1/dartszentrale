@@ -9,7 +9,7 @@ import { longDate, greeting as greetFn, shortLong, todayIso } from '../lib/forma
 import { useT } from '../i18n';
 import { LiveClock } from '../components/LiveClock';
 import { IconTarget, IconCalendarSmall, IconUsers, IconUserCheck, IconShield, IconTrophy, IconSettings, IconChevronRight, IconPlus, IconClock, IconTraining } from '../lib/icons';
-import { EmptyState } from '../components/ui';
+import { EmptyState, SectionHeading } from '../components/ui';
 import { TeamKindIcon } from '../modals/TeamModal';
 import { useIsPhone } from '../lib/useIsPhone';
 
@@ -103,7 +103,7 @@ function VereinDashboard() {
   ];
 
   const cardStyle: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px 22px' };
-  const sectionTitle: React.CSSProperties = { fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 14 };
+  const sectionTitle: React.CSSProperties = { fontSize: 'var(--fs-meta)', color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 14 };
 
   // ── Admin: Schnellanlage (direkt aus dem Dashboard anlegen) ──
   const quickCreate: { label: string; sub: string; color: string; icon: React.ReactNode; onClick: () => void }[] = [
@@ -115,7 +115,7 @@ function VereinDashboard() {
   ];
   const QuickCreateCard = (
     <div style={cardStyle}>
-      <div style={sectionTitle}>{tr.dashboard.quickCreate}</div>
+      <SectionHeading style={sectionTitle}>{tr.dashboard.quickCreate}</SectionHeading>
       <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
         {quickCreate.map((q) => (
           <button key={q.label} className="dh-hover-border" onClick={q.onClick} style={{ display: 'flex', alignItems: 'center', gap: 13, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '14px 16px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -123,9 +123,9 @@ function VereinDashboard() {
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <IconPlus size={13} style={{ color: 'var(--text-4)' }} />
-                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{q.label}</span>
+                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text)' }}>{q.label}</span>
               </div>
-              <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>{q.sub}</div>
+              <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', marginTop: 2 }}>{q.sub}</div>
             </div>
           </button>
         ))}
@@ -143,14 +143,14 @@ function VereinDashboard() {
   ];
   const AdminLinksCard = (
     <div style={cardStyle}>
-      <div style={sectionTitle}>{tr.dashboard.adminSection}</div>
+      <SectionHeading style={sectionTitle}>{tr.dashboard.adminSection}</SectionHeading>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {adminLinks.map((l) => (
           <button key={l.label} className="dh-row" onClick={() => s.go(l.screen)} style={{ display: 'flex', alignItems: 'center', gap: 13, width: '100%', textAlign: 'left', background: 'transparent', border: 'none', borderRadius: 'var(--radius-md)', padding: '11px 6px', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--text)' }}>
             <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: 'var(--btn)', border: '1px solid var(--border-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--text-2)' }}>{l.icon}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 600 }}>{l.label}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 1 }}>{l.sub}</div>
+              <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600 }}>{l.label}</div>
+              <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', marginTop: 1 }}>{l.sub}</div>
             </div>
             <IconChevronRight size={18} style={{ flexShrink: 0, color: 'var(--text-4)' }} />
           </button>
@@ -161,7 +161,7 @@ function VereinDashboard() {
 
   const UpcomingCard = (
     <div style={cardStyle}>
-      <div style={sectionTitle}>{personalView ? tr.dashboard.yourUpcoming : tr.dashboard.upcoming}</div>
+      <SectionHeading style={sectionTitle}>{personalView ? tr.dashboard.yourUpcoming : tr.dashboard.upcoming}</SectionHeading>
       {upcoming.length === 0 && <EmptyState compact icon={<IconClock size={17} />}>{tr.dashboard.noUpcoming}</EmptyState>}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {upcoming.map(({ team, fx }) => {
@@ -170,20 +170,20 @@ function VereinDashboard() {
           return (
             <div key={team.id + fx!.fixtureId} className="dh-hover-border" style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '11px 12px', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', background: 'var(--btn)' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 46, flexShrink: 0, borderRight: `2px solid ${kc}`, paddingRight: 11 }}>
-                <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em' }}>{d ? MON3[d.getMonth()] : '—'}</span>
-                <span style={{ fontFamily: 'var(--font-num)', fontSize: 20, fontWeight: 800, lineHeight: 1.05 }}>{d ? d.getDate() : '–'}</span>
+                <span style={{ fontSize: 'var(--fs-badge)', fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em' }}>{d ? MON3[d.getMonth()] : '—'}</span>
+                <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-heading)', fontWeight: 800, lineHeight: 1.05 }}>{d ? d.getDate() : '–'}</span>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ color: kc, display: 'inline-flex', flexShrink: 0 }} title={TEAM_KINDS[k].label}><TeamKindIcon kind={k} size={12} /></span>
-                  <span style={{ fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.name}</span>
+                  <span style={{ fontSize: 'var(--fs-sub)', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team.name}</span>
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {fx!.ownIsHome ? tr.dashboard.versusPrefix : tr.dashboard.awayPrefix}{fx!.oppName}{fx!.date ? ' · ' + shortLong(fx!.date) : ''}{fx!.hasLineup ? tr.dashboard.linedUpSuffix : ''}
                 </div>
               </div>
               {canManage && (
-                <button onClick={() => s.openLineupAt(fx!.leagueIndex, fx!.fixtureId)} className="dh-btn" style={{ flexShrink: 0, background: fx!.hasLineup ? 'var(--btn)' : 'color-mix(in srgb, var(--accent) 14%, transparent)', border: `1px solid ${fx!.hasLineup ? 'var(--border-2)' : 'color-mix(in srgb, var(--accent) 40%, transparent)'}`, color: fx!.hasLineup ? 'var(--text-2)' : 'var(--accent)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sm)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{fx!.hasLineup ? tr.dashboard.lineupView : tr.dashboard.lineupDo}</button>
+                <button onClick={() => s.openLineupAt(fx!.leagueIndex, fx!.fixtureId)} className="dh-btn" style={{ flexShrink: 0, background: fx!.hasLineup ? 'var(--btn)' : 'color-mix(in srgb, var(--accent) 14%, transparent)', border: `1px solid ${fx!.hasLineup ? 'var(--border-2)' : 'color-mix(in srgb, var(--accent) 40%, transparent)'}`, color: fx!.hasLineup ? 'var(--text-2)' : 'var(--accent)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{fx!.hasLineup ? tr.dashboard.lineupView : tr.dashboard.lineupDo}</button>
               )}
             </div>
           );
@@ -194,21 +194,21 @@ function VereinDashboard() {
 
   const ResultsCard = (
     <div style={cardStyle}>
-      <div style={sectionTitle}>{tr.dashboard.recentResults}</div>
+      <SectionHeading style={sectionTitle}>{tr.dashboard.recentResults}</SectionHeading>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {results.length === 0 && <EmptyState compact icon={<IconTrophy size={17} />}>{tr.dashboard.noResults}</EmptyState>}
         {results.map((r, i) => {
-          const barColor = r.outcome === 'S' ? 'var(--success)' : r.outcome === 'U' ? 'var(--gold)' : 'var(--danger)';
-          const scoreColor = r.outcome === 'S' ? 'var(--success)' : r.outcome === 'U' ? 'var(--gold)' : 'var(--danger-soft)';
+          const barColor = r.outcome === 'S' ? 'var(--success)' : r.outcome === 'U' ? 'var(--gold-text)' : 'var(--danger)';
+          const scoreColor = r.outcome === 'S' ? 'var(--success)' : r.outcome === 'U' ? 'var(--gold-text)' : 'var(--danger-soft)';
           return (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 6px', borderBottom: '1px solid var(--hairline)' }}>
               <div style={{ width: 5, height: 30, borderRadius: 'var(--radius-xs)', background: barColor }} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 600 }}>{r.opp}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{r.leagueName}</div>
+                <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600 }}>{r.opp}</div>
+                <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)' }}>{r.leagueName}</div>
               </div>
-              <span style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800, color: scoreColor }}>{r.hs}:{r.as}</span>
-              <span style={{ fontSize: 11, fontWeight: 800, color: scoreColor, width: 24, textAlign: 'center' }}>{r.outcome}</span>
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-title)', fontWeight: 800, color: scoreColor }}>{r.hs}:{r.as}</span>
+              <span style={{ fontSize: 'var(--fs-badge)', fontWeight: 800, color: scoreColor, width: 24, textAlign: 'center' }}>{r.outcome}</span>
             </div>
           );
         })}
@@ -218,10 +218,10 @@ function VereinDashboard() {
 
   const MyStatsCard = myAgg && myPlayer ? (
     <div style={cardStyle}>
-      <div style={sectionTitle}>{tr.dashboard.myStats} · {myPlayer.name}</div>
+      <SectionHeading style={sectionTitle}>{tr.dashboard.myStats} · {myPlayer.name}</SectionHeading>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 14 }}>
-        <span style={{ fontFamily: 'var(--font-num)', fontSize: 38, fontWeight: 800, letterSpacing: '-.02em', color: 'var(--text)' }}>{myAgg.avg ? myAgg.avg.toFixed(1) : '–'}</span>
-        <span style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700 }}>{tr.dashboard.avg3Dart}</span>
+        <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-hero)', fontWeight: 800, letterSpacing: '-.02em', color: 'var(--text)' }}>{myAgg.avg ? myAgg.avg.toFixed(1) : '–'}</span>
+        <span style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 700 }}>{tr.dashboard.avg3Dart}</span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 14 }}>
         {[
@@ -233,8 +233,8 @@ function VereinDashboard() {
           { v: String(myAgg.c100), l: '100+' },
         ].map((b) => (
           <div key={b.l} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '10px 12px' }}>
-            <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800 }}>{b.v}</div>
-            <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, marginTop: 2 }}>{b.l}</div>
+            <div style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-title)', fontWeight: 800 }}>{b.v}</div>
+            <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-4)', fontWeight: 600, marginTop: 2 }}>{b.l}</div>
           </div>
         ))}
       </div>
@@ -243,9 +243,9 @@ function VereinDashboard() {
           {myAgg.recent.slice(0, 4).map((g, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 4px', borderBottom: '1px solid var(--hairline)' }}>
               <span style={{ width: 5, height: 26, borderRadius: 'var(--radius-xs)', background: g.won ? 'var(--success)' : 'var(--danger)', flexShrink: 0 }} />
-              <span style={{ flex: 1, fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{g.opp || '—'}</span>
-              <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, color: 'var(--text-3)' }}>{g.avg ? g.avg.toFixed(1) : ''}</span>
-              <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: g.won ? 'var(--success)' : 'var(--danger-soft)', width: 44, textAlign: 'right' }}>{g.score}</span>
+              <span style={{ flex: 1, fontSize: 'var(--fs-sub)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{g.opp || '—'}</span>
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-sub)', color: 'var(--text-3)' }}>{g.avg ? g.avg.toFixed(1) : ''}</span>
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-sub)', fontWeight: 800, color: g.won ? 'var(--success)' : 'var(--danger-soft)', width: 44, textAlign: 'right' }}>{g.score}</span>
             </div>
           ))}
         </div>
@@ -255,7 +255,7 @@ function VereinDashboard() {
 
   const TablesCard = leaguesView.length > 0 ? (
     <div style={cardStyle}>
-      <div style={sectionTitle}>{tr.dashboard.tablesPerComp}</div>
+      <SectionHeading style={sectionTitle}>{tr.dashboard.tablesPerComp}</SectionHeading>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {leaguesView.map((lg) => {
           const k = teamKind(lg); const kc = TEAM_KINDS[k].color;
@@ -264,8 +264,8 @@ function VereinDashboard() {
             <div key={lg.id}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
                 <span style={{ color: kc, display: 'inline-flex' }} title={TEAM_KINDS[k].label}><TeamKindIcon kind={k} size={13} /></span>
-                <span style={{ fontSize: 13, fontWeight: 700 }}>{lg.name}</span>
-                {lg.season && <span style={{ fontSize: 11, color: 'var(--text-4)' }}>· {lg.season}</span>}
+                <span style={{ fontSize: 'var(--fs-sub)', fontWeight: 700 }}>{lg.name}</span>
+                {lg.season && <span style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-4)' }}>· {lg.season}</span>}
               </div>
               {rows.length === 0 ? (
                 <EmptyState compact icon={<IconShield size={17} />}>{tr.dashboard.noTeamsYet}</EmptyState>
@@ -273,10 +273,10 @@ function VereinDashboard() {
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {rows.map((row, idx) => (
                     <div key={row.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 6px', borderRadius: 'var(--radius-xs)', background: row.own ? 'color-mix(in srgb, var(--accent) 10%, transparent)' : 'transparent' }}>
-                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 800, color: 'var(--text-4)', width: 18, textAlign: 'right' }}>{idx + 1}</span>
-                      <span style={{ flex: 1, fontSize: 13, fontWeight: row.own ? 700 : 500, color: row.own ? 'var(--text)' : 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.name}</span>
-                      <span style={{ fontSize: 11, color: 'var(--text-4)', width: 30, textAlign: 'center' }}>{row.sp}</span>
-                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, width: 28, textAlign: 'right' }}>{row.pts}</span>
+                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-meta)', fontWeight: 800, color: 'var(--text-4)', width: 18, textAlign: 'right' }}>{idx + 1}</span>
+                      <span style={{ flex: 1, fontSize: 'var(--fs-sub)', fontWeight: row.own ? 700 : 500, color: row.own ? 'var(--text)' : 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.name}</span>
+                      <span style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-4)', width: 30, textAlign: 'center' }}>{row.sp}</span>
+                      <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-sub)', fontWeight: 800, width: 28, textAlign: 'right' }}>{row.pts}</span>
                     </div>
                   ))}
                 </div>
@@ -285,7 +285,7 @@ function VereinDashboard() {
           );
         })}
       </div>
-      <button className="dh-hover-border" onClick={() => s.go('leagues')} style={{ width: '100%', marginTop: 14, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: 11, borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.toLeagues}</button>
+      <button className="dh-hover-border" onClick={() => s.go('leagues')} style={{ width: '100%', marginTop: 14, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: 11, borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.toLeagues}</button>
     </div>
   ) : null;
 
@@ -294,15 +294,15 @@ function VereinDashboard() {
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 26, flexWrap: 'wrap' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>{longDate(now).toUpperCase()}</div>
-            <span style={{ fontSize: 12, color: 'var(--border-strong)' }}>·</span>
-            <LiveClock style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.05em' }} />
+            <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>{longDate(now).toUpperCase()}</div>
+            <span style={{ fontSize: 'var(--fs-meta)', color: 'var(--border-strong)' }}>·</span>
+            <LiveClock style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-meta)', color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.05em' }} />
           </div>
-          <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{greeting}</h1>
-          <div style={{ fontSize: 13, color: 'var(--text-3)', fontWeight: 600, marginTop: 4 }}>{subtitle}</div>
+          <h1 style={{ margin: 0, fontSize: 'var(--fs-page)', fontWeight: 800, letterSpacing: '-.02em' }}>{greeting}</h1>
+          <div style={{ fontSize: 'var(--fs-sub)', color: 'var(--text-3)', fontWeight: 600, marginTop: 4 }}>{subtitle}</div>
         </div>
         {p.play && (
-          <button className="dh-primary" onClick={() => s.goSetup()} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '13px 22px', borderRadius: 'var(--radius-md)', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)', whiteSpace: 'nowrap' }}>
+          <button className="dh-primary" onClick={() => s.goSetup()} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '13px 22px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-lead)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)', whiteSpace: 'nowrap' }}>
             <IconTarget size={18} sw={2.2} />
             Darts Counter
           </button>
@@ -315,28 +315,28 @@ function VereinDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, marginBottom: 16, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--text-3)' }}>
               <IconCalendarSmall size={18} sw={2} />
-              <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>{tr.dashboard.events}</span>
+              <span style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>{tr.dashboard.events}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ display: 'flex', gap: 2, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)', padding: 2 }}>
                 {([['week', tr.dashboard.week], ['month', tr.dashboard.month], ['all', tr.dashboard.all]] as const).map(([key, label]) => {
                   const on = range === key;
                   return (
-                    <button key={key} onClick={() => s.setSetting('dashRange', key)} style={{ background: on ? accent : 'transparent', color: on ? 'var(--accent-fg)' : 'var(--text-3)', fontWeight: on ? 800 : 600, border: 'none', padding: '6px 12px', borderRadius: 'var(--radius-xs)', fontSize: 12, minHeight: 44, cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
+                    <button key={key} onClick={() => s.setSetting('dashRange', key)} style={{ background: on ? accent : 'transparent', color: on ? 'var(--accent-fg)' : 'var(--text-3)', fontWeight: on ? 800 : 600, border: 'none', padding: '6px 12px', borderRadius: 'var(--radius-xs)', fontSize: 'var(--fs-meta)', minHeight: 44, cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
                   );
                 })}
               </div>
-              <button className="dh-hover-border" onClick={() => s.go('calendar')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 15px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.openCalendar}</button>
+              <button className="dh-hover-border" onClick={() => s.go('calendar')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 15px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.openCalendar}</button>
             </div>
           </div>
           {events.length === 0 && (() => {
             // Leerer Zeitraum, aber es gibt später Termine? Auf den nächsten hinweisen (+ „Alle" öffnen).
             const nextAll = range !== 'all' ? upcomingEvents(dEvents, scope, 'all', 1)[0] : undefined;
             return (
-              <div style={{ padding: 22, textAlign: 'center', fontSize: 13, color: 'var(--text-4)' }}>
+              <div style={{ padding: 22, textAlign: 'center', fontSize: 'var(--fs-sub)', color: 'var(--text-4)' }}>
                 {tr.dashboard.noEventsInRange}
                 {nextAll && (
-                  <button onClick={() => s.setSetting('dashRange', 'all')} style={{ display: 'block', margin: '8px auto 0', background: 'none', border: 'none', color: 'var(--accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  <button onClick={() => s.setSetting('dashRange', 'all')} style={{ display: 'block', margin: '8px auto 0', background: 'none', border: 'none', color: 'var(--accent)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
                     {tr.dashboard.nextEventHint(shortLong(nextAll.date))}
                   </button>
                 )}
@@ -347,18 +347,18 @@ function VereinDashboard() {
             {events.map((ev) => (
               <PressableRow key={ev.id} className="dh-hover-border dh-row" onClick={() => s.openEditEvent(ev.id)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 10px', borderRadius: 'var(--radius-md)', cursor: 'pointer', border: '1px solid transparent' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: 50, flexShrink: 0, borderRight: `2px solid ${ev.color}`, paddingRight: 12 }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em' }}>{ev.mon}</span>
-                  <span style={{ fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, lineHeight: 1.05, letterSpacing: '-.02em' }}>{ev.day}</span>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: ev.color }}>{ev.rel}</span>
+                  <span style={{ fontSize: 'var(--fs-badge)', fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em' }}>{ev.mon}</span>
+                  <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-heading)', fontWeight: 800, lineHeight: 1.05, letterSpacing: '-.02em' }}>{ev.day}</span>
+                  <span style={{ fontSize: 'var(--fs-badge)', fontWeight: 700, color: ev.color }}>{ev.rel}</span>
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={ev.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d={ev.icon} /></svg>
-                    <div style={{ fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ev.title}</div>
+                    <div style={{ fontSize: 'var(--fs-body)', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ev.title}</div>
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--text-4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>{ev.meta}</div>
+                  <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>{ev.meta}</div>
                 </div>
-                <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, color: ev.color, background: ev.typeBg, padding: '4px 9px', borderRadius: 'var(--radius-xs)', letterSpacing: '.03em', whiteSpace: 'nowrap' }}>{ev.typeLabel}</span>
+                <span style={{ flexShrink: 0, fontSize: 'var(--fs-badge)', fontWeight: 800, color: ev.color, background: ev.typeBg, padding: '4px 9px', borderRadius: 'var(--radius-xs)', letterSpacing: '.03em', whiteSpace: 'nowrap' }}>{ev.typeLabel}</span>
               </PressableRow>
             ))}
           </div>
@@ -371,11 +371,11 @@ function VereinDashboard() {
           {statCards.map((c) => (
             <button key={c.label} className="dh-hover-border" onClick={() => s.go(c.screen)} style={{ textAlign: 'left', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '18px 20px', cursor: 'pointer', fontFamily: 'inherit' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 600 }}>{c.label}</span>
-                <div style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: c.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>{c.icon}</div>
+                <span style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-3)', fontWeight: 600 }}>{c.label}</span>
+                <div style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: c.iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-body)' }}>{c.icon}</div>
               </div>
-              <div style={{ fontFamily: 'var(--font-num)', fontSize: 30, fontWeight: 800, marginTop: 12, letterSpacing: '-.02em', color: 'var(--text)' }}>{c.value}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginTop: 3 }}>{c.delta}</div>
+              <div style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-stat)', fontWeight: 800, marginTop: 12, letterSpacing: '-.02em', color: 'var(--text)' }}>{c.value}</div>
+              <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 600, marginTop: 3 }}>{c.delta}</div>
             </button>
           ))}
         </div>
@@ -459,7 +459,7 @@ function LocalDashboard() {
   ];
 
   const cardStyle: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '20px 22px' };
-  const sectionTitle: React.CSSProperties = { fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 14 };
+  const sectionTitle: React.CSSProperties = { fontSize: 'var(--fs-meta)', color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 14 };
 
   return (
     <div style={{ padding: '28px 32px', maxWidth: 1240, margin: '0 auto' }}>
@@ -467,13 +467,13 @@ function LocalDashboard() {
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 26, flexWrap: 'wrap' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>{longDate(now).toUpperCase()}</div>
-            <span style={{ fontSize: 12, color: 'var(--border-strong)' }}>·</span>
-            <LiveClock style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.05em' }} />
+            <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>{longDate(now).toUpperCase()}</div>
+            <span style={{ fontSize: 'var(--fs-meta)', color: 'var(--border-strong)' }}>·</span>
+            <LiveClock style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-meta)', color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.05em' }} />
           </div>
-          <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{greetFn(now)}</h1>
+          <h1 style={{ margin: 0, fontSize: 'var(--fs-page)', fontWeight: 800, letterSpacing: '-.02em' }}>{greetFn(now)}</h1>
         </div>
-        <button className="dh-primary" onClick={() => s.goSetup()} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '13px 22px', borderRadius: 'var(--radius-md)', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)', whiteSpace: 'nowrap' }}>
+        <button className="dh-primary" onClick={() => s.goSetup()} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '13px 22px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-lead)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 8px 24px color-mix(in srgb, var(--accent) 28%, transparent)', whiteSpace: 'nowrap' }}>
           <IconTarget size={18} sw={2.2} />
           Darts Counter
         </button>
@@ -481,7 +481,7 @@ function LocalDashboard() {
 
       {/* Schnellstart */}
       <div style={{ ...cardStyle, marginBottom: 18 }}>
-        <div style={sectionTitle}>{tr.dashboard.quickstart}</div>
+        <SectionHeading style={sectionTitle}>{tr.dashboard.quickstart}</SectionHeading>
         <div style={{ display: 'grid', gridTemplateColumns: isPhone ? '1fr' : 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
           {quickItems.map((it) => (
             <button key={it.key} className="dh-hover-border" onClick={it.onClick} style={{ display: 'flex', alignItems: 'center', gap: 13, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '14px 16px', textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -491,8 +491,8 @@ function LocalDashboard() {
                   : <IconTarget size={20} sw={2.2} />}
               </div>
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.title}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-4)', marginTop: 2 }}>{it.sub}</div>
+                <div style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.title}</div>
+                <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', marginTop: 2 }}>{it.sub}</div>
               </div>
             </button>
           ))}
@@ -507,27 +507,27 @@ function LocalDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, marginBottom: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--text-3)' }}>
                 <IconCalendarSmall size={18} sw={2} />
-                <span style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>{tr.dashboard.nextEvents}</span>
+                <span style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-3)', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase' }}>{tr.dashboard.nextEvents}</span>
               </div>
-              <button className="dh-hover-border" onClick={() => s.go('calendar')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.openCalendar}</button>
+              <button className="dh-hover-border" onClick={() => s.go('calendar')} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '8px 13px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.openCalendar}</button>
             </div>
             {events.length === 0 && <EmptyState compact icon={<IconCalendarSmall size={17} />}>{tr.dashboard.noUpcomingEvents}</EmptyState>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {events.map((ev) => (
                 <PressableRow key={ev.id} className="dh-hover-border dh-row" onClick={() => s.openEditEvent(ev.id)} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 10px', borderRadius: 'var(--radius-md)', cursor: 'pointer', border: '1px solid transparent' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: 50, flexShrink: 0, borderRight: `2px solid ${ev.color}`, paddingRight: 12 }}>
-                    <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em' }}>{ev.mon}</span>
-                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, lineHeight: 1.05, letterSpacing: '-.02em' }}>{ev.day}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: ev.color }}>{ev.rel}</span>
+                    <span style={{ fontSize: 'var(--fs-badge)', fontWeight: 800, color: 'var(--text-4)', letterSpacing: '.06em' }}>{ev.mon}</span>
+                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-heading)', fontWeight: 800, lineHeight: 1.05, letterSpacing: '-.02em' }}>{ev.day}</span>
+                    <span style={{ fontSize: 'var(--fs-badge)', fontWeight: 700, color: ev.color }}>{ev.rel}</span>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={ev.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d={ev.icon} /></svg>
-                      <div style={{ fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ev.title}</div>
+                      <div style={{ fontSize: 'var(--fs-body)', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ev.title}</div>
                     </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>{ev.meta}</div>
+                    <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>{ev.meta}</div>
                   </div>
-                  <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 800, color: ev.color, background: ev.typeBg, padding: '4px 9px', borderRadius: 'var(--radius-xs)', letterSpacing: '.03em', whiteSpace: 'nowrap' }}>{ev.typeLabel}</span>
+                  <span style={{ flexShrink: 0, fontSize: 'var(--fs-badge)', fontWeight: 800, color: ev.color, background: ev.typeBg, padding: '4px 9px', borderRadius: 'var(--radius-xs)', letterSpacing: '.03em', whiteSpace: 'nowrap' }}>{ev.typeLabel}</span>
                 </PressableRow>
               ))}
             </div>
@@ -535,7 +535,7 @@ function LocalDashboard() {
 
           {/* Zuletzt gespielt */}
           <div style={cardStyle}>
-            <div style={sectionTitle}>{tr.dashboard.recentlyPlayed}</div>
+            <SectionHeading style={sectionTitle}>{tr.dashboard.recentlyPlayed}</SectionHeading>
             {recent.length === 0 && <EmptyState compact icon={<IconTarget size={17} />}>{tr.dashboard.noGamesYet}</EmptyState>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {recent.map((m) => {
@@ -543,10 +543,10 @@ function LocalDashboard() {
                 return (
                   <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 6px', borderBottom: '1px solid var(--hairline)' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.winnerName || '—'}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-4)' }}>{m.gameLabel} · {dateStr}</div>
+                      <div style={{ fontSize: 'var(--fs-body)', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.winnerName || '—'}</div>
+                      <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)' }}>{m.gameLabel} · {dateStr}</div>
                     </div>
-                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 17, fontWeight: 800, color: accent }}>{m.scoreLine}</span>
+                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-title)', fontWeight: 800, color: accent }}>{m.scoreLine}</span>
                   </div>
                 );
               })}
@@ -558,7 +558,7 @@ function LocalDashboard() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {/* Trainings-Statistik */}
           <div style={cardStyle}>
-            <div style={sectionTitle}>{tr.dashboard.trainingStats}</div>
+            <SectionHeading style={sectionTitle}>{tr.dashboard.trainingStats}</SectionHeading>
             {trainStats.length === 0 ? (
               <EmptyState compact icon={<IconTraining size={17} />}>{tr.dashboard.noTrainingYet}</EmptyState>
             ) : (
@@ -568,27 +568,27 @@ function LocalDashboard() {
                     <div style={{ width: 32, height: 32, borderRadius: 'var(--radius-sm)', background: `color-mix(in srgb, ${mode.color} 16%, transparent)`, color: mode.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={mode.icon} /></svg>
                     </div>
-                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{mode.name}</span>
-                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: 'var(--text-3)' }}>×{n}</span>
+                    <span style={{ flex: 1, fontSize: 'var(--fs-body)', fontWeight: 600 }}>{mode.name}</span>
+                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-3)' }}>×{n}</span>
                   </PressableRow>
                 ))}
               </div>
             )}
-            <button className="dh-hover-border" onClick={() => s.go('training')} style={{ width: '100%', marginTop: 12, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: 11, borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.allTraining}</button>
+            <button className="dh-hover-border" onClick={() => s.go('training')} style={{ width: '100%', marginTop: 12, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: 11, borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.dashboard.allTraining}</button>
           </div>
 
           {/* Spieler-Bestenliste */}
           <div style={cardStyle}>
-            <div style={sectionTitle}>{tr.dashboard.leaderboard}</div>
+            <SectionHeading style={sectionTitle}>{tr.dashboard.leaderboard}</SectionHeading>
             {top.length === 0 && <EmptyState compact icon={<IconUsers size={17} />}>{tr.dashboard.noPlayers}</EmptyState>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {top.map((row, idx) => {
                 return (
                   <PressableRow key={row.pl.id} className="dh-row" onClick={() => s.openPlayer(row.pl.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '9px 6px', cursor: 'pointer', borderRadius: 'var(--radius-sm)' }}>
-                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: idx === 0 && row.agg.avg ? 'var(--gold)' : 'var(--text-4)', width: 18 }}>{idx + 1}</span>
+                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-sub)', fontWeight: 800, color: idx === 0 && row.agg.avg ? 'var(--gold-text)' : 'var(--text-4)', width: 18 }}>{idx + 1}</span>
                     <Avatar photo={row.pl.photo} short={row.pl.short} avi={row.pl.avi} size={32} />
-                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{row.pl.name}</span>
-                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{row.agg.avg ? row.agg.avg.toFixed(1) : '–'}</span>
+                    <span style={{ flex: 1, fontSize: 'var(--fs-body)', fontWeight: 600 }}>{row.pl.name}</span>
+                    <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-lead)', fontWeight: 800, color: 'var(--text)' }}>{row.agg.avg ? row.agg.avg.toFixed(1) : '–'}</span>
                   </PressableRow>
                 );
               })}

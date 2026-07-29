@@ -26,7 +26,7 @@ export function NuligaSyncModal() {
       {sync.phase === 'loading' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '18px 4px 26px', color: 'var(--text-3)' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'dh-spin 0.9s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
-          <span style={{ fontSize: 14, fontWeight: 600 }}>{tr.modals.nuligaLoading}</span>
+          <span style={{ fontSize: 'var(--fs-body)', fontWeight: 600 }}>{tr.modals.nuligaLoading}</span>
         </div>
       )}
 
@@ -34,11 +34,11 @@ export function NuligaSyncModal() {
         <>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, background: 'rgba(224,89,75,.1)', border: '1px solid rgba(224,89,75,.35)', borderRadius: 'var(--radius-md)', padding: '14px 16px', marginBottom: 20 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E0594B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" /></svg>
-            <div style={{ fontSize: 13.5, color: 'var(--text-2)', lineHeight: 1.5 }}>{sync.error || tr.modals.fetchFailed}</div>
+            <div style={{ fontSize: 'var(--fs-body)', color: 'var(--text-2)', lineHeight: 1.5 }}>{sync.error || tr.modals.fetchFailed}</div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-            <button className="dh-btn" onClick={() => s.importNuliga(sync.leagueId)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.modals.retry}</button>
-            <button onClick={close} style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 20px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.close}</button>
+            <button className="dh-btn" onClick={() => s.importNuliga(sync.leagueId)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '11px 18px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.modals.retry}</button>
+            <button onClick={close} style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 20px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.close}</button>
           </div>
         </>
       )}
@@ -48,13 +48,13 @@ export function NuligaSyncModal() {
         const conflicts = sync.conflicts || [];
         const stat = (label: string, value: number, color?: string) => (
           <div style={{ flex: '1 1 120px', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '11px 14px' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-num)', color: color || 'var(--text)' }}>{value}</div>
-            <div style={{ fontSize: 11.5, color: 'var(--text-4)', fontWeight: 600, marginTop: 2 }}>{label}</div>
+            <div style={{ fontSize: 'var(--fs-heading)', fontWeight: 800, fontFamily: 'var(--font-num)', color: color || 'var(--text)' }}>{value}</div>
+            <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 600, marginTop: 2 }}>{label}</div>
           </div>
         );
         return (
           <>
-            <div style={{ fontSize: 12.5, color: 'var(--text-4)', marginBottom: 16 }}>
+            <div style={{ fontSize: 'var(--fs-sub)', color: 'var(--text-4)', marginBottom: 16 }}>
               {tr.modals.nuligaOf(sync.total ?? 0)}{tr.modals.standPrefix}{fmtDateTime(sync.fetchedAt)}
               {sync.championship ? ` · ${sync.championship}` : ''}
             </div>
@@ -67,20 +67,20 @@ export function NuligaSyncModal() {
 
             {conflicts.length > 0 && (
               <div style={{ marginBottom: 8 }}>
-                <div style={{ fontSize: 12.5, fontWeight: 800, color: 'var(--text-2)', marginBottom: 4 }}>{tr.modals.conflictsTitle}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 12, lineHeight: 1.5 }}>
+                <div style={{ fontSize: 'var(--fs-sub)', fontWeight: 800, color: 'var(--text-2)', marginBottom: 4 }}>{tr.modals.conflictsTitle}</div>
+                <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', marginBottom: 12, lineHeight: 1.5 }}>
                   {tr.modals.conflictsInfo}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {conflicts.map((cf) => (
                     <div key={cf.fixtureId} style={{ border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '11px 13px', background: 'rgba(242,184,41,.07)' }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{cf.homeName} — {cf.awayName}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 10 }}>
+                      <div style={{ fontSize: 'var(--fs-sub)', fontWeight: 700, marginBottom: 3 }}>{cf.homeName} — {cf.awayName}</div>
+                      <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-3)', marginBottom: 10 }}>
                         {cf.date} · {tr.modals.ownWord} <b style={{ fontFamily: 'var(--font-num)' }}>{cf.local.hs}:{cf.local.as}</b> ({cf.local.source === 'counter' ? tr.leagues.srcCounter : tr.leagues.srcManual}) · nuLiga <b style={{ fontFamily: 'var(--font-num)' }}>{cf.nuliga.hs}:{cf.nuliga.as}</b>
                       </div>
                       <div style={{ display: 'flex', gap: 8 }}>
-                        <button onClick={() => s.resolveNuligaConflict(sync.leagueId, cf.fixtureId, false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '6px 12px', borderRadius: 'var(--radius-sm)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.leagues.keepOwn}</button>
-                        <button onClick={() => s.resolveNuligaConflict(sync.leagueId, cf.fixtureId, true)} style={{ background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid var(--accent)', color: 'var(--accent)', padding: '6px 12px', borderRadius: 'var(--radius-sm)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.leagues.takeNuliga}</button>
+                        <button onClick={() => s.resolveNuligaConflict(sync.leagueId, cf.fixtureId, false)} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '6px 12px', borderRadius: 'var(--radius-sm)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.leagues.keepOwn}</button>
+                        <button onClick={() => s.resolveNuligaConflict(sync.leagueId, cf.fixtureId, true)} style={{ background: 'color-mix(in srgb, var(--accent) 14%, transparent)', border: '1px solid var(--accent)', color: 'var(--accent-ink)', padding: '6px 12px', borderRadius: 'var(--radius-sm)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.leagues.takeNuliga}</button>
                       </div>
                     </div>
                   ))}
@@ -89,11 +89,11 @@ export function NuligaSyncModal() {
             )}
 
             {conflicts.length === 0 && c.conflicts > 0 && (
-              <div style={{ fontSize: 13, color: 'var(--success)', fontWeight: 600, marginBottom: 8 }}>{tr.modals.allResolved}</div>
+              <div style={{ fontSize: 'var(--fs-sub)', color: 'var(--success)', fontWeight: 600, marginBottom: 8 }}>{tr.modals.allResolved}</div>
             )}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 20 }}>
-              <button onClick={close} style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 22px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.modals.done}</button>
+              <button onClick={close} style={{ background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '11px 22px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.modals.done}</button>
             </div>
           </>
         );
