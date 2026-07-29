@@ -16,6 +16,9 @@ const BASE = process.env.VITE_BASE || '/'
 export default defineConfig({
   base: BASE,
   test: {
+    // Die Playwright-Specs unter e2e/ laufen im Browser-Runner, nicht in vitest — sonst versucht
+    // vitest sie zu importieren und scheitert an Playwrights eigenem `test`.
+    exclude: ['node_modules/**', 'dist/**', 'e2e/**'],
     // 'virtual:pwa-register' ist ein virtuelles Modul des PWA-Plugins und existiert nur im
     // Dev-Server/Build. In den Tests (node) zeigt der Alias auf einen No-op-Stub — ohne ihn bricht
     // jede Testdatei ab, die (indirekt über den Store) lib/pwaUpdate.ts lädt.
@@ -29,6 +32,32 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    // Das alte .woff-Format aus dem Build werfen. @fontsource deklariert je Schnitt
+    // `src: url(.woff2) format("woff2"), url(.woff) format("woff")` — die zweite Quelle ist ein
+    // Fallback für Browser vor ~2016. Diese App verlangt ohnehin oklch() und color-mix() (Chrome 111+,
+    // Safari 16.2+); dort ist woff2 seit einem Jahrzehnt Pflichtprogramm. Die Dateien lagen also nur
+    // als tote Fracht im Verteilpaket (USB-Stick/copy2share) herum: 25 Dateien, ~560 KB.
+    {
+      name: 'drop-legacy-woff',
+      apply: 'build',
+      generateBundle(_options, bundle) {
+        let dropped = 0, bytes = 0;
+        for (const [file, asset] of Object.entries(bundle)) {
+          if (file.endsWith('.woff')) {
+            bytes += (asset as { source?: string | Uint8Array }).source?.length ?? 0;
+            delete bundle[file];
+            dropped++;
+          }
+        }
+        // Die .woff-Quelle aus jedem @font-face streichen, damit kein 404 provoziert wird.
+        for (const asset of Object.values(bundle)) {
+          if (asset.type !== 'asset' || !asset.fileName.endsWith('.css')) continue;
+          const css = String(asset.source);
+          asset.source = css.replace(/,\s*url\([^)]*\.woff\)\s*format\("woff"\)/g, '');
+        }
+        if (dropped) this.warn(`drop-legacy-woff: ${dropped} Dateien entfernt (~${Math.round(bytes / 1024)} KB)`);
+      },
+    },
     // Schreibt dist/version.json → der schlanke Server (serve-dist.mjs) liest daraus die laufende
     // Version für den Update-Vergleich (Datei-basiertes Update lokal/LAN/Cloud, siehe /admin/update).
     {
@@ -61,24 +90,9 @@ export default defineConfig({
       },
       workbox: {
         // App-Shell + Assets vorab cachen → offline lauffähig (wichtig für den lokalen Modus)
-        globPatterns: ['**/*.{js,css,html,svg,woff,woff2}'],
-        // Google Fonts zur Laufzeit cachen, damit Schriften auch offline bleiben (nach erstem Online-Laden)
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'google-fonts-stylesheets' },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-webfonts',
-              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-        ],
+        // woff2 ONLY: @fontsource liefert zusätzlich das alte .woff, das kein Zielbrowser je anfragt.
+        // Beide zu precachen hieß, bei jeder Installation ~560 KB tote Bytes zu übertragen.
+        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
       },
       // SW nur im Production-Build (npm run build / vite preview); im Dev-Server aus, um Caching-Probleme zu vermeiden
       devOptions: { enabled: false },
