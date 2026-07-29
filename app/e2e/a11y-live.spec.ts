@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { gotoScreen } from './app';
-import { loginVerein } from './verein';
+import { loginVerein, hasVereinCredentials, SKIP_HINT } from './verein';
 import {
   loginBoard, readPairCode, pairRemote,
-  openDeviceSettings, enableWatch, disableWatch, openRemote,
+  openDeviceSettings, enableWatch, disableWatch, openRemote, hasBoardCredentials,
 } from './live';
 
 // Fernbedienung und Zuschauer-TV — die beiden login-freien Flächen.
@@ -39,6 +39,8 @@ async function expectClean(page: import('@playwright/test').Page) {
 test.describe.configure({ mode: 'serial' });
 
 test.describe('Live-Flächen', () => {
+  test.skip(!hasVereinCredentials || !hasBoardCredentials, `${SKIP_HINT} Für die Live-Flächen zusätzlich DZ_E2E_BOARD_EMAIL/DZ_E2E_BOARD_PASS.`);
+
   test('Board im Kiosk-Modus veröffentlicht eine Session', async ({ page }) => {
     await loginBoard(page);
     await expectClean(page);

@@ -11,10 +11,20 @@ import type { Page } from '@playwright/test';
 // Das Konto kommt aus der Umgebung, damit keine Zugangsdaten im Git landen:
 //   DZ_E2E_EMAIL / DZ_E2E_PASS  (Vorgabe: der App-Admin der lokalen Demo-Einrichtung)
 
+// Dieses Repo ist ÖFFENTLICH — hier stehen keine Zugangsdaten, auch keine lokalen. Ohne
+// gesetzte Variablen überspringen sich die Vereins- und Live-Prüfungen selbst (siehe
+// `hasVereinCredentials`), damit `npm run e2e` auch ohne Server durchläuft.
 export const VEREIN_LOGIN = {
-  email: process.env.DZ_E2E_EMAIL ?? 'admin2@dartszentrale.local',
-  pass: process.env.DZ_E2E_PASS ?? 'dartszentrale123',
+  email: process.env.DZ_E2E_EMAIL ?? '',
+  pass: process.env.DZ_E2E_PASS ?? '',
 };
+
+/** true, wenn Zugangsdaten für den Vereinsmodus gesetzt sind. */
+export const hasVereinCredentials = !!(VEREIN_LOGIN.email && VEREIN_LOGIN.pass);
+
+/** Hinweis für übersprungene Prüfungen — nennt genau, was fehlt. */
+export const SKIP_HINT =
+  'Vereins-Prüfungen übersprungen: DZ_E2E_EMAIL/DZ_E2E_PASS setzen und eine lokale PocketBase starten.';
 
 /** Setzt das Gerät auf Vereinsmodus vor (die Server-URL liefert VITE_PB_URL aus .env.local). */
 export async function seedVereinDevice(page: Page): Promise<void> {

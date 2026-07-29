@@ -6,10 +6,11 @@
 // Aufruf:  SEASON_NAME="2024/25" node season-offload.mjs        (oder SEASON_ID=...)
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
 import { assertSafePassword } from './_security-guard.mjs';
+import { requireSecret } from './_env.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
 const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartszentrale.local';
-const SU_PASS = process.env.PB_SU_PASS || 'dartszentrale-admin-2026';
+const SU_PASS = requireSecret('PB_SU_PASS', 'das Superuser-Passwort der PocketBase (Konsole /_/)');
 const SEASON_ID = process.env.SEASON_ID || '';
 const SEASON_NAME = process.env.SEASON_NAME || '';
 

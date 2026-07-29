@@ -12,10 +12,14 @@ import { seedVereinDevice, VEREIN_LOGIN } from './verein';
 // ⚠ Der Zuschauer-Kanal ist der einzige Schreibvorgang der gesamten Prüfung. Er wird am Ende
 // wieder ausgeschaltet, damit die Instanz so bleibt, wie sie war.
 
+// Keine Zugangsdaten im Repo — siehe verein.ts.
 export const BOARD_LOGIN = {
-  email: process.env.DZ_E2E_BOARD_EMAIL ?? 'board@dartszentrale.local',
-  pass: process.env.DZ_E2E_BOARD_PASS ?? 'board-dartszentrale-2026',
+  email: process.env.DZ_E2E_BOARD_EMAIL ?? '',
+  pass: process.env.DZ_E2E_BOARD_PASS ?? '',
 };
+
+/** true, wenn ein Board-Konto für die Live-Prüfungen hinterlegt ist. */
+export const hasBoardCredentials = !!(BOARD_LOGIN.email && BOARD_LOGIN.pass);
 
 /** Meldet ein Board-Konto an. Danach läuft der Kiosk-Modus und die Live-Session wird veröffentlicht. */
 export async function loginBoard(page: Page): Promise<void> {

@@ -11,13 +11,14 @@
 // Mehrere Boards:  BOARD_NUMBER=2 BOARD_EMAIL=board2@… node add-board-account.mjs   (usw.)
 // Cloud:           PB_URL=https://db.deinverein.de PB_SU_EMAIL=… PB_SU_PASS=… BOARD_EMAIL=board1@deinverein.de BOARD_PW=… BOARD_NUMBER=1 node add-board-account.mjs
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
-import { assertSafePassword } from './_security-guard.mjs';
+import { assertSafePassword, isWeakDefault } from './_security-guard.mjs';
+import { requireSecret } from './_env.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
 const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartszentrale.local';
-const SU_PASS = process.env.PB_SU_PASS || 'dartszentrale-admin-2026';
+const SU_PASS = requireSecret('PB_SU_PASS', 'das Superuser-Passwort der PocketBase (Konsole /_/)');
 const BOARD_EMAIL = process.env.BOARD_EMAIL || 'board@dartszentrale.local';
-const BOARD_PW = process.env.BOARD_PW || 'board-dartszentrale-2026'; // BITTE in der Cloud ändern!
+const BOARD_PW = requireSecret('BOARD_PW', 'das Passwort des Board-Kontos'); // BITTE in der Cloud ändern!
 const BOARD_NUMBER = parseInt(process.env.BOARD_NUMBER || '1', 10);   // Board-Kennnummer (>=1); Default 1
 
 // Board-Nummer validieren: eine positive Ganzzahl ist Pflicht (0/leer → kein Bezug zur Aufstellung).
@@ -60,7 +61,7 @@ async function main() {
   const auth = await test.collection('users').authWithPassword(BOARD_EMAIL, BOARD_PW);
   console.log(`OK Login getestet – Rolle: ${auth.record.role}, Board-Nr.: ${auth.record.boardNumber}, aktiv: ${auth.record.active}`);
   console.log(`\nBoard-Login:  ${BOARD_EMAIL} / ${BOARD_PW}  (Board ${BOARD_NUMBER})`);
-  if (BOARD_PW === 'board-dartszentrale-2026') console.log('HINWEIS: In der Cloud unbedingt ein eigenes BOARD_PW setzen!');
+  if (isWeakDefault(BOARD_PW)) console.log('HINWEIS: Dieses Passwort steht auf der Sperrliste — für die Cloud unbedingt ein eigenes BOARD_PW setzen!');
   console.log('HINWEIS: Jeder weitere Board-PC braucht eine eigene BOARD_NUMBER und BOARD_EMAIL.');
 }
 

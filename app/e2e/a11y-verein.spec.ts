@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { gotoScreen } from './app';
-import { loginVerein, VEREIN_SCREENS } from './verein';
+import { loginVerein, VEREIN_SCREENS, hasVereinCredentials, SKIP_HINT } from './verein';
 
 // Die vereinsgebundenen Bildschirme — der letzte blinde Fleck der Prüfung.
 //
@@ -31,6 +31,8 @@ async function expectClean(page: import('@playwright/test').Page) {
 }
 
 test.describe('Vereinsmodus', () => {
+  test.skip(!hasVereinCredentials, SKIP_HINT);
+
   test('Anmeldung führt ins Dashboard', async ({ page }) => {
     await loginVerein(page);
     await expect(page.locator('h1').first()).toBeVisible();
