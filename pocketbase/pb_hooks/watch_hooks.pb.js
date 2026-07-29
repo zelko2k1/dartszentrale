@@ -48,7 +48,11 @@ routerAdd("GET", "/api/live/public", (e) => {
   const real = cfg.getString("watchToken");
   if (!token || !real || token !== real) throw new ForbiddenError("Ungültiger Zuschauer-Link.");
 
-  const sessions = e.app.findRecordsByFilter("live_sessions", "status = {:s}", "-updated", 50, 0, { s: "active" });
+  // Sortierung nach "heartbeat" (ISO-Zeitstempel, den der Host regelmäßig erneuert).
+  // VORHER: "-updated" — dieses Feld legt provision.mjs für live_sessions gar nicht an,
+  // die Abfrage brach deshalb IMMER ab: der öffentliche Zuschauer-Kanal antwortete bei
+  // gültigem Token mit 400 und hat nie funktioniert.
+  const sessions = e.app.findRecordsByFilter("live_sessions", "status = {:s}", "-heartbeat", 50, 0, { s: "active" });
   const boards = [];
   for (const s of sessions) {
     let state = null;
