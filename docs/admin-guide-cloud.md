@@ -47,7 +47,7 @@ TLS proxy, without any extra firewall rule, because they never bind to external 
 | **Node.js, Caddy, PocketBase** | the setup script fetches/installs them | €0 |
 
 DNS up front: point two **A records** at the server IP —
-`app.yourdomain.com` and `db.yourdomain.com` (details below).
+`app.yourdomain.example` and `db.yourdomain.example` (details below).
 
 > **How big does the server need to be?** The app runtime (PocketBase + `serve-dist.mjs`) only needs
 > ~50–100 MB — the only bottleneck is the **build peak** (`npm install` + Vite build, briefly 1–2 GB).
@@ -69,7 +69,7 @@ DNS up front: point two **A records** at the server IP —
 
 **Where is my DNS zone?** If in doubt:
 ```bash
-nslookup -type=ns yourdomain.com
+nslookup -type=ns yourdomain.example
 ```
 - Answer `*.ns.hetzner.com` (hydrogen/oxygen/helium…) → **Hetzner DNS Console**
 - anything else → wherever those nameservers belong (usually the registrar)
@@ -83,16 +83,16 @@ nslookup -type=ns yourdomain.com
 | A | `db` | 203.0.113.10 |
 
 > **`app` is freely choosable.** You can name the subdomain anything you like, e.g. `dartszentrale`
-> (→ `dartszentrale.yourdomain.com`). Only rule: **the same name in both places** —
-> in the A record (`Name = dartszentrale`) **and** in the invocation (`APP_DOMAIN=dartszentrale.yourdomain.com`).
+> (→ `dartszentrale.yourdomain.example`). Only rule: **the same name in both places** —
+> in the A record (`Name = dartszentrale`) **and** in the invocation (`APP_DOMAIN=dartszentrale.yourdomain.example`).
 > The script automatically bakes a matching `VITE_PB_URL=https://<DB_DOMAIN>` into the frontend; in
 > PocketBase then set the CORS origin to `https://<APP_DOMAIN>`. `db` can be renamed just the same
 > (e.g. `pb`/`backend`) — as long as `DB_DOMAIN` is updated along with it.
 
 **Verify afterwards** (DNS takes a few minutes, rarely hours):
 ```bash
-nslookup app.yourdomain.com
-nslookup db.yourdomain.com
+nslookup app.yourdomain.example
+nslookup db.yourdomain.example
 ```
 Both must return the server IP. **Only then** run `setup-cloud.sh` or start Caddy
 — otherwise HTTPS certificate issuance fails, because Let's Encrypt cannot resolve the
@@ -110,13 +110,13 @@ sudo ./setup-cloud.sh
 
 The script **interactively asks for everything it needs** (domains, optional Let's Encrypt email, superuser,
 first app admin). Values can also be set up front as env vars:
-`sudo APP_DOMAIN=app.yourdomain.com DB_DOMAIN=db.yourdomain.com ./setup-cloud.sh`.
+`sudo APP_DOMAIN=app.yourdomain.example DB_DOMAIN=db.yourdomain.example ./setup-cloud.sh`.
 
 The script ([`setup-cloud.sh`](../scripts/setup-cloud.sh)) is idempotent and takes care of:
 
 1. Installing **Node.js + Caddy** (if not present), downloading the **PocketBase binary** matching the
    CPU (amd64/arm64).
-2. **Building the frontend** — writes `app/.env.local` with `VITE_PB_URL=https://db.yourdomain.com`
+2. **Building the frontend** — writes `app/.env.local` with `VITE_PB_URL=https://db.yourdomain.example`
    (baked into the bundle at **build time**) and runs `npm run build`.
 3. Writing + enabling **two systemd system services** (run as your user, auto-restart,
    logs to journald).
@@ -126,10 +126,10 @@ The script ([`setup-cloud.sh`](../scripts/setup-cloud.sh)) is idempotent and tak
 After that, only these steps remain:
 
 - **Firewall:** ports 80 + 443 open (for Caddy/HTTPS); do **not** open 8090/4173.
-- Set the **Application URL** in PocketBase: `https://db.yourdomain.com/_/` → Settings →
-  *Application URL* = `https://db.yourdomain.com`. (CORS is already set via `--origins`.)
+- Set the **Application URL** in PocketBase: `https://db.yourdomain.example/_/` → Settings →
+  *Application URL* = `https://db.yourdomain.example`. (CORS is already set via `--origins`.)
 
-Done: open `https://app.yourdomain.com` → **club mode** → sign in with the app admin.
+Done: open `https://app.yourdomain.example` → **club mode** → sign in with the app admin.
 
 ---
 
@@ -158,7 +158,7 @@ unzip -o pocketbase_0.39.5_linux_amd64.zip pocketbase && chmod +x pocketbase
 ### 2. Build the frontend
 ```bash
 cd ~/dartszentrale/app
-echo 'VITE_PB_URL=https://db.yourdomain.com' > .env.local   # IMPORTANT: build time!
+echo 'VITE_PB_URL=https://db.yourdomain.example' > .env.local   # IMPORTANT: build time!
 npm ci && npm run build
 ```
 
@@ -174,7 +174,7 @@ Wants=network-online.target
 Type=simple
 User=<user>
 WorkingDirectory=/home/<user>/dartszentrale/pocketbase
-ExecStart=/home/<user>/dartszentrale/pocketbase/pocketbase serve --automigrate=0 --http=127.0.0.1:8090 --origins=https://app.yourdomain.com --dir=/home/<user>/dartszentrale/pocketbase/pb_data --migrationsDir=/home/<user>/dartszentrale/pocketbase/pb_migrations --hooksDir=/home/<user>/dartszentrale/pocketbase/pb_hooks
+ExecStart=/home/<user>/dartszentrale/pocketbase/pocketbase serve --automigrate=0 --http=127.0.0.1:8090 --origins=https://app.yourdomain.example --dir=/home/<user>/dartszentrale/pocketbase/pb_data --migrationsDir=/home/<user>/dartszentrale/pocketbase/pb_migrations --hooksDir=/home/<user>/dartszentrale/pocketbase/pb_hooks
 Restart=on-failure
 RestartSec=3
 NoNewPrivileges=true
@@ -224,7 +224,7 @@ cd ~/dartszentrale/pocketbase
 ./pocketbase superuser upsert <admin-email> '<strong-pw>' --dir ./pb_data
 node provision.mjs
 ```
-Then in `https://db.yourdomain.com/_/` → set **Application URL** = `https://db.yourdomain.com`.
+Then in `https://db.yourdomain.example/_/` → set **Application URL** = `https://db.yourdomain.example`.
 (CORS does **not** need to be set in the UI — the `--origins` flag in the unit handles that.)
 
 ---
@@ -250,13 +250,13 @@ locally on `127.0.0.1:8090`). `PB_SU_EMAIL`/`PB_SU_PASS` = the superuser account
   to the boards):
   ```bash
   cd pocketbase
-  BOARD_EMAIL=board1@yourdomain.com BOARD_PW=<strong-pw> \
+  BOARD_EMAIL=board1@yourdomain.example BOARD_PW=<strong-pw> \
   PB_URL=http://127.0.0.1:8090 PB_SU_EMAIL=<su-email> PB_SU_PASS=<su-pw> \
   node add-board-account.mjs
   ```
 - **Launch a board PC as a kiosk:** the club packages include `board-kiosk-chrome` /
   `board-kiosk-firefox` scripts (Windows `.bat`, Linux `.sh`) that open the browser on the board in
-  **full-screen kiosk** on the app address (`https://app.yourdomain.com`) and set up **autostart at
+  **full-screen kiosk** on the app address (`https://app.yourdomain.example`) and set up **autostart at
   sign-in** (run once per board PC, the script asks for the address). Since board accounts stay signed
   in across restarts: **power on → ready to play**. Leave the kiosk with Alt+F4.
 - **Reset an app password** (someone locked themselves out):
@@ -282,7 +282,7 @@ Technically, the domain lives in several places (frontend build `VITE_PB_URL`, P
 the new domains; it rewrites all locations consistently and rebuilds the frontend:
 
 ```bash
-sudo APP_DOMAIN=new.yourdomain.com DB_DOMAIN=db2.yourdomain.com ./setup-cloud.sh
+sudo APP_DOMAIN=new.yourdomain.example DB_DOMAIN=db2.yourdomain.example ./setup-cloud.sh
 ```
 
 > `VITE_PB_URL` is **baked** into the build (compile time) → a domain change requires
@@ -290,7 +290,7 @@ sudo APP_DOMAIN=new.yourdomain.com DB_DOMAIN=db2.yourdomain.com ./setup-cloud.sh
 
 Separately (outside the server), only two steps remain:
 1. Create **DNS** for the new domain (A records `app`/`db` pointing to the same server IP).
-2. Adjust the **Application URL** in `https://db2.yourdomain.com/_/`.
+2. Adjust the **Application URL** in `https://db2.yourdomain.example/_/`.
 
 Your data (`pocketbase/pb_data/`) remains untouched.
 

@@ -42,8 +42,8 @@ There are **two separate account worlds**:
 | | **App login** | **PocketBase admin (superuser)** |
 |---|---|---|
 | What for | normal use of the app | server/database administration |
-| Where | `https://app.yourdomain.com` | `https://db.yourdomain.com/_/` |
-| Example | `chairman@yourdomain.com`, role *Admin* | your PocketBase superuser |
+| Where | `https://app.yourdomain.example` | `https://db.yourdomain.example/_/` |
+| Example | `chairman@yourdomain.example`, role *Admin* | your PocketBase superuser |
 
 - You need the **app admin** every day — it manages the club, players,
   teams, leagues and users.
@@ -54,7 +54,7 @@ There are **two separate account worlds**:
 
 ## 3. Signing In
 
-1. Open `https://app.yourdomain.com`.
+1. Open `https://app.yourdomain.example`.
 2. Enter the email + password of an active app account → **Sign in**.
 3. Tip: in Edge/Chrome use **"Install as app"** (PWA) — DartsZentrale then sits on
    the desktop/home screen like a regular program.
@@ -263,8 +263,8 @@ matches + read).
 
 **Setup (one-time, technical):**
 ```
-PB_URL=https://db.yourdomain.com PB_SU_EMAIL=… PB_SU_PASS=… \
-BOARD_EMAIL=board1@yourdomain.com BOARD_PW=<strong-pw> \
+PB_URL=https://db.yourdomain.example PB_SU_EMAIL=… PB_SU_PASS=… \
+BOARD_EMAIL=board1@yourdomain.example BOARD_PW=<strong-pw> \
 node pocketbase/add-board-account.mjs
 ```
 
@@ -394,7 +394,7 @@ Appearance · Aids & Display · Lists · Data**):
 
 As a self-hoster you're also the operator. Keep an eye on three things regularly:
 
-**Backups.** In PocketBase (`https://db.yourdomain.com/_/`) → **Settings → Backups**
+**Backups.** In PocketBase (`https://db.yourdomain.example/_/`) → **Settings → Backups**
 enable automatic backups (ideally off-site, e.g. Hetzner Storage Box / S3) and
 **test a restore occasionally**. All data lives in the `pb_data` volume.
 
@@ -403,8 +403,8 @@ enable automatic backups (ideally off-site, e.g. Hetzner Storage Box / S3) and
    → set a new password.
 2. Via script (sets the password + reactivates the account):
    ```
-   PB_URL=https://db.yourdomain.com PB_SU_EMAIL=… PB_SU_PASS=… \
-   USER_EMAIL=chairman@yourdomain.com NEW_PW="new-pw-min-8" \
+   PB_URL=https://db.yourdomain.example PB_SU_EMAIL=… PB_SU_PASS=… \
+   USER_EMAIL=chairman@yourdomain.example NEW_PW="new-pw-min-8" \
    node pocketbase/reset-password.mjs
    ```
 3. **Forgot the superuser password itself?** Reset it on the server via CLI:

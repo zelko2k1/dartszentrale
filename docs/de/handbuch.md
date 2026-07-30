@@ -43,8 +43,8 @@ Es gibt **zwei getrennte Konten-Welten**:
 | | **App-Login** | **PocketBase-Admin (Superuser)** |
 |---|---|---|
 | Wofür | normale Nutzung der App | Server-/Datenbank-Verwaltung |
-| Wo | `https://app.deinverein.de` | `https://db.deinverein.de/_/` |
-| Beispiel | `vorstand@deinverein.de`, Rolle *Admin* | dein PocketBase-Superuser |
+| Wo | `https://app.deinverein.example` | `https://db.deinverein.example/_/` |
+| Beispiel | `vorstand@deinverein.example`, Rolle *Admin* | dein PocketBase-Superuser |
 
 - Den **App-Admin** brauchst du jeden Tag — damit verwaltest du Verein, Spieler,
   Mannschaften, Ligen und Benutzer.
@@ -55,7 +55,7 @@ Es gibt **zwei getrennte Konten-Welten**:
 
 ## 3. Anmelden
 
-1. `https://app.deinverein.de` öffnen.
+1. `https://app.deinverein.example` öffnen.
 2. E-Mail + Passwort eines aktiven App-Kontos eingeben → **Anmelden**.
 3. Tipp: in Edge/Chrome **„Als App installieren"** (PWA) — DartsZentrale liegt dann wie ein
    Programm auf dem Desktop/Startbildschirm.
@@ -262,8 +262,8 @@ Board-Konten** (rechtearm, Rolle *Board-Rechner* — dürfen nur Spiele anlegen 
 
 **Einrichten (einmalig, technisch):**
 ```
-PB_URL=https://db.deinverein.de PB_SU_EMAIL=… PB_SU_PASS=… \
-BOARD_EMAIL=board1@deinverein.de BOARD_PW=<starkes-pw> \
+PB_URL=https://db.deinverein.example PB_SU_EMAIL=… PB_SU_PASS=… \
+BOARD_EMAIL=board1@deinverein.example BOARD_PW=<starkes-pw> \
 node pocketbase/add-board-account.mjs
 ```
 
@@ -390,7 +390,7 @@ Darstellung · Hilfen & Anzeige · Listen · Daten**):
 
 Als Self-Hoster bist du auch der Betreiber. Drei Dinge regelmäßig im Blick behalten:
 
-**Backups.** In PocketBase (`https://db.deinverein.de/_/`) → **Settings → Backups**
+**Backups.** In PocketBase (`https://db.deinverein.example/_/`) → **Settings → Backups**
 automatische Sicherungen aktivieren (ideal extern, z. B. Hetzner Storage Box / S3) und
 **gelegentlich einen Restore testen**. Alle Daten liegen im Volume `pb_data`.
 
@@ -399,8 +399,8 @@ automatische Sicherungen aktivieren (ideal extern, z. B. Hetzner Storage Box / S
    → neues Passwort setzen.
 2. Per Skript (setzt Passwort + reaktiviert das Konto):
    ```
-   PB_URL=https://db.deinverein.de PB_SU_EMAIL=… PB_SU_PASS=… \
-   USER_EMAIL=vorstand@deinverein.de NEW_PW="neues-pw-min-8" \
+   PB_URL=https://db.deinverein.example PB_SU_EMAIL=… PB_SU_PASS=… \
+   USER_EMAIL=vorstand@deinverein.example NEW_PW="neues-pw-min-8" \
    node pocketbase/reset-password.mjs
    ```
 3. **Superuser-Passwort selbst vergessen?** Auf dem Server per CLI neu setzen:

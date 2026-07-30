@@ -49,7 +49,7 @@ export function Login() {
           <label htmlFor="login-email" style={{ display: 'block', fontSize: 'var(--fs-meta)', color: 'var(--text-3)', fontWeight: 700, marginBottom: 6 }}>{tr.login.email}</label>
           <input
             id="login-email"
-            className="dh-input" type="email" value={s.loginForm.email} placeholder="name@verein.de"
+            className="dh-input" type="email" value={s.loginForm.email} placeholder={tr.login.emailPh}
             onChange={(e) => s.setLoginField('email', e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && !busy) s.loginEmail(); }}
             style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 'var(--fs-body)', fontFamily: 'inherit', marginBottom: 14 }}
