@@ -1,17 +1,20 @@
 // ═══════ [ INTERNER HELFER ] — wird importiert, nicht direkt ausgeführt ═══════
 // Zugangsdaten für die Provisioning-/Seed-/Wartungsskripte.
 //
-// Dieses Repo ist ÖFFENTLICH. Deshalb steht hier kein einziges Passwort im Klartext —
-// weder als Vorgabe noch als Beispiel. Jedes Skript verlangt seine Zugangsdaten aus der
-// Umgebung und bricht mit einer konkreten Anleitung ab, wenn sie fehlen.
+// Dieses Repo ist ÖFFENTLICH. Deshalb steht hier weder ein Passwort noch eine Konto-Adresse
+// im Klartext — auch nicht als Vorgabe oder Beispiel. Jedes Skript verlangt beides aus der
+// Umgebung und bricht mit einer konkreten Anleitung ab, wenn etwas fehlt.
 //
 // Bequem bleibt es trotzdem: `pocketbase/.env.local` (gitignored) wird automatisch geladen.
 //
 //   # pocketbase/.env.local
+//   PB_SU_EMAIL=dein-superuser-konto          ← Konto der PocketBase-Konsole /_/
 //   PB_SU_PASS=dein-superuser-passwort
 //   APP_ADMIN_PASS=dein-admin-passwort
 //   MEMBER_PW=passwort-der-demo-mitglieder
+//   BOARD_EMAIL=board1@dein-verein.example     ← nur für add-board-account.mjs
 //   BOARD_PW=passwort-der-board-konten
+//   USER_EMAIL=konto@dein-verein.example       ← nur für reset-password.mjs / reset-2fa.mjs
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -38,12 +41,10 @@ export function loadEnvLocal() {
 loadEnvLocal();
 
 /**
- * Liest ein Pflicht-Geheimnis aus der Umgebung. Fehlt es, bricht das Skript mit einer
- * Anleitung ab — statt still auf ein im Repo stehendes Passwort zurückzufallen.
- * @param {string} name  Name der Umgebungsvariable, z. B. "PB_SU_PASS"
- * @param {string} what  wofür sie steht, z. B. "das Superuser-Passwort der PocketBase"
+ * Gemeinsamer Abbruch für fehlende Pflicht-Angaben: nennt die Variable, wofür sie steht und
+ * die zwei Wege, sie zu setzen. `hint` schließt mit dem Grund ab, warum es keine Vorgabe gibt.
  */
-export function requireSecret(name, what) {
+function demand(name, what, hint) {
   const v = process.env[name];
   if (v && v.trim()) return v;
   console.error(`\n✗ ABBRUCH – ${name} fehlt.\n`);
@@ -52,6 +53,27 @@ export function requireSecret(name, what) {
   console.error(`      echo '${name}=…' >> pocketbase/.env.local\n`);
   console.error('  … oder für einen einzelnen Aufruf mitgeben:');
   console.error(`      ${name}=… node ${process.argv[1]?.split('/').pop() ?? 'skript.mjs'}\n`);
-  console.error('  Hinweis: Dieses Repo ist öffentlich — hier stehen bewusst keine Passwörter.\n');
+  console.error(`  ${hint}\n`);
   process.exit(1);
+}
+
+/**
+ * Liest ein Pflicht-Geheimnis aus der Umgebung. Fehlt es, bricht das Skript mit einer
+ * Anleitung ab — statt still auf ein im Repo stehendes Passwort zurückzufallen.
+ * @param {string} name  Name der Umgebungsvariable, z. B. "PB_SU_PASS"
+ * @param {string} what  wofür sie steht, z. B. "das Superuser-Passwort der PocketBase"
+ */
+export function requireSecret(name, what) {
+  return demand(name, what, 'Hinweis: Dieses Repo ist öffentlich — hier stehen bewusst keine Passwörter.');
+}
+
+/**
+ * Wie requireSecret, aber für Pflicht-Angaben, die kein Geheimnis sind — vor allem Konto-Adressen.
+ * Auch die haben bewusst keine Vorgabe im Repo: eine eingebaute Admin-Adresse verrät einem
+ * Angreifer den Kontonamen und verleitet dazu, sie unverändert zu übernehmen.
+ * @param {string} name  Name der Umgebungsvariable, z. B. "PB_SU_EMAIL"
+ * @param {string} what  wofür sie steht, z. B. "die E-Mail des PocketBase-Superusers"
+ */
+export function requireValue(name, what) {
+  return demand(name, what, 'Hinweis: Dieses Repo ist öffentlich — hier stehen bewusst keine Konto-Adressen.');
 }

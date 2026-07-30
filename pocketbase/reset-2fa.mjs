@@ -4,21 +4,24 @@
 // Letzter Notnagel bei „Authenticator-Handy weg UND Backup-Codes weg" — der Nutzer kann sich
 // danach wieder nur mit Passwort anmelden und 2FA in den Einstellungen neu einrichten.
 //
-// Aufruf (lokal, entfernt 2FA von chef@dartszentrale.local):
-//   USER_EMAIL=chef@dartszentrale.local node reset-2fa.mjs
+// Aufruf (lokal):
+//   PB_SU_EMAIL=… PB_SU_PASS=… USER_EMAIL=<konto> node reset-2fa.mjs
 // Cloud:
-//   PB_URL=https://db.deinverein.de PB_SU_EMAIL=… PB_SU_PASS=… USER_EMAIL=admin@deinverein.de node reset-2fa.mjs
+//   PB_URL=https://db.deinverein.example PB_SU_EMAIL=… PB_SU_PASS=… USER_EMAIL=<konto> node reset-2fa.mjs
+//
+// Konto-Adressen haben bewusst keine Vorgabe (öffentliches Repo) — USER_EMAIL ist Pflicht.
+// Bequemer Weg: PB_SU_EMAIL/PB_SU_PASS einmalig in pocketbase/.env.local hinterlegen.
 //
 // Falls auch das Superuser-Passwort weg ist, vorher per CLI neu setzen:
 //   ./pocketbase superuser upsert <su-email> "<neues-su-pw>" --dir ./pb_data
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
 import { assertSafePassword } from './_security-guard.mjs';
-import { requireSecret } from './_env.mjs';
+import { requireSecret, requireValue } from './_env.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
-const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartszentrale.local';
+const SU_EMAIL = requireValue('PB_SU_EMAIL', 'die E-Mail des PocketBase-Superusers (Konsole /_/)');
 const SU_PASS = requireSecret('PB_SU_PASS', 'das Superuser-Passwort der PocketBase (Konsole /_/)');
-const USER_EMAIL = process.env.USER_EMAIL || 'chef@dartszentrale.local';
+const USER_EMAIL = requireValue('USER_EMAIL', 'die E-Mail des Kontos, dessen 2FA entfernt wird');
 
 // Sicherheits-Guard: kein bekanntes Default-Superuser-Passwort gegen ein nicht-lokales Ziel.
 assertSafePassword(URL, 'Superuser-Login', SU_PASS, 'PB_SU_PASS=…');

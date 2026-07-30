@@ -63,7 +63,9 @@ if [ ! -d "$DATA" ]; then
   echo "   NOT stored – please note them down safely (password manager)."
   echo
   echo "  1) PocketBase console (maintenance/recovery at $LOCAL/_/):"
-  SU_EMAIL="$(read_nonempty "     Email [superuser@dartszentrale.local]: " "superuser@dartszentrale.local")"
+  # No preset address on purpose: this repo is public, and a built-in admin address
+  # both reveals the account name and invites leaving it unchanged.
+  SU_EMAIL="$(read_nonempty "     Email: ")"
   SU_PW="$(read_pw "     Password")"
   echo
   echo "  2) App administrator (login in DartsZentrale):"

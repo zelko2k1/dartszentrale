@@ -7,17 +7,19 @@
 // Die Nummer verknüpft das Board mit der Aufstellung (Kapitän weist Positionen einer Board-Nr. zu) →
 // ohne gültige Nummer (>=1) erscheint weder die Board-Leiste noch das „Nächstes Spiel"-Overlay.
 //
-// Aufruf (lokal):  BOARD_NUMBER=1 node add-board-account.mjs
-// Mehrere Boards:  BOARD_NUMBER=2 BOARD_EMAIL=board2@… node add-board-account.mjs   (usw.)
-// Cloud:           PB_URL=https://db.deinverein.de PB_SU_EMAIL=… PB_SU_PASS=… BOARD_EMAIL=board1@deinverein.de BOARD_PW=… BOARD_NUMBER=1 node add-board-account.mjs
+// Aufruf (lokal):  BOARD_EMAIL=board1@… BOARD_PW=… BOARD_NUMBER=1 node add-board-account.mjs
+// Mehrere Boards:  BOARD_EMAIL=board2@… BOARD_PW=… BOARD_NUMBER=2 node add-board-account.mjs   (usw.)
+// Cloud:           PB_URL=https://db.deinverein.example PB_SU_EMAIL=… PB_SU_PASS=… BOARD_EMAIL=board1@… BOARD_PW=… BOARD_NUMBER=1 node add-board-account.mjs
+//
+// Konto-Adressen haben bewusst keine Vorgabe (öffentliches Repo) — BOARD_EMAIL ist Pflicht.
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
 import { assertSafePassword, isWeakDefault } from './_security-guard.mjs';
-import { requireSecret } from './_env.mjs';
+import { requireSecret, requireValue } from './_env.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
-const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartszentrale.local';
+const SU_EMAIL = requireValue('PB_SU_EMAIL', 'die E-Mail des PocketBase-Superusers (Konsole /_/)');
 const SU_PASS = requireSecret('PB_SU_PASS', 'das Superuser-Passwort der PocketBase (Konsole /_/)');
-const BOARD_EMAIL = process.env.BOARD_EMAIL || 'board@dartszentrale.local';
+const BOARD_EMAIL = requireValue('BOARD_EMAIL', 'die E-Mail des Board-Kontos (pro Board-PC eine eigene)');
 const BOARD_PW = requireSecret('BOARD_PW', 'das Passwort des Board-Kontos'); // BITTE in der Cloud ändern!
 const BOARD_NUMBER = parseInt(process.env.BOARD_NUMBER || '1', 10);   // Board-Kennnummer (>=1); Default 1
 

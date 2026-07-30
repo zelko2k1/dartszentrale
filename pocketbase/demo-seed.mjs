@@ -9,10 +9,10 @@
 // Aufruf:  node demo-seed.mjs
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
 import { assertSafePassword } from './_security-guard.mjs';
-import { requireSecret } from './_env.mjs';
+import { requireSecret, requireValue } from './_env.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
-const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartszentrale.local';
+const SU_EMAIL = requireValue('PB_SU_EMAIL', 'die E-Mail des PocketBase-Superusers (Konsole /_/)');
 const SU_PASS = requireSecret('PB_SU_PASS', 'das Superuser-Passwort der PocketBase (Konsole /_/)');
 const MEMBER_PW = requireSecret('MEMBER_PW', 'das Passwort für die Demo-Mitglieder');
 
@@ -21,7 +21,7 @@ assertSafePassword(URL, 'Superuser-Login', SU_PASS, 'PB_SU_PASS=…');
 assertSafePassword(URL, 'Mitglieder-Konten', MEMBER_PW, 'MEMBER_PW=…');
 
 const CLUB = 'Dartverein Demo';
-const DOMAIN = 'dartverein-demo.de';
+const DOMAIN = 'dartverein-demo.example'; // .example ist per RFC 2606 reserviert – nie eine echte Domain
 const SEASON = '2026/27';
 const SEASON_START = '2026-09-04'; // erster Spieltag (Anfang September)
 const SEASON_END = '2027-07-30';   // letzter Spieltag (Ende Juli)

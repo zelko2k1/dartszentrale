@@ -51,7 +51,9 @@ if (-not (Test-Path $DATA)) {
   Write-Host "   NOT stored - please note them down safely (password manager)."
   Write-Host ""
   Write-Host "  1) PocketBase console (maintenance/recovery at $LOCAL/_/):"
-  $suEmail = Read-NonEmpty '     Email [superuser@dartszentrale.local]' 'superuser@dartszentrale.local'
+  # No preset address on purpose: this repo is public, and a built-in admin address
+  # both reveals the account name and invites leaving it unchanged.
+  $suEmail = Read-NonEmpty '     Email'
   $suPw    = Read-Pw       '     Password'
   Write-Host ""
   Write-Host "  2) App administrator (login in DartsZentrale):"
