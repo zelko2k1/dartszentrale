@@ -98,13 +98,13 @@ printf 'VITE_PB_URL=http://127.0.0.1:8090\n' > ~/dartszentrale/app/.env.local
 ```bash
 # Linux
 cd ~/dartszentrale/pocketbase
-./pocketbase superuser upsert admin@dartszentrale.local "$PB_SU_PASS" --dir ./pb_data
+./pocketbase superuser upsert "$PB_SU_EMAIL" "$PB_SU_PASS" --dir ./pb_data
 ./pocketbase serve --automigrate=0 --http=127.0.0.1:8090 --dir ./pb_data
 ```
 ```powershell
 # Windows
 cd C:\dartszentrale\pocketbase
-.\pocketbase.exe superuser upsert admin@dartszentrale.local "$env:PB_SU_PASS" --dir .\pb_data
+.\pocketbase.exe superuser upsert "$env:PB_SU_EMAIL" "$env:PB_SU_PASS" --dir .\pb_data
 .\pocketbase.exe serve --automigrate=0 --http=127.0.0.1:8090 --dir .\pb_data
 ```
 > `pb_data/` und `pb_migrations/` legt PocketBase dabei selbst an.
@@ -290,12 +290,13 @@ Läuft auf http://127.0.0.1:8090 · Verwaltungs-Konsole: **http://127.0.0.1:8090
 
 **Erster Start — Superuser (DB-Admin) anlegen** (nur einmal nötig). Entweder per CLI *vor* dem `serve`:
 ```bash
-./pocketbase superuser upsert admin@dartszentrale.local "$PB_SU_PASS" --dir ./pb_data
+./pocketbase superuser upsert "$PB_SU_EMAIL" "$PB_SU_PASS" --dir ./pb_data
 ```
 …oder im Browser unter `/_/` das angezeigte Formular ausfüllen.
-> Die Skripte verlangen `PB_SU_PASS` (und ggf. `PB_SU_EMAIL`) aus der Umgebung — im Repo steht
-> bewusst **kein** Passwort. Am bequemsten einmalig in `pocketbase/.env.local` hinterlegen
-> (wird nicht versioniert); die Skripte laden die Datei von selbst.
+> Die Skripte verlangen `PB_SU_EMAIL` **und** `PB_SU_PASS` aus der Umgebung — im Repo steht
+> bewusst **weder** ein Passwort **noch** eine Konto-Adresse. Am bequemsten einmalig in
+> `pocketbase/.env.local` hinterlegen (wird nicht versioniert); die Skripte laden die Datei
+> von selbst.
 
 **Stoppen:** Strg+C im PocketBase-Terminal. Daten bleiben im Ordner `pb_data/`.
 
@@ -311,9 +312,10 @@ Legt alle Collections (inkl. `seasons`/`season_snapshots`) an und fragt — fall
 **Nach jedem `git pull` erneut ausführen**, falls sich das Schema geändert hat
 (ein vorhandener Admin bleibt unberührt).
 
-> **Dev-Konvention:** Wer die Demo-Skripte/Test-Logins unten 1:1 nutzen will, tippt beim
-> Prompt `chef@dartszentrale.local` mit dem Passwort aus `APP_ADMIN_PASS` — dann passen `demo-seed*.mjs` und die
-> Test-Login-Tabelle zusammen. (Das ist nur eine lokale Empfehlung, kein fest verdrahtetes Konto.)
+> **Dev-Tipp:** Die Adresse, die du beim Prompt eingibst, ist *deine* — im Repo steht bewusst
+> keine Vorgabe. Damit die Wartungsskripte (`reset-password.mjs`, `reset-2fa.mjs`) sie nicht
+> jedes Mal brauchen, leg sie einmalig als `USER_EMAIL` in `pocketbase/.env.local` ab
+> (zusammen mit `PB_SU_EMAIL`/`PB_SU_PASS`).
 
 ### 3. Test-Daten einspielen
 ```bash
@@ -346,20 +348,29 @@ npm run dev
 ```
 **http://localhost:5173** öffnen und anmelden.
 
-### Test-Logins (Demo-Konten aus `demo-seed*.mjs`, alle mit dem Passwort aus `MEMBER_PW`)
-| Rolle | E-Mail |
-|------|--------|
-| Admin | der beim `provision.mjs`-Prompt gewählte Admin (Dev-Konvention: `chef@dartszentrale.local`) |
-| Kapitän | `sandra.koester@sv-adler.de` |
-| Spieler | `daniel.weber@sv-adler.de` |
-| Betrachter (nur lesen) | `schriftfuehrung@sv-adler.de` |
-| Inaktiv (Login gesperrt) | `t.reiter@web.de` |
-| PocketBase-Konsole | `admin@dartszentrale.local` / dein `PB_SU_PASS` |
+### Test-Logins
 
-> ⚠️ **Dieses Repo enthält keine Passwörter — auch keine für die lokale Einrichtung.** Die Skripte
-> verlangen sie aus der Umgebung (`PB_SU_PASS`, `APP_ADMIN_PASS`, `MEMBER_PW`, `BOARD_PW`) und brechen
-> mit einer Anleitung ab, wenn etwas fehlt. Am bequemsten einmalig in `pocketbase/.env.local`
-> hinterlegen — die Datei wird nicht versioniert und von den Skripten selbst geladen.
+Es gibt **keine** festen Test-Konten im Repo. Wer sich womit anmeldet, ergibt sich aus dem, was du
+selbst angelegt hast:
+
+| Rolle | Benutzername | Passwort |
+|------|--------------|----------|
+| Admin | die beim `provision.mjs`-Prompt gewählte Adresse (bzw. `APP_ADMIN_EMAIL`) | `APP_ADMIN_PASS` |
+| Kapitän / Spieler (Demo-Mitglieder) | `<vorname>.<nachname>@dartverein-demo.example` | `MEMBER_PW` |
+| Board-Konto (Kiosk) | dein `BOARD_EMAIL` | `BOARD_PW` |
+| PocketBase-Konsole | dein `PB_SU_EMAIL` | `PB_SU_PASS` |
+
+`demo-seed.mjs` legt 20 Mitglieder nach dem Schema `<vorname>.<nachname>@dartverein-demo.example`
+an — alle mit dem Passwort aus `MEMBER_PW`. Zwei davon sind Kapitän (1. und 2. Mannschaft), der
+Rest Spieler; **Betrachter- und Inaktiv-Konten legt der Seed nicht an** (die Rollen gibt es, du
+kannst sie in der Benutzerverwaltung setzen). Die genauen Adressen gibt der Seed am Ende aus.
+
+> ⚠️ **Dieses Repo enthält keine Passwörter und keine Konto-Adressen — auch keine für die lokale
+> Einrichtung.** Die Skripte verlangen beides aus der Umgebung — Passwörter über `PB_SU_PASS`,
+> `APP_ADMIN_PASS`, `MEMBER_PW`, `BOARD_PW`, Konten über `PB_SU_EMAIL`, `USER_EMAIL`, `BOARD_EMAIL` —
+> und brechen mit einer Anleitung ab, wenn etwas fehlt. Am bequemsten einmalig in
+> `pocketbase/.env.local` hinterlegen — die Datei wird nicht versioniert und von den Skripten
+> selbst geladen.
 >
 > Ein Sicherheits-Guard (`pocketbase/_security-guard.mjs`) bricht zusätzlich ab, sobald ein Passwort
 > von der Sperrliste gegen ein nicht-lokales Ziel liefe. Auf der Liste stehen unter anderem die
@@ -405,11 +416,11 @@ Cloud `PB_URL`, `PB_SU_EMAIL`, `PB_SU_PASS` als Umgebungsvariablen voranstellen.
 cd ~/dartszentrale/pocketbase
 
 node provision.mjs                                   # einfacher Aufruf
-USER_EMAIL=chef@dartszentrale.local NEW_PW="abc12345" node reset-password.mjs   # mit Variablen
+USER_EMAIL=dein-konto@example.invalid NEW_PW="abc12345" node reset-password.mjs   # mit Variablen
 node season-import.mjs dartszentrale-saison-2024-25.json  # mit Datei-Argument
 
 # gegen eine Cloud-Instanz statt lokal:
-PB_URL=https://db.deinverein.de PB_SU_EMAIL=admin@… PB_SU_PASS=… MEMBER_PW=… node demo-seed.mjs
+PB_URL=https://db.deinverein.example PB_SU_EMAIL=admin@… PB_SU_PASS=… MEMBER_PW=… node demo-seed.mjs
 ```
 
 `VAR=wert node skript.mjs` setzt eine Umgebungsvariable nur für diesen einen Aufruf.

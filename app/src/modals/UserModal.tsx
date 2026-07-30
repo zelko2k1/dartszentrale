@@ -100,7 +100,7 @@ export function UserModal() {
       </div>
 
       <FieldLabel>{tr.login.email}</FieldLabel>
-      <input className="dh-input" type="email" value={m.email} maxLength={120} onChange={(e) => s.setUserField('email', e.target.value)} aria-label={tr.login.email} placeholder="name@verein.de" style={{ ...inputStyle, marginBottom: emailOwner ? 8 : 18 }} />
+      <input className="dh-input" type="email" value={m.email} maxLength={120} onChange={(e) => s.setUserField('email', e.target.value)} aria-label={tr.login.email} placeholder={tr.login.emailPh} style={{ ...inputStyle, marginBottom: emailOwner ? 8 : 18 }} />
       {emailOwner && (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', padding: '10px 12px', fontSize: 'var(--fs-sub)', lineHeight: 1.45, marginBottom: 18 }}>
           <span style={{ flexShrink: 0, fontWeight: 800 }}>⚠</span>

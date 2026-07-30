@@ -12,7 +12,7 @@
 # USAGE (as root / with sudo — installs packages + services). The script PROMPTS for
 # everything it needs interactively; inputs can also be pre-set as env variables:
 #   sudo ./setup-cloud.sh                              # fully guided (recommended)
-#   sudo APP_DOMAIN=app.x.com DB_DOMAIN=db.x.com ./setup-cloud.sh   # partially pre-set
+#   sudo APP_DOMAIN=app.x.example DB_DOMAIN=db.x.example ./setup-cloud.sh   # partially pre-set
 #
 # Optional env variables:
 #   RUN_USER, PB_VERSION, PB_PORT, WEB_PORT, ACME_EMAIL
@@ -66,8 +66,8 @@ RUN_GROUP="$(id -gn "$RUN_USER")"
 if [ -z "$APP_DOMAIN" ] || [ -z "$DB_DOMAIN" ]; then
   [ "$IS_TTY" = "1" ] || { echo "✗ APP_DOMAIN/DB_DOMAIN not set and no interactive input possible."; exit 1; }
   echo "── Domains (the A records must already point to this server's IP) ──"
-  [ -n "$APP_DOMAIN" ] || ask "  App domain (e.g. app.yourdomain.com): " APP_DOMAIN
-  [ -n "$DB_DOMAIN" ]  || ask "  DB domain  (e.g. db.yourdomain.com):  " DB_DOMAIN
+  [ -n "$APP_DOMAIN" ] || ask "  App domain (e.g. app.yourdomain.example): " APP_DOMAIN
+  [ -n "$DB_DOMAIN" ]  || ask "  DB domain  (e.g. db.yourdomain.example):  " DB_DOMAIN
   [ -n "$ACME_EMAIL" ] || ask "  Email for Let's Encrypt (optional, Enter to skip): " ACME_EMAIL
 fi
 [ -n "$APP_DOMAIN" ] && [ -n "$DB_DOMAIN" ] || { echo "✗ App and DB domain are required."; exit 1; }
@@ -84,11 +84,16 @@ elif [ "$IS_TTY" = "1" ]; then
 fi
 if [ "$DO_ACCOUNTS" = "1" ]; then
   echo "── PocketBase superuser (manages the database at /_/) ──"
-  [ -n "$SU_EMAIL" ]   || ask        "  Superuser email:      " SU_EMAIL "admin@${DB_DOMAIN}"
+  # No preset address on purpose: this repo is public, and a built-in admin address both
+  # reveals the account name and invites leaving it unchanged.
+  [ -n "$SU_EMAIL" ]   || ask        "  Superuser email:      " SU_EMAIL
   [ -n "$SU_PASS" ]    || ask_secret "  Superuser password:   " SU_PASS
   echo "── First app admin (your login INSIDE the app) ──"
   [ -n "$ADMIN_EMAIL" ]|| ask        "  App admin email:      " ADMIN_EMAIL
   [ -n "$ADMIN_PASS" ] || ask_secret "  App admin password:   " ADMIN_PASS
+  # Without a default, an empty answer must not silently create a broken account.
+  [ -n "$SU_EMAIL" ]    || { echo "✗ ABORT – superuser email is empty. Enter it at the prompt or pass PB_SU_EMAIL=… ." >&2; exit 1; }
+  [ -n "$ADMIN_EMAIL" ] || { echo "✗ ABORT – app admin email is empty. Enter it at the prompt or pass APP_ADMIN_EMAIL=… ." >&2; exit 1; }
 fi
 
 echo

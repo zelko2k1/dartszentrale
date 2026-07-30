@@ -23,7 +23,7 @@ Jedes Skript trägt dieselbe Markierung auch im Kopf (`[ PRODUKTIV / OPS ]` / `[
 
 **Produktiv immer mit eigenem Ziel + starkem Passwort**, z. B.:
 ```bash
-PB_URL=https://db.deinverein.de PB_SU_EMAIL=… PB_SU_PASS='<stark>' node provision.mjs
+PB_URL=https://db.deinverein.example PB_SU_EMAIL=… PB_SU_PASS='<stark>' node provision.mjs
 ```
 
 > **Docker-/Arcane-Betrieb:** Dort wird das Schema **automatisch aus `pb_migrations/`** angewendet
@@ -36,8 +36,9 @@ PB_URL=https://db.deinverein.de PB_SU_EMAIL=… PB_SU_PASS='<stark>' node provis
 |---|---|
 | `demo-seed.mjs` | Frische Demo-DB „Dartverein Demo" (20 Mitglieder, 2 Mannschaften, 2 Ligen, Spielplan). Legt **keinen** Admin an. |
 
-Diese legen Konten mit dem **öffentlichen Default-Passwort** an und sind ausschließlich für lokale
-Entwicklung/Demos. Der Guard verhindert sie gegen Nicht-localhost-Ziele.
+Diese legen Konten mit dem Passwort aus `MEMBER_PW` an (Pflicht-Angabe aus der Umgebung — im Repo
+steht kein Default) und sind ausschließlich für lokale Entwicklung/Demos. Der Guard verhindert
+bekannte Alt-Passwörter gegen Nicht-localhost-Ziele.
 
 ## 🔒 Interner Helfer (nicht direkt ausführen)
 
@@ -49,7 +50,8 @@ Entwicklung/Demos. Der Guard verhindert sie gegen Nicht-localhost-Ziele.
 
 | Datei | Zweck |
 |---|---|
-| `seed-remote.sh` | Bequemer Wrapper, um ein Demo-Seed gegen eine entfernte PB zu fahren. Enthält Zugangsdaten → **nie committen**, Passwort per Env/Prompt statt Literal. |
+| `seed-remote.sh` | Bequemer Wrapper, um ein Demo-Seed gegen eine entfernte PB zu fahren. Enthält **keine** Zugangsdaten mehr — Ziel und Konto kommen aus `.env.local`. |
+| `.env.local` | Deine Zugangsdaten für alle Skripte: `PB_URL`, `PB_SU_EMAIL`, `PB_SU_PASS`, `MEMBER_PW`, `BOARD_EMAIL`, `BOARD_PW`, `USER_EMAIL`. Wird automatisch geladen (`_env.mjs`). |
 
 ---
 

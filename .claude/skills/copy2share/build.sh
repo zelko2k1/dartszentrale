@@ -188,7 +188,7 @@ zeigen auf die Server-IP. Details + Sicherheit: docs/de/admin-anleitung-cloud.md
 (English: docs/admin-guide-cloud.md), Go-live-Checkliste: docs/de/go-live-checkliste-cloud.md.
 
 BOARD-KIOSK (jeder Board-PC oeffnet die App beim Anmelden automatisch im Vollbild):
-  Auf jedem Board-PC EINMAL ausfuehren (fragt nach der App-Adresse, z. B. https://app.dein-verein.de):
+  Auf jedem Board-PC EINMAL ausfuehren (fragt nach der App-Adresse, z. B. https://app.dein-verein.example):
     Windows -> Doppelklick board-kiosk-chrome.bat   ODER  board-kiosk-firefox.bat
     Linux   -> ./board-kiosk-chrome.sh              ODER  ./board-kiosk-firefox.sh
   Danach EINMAL mit dem BOARD-Konto anmelden - es bleibt ueber Neustarts angemeldet

@@ -1,14 +1,14 @@
 // ═══════ [ PRODUKTIV / OPS ] — für den Produktivbetrieb gedacht ═══════
 // Exportiert eine Saison als JSON-Bundle (Wegsicherung / Re-Import-Grundlage / Grafana-Feed).
 // Aufruf:  SEASON_NAME="2025/26" node season-export.mjs        (oder SEASON_ID=...)
-// Cloud:   PB_URL=https://db.deinverein.de PB_SU_EMAIL=… PB_SU_PASS=… SEASON_NAME="2025/26" node season-export.mjs
+// Cloud:   PB_URL=https://db.deinverein.example PB_SU_EMAIL=… PB_SU_PASS=… SEASON_NAME="2025/26" node season-export.mjs
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
 import { writeFileSync } from 'fs';
 import { assertSafePassword } from './_security-guard.mjs';
-import { requireSecret } from './_env.mjs';
+import { requireSecret, requireValue } from './_env.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
-const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartszentrale.local';
+const SU_EMAIL = requireValue('PB_SU_EMAIL', 'die E-Mail des PocketBase-Superusers (Konsole /_/)');
 const SU_PASS = requireSecret('PB_SU_PASS', 'das Superuser-Passwort der PocketBase (Konsole /_/)');
 const SEASON_ID = process.env.SEASON_ID || '';
 const SEASON_NAME = process.env.SEASON_NAME || '';

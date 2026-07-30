@@ -321,7 +321,7 @@ export default function App() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
             </button>
             {isVerein && s.settings.clubLogo
-              ? <img src={s.settings.clubLogo} alt="Vereinslogo" style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', objectFit: 'contain', flexShrink: 0 }} />
+              ? <img src={s.settings.clubLogo} alt={tr.sidebar.clubLogoAlt} style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', objectFit: 'contain', flexShrink: 0 }} />
               : <Logo size={30} />}
             <div style={{ fontWeight: 800, fontSize: 'var(--fs-lead)', letterSpacing: '-.01em' }}>DartsZentrale</div>
           </header>

@@ -98,13 +98,13 @@ printf 'VITE_PB_URL=http://127.0.0.1:8090\n' > ~/dartszentrale/app/.env.local
 ```bash
 # Linux
 cd ~/dartszentrale/pocketbase
-./pocketbase superuser upsert admin@dartszentrale.local "$PB_SU_PASS" --dir ./pb_data
+./pocketbase superuser upsert "$PB_SU_EMAIL" "$PB_SU_PASS" --dir ./pb_data
 ./pocketbase serve --automigrate=0 --http=127.0.0.1:8090 --dir ./pb_data
 ```
 ```powershell
 # Windows
 cd C:\dartszentrale\pocketbase
-.\pocketbase.exe superuser upsert admin@dartszentrale.local "$env:PB_SU_PASS" --dir .\pb_data
+.\pocketbase.exe superuser upsert "$env:PB_SU_EMAIL" "$env:PB_SU_PASS" --dir .\pb_data
 .\pocketbase.exe serve --automigrate=0 --http=127.0.0.1:8090 --dir .\pb_data
 ```
 > PocketBase creates `pb_data/` and `pb_migrations/` on its own.
@@ -290,13 +290,12 @@ Runs at http://127.0.0.1:8090 · admin console: **http://127.0.0.1:8090/_/**
 
 **First start — create the superuser (DB admin)** (needed only once). Either via CLI *before* the `serve`:
 ```bash
-./pocketbase superuser upsert admin@dartszentrale.local "$PB_SU_PASS" --dir ./pb_data
+./pocketbase superuser upsert "$PB_SU_EMAIL" "$PB_SU_PASS" --dir ./pb_data
 ```
 …or fill in the form shown in the browser under `/_/`.
-> The scripts require `PB_SU_PASS` (and optionally `PB_SU_EMAIL`) from the environment — this repo
-> deliberately ships **no** passwords. Easiest: put them once into `pocketbase/.env.local`
-> (never committed); the scripts load that file themselves. Old line kept for context:
-> credentials, or prepend `PB_SU_EMAIL`/`PB_SU_PASS`.
+> The scripts require both `PB_SU_EMAIL` and `PB_SU_PASS` from the environment — this repo
+> deliberately ships **neither** passwords **nor** account addresses. Easiest: put them once into
+> `pocketbase/.env.local` (never committed); the scripts load that file themselves.
 
 **Stopping:** Ctrl+C in the PocketBase terminal. Data stays in the `pb_data/` folder.
 
@@ -312,9 +311,10 @@ exists yet — interactively asks for the first app admin's email + password
 **Run again after every `git pull`** in case the schema changed
 (an existing admin is left untouched).
 
-> **Dev convention:** If you want to use the demo scripts/test logins below 1:1, type
-> `chef@dartszentrale.local` with the password from `APP_ADMIN_PASS` at the prompt — then `demo-seed*.mjs` and the
-> test-login table line up. (This is just a local recommendation, not a hard-wired account.)
+> **Dev tip:** The address you type at the prompt is *yours* — this repo deliberately ships no
+> default. So the maintenance scripts (`reset-password.mjs`, `reset-2fa.mjs`) don't ask for it
+> every time, put it into `pocketbase/.env.local` once as `USER_EMAIL` (together with
+> `PB_SU_EMAIL`/`PB_SU_PASS`).
 
 ### 3. Load Test Data
 ```bash
@@ -347,18 +347,26 @@ npm run dev
 ```
 Open **http://localhost:5173** and sign in.
 
-### Test Logins (demo accounts from `demo-seed*.mjs`, all using the password from `MEMBER_PW`)
-| Role | Email |
-|------|-------|
-| Admin | the admin chosen at the `provision.mjs` prompt (dev convention: `chef@dartszentrale.local`) |
-| Captain | `sandra.koester@sv-adler.de` |
-| Player | `daniel.weber@sv-adler.de` |
-| Viewer (read only) | `schriftfuehrung@sv-adler.de` |
-| Inactive (login blocked) | `t.reiter@web.de` |
-| PocketBase console | `admin@dartszentrale.local` / your `PB_SU_PASS` |
+### Test Logins
 
-> ⚠️ **This repository contains no passwords — not even for local setup.** The scripts require them
-> from the environment (`PB_SU_PASS`, `APP_ADMIN_PASS`, `MEMBER_PW`, `BOARD_PW`) and abort with
+There are **no** fixed test accounts in this repo. Who signs in with what follows from whatever
+you created yourself:
+
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | the address chosen at the `provision.mjs` prompt (or `APP_ADMIN_EMAIL`) | `APP_ADMIN_PASS` |
+| Captain / player (demo members) | `<first>.<last>@dartverein-demo.example` | `MEMBER_PW` |
+| Board account (kiosk) | your `BOARD_EMAIL` | `BOARD_PW` |
+| PocketBase console | your `PB_SU_EMAIL` | `PB_SU_PASS` |
+
+`demo-seed.mjs` creates 20 members following the `<first>.<last>@dartverein-demo.example` pattern —
+all with the password from `MEMBER_PW`. Two of them are captains (1st and 2nd team), the rest are
+players; **the seed creates no viewer and no inactive account** (those roles exist, you can assign
+them in user management). The seed prints the exact addresses when it finishes.
+
+> ⚠️ **This repository contains no passwords and no account addresses — not even for local setup.**
+> The scripts require both from the environment — passwords via `PB_SU_PASS`, `APP_ADMIN_PASS`,
+> `MEMBER_PW`, `BOARD_PW`, accounts via `PB_SU_EMAIL`, `USER_EMAIL`, `BOARD_EMAIL` — and abort with
 > instructions if anything is missing. Easiest: put them once into `pocketbase/.env.local` — the file
 > is never committed and the scripts load it themselves.
 >
@@ -406,11 +414,11 @@ the cloud, prepend `PB_URL`, `PB_SU_EMAIL`, `PB_SU_PASS` as environment variable
 cd ~/dartszentrale/pocketbase
 
 node provision.mjs                                   # simple call
-USER_EMAIL=chef@dartszentrale.local NEW_PW="abc12345" node reset-password.mjs   # with variables
+USER_EMAIL=your-account@example.invalid NEW_PW="abc12345" node reset-password.mjs   # with variables
 node season-import.mjs dartszentrale-saison-2024-25.json  # with a file argument
 
 # against a cloud instance instead of local:
-PB_URL=https://db.yourdomain.com PB_SU_EMAIL=admin@… PB_SU_PASS=… MEMBER_PW=… node demo-seed.mjs
+PB_URL=https://db.yourdomain.example PB_SU_EMAIL=admin@… PB_SU_PASS=… MEMBER_PW=… node demo-seed.mjs
 ```
 
 `VAR=value node script.mjs` sets an environment variable for this one call only.

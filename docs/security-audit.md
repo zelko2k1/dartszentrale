@@ -162,7 +162,7 @@ ob die Kaderliste weiter eingeschränkt werden soll.
 
 ```caddyfile
 # (optional) globale Optionen — E-Mail für Zertifikats-Benachrichtigungen:
-# { email du@deinedomain.de }
+# { email du@deinedomain.example }
 
 # ── Basis-Security-Header (Befund #9/#13) — HSTS aktiv, da Caddy nur HTTPS ausliefert ──
 (security_headers) {
@@ -176,20 +176,20 @@ ob die Kaderliste weiter eingeschränkt werden soll.
 }
 
 # ── Frontend (systemd: darts-web.service auf 127.0.0.1:4173) ──
-app.deinedomain.de {
+app.deinedomain.example {
 	encode zstd gzip
 	import security_headers
 	header X-Frame-Options "DENY"           # App wird nirgends eingebettet
 
 	# #9 CSP — DEPLOYMENT-SPEZIFISCH, ERST nach Test einkommentieren.
 	# connect-src MUSS die PB-Domain enthalten, sonst schlägt jeder API-Call fehl.
-	# header Content-Security-Policy "default-src 'self'; connect-src 'self' https://db.deinedomain.de; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+	# header Content-Security-Policy "default-src 'self'; connect-src 'self' https://db.deinedomain.example; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
 
 	reverse_proxy 127.0.0.1:4173
 }
 
 # ── PocketBase (systemd: darts-pocketbase.service auf 127.0.0.1:8090) ──
-db.deinedomain.de {
+db.deinedomain.example {
 	encode zstd gzip
 	import security_headers
 	header X-Frame-Options "SAMEORIGIN"     # PB-Admin-UI /_/ nutzt ggf. eigene Frames

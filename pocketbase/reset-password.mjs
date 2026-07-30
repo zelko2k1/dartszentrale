@@ -3,27 +3,30 @@
 // Rettungsanker, falls sich der (einzige) App-Admin ausgesperrt hat — der Superuser ist davon unabhängig.
 // Reaktiviert das Konto zugleich (active=true), damit ein deaktiviertes Admin-Konto nicht aussperrt.
 //
-// Aufruf (lokal, setzt chef@dartszentrale.local zurück):
-//   USER_EMAIL=chef@dartszentrale.local NEW_PW="neues-pw-min-8" node reset-password.mjs
+// Aufruf (lokal):
+//   PB_SU_EMAIL=… PB_SU_PASS=… USER_EMAIL=<konto> NEW_PW="neues-pw-min-8" node reset-password.mjs
 // Cloud:
-//   PB_URL=https://db.deinverein.de PB_SU_EMAIL=… PB_SU_PASS=… USER_EMAIL=admin@deinverein.de NEW_PW=… node reset-password.mjs
+//   PB_URL=https://db.deinverein.example PB_SU_EMAIL=… PB_SU_PASS=… USER_EMAIL=<konto> NEW_PW=… node reset-password.mjs
+//
+// Konto-Adressen haben bewusst keine Vorgabe (öffentliches Repo) — USER_EMAIL ist Pflicht.
+// Bequemer Weg: PB_SU_EMAIL/PB_SU_PASS einmalig in pocketbase/.env.local hinterlegen.
 //
 // Falls auch das Superuser-Passwort weg ist, vorher per CLI neu setzen:
 //   ./pocketbase superuser upsert <su-email> "<neues-su-pw>" --dir ./pb_data
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
 import { assertSafePassword, isWeakDefault } from './_security-guard.mjs';
-import { requireSecret } from './_env.mjs';
+import { requireSecret, requireValue } from './_env.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
-const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartszentrale.local';
+const SU_EMAIL = requireValue('PB_SU_EMAIL', 'die E-Mail des PocketBase-Superusers (Konsole /_/)');
 const SU_PASS = requireSecret('PB_SU_PASS', 'das Superuser-Passwort der PocketBase (Konsole /_/)');
-const USER_EMAIL = process.env.USER_EMAIL || 'chef@dartszentrale.local';
+const USER_EMAIL = requireValue('USER_EMAIL', 'die E-Mail des Kontos, dessen Passwort zurückgesetzt wird');
 const NEW_PW = process.env.NEW_PW; // Pflicht – kein Default mehr (Sicherheits-Audit #11).
 
 // #11: NEW_PW ist verpflichtend; kein stiller Rückfall auf ein bekanntes Default-Passwort.
 if (!NEW_PW) {
   console.error('FEHLER: NEW_PW ist nicht gesetzt. Bitte explizit ein neues Passwort vorgeben:');
-  console.error('  USER_EMAIL=chef@dartszentrale.local NEW_PW="dein-neues-pw-min-8" node reset-password.mjs');
+  console.error('  USER_EMAIL=<konto> NEW_PW="dein-neues-pw-min-8" node reset-password.mjs');
   process.exit(1);
 }
 if (NEW_PW.length < 8) {

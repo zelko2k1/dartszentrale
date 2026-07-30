@@ -115,15 +115,18 @@ export function seedTeams(players: Player[]): Team[] {
   ];
 }
 
+// Demo-Konten des Lokal-Modus — auch in der öffentlichen Browser-Demo sichtbar.
+// Adressen daher ausschließlich auf `example.com` (per RFC 2606 reserviert): erfundene Personen
+// an einer echten Provider-Domain (web.de, gmx.de, Vereinsdomain) sehen aus wie fremde Konten.
 export function seedAccounts(players: Player[]): Account[] {
   const lp = players;
   return [
-    { id: uid(), first: 'Markus', last: 'Krüger', name: 'Markus Krüger', email: 'vorstand@sv-adler.de', role: 'admin', playerId: null, active: true, avi: 0, last_login: 'vor 2 Std.', position: '1. Vorsitzender' },
-    { id: uid(), first: lp[0] ? firstName(lp[0].name) : 'Kapitän', last: lp[0] ? lastName(lp[0].name) : '', name: lp[0] ? lp[0].name : 'Kapitän', email: 'kapitaen@sv-adler.de', role: 'captain', playerId: lp[0] ? lp[0].id : null, active: true, avi: 2, last_login: 'Gestern', position: 'Mannschaftsführer' },
-    { id: uid(), first: lp[1] ? firstName(lp[1].name) : 'Spieler', last: lp[1] ? lastName(lp[1].name) : '', name: lp[1] ? lp[1].name : 'Spieler', email: 'spieler2@sv-adler.de', role: 'player', playerId: lp[1] ? lp[1].id : null, active: true, avi: 1, last_login: 'vor 4 Tagen', position: '' },
-    { id: uid(), first: 'Jens', last: 'Hofer', name: 'Jens Hofer', email: 'j.hofer@web.de', role: 'player', playerId: null, active: true, avi: 4, last_login: '—', position: '' },
-    { id: uid(), first: 'Petra', last: 'Lang', name: 'Petra Lang', email: 'schriftfuehrung@sv-adler.de', role: 'viewer', playerId: null, active: true, avi: 5, last_login: 'vor 1 Woche', position: 'Schriftführerin' },
-    { id: uid(), first: 'Tobias', last: 'Reiter', name: 'Tobias Reiter', email: 't.reiter@gmx.de', role: 'player', playerId: null, active: false, avi: 3, last_login: 'vor 2 Monaten', position: 'Kassenwart' },
+    { id: uid(), first: 'Markus', last: 'Krüger', name: 'Markus Krüger', email: 'vorstand@example.com', role: 'admin', playerId: null, active: true, avi: 0, last_login: 'vor 2 Std.', position: '1. Vorsitzender' },
+    { id: uid(), first: lp[0] ? firstName(lp[0].name) : 'Kapitän', last: lp[0] ? lastName(lp[0].name) : '', name: lp[0] ? lp[0].name : 'Kapitän', email: 'kapitaen@example.com', role: 'captain', playerId: lp[0] ? lp[0].id : null, active: true, avi: 2, last_login: 'Gestern', position: 'Mannschaftsführer' },
+    { id: uid(), first: lp[1] ? firstName(lp[1].name) : 'Spieler', last: lp[1] ? lastName(lp[1].name) : '', name: lp[1] ? lp[1].name : 'Spieler', email: 'spieler2@example.com', role: 'player', playerId: lp[1] ? lp[1].id : null, active: true, avi: 1, last_login: 'vor 4 Tagen', position: '' },
+    { id: uid(), first: 'Jens', last: 'Hofer', name: 'Jens Hofer', email: 'j.hofer@example.com', role: 'player', playerId: null, active: true, avi: 4, last_login: '—', position: '' },
+    { id: uid(), first: 'Petra', last: 'Lang', name: 'Petra Lang', email: 'schriftfuehrung@example.com', role: 'viewer', playerId: null, active: true, avi: 5, last_login: 'vor 1 Woche', position: 'Schriftführerin' },
+    { id: uid(), first: 'Tobias', last: 'Reiter', name: 'Tobias Reiter', email: 't.reiter@example.com', role: 'player', playerId: null, active: false, avi: 3, last_login: 'vor 2 Monaten', position: 'Kassenwart' },
   ];
 }
 
