@@ -98,13 +98,13 @@ printf 'VITE_PB_URL=http://127.0.0.1:8090\n' > ~/dartszentrale/app/.env.local
 ```bash
 # Linux
 cd ~/dartszentrale/pocketbase
-./pocketbase superuser upsert admin@dartszentrale.local "dartszentrale-admin-2026" --dir ./pb_data
+./pocketbase superuser upsert admin@dartszentrale.local "$PB_SU_PASS" --dir ./pb_data
 ./pocketbase serve --automigrate=0 --http=127.0.0.1:8090 --dir ./pb_data
 ```
 ```powershell
 # Windows
 cd C:\dartszentrale\pocketbase
-.\pocketbase.exe superuser upsert admin@dartszentrale.local "dartszentrale-admin-2026" --dir .\pb_data
+.\pocketbase.exe superuser upsert admin@dartszentrale.local "$env:PB_SU_PASS" --dir .\pb_data
 .\pocketbase.exe serve --automigrate=0 --http=127.0.0.1:8090 --dir .\pb_data
 ```
 > `pb_data/` und `pb_migrations/` legt PocketBase dabei selbst an.
@@ -290,11 +290,12 @@ Läuft auf http://127.0.0.1:8090 · Verwaltungs-Konsole: **http://127.0.0.1:8090
 
 **Erster Start — Superuser (DB-Admin) anlegen** (nur einmal nötig). Entweder per CLI *vor* dem `serve`:
 ```bash
-./pocketbase superuser upsert admin@dartszentrale.local "dartszentrale-admin-2026" --dir ./pb_data
+./pocketbase superuser upsert admin@dartszentrale.local "$PB_SU_PASS" --dir ./pb_data
 ```
 …oder im Browser unter `/_/` das angezeigte Formular ausfüllen.
-> Die Skripte melden sich mit `admin@dartszentrale.local` / `dartszentrale-admin-2026` an — nimm dieselben
-> Zugangsdaten, sonst `PB_SU_EMAIL`/`PB_SU_PASS` voranstellen.
+> Die Skripte verlangen `PB_SU_PASS` (und ggf. `PB_SU_EMAIL`) aus der Umgebung — im Repo steht
+> bewusst **kein** Passwort. Am bequemsten einmalig in `pocketbase/.env.local` hinterlegen
+> (wird nicht versioniert); die Skripte laden die Datei von selbst.
 
 **Stoppen:** Strg+C im PocketBase-Terminal. Daten bleiben im Ordner `pb_data/`.
 
@@ -311,7 +312,7 @@ Legt alle Collections (inkl. `seasons`/`season_snapshots`) an und fragt — fall
 (ein vorhandener Admin bleibt unberührt).
 
 > **Dev-Konvention:** Wer die Demo-Skripte/Test-Logins unten 1:1 nutzen will, tippt beim
-> Prompt `chef@dartszentrale.local` / `dartszentrale123` — dann passen `demo-seed*.mjs` und die
+> Prompt `chef@dartszentrale.local` mit dem Passwort aus `APP_ADMIN_PASS` — dann passen `demo-seed*.mjs` und die
 > Test-Login-Tabelle zusammen. (Das ist nur eine lokale Empfehlung, kein fest verdrahtetes Konto.)
 
 ### 3. Test-Daten einspielen
@@ -345,7 +346,7 @@ npm run dev
 ```
 **http://localhost:5173** öffnen und anmelden.
 
-### Test-Logins (Demo-Konten aus `demo-seed*.mjs`, alle Passwort `dartszentrale123`)
+### Test-Logins (Demo-Konten aus `demo-seed*.mjs`, alle mit dem Passwort aus `MEMBER_PW`)
 | Rolle | E-Mail |
 |------|--------|
 | Admin | der beim `provision.mjs`-Prompt gewählte Admin (Dev-Konvention: `chef@dartszentrale.local`) |
@@ -353,13 +354,17 @@ npm run dev
 | Spieler | `daniel.weber@sv-adler.de` |
 | Betrachter (nur lesen) | `schriftfuehrung@sv-adler.de` |
 | Inaktiv (Login gesperrt) | `t.reiter@web.de` |
-| PocketBase-Konsole | `admin@dartszentrale.local` / `dartszentrale-admin-2026` |
+| PocketBase-Konsole | `admin@dartszentrale.local` / dein `PB_SU_PASS` |
 
-> ⚠️ **Diese Passwörter (`dartszentrale123`, `dartszentrale-admin-2026`) sind reine Vorgabewerte
-> für die lokale Ersteinrichtung und den Test** — sie stehen bewusst offen in der Doku. Für einen
-> echten Betrieb (LAN/Cloud) **beim ersten Login bzw. beim Anlegen eigene, starke Passwörter setzen.**
-> Ein Sicherheits-Guard (`pocketbase/_security-guard.mjs`) bricht ab, sobald ein bekannter Default
-> gegen ein nicht-lokales Ziel liefe.
+> ⚠️ **Dieses Repo enthält keine Passwörter — auch keine für die lokale Einrichtung.** Die Skripte
+> verlangen sie aus der Umgebung (`PB_SU_PASS`, `APP_ADMIN_PASS`, `MEMBER_PW`, `BOARD_PW`) und brechen
+> mit einer Anleitung ab, wenn etwas fehlt. Am bequemsten einmalig in `pocketbase/.env.local`
+> hinterlegen — die Datei wird nicht versioniert und von den Skripten selbst geladen.
+>
+> Ein Sicherheits-Guard (`pocketbase/_security-guard.mjs`) bricht zusätzlich ab, sobald ein Passwort
+> von der Sperrliste gegen ein nicht-lokales Ziel liefe. Auf der Liste stehen unter anderem die
+> Vorgabewerte, die **bis Juli 2026 im Klartext in diesem öffentlichen Repo standen** — wer sie
+> jemals produktiv verwendet hat, sollte sie als kompromittiert behandeln und ändern.
 
 ---
 

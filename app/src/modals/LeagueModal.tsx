@@ -18,8 +18,8 @@ export function LeagueModal() {
   const totalGames = (segs: LineupSegment[]) => segs.reduce((n, seg) => n + seg.count, 0);
   const presetBtn = (key: string, main: string, sub: string, on: boolean) => (
     <button key={key} onClick={() => s.setLeagueFormatPreset(key)} style={{ flex: 1, minWidth: 150, textAlign: 'left', background: on ? 'color-mix(in srgb, var(--accent) 12%, transparent)' : 'var(--btn)', border: `1.5px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, borderRadius: 'var(--radius-md)', padding: '10px 13px', cursor: 'pointer', fontFamily: 'inherit' }}>
-      <div style={{ fontSize: 13, fontWeight: 800, color: on ? 'var(--accent)' : 'var(--text)' }}>{main}</div>
-      <div style={{ fontSize: 11, color: 'var(--text-4)', marginTop: 2 }}>{sub}</div>
+      <div style={{ fontSize: 'var(--fs-sub)', fontWeight: 800, color: on ? 'var(--accent)' : 'var(--text)' }}>{main}</div>
+      <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-4)', marginTop: 2 }}>{sub}</div>
     </button>
   );
 
@@ -30,11 +30,11 @@ export function LeagueModal() {
       <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
         <div style={{ flex: 1.6 }}>
           <FieldLabel>{tr.modals.leagueName}</FieldLabel>
-          <input className="dh-input" value={m.name} onChange={(e) => s.setLeagueField('name', e.target.value)} aria-label={tr.modals.leagueName} placeholder={tr.modals.leagueNamePh} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+          <input className="dh-input" value={m.name} maxLength={60} onChange={(e) => s.setLeagueField('name', e.target.value)} aria-label={tr.modals.leagueName} placeholder={tr.modals.leagueNamePh} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 'var(--fs-body)', fontFamily: 'inherit' }} />
         </div>
         <div style={{ flex: 1 }}>
           <FieldLabel>{tr.common.season}</FieldLabel>
-          <input className="dh-input" value={m.season} onChange={(e) => s.setLeagueField('season', e.target.value)} aria-label={tr.common.season} placeholder="2025/26" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+          <input className="dh-input" value={m.season} maxLength={20} onChange={(e) => s.setLeagueField('season', e.target.value)} aria-label={tr.common.season} placeholder="2025/26" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 'var(--fs-body)', fontFamily: 'inherit' }} />
         </div>
       </div>
 
@@ -43,7 +43,7 @@ export function LeagueModal() {
         {(['league', 'cup'] as TeamKind[]).map((k) => {
           const def = TEAM_KINDS[k]; const on = m.kind === k;
           return (
-            <button key={k} onClick={() => s.setLeagueField('kind', k)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: on ? `color-mix(in srgb, ${def.color} 13%, transparent)` : 'var(--btn)', border: `1px solid ${on ? def.color : 'var(--border-2)'}`, color: on ? def.color : 'var(--text-3)', borderRadius: 'var(--radius-md)', padding: '10px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button key={k} onClick={() => s.setLeagueField('kind', k)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: on ? `color-mix(in srgb, ${def.color} 13%, transparent)` : 'var(--btn)', border: `1px solid ${on ? def.color : 'var(--border-2)'}`, color: on ? def.color : 'var(--text-3)', borderRadius: 'var(--radius-md)', padding: '10px 14px', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
               <TeamKindIcon kind={k} size={15} />
               {k === 'cup' ? tr.modals.cup : tr.modals.league}
             </button>
@@ -61,30 +61,30 @@ export function LeagueModal() {
         <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
           <div style={{ flex: 1 }}>
             <FieldLabel note={tr.modals.perMatch}>{tr.modals.singles}</FieldLabel>
-            <input className="dh-input" type="number" min={0} max={12} value={m.singlesCount} onChange={(e) => s.setLeagueCount('singlesCount', parseInt(e.target.value, 10) || 0)} aria-label={tr.modals.singles} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+            <input className="dh-input" type="number" min={0} max={12} value={m.singlesCount} onChange={(e) => s.setLeagueCount('singlesCount', parseInt(e.target.value, 10) || 0)} aria-label={tr.modals.singles} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 'var(--fs-body)', fontFamily: 'inherit' }} />
           </div>
           <div style={{ flex: 1 }}>
             <FieldLabel note={tr.modals.perMatch}>{tr.modals.doubles}</FieldLabel>
-            <input className="dh-input" type="number" min={0} max={12} value={m.doublesCount} onChange={(e) => s.setLeagueCount('doublesCount', parseInt(e.target.value, 10) || 0)} aria-label={tr.modals.doubles} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
+            <input className="dh-input" type="number" min={0} max={12} value={m.doublesCount} onChange={(e) => s.setLeagueCount('doublesCount', parseInt(e.target.value, 10) || 0)} aria-label={tr.modals.doubles} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 'var(--fs-body)', fontFamily: 'inherit' }} />
           </div>
         </div>
       ) : (
-        <div style={{ fontSize: 12, color: 'var(--text-4)', marginBottom: 18, lineHeight: 1.5 }}>
+        <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', marginBottom: 18, lineHeight: 1.5 }}>
           {tr.modals.flow}{m.format.map((seg) => `${seg.count} ${seg.kind === 'singles' ? tr.modals.singles : tr.modals.doubles}`).join(' → ')}
         </div>
       )}
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <label style={{ fontSize: 12, color: 'var(--text-3)', fontWeight: 700 }}>{tr.modals.teamsInLeague}</label>
-        <span style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600 }}>{m.teams.length}</span>
+        <label style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-3)', fontWeight: 700 }}>{tr.modals.teamsInLeague}</label>
+        <span style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 600 }}>{m.teams.length}</span>
       </div>
-      {m.teams.length === 0 && <div style={{ background: 'var(--btn)', border: '1px dashed var(--border-strong)', borderRadius: 'var(--radius-md)', padding: 18, textAlign: 'center', color: 'var(--text-4)', fontSize: 13, marginBottom: 12 }}>{tr.modals.addTeamsHint}</div>}
+      {m.teams.length === 0 && <div style={{ background: 'var(--btn)', border: '1px dashed var(--border-strong)', borderRadius: 'var(--radius-md)', padding: 18, textAlign: 'center', color: 'var(--text-4)', fontSize: 'var(--fs-sub)', marginBottom: 12 }}>{tr.modals.addTeamsHint}</div>}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
         {m.teams.map((t) => (
           <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <input className="dh-input" value={t.name} onChange={(e) => s.setLeagueTeamName(t.id, e.target.value)} placeholder={tr.modals.teamNamePh} aria-label={tr.modals.teamNamePh} style={{ flex: 1, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '10px 12px', color: 'var(--text)', fontSize: 14, fontFamily: 'inherit' }} />
-            <button onClick={() => s.toggleLeagueTeamOwn(t.id)} title={tr.modals.ownTitle} style={{ display: 'flex', alignItems: 'center', gap: 6, background: t.own ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--btn)', border: `1px solid ${t.own ? 'var(--accent)' : 'var(--border-2)'}`, color: t.own ? 'var(--accent)' : 'var(--text-4)', padding: '9px 12px', borderRadius: 'var(--radius-md)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+            <input className="dh-input" value={t.name} maxLength={60} onChange={(e) => s.setLeagueTeamName(t.id, e.target.value)} placeholder={tr.modals.teamNamePh} aria-label={tr.modals.teamNamePh} style={{ flex: 1, boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '10px 12px', color: 'var(--text)', fontSize: 'var(--fs-body)', fontFamily: 'inherit' }} />
+            <button onClick={() => s.toggleLeagueTeamOwn(t.id)} title={tr.modals.ownTitle} style={{ display: 'flex', alignItems: 'center', gap: 6, background: t.own ? 'color-mix(in srgb, var(--accent) 14%, transparent)' : 'var(--btn)', border: `1px solid ${t.own ? 'var(--accent)' : 'var(--border-2)'}`, color: t.own ? 'var(--accent)' : 'var(--text-4)', padding: '9px 12px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-meta)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
               {tr.modals.ownBadge}
             </button>
@@ -94,15 +94,15 @@ export function LeagueModal() {
           </div>
         ))}
       </div>
-      <button onClick={() => s.addLeagueTeam()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'transparent', border: '1px dashed var(--border-strong)', color: 'var(--text-3)', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 22 }}>
+      <button onClick={() => s.addLeagueTeam()} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'transparent', border: '1px dashed var(--border-strong)', color: 'var(--text-3)', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 22 }}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
         {tr.modals.addTeam}
       </button>
 
       <div style={{ borderTop: '1px solid var(--hairline)', paddingTop: 16, marginBottom: 20 }}>
         <FieldLabel note={tr.modals.optional}>{tr.modals.nuligaUrl}</FieldLabel>
-        <input className="dh-input" value={m.nuligaUrl} onChange={(e) => s.setLeagueField('nuligaUrl', e.target.value)} aria-label={tr.modals.nuligaUrl} placeholder="https://…liga.nu/…/groupPage?championship=…&group=…" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit' }} />
-        <div style={{ fontSize: 11.5, color: 'var(--text-4)', marginTop: 7, lineHeight: 1.5 }}>
+        <input className="dh-input" value={m.nuligaUrl} maxLength={300} onChange={(e) => s.setLeagueField('nuligaUrl', e.target.value)} aria-label={tr.modals.nuligaUrl} placeholder="https://…liga.nu/…/groupPage?championship=…&group=…" style={{ width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '12px 14px', color: 'var(--text)', fontSize: 'var(--fs-sub)', fontFamily: 'inherit' }} />
+        <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', marginTop: 7, lineHeight: 1.5 }}>
           {tr.modals.nuligaHintA}<b>{tr.modals.nuligaHintB}</b>{tr.modals.nuligaHintC}
         </div>
       </div>

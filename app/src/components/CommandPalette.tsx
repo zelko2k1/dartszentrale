@@ -78,15 +78,15 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
             return (
               <button key={c.label} role="option" aria-selected={isHi} ref={isHi ? (el) => el?.scrollIntoView({ block: 'nearest' }) : undefined}
                 onClick={c.run} onMouseMove={() => setHi(i)}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, width: '100%', textAlign: 'left', padding: '11px 12px', borderRadius: 'var(--radius-md)', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, fontWeight: 600, background: isHi ? `color-mix(in srgb, ${accent} 16%, transparent)` : 'transparent', color: isHi ? 'var(--text)' : 'var(--text-2)' }}>
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, width: '100%', textAlign: 'left', padding: '11px 12px', borderRadius: 'var(--radius-md)', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'var(--fs-body)', fontWeight: 600, background: isHi ? `color-mix(in srgb, ${accent} 16%, transparent)` : 'transparent', color: isHi ? 'var(--text)' : 'var(--text-2)' }}>
                 <span>{c.label}</span>
-                {c.hint && <span style={{ fontFamily: 'var(--font-num)', fontSize: 11, fontWeight: 700, color: 'var(--text-4)' }}>{c.hint}</span>}
+                {c.hint && <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-badge)', fontWeight: 700, color: 'var(--text-4)' }}>{c.hint}</span>}
               </button>
             );
           })}
-          {!items.length && <div style={{ padding: '14px 12px', fontSize: 13, color: 'var(--text-4)' }}>{tr.palette.noMatch}</div>}
+          {!items.length && <div style={{ padding: '14px 12px', fontSize: 'var(--fs-sub)', color: 'var(--text-4)' }}>{tr.palette.noMatch}</div>}
         </div>
-        <div style={{ padding: '8px 12px', borderTop: '1px solid var(--hairline)', fontSize: 11, color: 'var(--text-4)', display: 'flex', gap: 14, fontFamily: 'var(--font-num)' }}>
+        <div style={{ padding: '8px 12px', borderTop: '1px solid var(--hairline)', fontSize: 'var(--fs-badge)', color: 'var(--text-4)', display: 'flex', gap: 14, fontFamily: 'var(--font-num)' }}>
           <span>{tr.palette.selectHint}</span><span>{tr.palette.openHint}</span><span>{tr.palette.escHint}</span>
         </div>
       </div>

@@ -13,10 +13,11 @@
 //   ./pocketbase superuser upsert <su-email> "<neues-su-pw>" --dir ./pb_data
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
 import { assertSafePassword } from './_security-guard.mjs';
+import { requireSecret } from './_env.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
 const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartszentrale.local';
-const SU_PASS = process.env.PB_SU_PASS || 'dartszentrale-admin-2026';
+const SU_PASS = requireSecret('PB_SU_PASS', 'das Superuser-Passwort der PocketBase (Konsole /_/)');
 const USER_EMAIL = process.env.USER_EMAIL || 'chef@dartszentrale.local';
 
 // Sicherheits-Guard: kein bekanntes Default-Superuser-Passwort gegen ein nicht-lokales Ziel.

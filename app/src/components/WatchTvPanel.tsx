@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { qrSvg } from '../lib/qrcode';
+import { useT, dict } from '../i18n';
 
 const ACCENT = 'var(--accent)';
 
@@ -15,12 +16,13 @@ export function WatchTvPanel() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [copied, setCopied] = useState(false);
+  const tr = useT();
 
   useEffect(() => {
     let alive = true;
     provider.watchGetConfig()
       .then((c) => { if (alive) { setEnabled(c.enabled); setToken(c.token); setLoaded(true); } })
-      .catch((e) => { if (alive) { setErr(e instanceof Error ? e.message : 'Fehler'); setLoaded(true); } });
+      .catch((e) => { if (alive) { setErr(e instanceof Error ? e.message : dict().watch.errLoad); setLoaded(true); } });
     return () => { alive = false; };
   }, [provider]);
 
@@ -35,13 +37,13 @@ export function WatchTvPanel() {
   async function toggle() {
     setBusy(true); setErr('');
     try { const c = await provider.watchSetEnabled(!enabled); setEnabled(c.enabled); setToken(c.token); }
-    catch (e) { setErr(e instanceof Error ? e.message : 'Fehler'); }
+    catch (e) { setErr(e instanceof Error ? e.message : tr.watch.errSave); }
     finally { setBusy(false); }
   }
   async function rotate() {
     setBusy(true); setErr(''); setCopied(false);
     try { const c = await provider.watchRotate(); setEnabled(c.enabled); setToken(c.token); }
-    catch (e) { setErr(e instanceof Error ? e.message : 'Fehler'); }
+    catch (e) { setErr(e instanceof Error ? e.message : tr.watch.errSave); }
     finally { setBusy(false); }
   }
   function copy() {
@@ -50,36 +52,38 @@ export function WatchTvPanel() {
   }
 
   const card: React.CSSProperties = { border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: 16, marginTop: 12, background: 'var(--surface-2, var(--surface))' };
-  const btn: React.CSSProperties = { background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: busy ? 'default' : 'pointer', fontFamily: 'inherit', opacity: busy ? 0.6 : 1 };
+  const btn: React.CSSProperties = { background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', padding: '9px 14px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: busy ? 'default' : 'pointer', fontFamily: 'inherit', opacity: busy ? 0.6 : 1 };
 
   return (
     <div style={card}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 800, fontSize: 15 }}>Öffentlicher Zuschauer-TV</div>
-          <div style={{ fontSize: 12, color: 'var(--text-3)', lineHeight: 1.5, marginTop: 2 }}>
-            Login-freier Link für einen Zuschauer-Bildschirm (z. B. Nebenraum). Zeigt nur Boardname + Spielstand.
-            Im Internet standardmäßig aus — bewusst einschalten. Der Link folgt automatisch dem laufenden Spiel.
+          <div style={{ fontWeight: 800, fontSize: 'var(--fs-lead)' }}>{tr.watch.panelTitle}</div>
+          <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-3)', lineHeight: 1.5, marginTop: 2 }}>
+            {tr.watch.panelBody}
           </div>
         </div>
-        <button onClick={toggle} disabled={busy || !loaded} role="switch" aria-checked={enabled} aria-label="Zuschauer-TV aktivieren"
+        <button onClick={toggle} disabled={busy || !loaded} role="switch" aria-checked={enabled} aria-label={tr.watch.enableLabel}
           style={{ flexShrink: 0, width: 46, height: 26, borderRadius: 'var(--radius-pill)', background: enabled ? ACCENT : 'var(--surface-3)', border: '1px solid var(--border-2)', position: 'relative', cursor: busy ? 'default' : 'pointer', opacity: busy || !loaded ? 0.5 : 1, padding: 0 }}>
           <span style={{ position: 'absolute', top: 2, left: enabled ? 22 : 2, width: 20, height: 20, borderRadius: '50%', background: '#fff' }} />
         </button>
       </div>
 
-      {err && <div style={{ color: 'var(--danger)', fontWeight: 700, fontSize: 12, marginTop: 10 }}>{err}</div>}
+      {err && <div style={{ color: 'var(--danger)', fontWeight: 700, fontSize: 'var(--fs-meta)', marginTop: 10 }}>{err}</div>}
 
       {enabled && url && (
         <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginTop: 14, flexWrap: 'wrap' }}>
-          <img src={qrUri} alt="QR-Code für den Zuschauer-Link" style={{ width: 120, height: 120, background: '#fff', borderRadius: 'var(--radius-sm)', padding: 6, boxSizing: 'border-box', flexShrink: 0 }} />
+          <img src={qrUri} alt={tr.watch.qrAlt} style={{ width: 120, height: 120, background: '#fff', borderRadius: 'var(--radius-sm)', padding: 6, boxSizing: 'border-box', flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 200 }}>
-            <div style={{ fontSize: 12, color: 'var(--text-3)', marginBottom: 4 }}>Zuschauer-Link</div>
-            <div style={{ fontFamily: 'monospace', fontSize: 12, wordBreak: 'break-all', color: 'var(--text-2)', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)', padding: '8px 10px' }}>{url}</div>
+            <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-3)', marginBottom: 4 }}>{tr.watch.linkLabel}</div>
+            <div style={{ fontFamily: 'monospace', fontSize: 'var(--fs-meta)', wordBreak: 'break-all', color: 'var(--text-2)', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-sm)', padding: '8px 10px' }}>{url}</div>
             <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-              <button style={btn} onClick={copy}>{copied ? '✓ Kopiert' : 'Link kopieren'}</button>
-              <button style={btn} onClick={rotate}>Neu generieren</button>
+              <button style={btn} onClick={copy}>{copied ? tr.watch.copied : tr.watch.copyLink}</button>
+              <button style={btn} onClick={rotate} aria-describedby="dz-watch-rotate-hint">{tr.watch.regenerate}</button>
             </div>
+            {/* Die Folge steht sichtbar dabei, nicht im title: das Panel wird am Tablet bedient,
+                wo es kein Hover gibt — und ein neuer Link macht jeden geteilten Link ungültig. */}
+            <div id="dz-watch-rotate-hint" style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-4)', lineHeight: 1.45, marginTop: 8 }}>{tr.watch.regenerateHint}</div>
           </div>
         </div>
       )}

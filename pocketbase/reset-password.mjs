@@ -11,11 +11,12 @@
 // Falls auch das Superuser-Passwort weg ist, vorher per CLI neu setzen:
 //   ./pocketbase superuser upsert <su-email> "<neues-su-pw>" --dir ./pb_data
 import PocketBase from '../app/node_modules/pocketbase/dist/pocketbase.es.mjs';
-import { assertSafePassword } from './_security-guard.mjs';
+import { assertSafePassword, isWeakDefault } from './_security-guard.mjs';
+import { requireSecret } from './_env.mjs';
 
 const URL = process.env.PB_URL || 'http://127.0.0.1:8090';
 const SU_EMAIL = process.env.PB_SU_EMAIL || 'admin@dartszentrale.local';
-const SU_PASS = process.env.PB_SU_PASS || 'dartszentrale-admin-2026';
+const SU_PASS = requireSecret('PB_SU_PASS', 'das Superuser-Passwort der PocketBase (Konsole /_/)');
 const USER_EMAIL = process.env.USER_EMAIL || 'chef@dartszentrale.local';
 const NEW_PW = process.env.NEW_PW; // Pflicht – kein Default mehr (Sicherheits-Audit #11).
 
@@ -57,7 +58,7 @@ async function main() {
   const auth = await test.collection('users').authWithPassword(USER_EMAIL, NEW_PW);
   console.log(`OK Login getestet – Rolle: ${auth.record.role}, aktiv: ${auth.record.active}`);
   console.log(`\nApp-Login:  ${USER_EMAIL} / ${NEW_PW}`);
-  if (NEW_PW === 'dartszentrale123') console.log('HINWEIS: Standard-Passwort — bitte direkt in der App ändern!');
+  if (isWeakDefault(NEW_PW)) console.log('HINWEIS: Dieses Passwort steht auf der Sperrliste — bitte direkt in der App ändern!');
 }
 
 main().catch((e) => { console.error('FEHLER:', e?.response?.data ? JSON.stringify(e.response.data, null, 2) : e); process.exit(1); });

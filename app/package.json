@@ -11,8 +11,10 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:ci": "vitest run --reporter=default --reporter=json --outputFile.json=vitest-report.json && node scripts/check-no-skipped-tests.mjs",
+    "test:ci": "vitest run --reporter=default --reporter=json --outputFile.json=vitest-report.json && node scripts/check-no-skipped-tests.mjs && node scripts/validate-palette.mjs && node scripts/validate-a11y.mjs && node scripts/validate-i18n.mjs && node scripts/validate-type.mjs",
     "preview": "vite preview",
+    "e2e": "vite build && playwright test",
+    "e2e:report": "playwright show-report",
     "serve": "node serve-dist.mjs"
   },
   "dependencies": {
@@ -28,7 +30,9 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.0",
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

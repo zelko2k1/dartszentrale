@@ -36,7 +36,7 @@ export function SearchInput({
         aria-label={placeholder ?? tr.search.placeholder}
         style={{
           width: '100%', boxSizing: 'border-box', background: 'var(--btn)', border: '1px solid var(--border-2)',
-          borderRadius: 'var(--radius-md)', padding: '10px 34px', color: 'var(--text)', fontSize: 14, fontWeight: 600,
+          borderRadius: 'var(--radius-md)', padding: '10px 34px', color: 'var(--text)', fontSize: 'var(--fs-body)', fontWeight: 600,
           fontFamily: 'inherit', outline: 'none',
         }}
       />

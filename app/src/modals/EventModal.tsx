@@ -17,16 +17,16 @@ export function EventModal() {
       <ModalTitle>{m.mode === 'edit' ? tr.modals.eventEdit : tr.modals.eventNew}</ModalTitle>
 
       <FieldLabel>{tr.modals.titleLabel}</FieldLabel>
-      <input className="dh-input" value={m.title} onChange={(e) => s.setEventField('title', e.target.value)} aria-label={tr.modals.titleLabel} placeholder={tr.modals.eventTitlePh} style={{ ...inputStyle, fontSize: 15, marginBottom: 18 }} />
+      <input className="dh-input" value={m.title} maxLength={80} onChange={(e) => s.setEventField('title', e.target.value)} aria-label={tr.modals.titleLabel} placeholder={tr.modals.eventTitlePh} style={{ ...inputStyle, fontSize: 'var(--fs-lead)', marginBottom: 18 }} />
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
         <div style={{ flex: 1 }}>
           <FieldLabel>{tr.modals.date}</FieldLabel>
-          <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setEventField('date', e.target.value)} aria-label={tr.modals.date} style={{ ...inputStyle, fontSize: 14 }} />
+          <input className="dh-input" type="date" value={m.date} onChange={(e) => s.setEventField('date', e.target.value)} aria-label={tr.modals.date} style={{ ...inputStyle, fontSize: 'var(--fs-body)' }} />
         </div>
         <div style={{ width: 120 }}>
           <FieldLabel>{tr.modals.time}</FieldLabel>
-          <input className="dh-input" type="time" value={m.time} onChange={(e) => s.setEventField('time', e.target.value)} aria-label={tr.modals.time} style={{ ...inputStyle, fontSize: 14 }} />
+          <input className="dh-input" type="time" value={m.time} onChange={(e) => s.setEventField('time', e.target.value)} aria-label={tr.modals.time} style={{ ...inputStyle, fontSize: 'var(--fs-body)' }} />
         </div>
       </div>
 
@@ -35,7 +35,7 @@ export function EventModal() {
         {EVENT_TYPE_ALL.map((key) => {
           const t = EVENT_TYPES[key]; const on = m.type === key;
           return (
-            <button key={key} onClick={() => s.setEventField('type', key)} style={{ display: 'flex', alignItems: 'center', gap: 7, background: on ? `color-mix(in srgb, ${t.color} 16%, transparent)` : 'var(--btn)', border: `1px solid ${on ? t.color : 'var(--border-2)'}`, color: on ? t.color : 'var(--text-2)', fontWeight: on ? 800 : 600, padding: '9px 13px', borderRadius: 'var(--radius-md)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button key={key} onClick={() => s.setEventField('type', key)} style={{ display: 'flex', alignItems: 'center', gap: 7, background: on ? `color-mix(in srgb, ${t.color} 16%, transparent)` : 'var(--btn)', border: `1px solid ${on ? t.color : 'var(--border-2)'}`, color: on ? t.color : 'var(--text-2)', fontWeight: on ? 800 : 600, padding: '9px 13px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', cursor: 'pointer', fontFamily: 'inherit' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={t.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={t.icon} /></svg>{t.label}
             </button>
           );
@@ -43,7 +43,7 @@ export function EventModal() {
       </div>
 
       <FieldLabel note={tr.modals.optional}>{tr.modals.place}</FieldLabel>
-      <input className="dh-input" value={m.loc} onChange={(e) => s.setEventField('loc', e.target.value)} aria-label={tr.modals.place} placeholder={tr.modals.placePh} style={{ ...inputStyle, fontSize: 15, marginBottom: 18 }} />
+      <input className="dh-input" value={m.loc} maxLength={80} onChange={(e) => s.setEventField('loc', e.target.value)} aria-label={tr.modals.place} placeholder={tr.modals.placePh} style={{ ...inputStyle, fontSize: 'var(--fs-lead)', marginBottom: 18 }} />
 
       {m.mode === 'add' && (
         <>
@@ -52,22 +52,22 @@ export function EventModal() {
             {([['none', tr.modals.repeatNone], ['weekly', tr.modals.repeatWeekly], ['biweekly', tr.modals.repeatBiweekly], ['monthly', tr.modals.repeatMonthly]] as const).map(([val, label]) => {
               const on = m.repeat === val;
               return (
-                <button key={val} onClick={() => s.setEventField('repeat', val)} style={{ background: on ? 'color-mix(in srgb, var(--accent) 16%, transparent)' : 'var(--btn)', border: `1px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, color: on ? 'var(--accent)' : 'var(--text-2)', fontWeight: on ? 800 : 600, padding: '9px 13px', borderRadius: 'var(--radius-md)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
+                <button key={val} onClick={() => s.setEventField('repeat', val)} style={{ background: on ? 'color-mix(in srgb, var(--accent) 16%, transparent)' : 'var(--btn)', border: `1px solid ${on ? 'var(--accent)' : 'var(--border-2)'}`, color: on ? 'var(--accent)' : 'var(--text-2)', fontWeight: on ? 800 : 600, padding: '9px 13px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', cursor: 'pointer', fontFamily: 'inherit' }}>{label}</button>
               );
             })}
           </div>
           {m.repeat !== 'none' && (
             <div style={{ marginBottom: 24 }}>
               <FieldLabel>{tr.modals.repeatUntil}</FieldLabel>
-              <input className="dh-input" type="date" value={m.until} min={m.date} onChange={(e) => s.setEventField('until', e.target.value)} aria-label={tr.modals.repeatUntil} style={{ ...inputStyle, fontSize: 14 }} />
-              {(!m.until || m.until < m.date) && <div style={{ fontSize: 11.5, color: 'var(--warn)', marginTop: 6 }}>{tr.modals.repeatUntilWarn}</div>}
+              <input className="dh-input" type="date" value={m.until} min={m.date} onChange={(e) => s.setEventField('until', e.target.value)} aria-label={tr.modals.repeatUntil} style={{ ...inputStyle, fontSize: 'var(--fs-body)' }} />
+              {(!m.until || m.until < m.date) && <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--warn)', marginTop: 6 }}>{tr.modals.repeatUntilWarn}</div>}
             </div>
           )}
         </>
       )}
 
       {m.mode === 'edit' && m.seriesId && (
-        <button onClick={() => { if (window.confirm(tr.modals.deleteSeriesConfirm)) s.deleteEventSeries(m.seriesId!); }} style={{ width: '100%', boxSizing: 'border-box', background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 14 }}>{tr.modals.deleteSeries}</button>
+        <button onClick={() => { if (window.confirm(tr.modals.deleteSeriesConfirm)) s.deleteEventSeries(m.seriesId!); }} style={{ width: '100%', boxSizing: 'border-box', background: 'color-mix(in srgb, var(--danger) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 14 }}>{tr.modals.deleteSeries}</button>
       )}
 
       <ModalFooter

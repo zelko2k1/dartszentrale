@@ -98,13 +98,13 @@ printf 'VITE_PB_URL=http://127.0.0.1:8090\n' > ~/dartszentrale/app/.env.local
 ```bash
 # Linux
 cd ~/dartszentrale/pocketbase
-./pocketbase superuser upsert admin@dartszentrale.local "dartszentrale-admin-2026" --dir ./pb_data
+./pocketbase superuser upsert admin@dartszentrale.local "$PB_SU_PASS" --dir ./pb_data
 ./pocketbase serve --automigrate=0 --http=127.0.0.1:8090 --dir ./pb_data
 ```
 ```powershell
 # Windows
 cd C:\dartszentrale\pocketbase
-.\pocketbase.exe superuser upsert admin@dartszentrale.local "dartszentrale-admin-2026" --dir .\pb_data
+.\pocketbase.exe superuser upsert admin@dartszentrale.local "$env:PB_SU_PASS" --dir .\pb_data
 .\pocketbase.exe serve --automigrate=0 --http=127.0.0.1:8090 --dir .\pb_data
 ```
 > PocketBase creates `pb_data/` and `pb_migrations/` on its own.
@@ -290,10 +290,12 @@ Runs at http://127.0.0.1:8090 · admin console: **http://127.0.0.1:8090/_/**
 
 **First start — create the superuser (DB admin)** (needed only once). Either via CLI *before* the `serve`:
 ```bash
-./pocketbase superuser upsert admin@dartszentrale.local "dartszentrale-admin-2026" --dir ./pb_data
+./pocketbase superuser upsert admin@dartszentrale.local "$PB_SU_PASS" --dir ./pb_data
 ```
 …or fill in the form shown in the browser under `/_/`.
-> The scripts sign in with `admin@dartszentrale.local` / `dartszentrale-admin-2026` — use the same
+> The scripts require `PB_SU_PASS` (and optionally `PB_SU_EMAIL`) from the environment — this repo
+> deliberately ships **no** passwords. Easiest: put them once into `pocketbase/.env.local`
+> (never committed); the scripts load that file themselves. Old line kept for context:
 > credentials, or prepend `PB_SU_EMAIL`/`PB_SU_PASS`.
 
 **Stopping:** Ctrl+C in the PocketBase terminal. Data stays in the `pb_data/` folder.
@@ -311,7 +313,7 @@ exists yet — interactively asks for the first app admin's email + password
 (an existing admin is left untouched).
 
 > **Dev convention:** If you want to use the demo scripts/test logins below 1:1, type
-> `chef@dartszentrale.local` / `dartszentrale123` at the prompt — then `demo-seed*.mjs` and the
+> `chef@dartszentrale.local` with the password from `APP_ADMIN_PASS` at the prompt — then `demo-seed*.mjs` and the
 > test-login table line up. (This is just a local recommendation, not a hard-wired account.)
 
 ### 3. Load Test Data
@@ -345,7 +347,7 @@ npm run dev
 ```
 Open **http://localhost:5173** and sign in.
 
-### Test Logins (demo accounts from `demo-seed*.mjs`, all with password `dartszentrale123`)
+### Test Logins (demo accounts from `demo-seed*.mjs`, all using the password from `MEMBER_PW`)
 | Role | Email |
 |------|-------|
 | Admin | the admin chosen at the `provision.mjs` prompt (dev convention: `chef@dartszentrale.local`) |
@@ -353,13 +355,17 @@ Open **http://localhost:5173** and sign in.
 | Player | `daniel.weber@sv-adler.de` |
 | Viewer (read only) | `schriftfuehrung@sv-adler.de` |
 | Inactive (login blocked) | `t.reiter@web.de` |
-| PocketBase console | `admin@dartszentrale.local` / `dartszentrale-admin-2026` |
+| PocketBase console | `admin@dartszentrale.local` / your `PB_SU_PASS` |
 
-> ⚠️ **These passwords (`dartszentrale123`, `dartszentrale-admin-2026`) are purely default values
-> for local first-time setup and testing** — they are deliberately public in the docs. For
-> real operation (LAN/cloud), **set your own strong passwords at first login or when creating accounts.**
-> A security guard (`pocketbase/_security-guard.mjs`) aborts as soon as a known default
-> would run against a non-local target.
+> ⚠️ **This repository contains no passwords — not even for local setup.** The scripts require them
+> from the environment (`PB_SU_PASS`, `APP_ADMIN_PASS`, `MEMBER_PW`, `BOARD_PW`) and abort with
+> instructions if anything is missing. Easiest: put them once into `pocketbase/.env.local` — the file
+> is never committed and the scripts load it themselves.
+>
+> A security guard (`pocketbase/_security-guard.mjs`) additionally aborts as soon as a password from
+> its blocklist would run against a non-local target. That list includes the defaults that **were in
+> plaintext in this public repository until July 2026** — if you ever used them in production, treat
+> them as compromised and rotate them.
 
 ---
 

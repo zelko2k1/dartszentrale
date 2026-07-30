@@ -9,6 +9,7 @@ import {
   type TrainGame, type TrainPlayer, type StandRow,
 } from '../store/training';
 import { IconBack, IconUndo, IconX } from '../lib/icons';
+import { LiveAnnouncer } from '../components/LiveAnnouncer';
 import { comboFromEvent, formatCombo } from '../lib/shortcut';
 import { useT, dict } from '../i18n';
 
@@ -44,8 +45,8 @@ export function TrainingGame() {
   const tgt = currentTarget(g);
   const canUndo = s.trainUndo.length > 0;
 
-  const headBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 13px', borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' };
-  const hintKbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.6, background: 'rgba(0,0,0,.18)', borderRadius: 'var(--radius-xs)', padding: '1px 5px', marginLeft: 1 };
+  const headBtn: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '9px 13px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' };
+  const hintKbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 'var(--fs-badge)', fontWeight: 700, opacity: 0.6, background: 'rgba(0,0,0,.18)', borderRadius: 'var(--radius-xs)', padding: '1px 5px', marginLeft: 1 };
 
   const roundLabel = g.modeId === 'baseball' ? tr.trainingScr.inningOf(g.round)
     : g.modeId === 'halveit' ? tr.trainingScr.roundOf9(g.round)
@@ -55,12 +56,15 @@ export function TrainingGame() {
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', background: s.settings.mode === 'light' ? 'var(--bg)' : 'var(--counter-bg)', fontFamily: 'inherit' }}>
+      {/* Wie im Counter: eine Region pro Bildschirm. Trainingsspiele haben eigene Kennzahlen,
+          deshalb genügt Runde + wer dran ist + aktuelle Punkte. */}
+      <LiveAnnouncer message={cur ? tr.trainingScr.a11yTurn(cur.name, roundLabel, rows.find((r) => r.player.id === cur.id)?.primary ?? '') : ''} />
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: '1px solid var(--hairline)', background: 'var(--bar)', flexShrink: 0 }}>
         <button onClick={() => s.trainExit()} title={`${tr.trainingScr.quit} (${formatCombo(cfg.abortKey || 'alt+x')})`} style={headBtn}><IconBack size={15} sw={2} />{tr.trainingScr.quit}</button>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: '.02em' }}>{trainModeName(g.modeId)}</div>
-          <div style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>{roundLabel}</div>
+          <div style={{ fontSize: 'var(--fs-body)', fontWeight: 700, letterSpacing: '.02em' }}>{trainModeName(g.modeId)}</div>
+          <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-4)', fontWeight: 600, letterSpacing: '.06em', textTransform: 'uppercase', marginTop: 2 }}>{roundLabel}</div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={() => s.trainUndoTurn()} disabled={!canUndo} title={`Undo (${formatCombo(cfg.undoKey || 'alt+u')})`} style={{ ...headBtn, opacity: canUndo ? 1 : 0.4, cursor: canUndo ? 'pointer' : 'default' }}><IconUndo size={15} />Undo{cfg.device === 'desktop' && <span style={hintKbd}>{formatCombo(cfg.undoKey || 'alt+u')}</span>}</button>
@@ -68,8 +72,9 @@ export function TrainingGame() {
         </div>
       </div>
 
-      {/* scoreboard */}
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 14 }}>
+      {/* scoreboard — scrollt; ohne tabIndex kommt die Tastatur nicht hinein (axe:
+          scrollable-region-focusable). Der Name nennt den Bereich beim Anspringen. */}
+      <div tabIndex={0} role="region" aria-label={tr.trainingScr.scoreboard} style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 14 }}>
         {MATRIX_MODES.includes(g.modeId) ? (
           <GameBoard game={g} accent={accent} activeId={cur.id} />
         ) : (
@@ -85,13 +90,13 @@ export function TrainingGame() {
           <div style={{ maxWidth: 760, margin: '0 auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
               <span style={{ width: 9, height: 9, borderRadius: '50%', background: accent, boxShadow: `0 0 10px ${accent}`, flexShrink: 0 }} />
-              <span style={{ fontSize: 15, fontWeight: 700 }}>{cur.name}</span>
-              <span style={{ fontSize: 13, color: 'var(--text-4)' }}>{tr.trainingScr.isThrowing}</span>
+              <span style={{ fontSize: 'var(--fs-lead)', fontWeight: 700 }}>{cur.name}</span>
+              <span style={{ fontSize: 'var(--fs-sub)', color: 'var(--text-4)' }}>{tr.trainingScr.isThrowing}</span>
               {tgt && (
                 <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>{tr.trainingScr.target}</span>
-                  <span style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800, color: accent, background: `color-mix(in srgb, ${accent} 14%, transparent)`, padding: '3px 12px', borderRadius: 'var(--radius-sm)' }}>{tgt.label}</span>
-                  {tgt.hint && <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-3)' }}>{tgt.hint}</span>}
+                  <span style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>{tr.trainingScr.target}</span>
+                  <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-title)', fontWeight: 800, color: accent, background: `color-mix(in srgb, ${accent} 14%, transparent)`, padding: '3px 12px', borderRadius: 'var(--radius-sm)' }}>{tgt.label}</span>
+                  {tgt.hint && <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-meta)', color: 'var(--text-3)' }}>{tgt.hint}</span>}
                 </span>
               )}
             </div>
@@ -106,8 +111,8 @@ export function TrainingGame() {
       {s.hint?.auto && (
         <div onClick={() => s.closeHint()} style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 45, cursor: 'pointer', padding: 24 }}>
           <div style={{ background: 'var(--surface)', border: `2px solid ${accent}`, borderRadius: 'var(--radius-xl)', padding: '30px 48px', textAlign: 'center', boxShadow: `var(--shadow-card), 0 0 0 6px color-mix(in srgb, ${accent} 14%, transparent)` }}>
-            <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: '.01em', color: accent, marginBottom: 6, lineHeight: 1.1 }}>{s.hint.title}</div>
-            <div style={{ fontSize: 22, fontWeight: 800 }}>{s.hint.body}</div>
+            <div style={{ fontSize: 'var(--fs-display)', fontWeight: 800, letterSpacing: '.01em', color: accent, marginBottom: 6, lineHeight: 1.1 }}>{s.hint.title}</div>
+            <div style={{ fontSize: 'var(--fs-heading)', fontWeight: 800 }}>{s.hint.body}</div>
           </div>
         </div>
       )}
@@ -141,7 +146,7 @@ function PlayerCard({ row, active, accent }: { row: StandRow; active: boolean; a
 // ── Cricket: klassisches Marks-Raster (Felder × Spieler) ──
 // Marks-Glyph: 1 = /, 2 = X, 3 = ⊗ (geschlossen). Geschlossene Felder + aktive Spalte werden hervorgehoben.
 function MarkCell({ n, color, dim }: { n: number; color: string; dim: string }) {
-  if (n <= 0) return <span style={{ color: dim, fontSize: 13 }}>·</span>;
+  if (n <= 0) return <span style={{ color: dim, fontSize: 'var(--fs-sub)' }}>·</span>;
   const sw = 2.6;
   return (
     <svg width="26" height="26" viewBox="0 0 24 24" style={{ display: 'block' }}>
@@ -179,7 +184,7 @@ function MatrixBoard({ headLabel, cols, rows, accent, renderCell, footer }: {
     <div style={{ maxWidth: Math.min(1100, 140 + cols.length * 130), margin: '0 auto', overflowX: 'auto' }}>
       <div style={{ display: 'grid', gridTemplateColumns: grid, gap: 1, background: 'var(--border)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', minWidth: 'fit-content' }}>
         {/* Kopfzeile */}
-        <div style={{ ...cellBase, padding: '10px 0', fontSize: 10, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em' }}>{headLabel}</div>
+        <div style={{ ...cellBase, padding: '10px 0', fontSize: 'var(--fs-badge)', color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.04em' }}>{headLabel}</div>
         {cols.map((c, i) => {
           return (
             <div key={i} style={{ ...cellBase, flexDirection: 'column', gap: 4, padding: '9px 6px', background: c.active ? activeBg : 'var(--surface-2)', borderBottom: c.active ? `2px solid ${accent}` : '2px solid transparent', opacity: c.eliminated ? 0.5 : 1 }}>
@@ -198,7 +203,7 @@ function MatrixBoard({ headLabel, cols, rows, accent, renderCell, footer }: {
         {/* Zeilen */}
         {rows.map((row, r) => (
           <Fragment key={row.key}>
-            <div style={{ ...cellBase, fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: row.dim ? 'var(--text-5)' : 'var(--text-2)', textDecoration: row.dim ? 'line-through' : 'none', background: row.highlight ? rowBg : 'var(--surface-2)', whiteSpace: 'nowrap', overflow: 'hidden' }}>{row.label}</div>
+            <div style={{ ...cellBase, fontFamily: 'var(--font-num)', fontSize: 'var(--fs-sub)', fontWeight: 800, color: row.dim ? 'var(--text-5)' : 'var(--text-2)', textDecoration: row.dim ? 'line-through' : 'none', background: row.highlight ? rowBg : 'var(--surface-2)', whiteSpace: 'nowrap', overflow: 'hidden' }}>{row.label}</div>
             {cols.map((c, i) => (
               <div key={i} style={{ ...cellBase, padding: '7px 0', minHeight: 38, background: c.active ? activeBg : (row.highlight ? rowBg : 'var(--surface-2)') }}>
                 {renderCell(i, r)}
@@ -210,9 +215,9 @@ function MatrixBoard({ headLabel, cols, rows, accent, renderCell, footer }: {
         {/* Fußzeile */}
         {footer && (
           <>
-            <div style={{ ...cellBase, padding: '8px 0', fontSize: 9, color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.03em' }}>{footer.label}</div>
+            <div style={{ ...cellBase, padding: '8px 0', fontSize: 'var(--fs-badge)', color: 'var(--text-5)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.03em' }}>{footer.label}</div>
             {footer.values.map((v, i) => (
-              <div key={i} style={{ ...cellBase, padding: '8px 0', background: cols[i].active ? activeBg : 'var(--surface-2)', fontFamily: 'var(--font-num)', fontSize: 12, fontWeight: 700, color: 'var(--text-4)' }}>{v}</div>
+              <div key={i} style={{ ...cellBase, padding: '8px 0', background: cols[i].active ? activeBg : 'var(--surface-2)', fontFamily: 'var(--font-num)', fontSize: 'var(--fs-meta)', fontWeight: 700, color: 'var(--text-4)' }}>{v}</div>
             ))}
           </>
         )}
@@ -224,7 +229,7 @@ function MatrixBoard({ headLabel, cols, rows, accent, renderCell, footer }: {
 function CheckIcon({ color }: { color: string }) {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}><path d="M20 6 9 17l-5-5" /></svg>;
 }
-const dotCell = (txt = '·'): React.ReactNode => <span style={{ color: 'var(--text-5)', fontSize: 13 }}>{txt}</span>;
+const dotCell = (txt = '·'): React.ReactNode => <span style={{ color: 'var(--text-5)', fontSize: 'var(--fs-sub)' }}>{txt}</span>;
 
 function GameBoard({ game, accent, activeId }: { game: TrainGame; accent: string; activeId: string }) {
   const players = game.players;
@@ -251,7 +256,7 @@ function GameBoard({ game, accent, activeId }: { game: TrainGame; accent: string
         const arr = innings[players[ci].id];
         if (ri >= arr.length) return dotCell();
         const v = arr[ri];
-        return <span style={{ fontFamily: 'var(--font-num)', fontSize: 15, fontWeight: 700, color: v > 0 ? 'var(--text)' : 'var(--text-5)' }}>{v}</span>;
+        return <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-lead)', fontWeight: 700, color: v > 0 ? 'var(--text)' : 'var(--text-5)' }}>{v}</span>;
       };
       return <MatrixBoard headLabel={dict().trainingScr.headInning} cols={cols} rows={rows} accent={accent} renderCell={renderCell} />;
     }
@@ -275,7 +280,7 @@ function GameBoard({ game, accent, activeId }: { game: TrainGame; accent: string
         const arr = rounds[players[ci].id];
         if (ri >= arr.length) return dotCell();
         const e = arr[ri];
-        return <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 700, color: e.hit ? 'var(--text)' : 'var(--danger)' }}>{e.val}</span>;
+        return <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-body)', fontWeight: 700, color: e.hit ? 'var(--text)' : 'var(--danger)' }}>{e.val}</span>;
       };
       return <MatrixBoard headLabel={dict().trainingScr.headRound} cols={cols} rows={rows} accent={accent} renderCell={renderCell} />;
     }
@@ -315,8 +320,8 @@ function InputDeck({ game, accent }: { game: TrainGame; accent: string }) {
   }
 }
 
-const bigBtn = (): React.CSSProperties => ({ flex: 1, minWidth: 64, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 'var(--radius-md)', padding: '16px 0', fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, cursor: 'pointer' });
-const primaryBtn = (accent: string): React.CSSProperties => ({ background: accent, border: 'none', color: accentFg(accent), borderRadius: 'var(--radius-md)', padding: '13px 24px', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' });
+const bigBtn = (): React.CSSProperties => ({ flex: 1, minWidth: 64, background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text)', borderRadius: 'var(--radius-md)', padding: '16px 0', fontFamily: 'var(--font-num)', fontSize: 'var(--fs-heading)', fontWeight: 800, cursor: 'pointer' });
+const primaryBtn = (accent: string): React.CSSProperties => ({ background: accent, border: 'none', color: accentFg(accent), borderRadius: 'var(--radius-md)', padding: '13px 24px', fontSize: 'var(--fs-lead)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' });
 
 function HitsPanel() {
   const apply = useStore((s) => s.trainApply);
@@ -324,7 +329,7 @@ function HitsPanel() {
   useTrainKeys((k) => { if (k >= '0' && k <= '3') { apply({ kind: 'hits', hits: +k }); return true; } return false; });
   return (
     <div>
-      <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>{tr.trainingScr.hitsQuestion} <span style={{ opacity: 0.7 }}>{tr.trainingScr.keys03}</span></div>
+      <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>{tr.trainingScr.hitsQuestion} <span style={{ color: 'var(--text-5)' }}>{tr.trainingScr.keys03}</span></div>
       <div style={{ display: 'flex', gap: 10 }}>
         {[0, 1, 2, 3].map((h) => (
           <button key={h} onClick={() => apply({ kind: 'hits', hits: h })} style={bigBtn()}>{h}</button>
@@ -340,7 +345,7 @@ function AdvancePanel() {
   useTrainKeys((k) => { if (k >= '0' && k <= '3') { apply({ kind: 'advance', advance: +k }); return true; } return false; });
   return (
     <div>
-      <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>{tr.trainingScr.advanceQuestion} <span style={{ opacity: 0.7 }}>{tr.trainingScr.keys03}</span></div>
+      <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>{tr.trainingScr.advanceQuestion} <span style={{ color: 'var(--text-5)' }}>{tr.trainingScr.keys03}</span></div>
       <div style={{ display: 'flex', gap: 10 }}>
         {[0, 1, 2, 3].map((h) => (
           <button key={h} onClick={() => apply({ kind: 'advance', advance: h })} style={bigBtn()}>+{h}</button>
@@ -361,9 +366,9 @@ function CheckoutPanel({ accent }: { accent: string }) {
   return (
     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
       {[1, 2, 3].map((d) => (
-        <button key={d} onClick={() => apply({ kind: 'made', made: true, darts: d })} style={{ ...bigBtn(), background: `color-mix(in srgb, ${accent} 16%, var(--btn))`, border: `1px solid ${accent}`, color: 'var(--text)', fontSize: 15 }}>✓ {d} Dart{d > 1 ? 's' : ''}</button>
+        <button key={d} onClick={() => apply({ kind: 'made', made: true, darts: d })} style={{ ...bigBtn(), background: `color-mix(in srgb, ${accent} 16%, var(--btn))`, border: `1px solid ${accent}`, color: 'var(--text)', fontSize: 'var(--fs-lead)' }}>✓ {d} Dart{d > 1 ? 's' : ''}</button>
       ))}
-      <button onClick={() => apply({ kind: 'made', made: false, darts: 3 })} style={{ ...bigBtn(), background: 'color-mix(in srgb, var(--danger) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', fontSize: 15 }}>{tr.trainingScr.missed} <span style={{ opacity: 0.6, fontSize: 12 }}>(0)</span></button>
+      <button onClick={() => apply({ kind: 'made', made: false, darts: 3 })} style={{ ...bigBtn(), background: 'color-mix(in srgb, var(--danger) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', fontSize: 'var(--fs-lead)' }}>{tr.trainingScr.missed} <span style={{ opacity: 0.6, fontSize: 'var(--fs-meta)' }}>(0)</span></button>
     </div>
   );
 }
@@ -374,10 +379,10 @@ function RunsPanel() {
   useTrainKeys((k) => { if (k >= '0' && k <= '9') { apply({ kind: 'runs', runs: +k }); return true; } return false; });
   return (
     <div>
-      <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>{tr.trainingScr.runsHint} <span style={{ opacity: 0.7 }}>{tr.trainingScr.keys09}</span></div>
+      <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 600, marginBottom: 8 }}>{tr.trainingScr.runsHint} <span style={{ color: 'var(--text-5)' }}>{tr.trainingScr.keys09}</span></div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
         {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((r) => (
-          <button key={r} onClick={() => apply({ kind: 'runs', runs: r })} style={{ ...bigBtn(), padding: '14px 0', fontSize: 20 }}>{r}</button>
+          <button key={r} onClick={() => apply({ kind: 'runs', runs: r })} style={{ ...bigBtn(), padding: '14px 0', fontSize: 'var(--fs-heading)' }}>{r}</button>
         ))}
       </div>
     </div>
@@ -398,11 +403,11 @@ function HalvePanel({ accent }: { accent: string }) {
         <input autoFocus type="text" inputMode="numeric" value={val} aria-label={tr.trainingScr.pointsPlaceholder} placeholder={tr.trainingScr.pointsPlaceholder}
           onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
           onKeyDown={(e) => { if (e.key === 'Enter') { if (val === '') miss(); else submit(); } }}
-          style={{ flex: 1, minWidth: 120, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '13px 16px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
+          style={{ flex: 1, minWidth: 120, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '13px 16px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 'var(--fs-heading)', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
         <button onClick={submit} disabled={!valid} style={{ ...primaryBtn(accent), opacity: valid ? 1 : 0.4, cursor: valid ? 'pointer' : 'default', padding: '15px 24px' }}>{tr.trainingScr.enter}</button>
-        <button onClick={miss} style={{ background: 'color-mix(in srgb, var(--danger) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', padding: '15px 22px', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.missHalve}</button>
+        <button onClick={miss} style={{ background: 'color-mix(in srgb, var(--danger) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--danger) 40%, transparent)', color: 'var(--danger)', borderRadius: 'var(--radius-md)', padding: '15px 22px', fontSize: 'var(--fs-lead)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.missHalve}</button>
       </div>
-      <div style={{ fontSize: 11, color: 'var(--text-5)', fontWeight: 600, marginTop: 8 }}>{tr.trainingScr.halveKeysHint}</div>
+      <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-5)', fontWeight: 600, marginTop: 8 }}>{tr.trainingScr.halveKeysHint}</div>
     </div>
   );
 }
@@ -420,12 +425,12 @@ function ScorePanel({ accent }: { accent: string }) {
         <input autoFocus type="text" inputMode="numeric" value={val} aria-label={tr.trainingScr.turnPlaceholder} placeholder={tr.trainingScr.turnPlaceholder}
           onChange={(e) => setVal(e.target.value.replace(/[^0-9]/g, '').slice(0, 3))}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
-          style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '13px 16px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 22, fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
+          style={{ flex: 1, background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '13px 16px', color: 'var(--text)', fontFamily: 'var(--font-num)', fontSize: 'var(--fs-heading)', fontWeight: 800, textAlign: 'center', outline: 'none', boxSizing: 'border-box' }} />
         <button onClick={submit} disabled={!valid} style={{ ...primaryBtn(accent), opacity: valid ? 1 : 0.4, cursor: valid ? 'pointer' : 'default', padding: '15px 24px' }}>{tr.trainingScr.enter}</button>
       </div>
       <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
         {[26, 40, 41, 45, 60, 81, 100, 140, 180].map((q) => (
-          <button key={q} onClick={() => { apply({ kind: 'score', score: q }); setVal(''); }} style={{ flex: '1 1 60px', background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 'var(--radius-md)', padding: '10px 0', fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>{q}</button>
+          <button key={q} onClick={() => { apply({ kind: 'score', score: q }); setVal(''); }} style={{ flex: '1 1 60px', background: 'var(--surface-2)', border: '1px solid var(--border-2)', color: 'var(--text-2)', borderRadius: 'var(--radius-md)', padding: '10px 0', fontFamily: 'var(--font-num)', fontSize: 'var(--fs-body)', fontWeight: 800, cursor: 'pointer' }}>{q}</button>
         ))}
       </div>
     </div>
@@ -466,27 +471,27 @@ function CricketPanel({ game, accent }: { game: TrainGame; accent: string }) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 600 }}>{tr.trainingScr.fieldValue}</span>
+        <span style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 600 }}>{tr.trainingScr.fieldValue}</span>
         {[['Single', 1], ['Double', 2], ['Triple', 3]].map(([lbl, m]) => (
-          <button key={m as number} onClick={() => setMult(m as number)} style={{ background: mult === m ? accent : 'var(--btn)', color: mult === m ? accentFg(accent) : 'var(--text-2)', border: `1px solid ${mult === m ? accent : 'var(--border-2)'}`, borderRadius: 'var(--radius-sm)', padding: '7px 14px', minHeight: 44, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{lbl}</button>
+          <button key={m as number} onClick={() => setMult(m as number)} style={{ background: mult === m ? accent : 'var(--btn)', color: mult === m ? accentFg(accent) : 'var(--text-2)', border: `1px solid ${mult === m ? accent : 'var(--border-2)'}`, borderRadius: 'var(--radius-sm)', padding: '7px 14px', minHeight: 44, fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{lbl}</button>
         ))}
-        <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>Darts: {darts}/3</span>
+        <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-sub)', color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>Darts: {darts}/3</span>
       </div>
-      <div style={{ fontSize: 11, color: 'var(--text-5)', fontWeight: 600, marginBottom: 10 }}>{tr.trainingScr.cricketKeys}</div>
+      <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-5)', fontWeight: 600, marginBottom: 10 }}>{tr.trainingScr.cricketKeys}</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8, marginBottom: 10 }}>
         {CRICKET_TARGETS.map((num) => {
           const closed = myMarks[num] >= 3;
           const pending = marks[num] || 0;
           return (
             <button key={num} onClick={() => addDart(num)} disabled={darts >= 3} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, background: closed ? `color-mix(in srgb, ${accent} 18%, var(--btn))` : 'var(--btn)', border: `1px solid ${pending ? accent : 'var(--border-2)'}`, borderRadius: 'var(--radius-md)', padding: '10px 0', cursor: darts >= 3 ? 'default' : 'pointer', opacity: darts >= 3 ? 0.5 : 1, fontFamily: 'inherit' }}>
-              <span style={{ fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{num === 25 ? 'Bull' : num}</span>
-              <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 700 }}>{marksGlyph(Math.min(3, myMarks[num] + pending))}{pending ? ` +${pending}` : ''}</span>
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-lead)', fontWeight: 800, color: 'var(--text)' }}>{num === 25 ? 'Bull' : num}</span>
+              <span style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-4)', fontWeight: 700 }}>{marksGlyph(Math.min(3, myMarks[num] + pending))}{pending ? ` +${pending}` : ''}</span>
             </button>
           );
         })}
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
-        <button onClick={reset} disabled={darts === 0} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 'var(--radius-md)', padding: '13px 22px', fontSize: 14, fontWeight: 700, cursor: darts ? 'pointer' : 'default', opacity: darts ? 1 : 0.5, fontFamily: 'inherit' }}>{tr.trainingScr.resetBtn}</button>
+        <button onClick={reset} disabled={darts === 0} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 'var(--radius-md)', padding: '13px 22px', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: darts ? 'pointer' : 'default', opacity: darts ? 1 : 0.5, fontFamily: 'inherit' }}>{tr.trainingScr.resetBtn}</button>
         <button onClick={submit} style={{ ...primaryBtn(accent), flex: 1 }}>{tr.trainingScr.submitTurn}</button>
       </div>
     </div>
@@ -523,12 +528,12 @@ function KillerPanel({ game, accent }: { game: TrainGame; accent: string }) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 13, color: 'var(--text-3)' }}>
+        <span style={{ fontSize: 'var(--fs-sub)', color: 'var(--text-3)' }}>
           {isKiller ? <b style={{ color: accent }}>{tr.trainingScr.killerActive}</b> : <>{tr.trainingScr.hitYourNumber1}<b style={{ color: 'var(--text)' }}>{num[cur.id]}</b>{tr.trainingScr.hitYourNumber2}</>}
         </span>
-        <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>Darts: {darts.length}/3</span>
+        <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-sub)', color: 'var(--text-3)', fontFamily: 'var(--font-num)' }}>Darts: {darts.length}/3</span>
       </div>
-      <div style={{ fontSize: 11, color: 'var(--text-5)', fontWeight: 600, marginBottom: 10 }}>{tr.trainingScr.killerKeys}</div>
+      <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-5)', fontWeight: 600, marginBottom: 10 }}>{tr.trainingScr.killerKeys}</div>
       <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(110px, 1fr))`, gap: 8, marginBottom: 10 }}>
         {game.players.map((p) => {
           const dead = lives[p.id] <= 0;
@@ -536,15 +541,15 @@ function KillerPanel({ game, accent }: { game: TrainGame; accent: string }) {
           const hitCount = darts.filter((d) => d === p.id).length;
           return (
             <button key={p.id} onClick={() => addDart(p.id)} disabled={dead || darts.length >= 3} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, background: hitCount ? `color-mix(in srgb, ${accent} 16%, var(--btn))` : 'var(--btn)', border: `1px solid ${self ? accent : 'var(--border-2)'}`, borderRadius: 'var(--radius-md)', padding: '10px 6px', cursor: (dead || darts.length >= 3) ? 'default' : 'pointer', opacity: dead ? 0.4 : 1, fontFamily: 'inherit' }}>
-              <span style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>{num[p.id]}</span>
-              <span style={{ fontSize: 11, color: 'var(--text-3)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{self ? tr.trainingScr.ownNumber : p.short} · {'♥'.repeat(Math.max(0, lives[p.id])) || '✗'}{hitCount ? ` (${hitCount})` : ''}</span>
+              <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-title)', fontWeight: 800, color: 'var(--text)' }}>{num[p.id]}</span>
+              <span style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-3)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{self ? tr.trainingScr.ownNumber : p.short} · {'♥'.repeat(Math.max(0, lives[p.id])) || '✗'}{hitCount ? ` (${hitCount})` : ''}</span>
             </button>
           );
         })}
       </div>
       <div style={{ display: 'flex', gap: 10 }}>
-        <button onClick={() => addDart(null)} disabled={darts.length >= 3} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 'var(--radius-md)', padding: '13px 20px', fontSize: 14, fontWeight: 700, cursor: darts.length >= 3 ? 'default' : 'pointer', opacity: darts.length >= 3 ? 0.5 : 1, fontFamily: 'inherit' }}>{tr.trainingScr.missBtn}</button>
-        <button onClick={reset} disabled={!darts.length} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 'var(--radius-md)', padding: '13px 20px', fontSize: 14, fontWeight: 700, cursor: darts.length ? 'pointer' : 'default', opacity: darts.length ? 1 : 0.5, fontFamily: 'inherit' }}>{tr.trainingScr.back}</button>
+        <button onClick={() => addDart(null)} disabled={darts.length >= 3} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 'var(--radius-md)', padding: '13px 20px', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: darts.length >= 3 ? 'default' : 'pointer', opacity: darts.length >= 3 ? 0.5 : 1, fontFamily: 'inherit' }}>{tr.trainingScr.missBtn}</button>
+        <button onClick={reset} disabled={!darts.length} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-3)', borderRadius: 'var(--radius-md)', padding: '13px 20px', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: darts.length ? 'pointer' : 'default', opacity: darts.length ? 1 : 0.5, fontFamily: 'inherit' }}>{tr.trainingScr.back}</button>
         <button onClick={submit} style={{ ...primaryBtn(accent), flex: 1 }}>{tr.trainingScr.submitTurn}</button>
       </div>
     </div>
@@ -568,7 +573,7 @@ function TrainWinOverlay({ game, accent }: { game: TrainGame; accent: string }) 
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const kbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 10, fontWeight: 700, opacity: 0.7, background: 'rgba(0,0,0,.22)', borderRadius: 'var(--radius-xs)', padding: '1px 6px', marginLeft: 7 };
+  const kbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 'var(--fs-badge)', fontWeight: 700, opacity: 0.7, background: 'rgba(0,0,0,.22)', borderRadius: 'var(--radius-xs)', padding: '1px 6px', marginLeft: 7 };
   return (
     <div style={{ position: 'absolute', inset: 0, background: 'var(--scrim)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 40, padding: 24 }}>
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xl)', padding: 28, width: 460, maxWidth: '94vw', boxShadow: 'var(--shadow-card)' }}>
@@ -576,31 +581,31 @@ function TrainWinOverlay({ game, accent }: { game: TrainGame; accent: string }) 
           <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'radial-gradient(circle, color-mix(in srgb, var(--gold) 25%, transparent), color-mix(in srgb, var(--gold) 5%, transparent))', border: '1px solid color-mix(in srgb, var(--gold) 40%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z" /></svg>
           </div>
-          <div style={{ fontSize: 12, color: 'var(--gold)', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 6 }}>{title}</div>
-          {!solo && <div style={{ fontSize: 26, fontWeight: 800 }}>{winners.join(' & ') || '—'}</div>}
+          <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--gold)', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 6 }}>{title}</div>
+          {!solo && <div style={{ fontSize: 'var(--fs-page)', fontWeight: 800 }}>{winners.join(' & ') || '—'}</div>}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 22 }}>
           {board.map((r) => {
             const isWin = game.winnerIds.includes(r.player.id);
             return (
               <div key={r.player.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 'var(--radius-md)', background: isWin ? `color-mix(in srgb, ${accent} 12%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${isWin ? accent : 'var(--border-2)'}` }}>
-                <span style={{ fontFamily: 'var(--font-num)', fontSize: 14, fontWeight: 800, color: 'var(--text-4)', width: 20 }}>{solo ? '' : `${r.rank}.`}</span>
+                <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-body)', fontWeight: 800, color: 'var(--text-4)', width: 20 }}>{solo ? '' : `${r.rank}.`}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.player.name}</div>
+                  <div style={{ fontSize: 'var(--fs-body)', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.player.name}</div>
                   {s.trainBestFlash.includes(r.player.id) && (() => {
                     const meta = TRAIN_BEST[game.modeId]; const v = meta?.value(game, r.player.id);
-                    return <div style={{ fontSize: 11, fontWeight: 800, color: accent, letterSpacing: '.02em', marginTop: 1 }}>🎯 {tr.trainingScr.newBest}{v != null && meta ? ` ${meta.format(v)}` : ''}</div>;
+                    return <div style={{ fontSize: 'var(--fs-badge)', fontWeight: 800, color: accent, letterSpacing: '.02em', marginTop: 1 }}>🎯 {tr.trainingScr.newBest}{v != null && meta ? ` ${meta.format(v)}` : ''}</div>;
                   })()}
                 </div>
-                <span style={{ fontFamily: 'var(--font-num)', fontSize: 16, fontWeight: 800, color: isWin ? accent : 'var(--text-2)' }}>{r.primary}</span>
-                {r.secondary && <span style={{ fontFamily: 'var(--font-num)', fontSize: 12, color: 'var(--text-4)' }}>{r.secondary}</span>}
+                <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-lead)', fontWeight: 800, color: isWin ? accent : 'var(--text-2)' }}>{r.primary}</span>
+                {r.secondary && <span style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-meta)', color: 'var(--text-4)' }}>{r.secondary}</span>}
               </div>
             );
           })}
         </div>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button onClick={() => s.trainExit()} style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.quit}<span style={kbd}>Esc</span></button>
-          <button onClick={() => s.trainRematch()} style={{ display: 'inline-flex', alignItems: 'center', background: accent, border: 'none', color: accentFg(accent), padding: '13px 28px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.again}<span style={{ ...kbd, background: 'rgba(255,255,255,.22)' }}>↵</span></button>
+          <button onClick={() => s.trainExit()} style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--surface-3)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '13px 24px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.quit}<span style={kbd}>Esc</span></button>
+          <button onClick={() => s.trainRematch()} style={{ display: 'inline-flex', alignItems: 'center', background: accent, border: 'none', color: accentFg(accent), padding: '13px 28px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.trainingScr.again}<span style={{ ...kbd, background: 'rgba(255,255,255,.22)' }}>↵</span></button>
         </div>
       </div>
     </div>

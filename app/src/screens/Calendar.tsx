@@ -68,21 +68,21 @@ export function Calendar() {
     <div style={{ padding: isPhone ? '18px 14px' : '28px 32px', maxWidth: 1240, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20, marginBottom: 22, flexWrap: 'wrap' }}>
         <div>
-          <div style={{ fontSize: 12, color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 6 }}>{tr.calendar.title}</div>
-          <h1 style={{ margin: 0, fontSize: 27, fontWeight: 800, letterSpacing: '-.02em' }}>{MON[ref.m]} {ref.y}</h1>
-          <div style={{ fontSize: 13, color: 'var(--text-3)', marginTop: 4 }}>{tr.calendar.eventsThisMonth(monthEvents)}</div>
+          <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 6 }}>{tr.calendar.title}</div>
+          <h1 style={{ margin: 0, fontSize: 'var(--fs-page)', fontWeight: 800, letterSpacing: '-.02em' }}>{MON[ref.m]} {ref.y}</h1>
+          <div style={{ fontSize: 'var(--fs-sub)', color: 'var(--text-3)', marginTop: 4 }}>{tr.calendar.eventsThisMonth(monthEvents)}</div>
           {nextEv && (
-            <button onClick={() => jumpTo(nextEv.date)} style={{ marginTop: 6, background: 'none', border: 'none', padding: 0, color: 'var(--accent)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button onClick={() => jumpTo(nextEv.date)} style={{ marginTop: 6, background: 'none', border: 'none', padding: 0, color: 'var(--accent)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
               {tr.calendar.nextEventHint(shortLong(nextEv.date))}
             </button>
           )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button className="dh-hover-border dh-tap" onClick={() => shift(-1)} title={tr.calendar.prevMonth} aria-label={tr.calendar.prevMonth} style={{ width: 38, height: 38, borderRadius: 'var(--radius-md)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IconChevronLeft size={18} /></button>
-          <button className="dh-hover-border dh-tap" onClick={() => setRef({ y: now.getFullYear(), m: now.getMonth() })} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '0 16px', height: 38, borderRadius: 'var(--radius-md)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.today}</button>
+          <button className="dh-hover-border dh-tap" onClick={() => setRef({ y: now.getFullYear(), m: now.getMonth() })} style={{ background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', padding: '0 16px', height: 38, borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-sub)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{tr.common.today}</button>
           <button className="dh-hover-border dh-tap" onClick={() => shift(1)} title={tr.calendar.nextMonth} aria-label={tr.calendar.nextMonth} style={{ width: 38, height: 38, borderRadius: 'var(--radius-md)', background: 'var(--btn)', border: '1px solid var(--border-2)', color: 'var(--text-2)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IconChevronRight size={18} /></button>
           {canManageEvents && (
-            <button className="dh-primary dh-tap" onClick={() => s.openAddEvent()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', height: 38, padding: '0 16px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', marginLeft: 6 }}><IconPlus size={16} />{tr.calendar.addEvent}</button>
+            <button className="dh-primary dh-tap" onClick={() => s.openAddEvent()} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', height: 38, padding: '0 16px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', marginLeft: 6 }}><IconPlus size={16} />{tr.calendar.addEvent}</button>
           )}
         </div>
       </div>
@@ -91,7 +91,7 @@ export function Calendar() {
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
           {monthList.length === 0 && (
             <EmptyState icon={<IconCalendar size={22} />} action={canManageEvents ? (
-              <button className="dh-primary dh-tap" onClick={() => s.openAddEvent()} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}><IconPlus size={16} />{tr.calendar.addEvent}</button>
+              <button className="dh-primary dh-tap" onClick={() => s.openAddEvent()} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--accent)', border: 'none', color: 'var(--accent-fg)', padding: '10px 16px', borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-body)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' }}><IconPlus size={16} />{tr.calendar.addEvent}</button>
             ) : undefined}>{tr.calendar.noEventsMonth}</EmptyState>
           )}
           {monthList.map((e) => {
@@ -101,15 +101,15 @@ export function Calendar() {
             return (
               <PressableRow key={e.id} className="dh-row" disabled={!canManageEvents} onClick={() => s.openEditEvent(e.id)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderBottom: '1px solid var(--hairline)', cursor: canManageEvents ? 'pointer' : 'default', background: isToday ? `color-mix(in srgb, ${accent} 8%, transparent)` : 'transparent' }}>
                 <div style={{ textAlign: 'center', width: 40, flexShrink: 0 }}>
-                  <div style={{ fontSize: 11, color: isToday ? accent : 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>{tr.format.wdShort[d.getDay()]}</div>
-                  <div style={{ fontFamily: 'var(--font-num)', fontSize: 18, fontWeight: 800, color: isToday ? accent : 'var(--text)' }}>{d.getDate()}</div>
+                  <div style={{ fontSize: 'var(--fs-badge)', color: isToday ? accent : 'var(--text-4)', fontWeight: 700, textTransform: 'uppercase' }}>{tr.format.wdShort[d.getDay()]}</div>
+                  <div style={{ fontFamily: 'var(--font-num)', fontSize: 'var(--fs-title)', fontWeight: 800, color: isToday ? accent : 'var(--text)' }}>{d.getDate()}</div>
                 </div>
                 <span style={{ width: 28, height: 28, borderRadius: 'var(--radius-sm)', background: `color-mix(in srgb, ${t.color} 16%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={t.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={t.icon} /></svg>
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</div>
-                  <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-4)', fontWeight: 600, marginTop: 1 }}>{[t.label, e.time, e.loc].filter(Boolean).join(' · ')}</div>
+                  <div style={{ fontSize: 'var(--fs-body)', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</div>
+                  <div style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 600, marginTop: 1 }}>{[t.label, e.time, e.loc].filter(Boolean).join(' · ')}</div>
                 </div>
               </PressableRow>
             );
@@ -119,22 +119,22 @@ export function Calendar() {
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,minmax(64px,1fr))', borderBottom: '1px solid var(--border)', minWidth: 462 }}>
           {MON_FIRST.map((i) => tr.format.wdShort[i]).map((wd) => (
-            <div key={wd} style={{ padding: '11px 12px', fontSize: 11, fontWeight: 700, color: 'var(--text-4)', letterSpacing: '.06em', textTransform: 'uppercase' }}>{wd}</div>
+            <div key={wd} style={{ padding: '11px 12px', fontSize: 'var(--fs-badge)', fontWeight: 700, color: 'var(--text-4)', letterSpacing: '.06em', textTransform: 'uppercase' }}>{wd}</div>
           ))}
         </div>
         {weeks.map((wk, wi) => (
           <div key={wi} style={{ display: 'grid', gridTemplateColumns: 'repeat(7,minmax(64px,1fr))', borderBottom: '1px solid var(--hairline)', minWidth: 462 }}>
             {wk.map((c) => (
               <div key={c.iso} className="dh-row" role="button" tabIndex={0} onClick={() => canManageEvents && s.openAddEvent(c.iso)} onKeyDown={(ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); if (canManageEvents) s.openAddEvent(c.iso); } }} style={{ minHeight: 112, padding: '7px 7px 9px', borderRight: '1px solid var(--hairline)', background: c.cellBg, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start', minWidth: 24, height: 24, padding: '0 6px', borderRadius: 'var(--radius-xs)', fontFamily: 'var(--font-num)', fontSize: 13, fontWeight: 800, color: c.dayColor, background: c.dayBg }}>{c.day}</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'flex-start', minWidth: 24, height: 24, padding: '0 6px', borderRadius: 'var(--radius-xs)', fontFamily: 'var(--font-num)', fontSize: 'var(--fs-sub)', fontWeight: 800, color: c.dayColor, background: c.dayBg }}>{c.day}</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
                   {c.chips.map((ch) => (
                     <div key={ch.id} role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); if (canManageEvents) s.openEditEvent(ch.id); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); if (canManageEvents) s.openEditEvent(ch.id); } }} title={ch.title} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 6px', borderRadius: 'var(--radius-xs)', background: ch.bg, cursor: 'pointer', minWidth: 0 }}>
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={ch.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d={ch.icon} /></svg>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ch.title}</span>
+                      <span style={{ fontSize: 'var(--fs-badge)', fontWeight: 700, color: 'var(--text-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ch.title}</span>
                     </div>
                   ))}
-                  {c.more > 0 && <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-4)', paddingLeft: 6 }}>{tr.calendar.moreCount(c.more)}</span>}
+                  {c.more > 0 && <span style={{ fontSize: 'var(--fs-badge)', fontWeight: 700, color: 'var(--text-4)', paddingLeft: 6 }}>{tr.calendar.moreCount(c.more)}</span>}
                 </div>
               </div>
             ))}
@@ -149,7 +149,7 @@ export function Calendar() {
           return (
             <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
               <span style={{ width: 22, height: 22, borderRadius: 'var(--radius-xs)', background: `color-mix(in srgb, ${t.color} 16%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={t.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={t.icon} /></svg></span>
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-3)' }}>{t.label}</span>
+              <span style={{ fontSize: 'var(--fs-meta)', fontWeight: 600, color: 'var(--text-3)' }}>{t.label}</span>
             </div>
           );
         })}

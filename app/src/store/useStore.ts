@@ -218,7 +218,6 @@ export interface AppState {
   selectedPlayerId: string | null;
   session: string | null;
   loginForm: { email: string; pw: string; code: string; mfaStep: boolean; err: string; busy: boolean };
-  now: number;
 
   // Datenquelle (lokal = localStorage, verein = PocketBase wenn VITE_PB_URL gesetzt)
   provider: DataProvider;
@@ -590,7 +589,6 @@ export const useStore = create<AppState>((set, get) => ({
   session: null,
   twoFAUserIds: [],
   loginForm: { email: '', pw: '', code: '', mfaStep: false, err: '', busy: false },
-  now: Date.now(),
 
   provider: createProvider('local'),
   pbMode: false,
@@ -2817,6 +2815,19 @@ function bundleFilename(season: Season): string {
 }
 
 // Lädt den kompletten Datenbestand vom Provider und übernimmt ihn in den Store (inkl. persönlicher Einstellungen).
+// Fingerabdruck des zuletzt übernommenen Snapshots. Die Datensätze tragen kein `updated`-Feld,
+// also wird serialisiert — einmal je Poll über die eingehenden Daten, nicht über den Store.
+// Bei Vereinsdaten (Dutzende Spieler, wenige tausend Matches) kostet das den Bruchteil einer
+// Millisekunde und spart dafür ein komplettes Re-Render der App alle 4 Sekunden.
+let _snapFingerprint = '';
+function snapshotUnchanged(next: Record<string, unknown>): boolean {
+  let fp: string;
+  try { fp = JSON.stringify(next); } catch { return false; } // im Zweifel schreiben
+  if (fp === _snapFingerprint) return true;
+  _snapFingerprint = fp;
+  return false;
+}
+
 async function applySnapshot(get: () => AppState, set: SetFn) {
   try {
     const snap = await get().provider.loadAll();
@@ -2862,13 +2873,27 @@ async function applySnapshot(get: () => AppState, set: SetFn) {
     const activeSeasonId = seasons.length ? (pickActiveSeason(seasons) || seasons[0]).id : null;
     const prevView = get().viewSeasonId;
     const viewSeasonId = (prevView && seasons.some((s) => s.id === prevView)) ? prevView : activeSeasonId;
-    set({
+    const next = {
       settings: merged,
       players: withDefaultPlayers(snap.players), teams: snap.teams, accounts: snap.accounts,
       leagues: sortLeaguesByOrder(snap.leagues), events: snap.events, matches: snap.matches,
       seasons, seasonSnapshots: snap.seasonSnapshots || [], activeSeasonId, viewSeasonId,
       tournaments: snap.tournaments || [], trainingPlays: snap.trainingPlays, syncError: null,
-    });
+    };
+    // Nur schreiben, wenn sich wirklich etwas geändert hat.
+    //
+    // Der Turnier-Bildschirm und jedes wartende Board laden alle 4 s neu. Der set() darüber
+    // erzeugt IMMER frische Arrays und ein frisches settings-Objekt — auch wenn der Server exakt
+    // dasselbe geliefert hat. Damit bekam jeder Selektor eine neue Identität, jedes useMemo fiel
+    // um und die halbe App rendert im Leerlauf alle 4 Sekunden neu.
+    //
+    // Bewusst grobkörnig: ändert sich IRGENDETWAS, wird wie bisher der komplette Payload gesetzt.
+    // Nur der Nichts-passiert-Fall (der Normalfall beim Pollen) wird übersprungen.
+    // Steht ein Sync-Fehler an, IMMER schreiben: der erfolgreiche Reload ist der Beleg, dass die
+    // Verbindung wieder trägt, und `syncError: null` im Payload räumt den Hinweis weg. Zugleich
+    // gewinnt so wieder der Server, falls eine lokale Änderung nie angekommen ist.
+    if (get().syncError == null && snapshotUnchanged(next)) return;
+    set(next);
   } catch (e) {
     console.error('[load]', e);
     set({ syncError: dict().storeMsg.errLoad });
