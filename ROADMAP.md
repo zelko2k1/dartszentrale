@@ -16,7 +16,10 @@
 > Offen bleiben nur die Schritte, die **jeder Betreiber selbst** beim Internet-Betrieb macht —
 > abhakbar in [`docs/de/go-live-checkliste-cloud.md`](docs/de/go-live-checkliste-cloud.md):
 
-- [ ] ⚙️ #1 PB-Superuser-Passwort rotiert, Literal aus `seed-remote.sh` entfernt
+- [x] ⚙️ #1a Literal aus `seed-remote.sh` entfernt (2026-07-30) — das Skript liest Ziel und Konto
+      jetzt aus `pocketbase/.env.local`; die Datei war immer gitignored und nie committet
+- [ ] ⚙️ #1b PB-Superuser-Passwort **rotieren** — offen. Betrifft auch die Homelab-Instanz, deren
+      Passwort bis 2026-07-30 im Klartext in `seed-remote.sh` stand
 - [ ] ⚙️ #2 Produktiv-Admin manuell mit starkem Passwort; keine Seeds gegen Prod
 - [ ] ⚙️ #3 PB nicht als Klartext-HTTP im Internet (loopback + Firewall, oder bewusst nur LAN)
 - [ ] ⚙️ #5 PB-Admin-Konsole `/_/` abgeschirmt (Caddy IP-Allowlist/basic_auth bzw. Firewall/VPN), Superuser-MFA + Rate-Limit
@@ -59,6 +62,10 @@ Aus [`DATA_MODEL.md §5`](DATA_MODEL.md):
       alle Skripte in `scripts/` englisch (Namen + Inhalte), alle Anleitungen englisch als
       Primärfassung in `docs/` mit deutschen Fassungen in `docs/de/`. Weitere UI-Sprachen sind
       nur noch eine zusätzliche Datei neben `en.ts`.
-- [ ] Mobile-Layout für die Verwaltung (der Counter ist bereits tablettauglich)
+- [x] Mobile-Layout für die Verwaltung (2026-07-30) — die Anpassung läuft in JS über `useDevice()`,
+      nicht über Media Queries (Inline-Styles können keine). `Players`, `Users` und `Settings` waren
+      die letzten drei ohne; die übrigen acht Bildschirme passten sich schon an. Dazu greift die
+      44px-Touch-Garantie jetzt für **jedes** interaktive Element statt für 13 von 309.
+      Gemessen bei 360×740: kein horizontaler Überlauf, kleinste Touch-Fläche 44px.
 - [ ] Backup-Retention + Größen-Monitoring von `pb_data` (größerer Hebel als Saison-Auslagern)
 - [ ] Optional: Grafana/Postgres-Export aus dem Saison-Bundle für freie Auswertung
