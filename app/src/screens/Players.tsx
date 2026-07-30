@@ -7,11 +7,13 @@ import { PrimaryButton } from '../components/ui';
 import { PressableRow } from '../components/PressableRow';
 import { SearchInput } from '../components/SearchInput';
 import { compareName, matchesQuery, nameParts } from '../lib/people';
+import { useIsPhone } from '../lib/useIsPhone';
 import { useT } from '../i18n';
 
 export function Players() {
   const s = useStore();
   const tr = useT();
+  const isPhone = useIsPhone();
   const p = perm(s.settings, s.accounts, s.session);
   const order = s.settings.nameOrder ?? 'first';
   const isVerein = s.settings.appMode === 'verein';
@@ -24,7 +26,7 @@ export function Players() {
   }, [s.players, order, query]);
 
   return (
-    <div style={{ padding: '28px 32px', maxWidth: 1100, margin: '0 auto' }}>
+    <div style={{ padding: isPhone ? '18px 16px' : '28px 32px', maxWidth: 1100, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
         <h1 style={{ margin: 0, fontSize: 'var(--fs-page)', fontWeight: 800, letterSpacing: '-.02em' }}>{tr.nav.players}</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -72,7 +74,7 @@ export function Players() {
                   </button>
                 )}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 13, marginBottom: 16, paddingRight: 64 }}>
+              <div className="dh-actions-reserve" style={{ display: 'flex', alignItems: 'center', gap: 13, marginBottom: 16 }}>
                 <Avatar photo={pl.photo} short={pl.short} avi={pl.avi} size={46} />
                 <div style={{ minWidth: 0 }}>
                   <PressableRow onClick={() => s.openPlayer(pl.id)} style={{ fontSize: 'var(--fs-lead)', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pl.name}</PressableRow>

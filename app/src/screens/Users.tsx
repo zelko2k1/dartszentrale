@@ -5,11 +5,13 @@ import { IconPlus, IconEdit, IconBack } from '../lib/icons';
 import { Avatar } from '../components/Avatar';
 import { SearchInput } from '../components/SearchInput';
 import { compareName, matchesQuery } from '../lib/people';
+import { useIsPhone } from '../lib/useIsPhone';
 import { useT } from '../i18n';
 
 export function Users() {
   const s = useStore();
   const tr = useT();
+  const isPhone = useIsPhone();
   const accounts = s.accounts;
   const total = accounts.length;
   const active = accounts.filter((a) => a.active).length;
@@ -39,8 +41,8 @@ export function Users() {
   };
 
   return (
-    <div style={{ padding: '28px 32px', maxWidth: 1100, margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, marginBottom: 22 }}>
+    <div style={{ padding: isPhone ? '18px 16px' : '28px 32px', maxWidth: 1100, margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20, marginBottom: 22, flexWrap: 'wrap' }}>
         <div>
           <button onClick={() => s.go('settings')} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', color: 'var(--text-3)', fontSize: 'var(--fs-sub)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: 0, marginBottom: 10 }}>
             <IconBack size={15} />
