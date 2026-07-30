@@ -912,6 +912,7 @@ export const en: Dict = {
     abortBody: 'The current game will be discarded and will not appear in the statistics.',
     keepPlaying: 'Keep playing',
     abort: 'Abort',
+    undo: 'Undo',
     abortKbdSelect: 'select',
     abortKbdConfirm: 'confirm',
     abortKbdKeep: 'keep',

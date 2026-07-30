@@ -957,6 +957,7 @@ export const de = {
     abortBody: 'Das laufende Spiel wird verworfen und erscheint nicht in der Statistik.',
     keepPlaying: 'Weiter spielen',
     abort: 'Abbrechen',
+    undo: 'Undo',
     abortKbdSelect: 'wählen',
     abortKbdConfirm: 'bestätigen',
     abortKbdKeep: 'weiter',

@@ -741,7 +741,7 @@ function PhoneCounter({ landscape }: { landscape: boolean }) {
       <button onClick={() => s.go('dashboard')} style={phoneIconBtn} aria-label={tr.counter.back}><IconBack size={18} sw={2} /></button>
       <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase' }}>{matchInfo}</div>
       <div style={{ display: 'flex', gap: 6 }}>
-        <button onClick={(e) => { e.currentTarget.blur(); s.undo(); }} style={phoneIconBtn} aria-label="Undo"><IconUndo size={18} /></button>
+        <button onClick={(e) => { e.currentTarget.blur(); s.undo(); }} style={phoneIconBtn} aria-label={tr.counter.undo}><IconUndo size={18} /></button>
         <button onClick={(e) => { e.currentTarget.blur(); s.abortGame(); }} style={{ ...phoneIconBtn, color: 'var(--danger)' }} aria-label={tr.counter.abort}><IconX size={18} sw={2} /></button>
       </div>
     </div>
