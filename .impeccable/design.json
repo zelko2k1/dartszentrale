@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-30T12:00:00Z",
+  "title": "Design System: DartsZentrale",
+  "extensions": {
+    "colorMeta": {
+      "accent-default": { "role": "primary", "displayName": "Signalgruen (Standardakzent)", "canonical": "oklch(76.5% 0.185 153)", "tonalRamp": ["#001900", "#003900", "#005a00", "#007c24", "#00a047", "#01c56a", "#4eeb8d", "#7bffb2"] },
+      "leistungsgold": { "role": "secondary", "displayName": "Leistungsgold", "canonical": "oklch(81.4% 0.158 84)", "tonalRamp": ["#260000", "#461200", "#683300", "#8a5500", "#ae7700", "#d39a00", "#f9bf34", "#ffe563"] },
+      "canvas": { "role": "neutral", "displayName": "Leinwand", "canonical": "oklch(16.8% 0.007 258)", "tonalRamp": ["#090b0e", "#232529", "#404246", "#5f6165", "#808287", "#a2a5aa", "#c6c9ce", "#eceff3"] },
+      "surface": { "role": "neutral", "displayName": "Flaeche", "canonical": "oklch(20.7% 0.010 248)", "tonalRamp": ["#080c0f", "#21262a", "#3e4347", "#5d6267", "#7e8388", "#a0a6ab", "#c4cacf", "#e9eff5"] },
+      "control": { "role": "neutral", "displayName": "Bedienflaeche", "canonical": "oklch(24.0% 0.015 248)", "tonalRamp": ["#070c11", "#20262c", "#3c434a", "#5b6269", "#7c838b", "#9ea6ae", "#c2cad2", "#e7f0f8"] },
+      "border": { "role": "neutral", "displayName": "Rand", "canonical": "oklch(28.1% 0.016 248)", "tonalRamp": ["#060c12", "#1f262d", "#3b434a", "#5a626a", "#7b838c", "#9da6af", "#c1cad4", "#e6f0f9"] },
+      "text": { "role": "neutral", "displayName": "Warmes Primaerweiss", "canonical": "oklch(93.7% 0.010 94)", "tonalRamp": ["#0c0b07", "#272520", "#44423c", "#63615b", "#84827c", "#a7a59e", "#cbc9c2", "#f0eee7"] },
+      "success": { "role": "tertiary", "displayName": "Erfolg", "canonical": "oklch(81.0% 0.111 158)", "tonalRamp": ["#001600", "#00330d", "#00522a", "#0c7449", "#3d9669", "#62ba8b", "#87dfae", "#adffd3"] },
+      "danger": { "role": "tertiary", "displayName": "Gefahr", "canonical": "oklch(69.0% 0.172 29)", "tonalRamp": ["#390000", "#600000", "#860000", "#ae281e", "#d64f41", "#fe7463", "#ff9986", "#ffbfab"] },
+      "warn": { "role": "tertiary", "displayName": "Warnung", "canonical": "oklch(76.6% 0.138 62)", "tonalRamp": ["#2c0000", "#4f0000", "#722800", "#964a00", "#bc6c05", "#e28f3d", "#ffb363", "#ffd989"] },
+      "info": { "role": "tertiary", "displayName": "Info", "canonical": "oklch(69.1% 0.165 255)", "tonalRamp": ["#00004e", "#001671", "#003c96", "#005fbb", "#3082e2", "#56a7ff", "#7accff", "#9ff2ff"] }
+    },
+    "typographyMeta": {
+      "page": { "displayName": "Page", "purpose": "Seitentitel, ein h1 je Bildschirm." },
+      "heading": { "displayName": "Heading", "purpose": "Hervorgehobene Ueberschrift in Login und Overlays." },
+      "title": { "displayName": "Title", "purpose": "Dialog- und Paneltitel." },
+      "lead": { "displayName": "Lead", "purpose": "Betonter Text, Karten- und Paneluberschrift." },
+      "body": { "displayName": "Body", "purpose": "Fliesstext, Bedienelemente, Zeilenlabel." },
+      "sub": { "displayName": "Sub", "purpose": "Sekundaertext, Unterzeile." },
+      "meta": { "displayName": "Meta", "purpose": "Sektionsueberschrift, Metadaten." },
+      "badge": { "displayName": "Badge", "purpose": "Badge, Chip, Mikrolabel — zugleich die Lesbarkeitsgrenze bei 11px." },
+      "stat": { "displayName": "Stat", "purpose": "Kennzahl auf Kacheln, tabellarische Ziffern." },
+      "hero": { "displayName": "Hero", "purpose": "Groesster Augenblick (Spielgewinn)." },
+      "score": { "displayName": "Score", "purpose": "Grosse Restscores am Board — bleibt monospace, damit dreistellige Zahlen nicht springen." }
+    },
+    "shadows": [
+      { "name": "shadow-card", "value": "0 24px 60px rgba(0,0,0,.5)", "purpose": "Nur fuer Ebenen, die sich wirklich abheben: Dialoge und Overlays. Keine Standardtiefe fuer Karten." },
+      { "name": "shadow-card-light", "value": "0 20px 50px rgba(60,55,40,.18)", "purpose": "Dieselbe Rolle im Hellmodus, waermer und flacher." },
+      { "name": "scrim", "value": "rgba(6,8,10,.72)", "purpose": "Verdunkelt den Hintergrund unter modalen Ebenen (hell: rgba(24,20,12,.5))." },
+      { "name": "focus-ring", "value": "0 0 0 3px color-mix(in srgb, var(--focus-ring) 22%, transparent)", "purpose": "Eingabefokus zusaetzlich zum Randwechsel." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(.16, 1, .3, 1)", "purpose": "Die einzige Kurve des Systems." },
+      { "name": "duration-state", "value": "150ms", "purpose": "Zustandswechsel an Bedienelementen: background, border-color, box-shadow." },
+      { "name": "duration-surface", "value": "180ms", "purpose": "Randwechsel an Karten und Zeilen beim Hover." },
+      { "name": "reduced-motion", "value": "transition-property faellt auf nicht-layoutende Eigenschaften, Animationen werden zu einem 120ms-Fade", "purpose": "prefers-reduced-motion verengt Bewegung, statt sie abzuschalten — ein globaler 0.01ms-Kill wuerde nuetzliches Feedback zerstoeren." }
+    ],
+    "breakpoints": [
+      { "name": "handset", "value": "560px (kuerzere Kante, in JS ueber useDevice() — nicht als Media Query)" },
+      { "name": "coarse-pointer", "value": "@media (pointer: coarse) — ab hier erbt jedes interaktive Element 44x44px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Die eine primaere Handlung eines Bildschirms. Pro Bildschirm genau einer.",
+      "html": "<button class=\"ds-btn-primary\"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"><path d=\"M12 5v14M5 12h14\"/></svg>Spieler</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--accent, #2BD377); color: var(--accent-fg, #0d0f12); border: none; padding: 11px 18px; border-radius: var(--radius-md, 12px); font-size: 14px; font-weight: 800; font-family: inherit; white-space: nowrap; cursor: pointer; transition: filter .15s cubic-bezier(.16,1,.3,1), transform .05s cubic-bezier(.16,1,.3,1); } .ds-btn-primary:hover { filter: brightness(1.06); } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: 2px solid var(--focus-ring, #2BD377); outline-offset: 2px; }"
+    },
+    {
+      "name": "Primary Button (deaktiviert)",
+      "kind": "button",
+      "refersTo": "button-primary-disabled",
+      "description": "Deaktiviert verliert der Button den Akzent vollstaendig und faellt auf die Bedienflaeche zurueck.",
+      "html": "<button class=\"ds-btn-primary-disabled\" disabled>Speichern</button>",
+      "css": ".ds-btn-primary-disabled { display: inline-flex; align-items: center; gap: 8px; background: var(--btn, #1a2026); color: var(--text-5, #838a93); border: none; padding: 11px 18px; border-radius: var(--radius-md, 12px); font-size: 14px; font-weight: 800; font-family: inherit; cursor: default; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Alle uebrigen Handlungen. Kontur statt Fuellung.",
+      "html": "<button class=\"ds-btn-secondary\">Abbrechen</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; gap: 8px; background: var(--btn, #1a2026); color: var(--text-2, #aeb4bd); border: 1px solid var(--border-2, #2a333c); padding: 9px 14px; border-radius: var(--radius-md, 12px); font-size: 13px; font-weight: 600; font-family: inherit; white-space: nowrap; cursor: pointer; transition: background .15s cubic-bezier(.16,1,.3,1), border-color .15s cubic-bezier(.16,1,.3,1); } .ds-btn-secondary:hover { border-color: var(--border-strong, #3a434d); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--focus-ring, #2BD377); outline-offset: 2px; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Grundcontainer. Hebt sich beim Hover nicht, sondern schaerft nur seine Kontur.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-title\">1. Mannschaft</div><div class=\"ds-card-sub\">8 Spieler · Bezirksoberliga</div></div>",
+      "css": ".ds-card { background: var(--surface, #14181c); border: 1px solid var(--border, #232a31); border-radius: var(--radius-lg, 16px); padding: 20px; transition: border-color .18s cubic-bezier(.16,1,.3,1); } .ds-card:hover { border-color: var(--border-strong, #3a434d); } .ds-card-title { font-size: 16px; font-weight: 700; color: var(--text, #ECEAE3); } .ds-card-sub { font-size: 12px; color: var(--text-4, #9198a2); margin-top: 2px; }"
+    },
+    {
+      "name": "Stat Tile",
+      "kind": "card",
+      "refersTo": "stat-tile",
+      "description": "Kennzahl auf dem Dashboard. Der Wert laeuft in tabellarischen Ziffern.",
+      "html": "<div class=\"ds-stat\"><div class=\"ds-stat-head\"><span class=\"ds-stat-label\">3-Dart-Schnitt</span></div><div class=\"ds-stat-value\">62,4</div><div class=\"ds-stat-sub\">letzte 10 Spiele</div></div>",
+      "css": ".ds-stat { background: var(--surface, #14181c); border: 1px solid var(--border, #232a31); border-radius: var(--radius-lg, 16px); padding: 18px 20px; } .ds-stat-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; } .ds-stat-label { font-size: 12px; font-weight: 600; color: var(--text-4, #9198a2); } .ds-stat-value { font-size: 30px; font-weight: 800; line-height: 1; color: var(--text, #ECEAE3); font-variant-numeric: tabular-nums; } .ds-stat-sub { font-size: 12px; color: var(--text-4, #9198a2); margin-top: 10px; }"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Eingabefeld. Fokus wechselt den Rand und legt einen 3px-Ring aus dem gerechneten Fokusakzent darueber.",
+      "html": "<input class=\"ds-input\" type=\"email\" placeholder=\"name@verein.example\" aria-label=\"E-Mail\">",
+      "css": ".ds-input { width: 260px; max-width: 100%; box-sizing: border-box; background: var(--btn, #1a2026); border: 1px solid var(--border-2, #2a333c); border-radius: var(--radius-md, 12px); padding: 12px 14px; color: var(--text, #ECEAE3); font-size: 14px; font-family: inherit; outline: none; transition: border-color .15s cubic-bezier(.16,1,.3,1), box-shadow .15s cubic-bezier(.16,1,.3,1); } .ds-input::placeholder { color: var(--text-5, #838a93); } .ds-input:focus { border-color: var(--border-strong, #3a434d); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-ring, #2BD377) 22%, transparent); }"
+    },
+    {
+      "name": "Toggle Switch",
+      "kind": "custom",
+      "refersTo": "button-secondary",
+      "description": "Ein/Aus-Schalter. Die Position ist das primaere Signal, der Ton das zweite — nicht Farbe allein. Der Knopf folgt dem Zustand, damit er in keinem Modus auf seiner Bahn verschwindet.",
+      "html": "<button class=\"ds-switch ds-switch-on\" role=\"switch\" aria-checked=\"true\" aria-label=\"Checkout-Vorschlag\"><span class=\"ds-switch-knob\"></span></button>",
+      "css": ".ds-switch { position: relative; width: 46px; height: 26px; padding: 0; border-radius: var(--radius-pill, 999px); background: var(--btn, #1a2026); border: 1px solid var(--border-2, #2a333c); cursor: pointer; flex-shrink: 0; transition: background .15s cubic-bezier(.16,1,.3,1); } .ds-switch-on { background: var(--accent, #2BD377); border: none; } .ds-switch-knob { position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; border-radius: 50%; background: var(--text-3, #a0a6af); box-shadow: 0 1px 3px rgba(0,0,0,.28); transition: transform .15s cubic-bezier(.16,1,.3,1), background .15s cubic-bezier(.16,1,.3,1); } .ds-switch-on .ds-switch-knob { transform: translateX(20px); background: var(--accent-fg, #0d0f12); } .ds-switch:focus-visible { outline: 2px solid var(--focus-ring, #2BD377); outline-offset: 2px; }"
+    },
+    {
+      "name": "Leistungsgold-Badge",
+      "kind": "chip",
+      "refersTo": "button-secondary",
+      "description": "Markiert eine Leistung — 180er, High Finish, Kapitaen, Rang 1. Erscheint nirgends dekorativ.",
+      "html": "<span class=\"ds-badge-gold\">180</span>",
+      "css": ".ds-badge-gold { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--gold-ink, #1a1206); background: var(--gold, #F2B829); padding: 3px 10px; border-radius: var(--radius-xs, 6px); font-variant-numeric: tabular-nums; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Die Anzeigetafel",
+    "overview": "Das System ist eine lesbare Tafel, kein Interface-Kunstwerk. Der harte Fall ist nicht der Laptop des Admins, sondern der Board-PC im Vereinsheim: eine Person steht 2,37 Meter entfernt an der Abwurflinie, hat drei Darts in der Hand und muss den Restscore erfassen, ohne die Augen zusammenzukneifen. Alles Weitere folgt daraus. 11 px ist der Boden der Typo-Leiter, weil die App vorher an 44 Stellen mit 9 px und 10 px arbeitete und aus Wurfentfernung unlesbar war. Ziffern laufen tabellarisch, damit ein Score beim Herunterzaehlen nicht seitlich wandert.\n\nKontrast wird in diesem System gerechnet, nicht geschaetzt. Die fuenfstufige Textleiter haelt in jedem der sechs Themes mindestens 4,5:1 gegen jede Flaeche des Themes — geprueft von scripts/validate-palette.mjs, das zusaetzlich die kategoriale Skala auf Unterscheidbarkeit bei Deuteranopie, Protanopie und Tritanopie prueft und verlangt, dass die Textleiter monoton laeuft. Ein Skin, das die Grenze reisst, faellt in der CI durch. Das ist der Grund, warum es hier keine handverlesenen Hex-Werte in Komponenten geben darf: Was an den Tokens vorbeigeht, wird nie geprueft.\n\nDie Oberflaeche dient dem Spiel und stellt sich nicht daneben. Farbe ist sparsam und bedeutet etwas: Der Akzent markiert die eine primaere Handlung eines Bildschirms, Leistungsgold erscheint nur, wo etwas geleistet wurde. Der Rest ist ruhige tonale Schichtung in Graustufen mit warmem Weiss. Bewegung bestaetigt eine Handlung und verschwindet wieder — es gibt keine Eingangsanimationen fuer Inhalte, weil diese App stundenlang offen steht.",
+    "keyCharacteristics": [
+      "Lesbarkeit aus Wurfentfernung ist die Grundbedingung, nicht ein Feature",
+      "Kontrast ist maschinell garantiert, in sechs Themes und bei Farbfehlsichtigkeit",
+      "Sechs Themes teilen eine Struktur: nur Werte wechseln, nie das Layout",
+      "Der Akzent ist eine austauschbare Rolle, kein Markenton",
+      "Tiefe entsteht tonal; Schatten ist die begruendete Ausnahme",
+      "Bewegung quittiert, sie inszeniert nicht"
+    ],
+    "rules": [
+      { "name": "Der Akzent-Ableitungs-Grundsatz", "body": "Der rohe Akzent wird nie direkt als Schrift, Fokusring oder Kontur verwendet. Vier Funktionen leiten lesbare Begleiter ab: accentFg() waehlt die Schrift auf der Akzentflaeche als den kontraststaerkeren von zwei Inks; accentText() liefert den Akzent als Schrift auf normaler Flaeche; accentRing() haelt den Fokusring bei mindestens 3,2:1 und verschiebt dafuer nur die OKLCH-Helligkeit, nicht den Farbton; accentEdge() liefert die Kontur fuer den Extremfall. Im Hellmodus schaffen 8 von 10 Presets ungefiltert keine 3:1 gegen die Flaeche.", "section": "colors" },
+      { "name": "Der Seltenheits-Grundsatz", "body": "Leistungsgold ist kein Dekor und keine Hervorhebung. Wer es fuer eine Ueberschrift oder einen Rahmen benutzt, entwertet es fuer den 180er.", "section": "colors" },
+      { "name": "Der Token-Grundsatz", "body": "Farbe kommt aus einem Token, immer. Die einzigen erlaubten Literale sind Abbilder physischer Dinge (das Bull einer Dartscheibe ist aussen rot und innen gruen, in jedem Lichtmodus) und Werte, die durch echte Farbrechnung laufen muessen, weil eine JS-Funktion var(--…) nicht aufloesen kann. Beide Faelle tragen eine Begruendung im Code.", "section": "colors" },
+      { "name": "Der Elf-Pixel-Grundsatz", "body": "11 px ist der Boden. Es gibt keinen Text darunter, auch nicht fuer Fussnoten, auch nicht nur dieses eine Mal.", "section": "typography" },
+      { "name": "Der Rollen-Grundsatz", "body": "Neue Groessen werden nicht erfunden. Zwischen 17 und 28 px lagen einmal elf verschiedene Werte fuer drei Aufgaben; daraus wurden title / heading / page. Wer eine Zwischengroesse braucht, braucht in Wahrheit eine der bestehenden Rollen.", "section": "typography" },
+      { "name": "Der Grob-Zeiger-Grundsatz", "body": "Unter @media (pointer: coarse) erbt jedes interaktive Element mindestens 44x44 px. Nicht als Klasse zum Anfordern — eine Garantie, die man erst anfordern muss, ist keine und waechst nicht mit. Bewusst dichte Flaechen tragen .dh-dense am Container.", "section": "layout" },
+      { "name": "Der Ausnahme-Grundsatz", "body": "Ein Schatten ist die begruendete Ausnahme, nicht die Standardtiefe einer Karte. Wer eine normale Karte abheben will, greift zur naechsten Flaechenstufe oder zum staerkeren Rand.", "section": "elevation" },
+      { "name": "Der Null-Layout-Grundsatz", "body": "Es wird nichts animiert, was Layout ausloest: keine width, height, padding, margin. Bewegung laeuft ueber transform und opacity, Zustandswechsel ueber background, border-color, box-shadow.", "section": "elevation" },
+      { "name": "Der Eine-Handlung-Grundsatz", "body": "Pro Bildschirm traegt genau ein Button den Akzent. Zwei Primaerbuttons nebeneinander heisst, dass die Hierarchie nicht entschieden wurde.", "section": "components" }
+    ],
+    "dos": [
+      "Do jede Farbe aus einem Token nehmen. Wer eine Farbe braucht, die es nicht gibt, braucht eine Entscheidung im Token-System, keinen Hex-Wert in der Komponente.",
+      "Do die Typo-Leiter nach Rolle waehlen (lead fuer eine Kartenueberschrift), nicht nach Pixelwert.",
+      "Do Tiefe tonal aufbauen: naechste Flaechenstufe oder staerkerer Rand.",
+      "Do neue Bildschirme mit useDevice() anpassen — das ist der Mechanismus dieser Codebasis, nicht Media Queries.",
+      "Do sichtbaren Text und Platzhalter ins Sprachpaket legen. validate-i18n.mjs behandelt jedes String-Literal in placeholder, alt, aria-label und title als Fund, sofern es nicht strukturell sprachneutral ist (Zahl, Datum, URL).",
+      "Do node scripts/validate-palette.mjs laufen lassen, wenn eine Flaeche oder ein Theme dazukommt. Neue Flaechen gehoeren in SURFACES, sonst prueft sie niemand."
+    ],
+    "donts": [
+      "Don't Leistungsgold dekorativ verwenden. Es markiert Leistung — 180er, High Finish, Rang 1 — und verliert seine Bedeutung, sobald es eine Ueberschrift einfaerbt.",
+      "Don't den rohen Akzent als Schrift, Fokusring oder Kontur setzen. Dafuer gibt es accentText(), accentRing() und accentEdge(); im Hellmodus scheitern 8 von 10 Presets ungefiltert.",
+      "Don't Layout-Eigenschaften animieren (width, height, padding, margin). transform und opacity tragen die Bewegung.",
+      "Don't prefers-reduced-motion mit einem globalen 0.01ms erschlagen. Verengen statt abschalten.",
+      "Don't Text unter 11 px setzen.",
+      "Don't eine eigene Fokus-Anzeige bauen, die die Grundregel ersetzt. Zusaetzlich ja, anstelle nein.",
+      "Don't Touch-Ziele einzeln anfordern. Sie werden geerbt; Ausnahmen tragen .dh-dense am Container.",
+      "Don't zwei Primaerbuttons auf einen Bildschirm stellen."
+    ]
+  }
+}
