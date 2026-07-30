@@ -112,7 +112,11 @@ function parseTokens(css) {
 const css = readFileSync(join(ROOT, 'src/styles/tokens.css'), 'utf8');
 const blocks = parseTokens(css);
 const THEMES = [['dark', null], ['light', null], ['theme01', 'dark'], ['theme02', 'dark'], ['theme03', 'light'], ['theme07', 'light']];
-const SURFACES = ['--bg', '--surface', '--surface-2', '--surface-3', '--btn', '--sidebar'];
+// --counter-bg gehört dazu, seit die Kiosk-Flächen (Zuschauer-TV, Handy-Fernbedienung, Board-Canvas)
+// den Themes folgen: sie legen die Text-Leiter auf DIESE Fläche, nicht auf --bg. Vorher trugen sie
+// eigene Hex-Werte und lagen damit außerhalb jeder Prüfung — genau die Lücke, die ein Audit sonst
+// nicht sieht: der Prüfer war grün, weil die Fläche ihn nie erreicht hat.
+const SURFACES = ['--bg', '--surface', '--surface-2', '--surface-3', '--btn', '--sidebar', '--counter-bg'];
 const TEXT_RAMP = ['--text', '--text-2', '--text-3', '--text-4', '--text-5'];
 const SEMANTIC = ['--success', '--danger', '--danger-soft', '--warn', '--info', '--gold-text'];
 const CATS = [1, 2, 3, 4, 5, 6, 7, 8].map((i) => `--cat-${i}`);
