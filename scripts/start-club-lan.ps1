@@ -132,7 +132,13 @@ if (-not (Test-Path $DATA)) {
     $body = @{ email=$adminEmail; password=$adminPw; passwordConfirm=$adminPw; emailVisibility=$true; verified=$true; name='Administrator'; first='Administrator'; last=''; role='admin'; active=$true } | ConvertTo-Json
     Invoke-RestMethod -Method Post -Uri "$LOCAL/api/collections/users/records" -Headers @{ Authorization = $auth.token } -ContentType 'application/json' -Body $body | Out-Null
     Write-Host "  + App administrator created: $adminEmail"
-  } catch { Write-Host "  ! Creating the app admin failed - do it later in the console $LOCAL/_/." }
+  } catch {
+    # Den Grund mitgeben: ein blankes "failed" laesst den Betreiber im Verein ratlos zurueck.
+    # ErrorDetails traegt bei Web-Fehlern die Antwort des Servers, sonst greift die Ausnahme.
+    $detail = if ($_.ErrorDetails -and $_.ErrorDetails.Message) { $_.ErrorDetails.Message } else { $_.Exception.Message }
+    Write-Host "  ! Creating the app admin failed: $detail"
+    Write-Host "    Create it later in the PocketBase console ($LOCAL/_/)."
+  }
   Stop-Process -Id $boot.Id -Force -ErrorAction SilentlyContinue
   Write-Host "-- Setup complete --`n"
 }

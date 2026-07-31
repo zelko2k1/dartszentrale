@@ -252,21 +252,32 @@ jobs:
           $proc = Start-Process powershell -PassThru -RedirectStandardOutput $log -RedirectStandardError $err `
             -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $script
           try {
-            $healthy = $false
-            for ($i = 0; $i -lt 120; $i++) {
-              try { Invoke-RestMethod 'http://127.0.0.1:8090/api/health' -TimeoutSec 2 | Out-Null; $healthy = $true; break }
-              catch { Start-Sleep -Milliseconds 500 }
-            }
-            if (-not $healthy) { throw 'PocketBase kam nicht hoch.' }
-            if (-not (Test-Path (Join-Path $env:BUNDLE_A 'pb_data'))) { throw 'pb_data fehlt.' }
-
-            # Der eigentliche Beweis: das angelegte App-Konto kann sich wirklich anmelden.
+            # Auf die ANMELDUNG warten, nicht auf /api/health. Die Einrichtung startet PocketBase
+            # zwischendurch selbst, um das App-Konto per REST anzulegen — health antwortet also
+            # schon, waehrend es das Konto noch gar nicht gibt. Wer hier nur einmal anklopft,
+            # bekommt 400 und haelt den Erststart faelschlich fuer kaputt.
             $body = @{ identity = $env:APP_ADMIN_EMAIL; password = $env:APP_ADMIN_PASS } | ConvertTo-Json
-            $auth = Invoke-RestMethod -Method Post -ContentType 'application/json' -Body $body `
-              -Uri 'http://127.0.0.1:8090/api/collections/users/auth-with-password'
+            $auth = $null
+            for ($i = 0; $i -lt 180; $i++) {
+              if ($proc.HasExited) { throw "Das Skript hat sich vorzeitig beendet (Code $($proc.ExitCode))." }
+              try {
+                $auth = Invoke-RestMethod -Method Post -ContentType 'application/json' -Body $body -TimeoutSec 5 `
+                  -Uri 'http://127.0.0.1:8090/api/collections/users/auth-with-password'
+                break
+              } catch { Start-Sleep -Milliseconds 500 }
+            }
+            if (-not $auth) { throw 'Der App-Admin konnte sich innerhalb von 90 Sekunden nicht anmelden.' }
+            if (-not (Test-Path (Join-Path $env:BUNDLE_A 'pb_data'))) { throw 'pb_data fehlt.' }
             if ($auth.record.role -ne 'admin') { throw "Rolle ist '$($auth.record.role)', erwartet 'admin'." }
             if (-not $auth.record.active) { throw 'Konto ist nicht aktiv (die 403-Falle).' }
             Write-Host "+ Erststart in Ordnung, App-Admin meldet sich an."
+
+            # Der zweite Lauf braucht den fertigen Server auf dem Port — nach der Einrichtung
+            # tauscht das Skript die Instanz aus, kurz ist der Port frei. Erst warten.
+            for ($i = 0; $i -lt 60; $i++) {
+              try { Invoke-RestMethod 'http://127.0.0.1:8090/api/health' -TimeoutSec 2 | Out-Null; break }
+              catch { Start-Sleep -Milliseconds 500 }
+            }
 
             # Zweiter Lauf gegen denselben Port: muss VOR jeder Aenderung abbrechen.
             $zweit = Start-Process powershell -PassThru -Wait `

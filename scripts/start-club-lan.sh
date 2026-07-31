@@ -135,11 +135,16 @@ if [ ! -d "$DATA" ]; then
     echo "  ✗ Login with the console account failed — setup aborted."
     exit 1
   fi
-  if curl -fsS -X POST "$LOCAL/api/collections/users/records" -H "Authorization: $TOKEN" -H 'Content-Type: application/json' \
-       -d "{\"email\":\"$(json_escape "$ADMIN_EMAIL")\",\"password\":\"$(json_escape "$ADMIN_PW")\",\"passwordConfirm\":\"$(json_escape "$ADMIN_PW")\",\"emailVisibility\":true,\"verified\":true,\"name\":\"Administrator\",\"first\":\"Administrator\",\"last\":\"\",\"role\":\"admin\",\"active\":true}" >/dev/null 2>&1; then
+  # Bewusst OHNE '-f': bei einem Fehler soll die Antwort des Servers lesbar bleiben. Ein blankes
+  # "failed" laesst den Betreiber im Verein ratlos zurueck; der Grund steht in der Antwort.
+  ADMIN_OUT="$(curl -sS -o /dev/stdout -w '\n%{http_code}' -X POST "$LOCAL/api/collections/users/records" \
+       -H "Authorization: $TOKEN" -H 'Content-Type: application/json' \
+       -d "{\"email\":\"$(json_escape "$ADMIN_EMAIL")\",\"password\":\"$(json_escape "$ADMIN_PW")\",\"passwordConfirm\":\"$(json_escape "$ADMIN_PW")\",\"emailVisibility\":true,\"verified\":true,\"name\":\"Administrator\",\"first\":\"Administrator\",\"last\":\"\",\"role\":\"admin\",\"active\":true}" 2>&1 || true)"
+  if [ "$(printf '%s' "$ADMIN_OUT" | tail -n1)" = "200" ]; then
     echo "  ✓ App administrator created: $ADMIN_EMAIL"
   else
-    echo "  ⚠ Creating the app admin failed – do it later in the PocketBase console ($LOCAL/_/)."
+    echo "  ⚠ Creating the app admin failed: $(printf '%s' "$ADMIN_OUT" | head -n-1)"
+    echo "    Create it later in the PocketBase console ($LOCAL/_/)."
   fi
   # From here the database is usable (console account exists) → keep it, disarm the cleanup.
   SETUP_OK=1
