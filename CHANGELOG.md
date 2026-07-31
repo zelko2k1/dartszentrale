@@ -7,7 +7,57 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+### Hinzugefügt
+- **Aussagekräftigere Spieler-Statistik.** Neu im Spieler-Detail: eine **Kopf-an-Kopf-Bilanz** je
+  Gegner, **Filter** nach Spieltyp (Startpunktzahl) und Wettbewerb (Liga/Frei), eine **umschaltbare
+  Formkurve** (Ø · Checkout-% · First-9 · 180er) und die Kennzahl **„Darts geworfen"**.
+- **Trainings-Verlauf je Modus.** Bisher merkte sich das Training nur den Bestwert; jetzt wird jedes
+  wertbare Ergebnis mitgeschrieben (die letzten 40 je Modus) und im Spieler-Detail als Karte
+  **„Trainings-Verlauf"** neben dem Bestwert gezeigt. Läuft im bestehenden Datenfeld — **keine
+  Schema-Änderung an PocketBase nötig**, im Vereinsmodus synchronisiert es sich wie gewohnt.
+- **Vollständig englische Oberfläche.** Rund 950 bislang fest deutsche Textstellen sind übersetzt;
+  ein neuer Prüfer in der CI hält das dauerhaft grün, damit künftige Bildschirme nicht wieder
+  einsprachig einreißen.
+- **Einheitliche Leerzustände.** Statt lieblosem „Noch keine …" jetzt Icon, Text und — wo es hilft —
+  die passende Aktion gleich daneben: Dashboard-Widgets, Statistik beim Erststart, Handy-Agenda.
+
+### Geändert
+- **Der 3-Dart-Schnitt wird jetzt echt gerechnet — eure Zahlen verschieben sich gegenüber 1.0.9.**
+  Bisher galt Punkte/Aufnahme, jetzt Punkte/Darts × 3. Damit zählen **effiziente Checkouts mit ein
+  oder zwei Darts** endlich richtig. Zusätzlich wird der Lebenszeit-Schnitt (Ø 3-Dart, First-9)
+  **nach geworfenen Darts gewichtet** statt als Mittel der Match-Mittel — eine Drei-Aufnahmen-Partie
+  wiegt nicht mehr so schwer wie ein volles Match. Wirkt überall: Statistik, Spieler-Detail,
+  Dashboard-Bestenliste, Mannschafts-Ø. Alte Matches ohne erfasste Dartzahl fallen sauber auf die
+  bisherige Rechnung zurück.
+- **Barrierefreiheit und Farben über alle sechs Themes.** Kein Farbpaar bleibt mehr unter der
+  AA-Schwelle (vorher 79), der schlechteste Primärbutton stieg von 1,97:1 auf 9,47:1, und der
+  Fokus-Ring ist in jedem Preset erkennbar (vorher in 8 von 10 Hell-Presets unbrauchbar). Dazu eine
+  echte Überschriften-Gliederung und Live-Bereiche, die Änderungen ansagen.
+- **44 Pixel Touch-Fläche sind jetzt garantiert, nicht mehr optional.** Die Regel galt an 13 von 309
+  Schaltflächen; jetzt erbt sie **jedes** Bedienelement, sobald ein grober Zeiger im Spiel ist
+  (Board-Tablet, Handy). An der Maus bleibt die Oberfläche so kompakt wie bisher. Ergänzend passen
+  sich nun auch **Spieler-, Benutzer- und Einstellungs-Bildschirm** am Handy an — die restlichen
+  Verwaltungsbildschirme taten das schon.
+- **Zuschauer-TV, Handy-Fernbedienung und Board-Overlay folgen den Themes.** Diese Flächen trugen
+  102 eigene Farbwerte und lagen damit außerhalb jeder Kontrastprüfung — ein Theme-Wechsel ging an
+  ihnen vorbei. Jetzt nutzen sie dieselben Farb-Token wie der Rest, und der Prüfer erfasst sie mit.
+- **Die Anmeldung lässt sich nicht mehr doppelt abschicken.** Bei aktivem 2FA konnte schnelles
+  Doppelklicken mehrere Anmeldeversuche auslösen, ohne dass etwas sichtbar passierte. Der Knopf
+  zeigt jetzt „Anmelden …" und sperrt, bis die Antwort da ist.
+- **Kleinere App, schnellerer Start.** Das ausgelieferte Paket schrumpft von 2,0 MB auf 1,5 MB.
+- **Betreiber-Hinweis: Konto-Adressen sind Pflicht-Umgebungsvariablen.** Die Skripte unter
+  `pocketbase/` haben keine eingebauten Vorgabe-Adressen mehr (auch `setup-cloud.sh` fragt ohne
+  Default). Wer sie benutzt, setzt jetzt `PB_SU_EMAIL`, `USER_EMAIL` bzw. `BOARD_EMAIL` — sonst
+  bricht das Skript mit einer Anleitung ab, statt still ein Konto mit falscher Adresse anzulegen.
+  Am bequemsten einmalig in `pocketbase/.env.local` hinterlegen.
+
 ### Behoben
+- **Der login-freie Zuschauer-TV hat noch nie funktioniert.** Der Server sortierte die laufenden
+  Spiele nach einem Feld, das für diese Daten gar nicht angelegt wird — jede Abfrage mit gültigem
+  Zugangslink brach ab, auch wenn überhaupt kein Spiel lief. **Wichtig beim Update:** der Fix liegt
+  im Server-Teil (`pocketbase/pb_hooks/`), das reine Frontend-Update-Paket enthält ihn also **nicht**.
+  Im LAN-Bundle dafür den kompletten Ordner ersetzen und `pb_data` behalten; unter Docker/Arcane neu
+  bauen und ausrollen.
 - **Erststart im Vereinsmodus (LAN) bricht nicht mehr stumm ab.** Konnte PocketBase beim
   Einrichten nicht starten oder die Anmeldung des Konsolenkontos nicht gelingen, endete
   `start-club-lan` ohne Meldung — der im Hintergrund gestartete Server lief weiter und belegte
