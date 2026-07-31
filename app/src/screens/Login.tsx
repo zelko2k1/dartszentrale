@@ -27,17 +27,20 @@ export function Login() {
       display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, overflow: 'auto',
     }}>
       <div style={{ width: 420, maxWidth: '94vw' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 22, padding: '0 2px' }}>
+        {/* Vereinslogo steht ueber dem Namen, mittig — der Verein ist das Erste, was man sieht.
+            Die Groesse kommt ungekuerzt aus den Einstellungen (48–160 px): in dieser Anordnung
+            darf das Logo gross sein, waehrend es neben dem Text gedeckelt werden musste. */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, marginBottom: 26, padding: '0 2px' }}>
           {(() => {
             const logoSize = s.settings.loginLogoSize ?? 88;
-            const lockSize = Math.min(logoSize, 56);
             return s.settings.clubLogo
-              ? <img src={s.settings.clubLogo} alt={tr.sidebar.clubLogoAlt} style={{ width: lockSize, height: lockSize, borderRadius: Math.round(lockSize * 0.2), objectFit: 'contain', flexShrink: 0 }} />
-              : <Logo size={lockSize} />;
+              ? <img src={s.settings.clubLogo} alt={tr.sidebar.clubLogoAlt} style={{ width: logoSize, height: logoSize, borderRadius: Math.round(logoSize * 0.2), objectFit: 'contain', flexShrink: 0 }} />
+              : <Logo size={logoSize} />;
           })()}
-          <div style={{ minWidth: 0 }}>
+          <div style={{ textAlign: 'center', minWidth: 0 }}>
             <div style={{ fontSize: 'var(--fs-heading)', fontWeight: 800, letterSpacing: '-.01em', lineHeight: 1.1 }}>DartsZentrale</div>
-            <div style={{ fontSize: 'var(--fs-sub)', color: 'var(--text-4)', fontWeight: 600, marginTop: 3 }}>{s.settings.clubName ? `${s.settings.clubName} · ` : ''}{tr.login.management}</div>
+            {/* Ohne gepflegten Vereinsnamen bleibt die Zeile ganz weg, statt leer Platz zu halten. */}
+            {s.settings.clubName && <div style={{ fontSize: 'var(--fs-sub)', color: 'var(--text-4)', fontWeight: 600, marginTop: 3 }}>{s.settings.clubName}</div>}
           </div>
         </div>
 

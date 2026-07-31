@@ -1337,7 +1337,6 @@ export const de = {
   },
 
   login: {
-    management: 'Vereinsverwaltung',
     signIn: 'Anmelden',
     signingIn: 'Anmelden …',
     signInSub: 'Mit deinem Vereinskonto anmelden',
