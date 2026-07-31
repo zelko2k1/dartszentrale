@@ -2,6 +2,11 @@
 # PocketBase SERVES the built frontend from pb_public\ and is also the API — one port.
 # The first run creates two admin accounts (console + app) — the operator sets the passwords, nothing is stored.
 #   Environment (optional): $env:PORT, $env:PB_HOST (0.0.0.0 = reachable on the LAN, 127.0.0.1 = local only)
+#
+# Unattended first run: set $env:PB_SU_EMAIL / $env:PB_SU_PASS (console) and
+# $env:APP_ADMIN_EMAIL / $env:APP_ADMIN_PASS (app) — the same names setup-cloud.sh uses. Whatever
+# is preset is not asked for. Meant for automated setups and for the CI smoke test; at the club
+# just start the script and answer the questions.
 $ErrorActionPreference = 'Stop'
 $ROOT = $PSScriptRoot
 $PB_VERSION = if ($env:PB_VERSION) { $env:PB_VERSION } else { '0.39.5' }
@@ -15,14 +20,21 @@ $serveArgs = @('serve','--automigrate=0',"--http=${BIND}:${PORT}","--dir=$DATA",
   "--publicDir=$(Join-Path $ROOT 'pb_public')")
 
 # ── Input helpers (first run only) ───────────────────────────────────────────
-function Read-NonEmpty([string]$prompt, [string]$default='') {
+# Preset values win over the prompt — that is what makes an unattended run (and the CI smoke
+# test) possible at all: Read-Host -AsSecureString cannot be fed from a pipe.
+function Read-NonEmpty([string]$prompt, [string]$preset='') {
+  if ($preset) { return $preset }
   while ($true) {
     $v = Read-Host $prompt
-    if (-not $v) { if ($default) { return $default } else { continue } }
+    if (-not $v) { continue }
     return $v
   }
 }
-function Read-Pw([string]$prompt) {
+function Read-Pw([string]$prompt, [string]$preset='') {
+  if ($preset) {
+    if ($preset.Length -lt 8) { Write-Host "x The preset password is shorter than 8 characters - PocketBase rejects it."; exit 1 }
+    return $preset
+  }
   while ($true) {
     $s1 = Read-Host "$prompt (min. 8)" -AsSecureString
     $s2 = Read-Host '     repeat'  -AsSecureString
@@ -78,12 +90,12 @@ if (-not (Test-Path $DATA)) {
   Write-Host "  1) PocketBase console (maintenance/recovery at $LOCAL/_/):"
   # No preset address on purpose: this repo is public, and a built-in admin address
   # both reveals the account name and invites leaving it unchanged.
-  $suEmail = Read-NonEmpty '     Email'
-  $suPw    = Read-Pw       '     Password'
+  $suEmail = Read-NonEmpty '     Email' $env:PB_SU_EMAIL
+  $suPw    = Read-Pw       '     Password' $env:PB_SU_PASS
   Write-Host ""
   Write-Host "  2) App administrator (login in DartsZentrale):"
-  $adminEmail = Read-NonEmpty '     Email'
-  $adminPw    = Read-Pw       '     Password'
+  $adminEmail = Read-NonEmpty '     Email' $env:APP_ADMIN_EMAIL
+  $adminPw    = Read-Pw       '     Password' $env:APP_ADMIN_PASS
   Write-Host ""
   Write-Host "  * Creating accounts ..."
   # Create the superuser (password only as a CLI argument — never stored anywhere).

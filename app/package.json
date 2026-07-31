@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=13",
     "test": "vitest run",
     "test:ci": "vitest run --reporter=default --reporter=json --outputFile.json=vitest-report.json && node scripts/check-no-skipped-tests.mjs && node scripts/validate-palette.mjs && node scripts/validate-a11y.mjs && node scripts/validate-i18n.mjs && node scripts/validate-type.mjs",
     "preview": "vite preview",

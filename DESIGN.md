@@ -295,6 +295,22 @@ Die eigentliche Signatur dieses Systems ist keine Komponente, sondern die Kombin
 
 Jedes interaktive Element zeigt bei Tastaturnavigation einen Ring: `outline: 2px solid var(--focus-ring)` mit 2 px Versatz, gesetzt ueber `:where(…):focus-visible` mit `!important`. `:where()` haelt die Spezifitaet bei 0 (leicht ueberschreibbar), das `!important` schlaegt das inline gesetzte `outline: none` der vielen inline gestylten Elemente. Nur `:focus-visible` — Mausklicks bleiben ringfrei.
 
+### Tastaturbetrieb am Board (harte Anforderung, nicht verhandelbar)
+
+**Jedes Spiel muss sich vollstaendig ohne Maus spielen lassen — von der Navigation bis zum Ende-Bildschirm.** Am Board steht keine Maus: gezaehlt wird auf einer Tastatur, im Stehen, aus zwei Metern Entfernung. Ein Spiel, das an genau einer Stelle einen Klick verlangt, ist dort unbenutzbar, und keine klickende Pruefung wird das je bemerken.
+
+Die Kette, die halten muss: **Navigation → Modus waehlen → starten → Aufnahme eintragen → zuruecknehmen → beenden.** Reisst ein Glied, ist das Spiel am Board tot, auch wenn jedes andere gruen ist.
+
+Die drei Muster, aus denen sich das zusammensetzt:
+
+- **Feste Auswahl** (Treffer 0–3, Vorruecken, Runs): direkte Zifferntasten ueber `useTrainKeys`, im Panel sichtbar angeschrieben (`(Tasten 0–3)`). Der Griff zur Tastatur darf nicht geraten werden muessen.
+- **Freie Punktzahl** (Halve It, Elimination): `autoFocus` auf dem Zahlenfeld, Enter traegt ein, und der Fokus **bleibt** danach im Feld. Ein Feld, das man erst anklicken muss, ist derselbe Fehler wie ein fehlendes Kuerzel.
+- **Globale Aktionen**: Zuruecknehmen und Beenden liegen auf konfigurierbaren Kuerzeln (Vorgabe `Alt+U` / `Alt+X`) und gelten im ganzen Spiel, unabhaengig vom Fokus.
+
+Massgeblich ist die **Aktion**, nicht die Flaeche: jede Aktion braucht genau einen Tabstopp mit echter Button-Semantik (`PressableRow`, sonst `role="button"` + `tabIndex` + `onKeyDown`). Eine grosszuegige Klickflaeche darum herum darf ein schlichtes `<div onClick>` bleiben — so machen es die Kacheln der Trainingsuebersicht, deren Tabstopp am Modusnamen sitzt. Ein zweiter Tabstopp fuer dieselbe Aktion waere kein Gewinn, sondern ein Umweg. Falsch ist nur das eine: eine Aktion, die **ausschliesslich** an einem `<div onClick>` haengt — anklickbar, per Tastatur unerreichbar, optisch nicht zu unterscheiden.
+
+Abgesichert ist das durch `app/e2e/keyboard.spec.ts`: die Pruefung ruehrt die Maus nicht an (kein `click()`, kein `fill()`) und tabbt sich durch die ganze Kette. Wer ein Spiel ergaenzt, ergaenzt dort einen Fall — sonst ist die Anforderung nur eine Absichtserklaerung.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -315,4 +331,5 @@ Jedes interaktive Element zeigt bei Tastaturnavigation einen Ring: `outline: 2px
 - **Don't** Text unter 11 px setzen.
 - **Don't** eine eigene Fokus-Anzeige bauen, die die Grundregel ersetzt. Zusaetzlich ja, anstelle nein.
 - **Don't** Touch-Ziele einzeln anfordern. Sie werden geerbt; Ausnahmen tragen `.dh-dense` am Container.
+- **Don't** einen Spielschritt nur anklickbar machen. Am Board gibt es keine Maus — siehe Tastaturbetrieb oben.
 - **Don't** zwei Primaerbuttons auf einen Bildschirm stellen.

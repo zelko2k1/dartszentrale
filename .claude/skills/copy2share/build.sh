@@ -202,11 +202,15 @@ UPDATE spaeter — per Skript (auch PocketBase):  ./update-server.sh
 (erkennt die Dienste, baut neu, startet neu). pb_data (deine DB) bleibt erhalten.
 TXT
 
-# ── Shell-Skripte auf LF normalisieren + ausführbar machen ──────────────────
-# Wird build.sh unter Windows (Git Bash) ausgeführt, hätten kopierte .sh sonst CRLF
+# ── Zeilenenden je Zielsystem normalisieren ─────────────────────────────────
+# .sh → LF: wird build.sh unter Windows (Git Bash) ausgeführt, hätten kopierte .sh sonst CRLF
 # und würden auf einem Linux-Server scheitern (#!/usr/bin/env bash\r).
 find "$TARGET" -name '*.sh' -type f -exec sed -i 's/\r$//' {} + 2>/dev/null || true
 find "$TARGET" -name '*.sh' -type f -exec chmod +x {} + 2>/dev/null || true
+# .bat → CRLF: im Repo liegen sie mit LF. cmd.exe verkraftet das bei geraden Befehlsfolgen,
+# stolpert aber über Sprungmarken/`goto` — und der Verein merkt es erst beim Doppelklick.
+# Der Ausdruck ist idempotent: vorhandene CR werden nicht verdoppelt.
+find "$TARGET" -name '*.bat' -type f -exec sed -i 's/\r*$/\r/' {} + 2>/dev/null || true
 
 # ── ZIP je Variante (zip, sonst PowerShell Compress-Archive) ────────────────
 make_zip(){ local base="$1"

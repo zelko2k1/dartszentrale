@@ -7,6 +7,20 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+### Hinzugefügt
+- **Unbeaufsichtigter Erststart im Vereinsmodus (LAN).** `start-club-lan` fragt die beiden
+  Konten weiterhin ab — stehen sie aber schon in der Umgebung (`PB_SU_EMAIL`/`PB_SU_PASS` für
+  die Konsole, `APP_ADMIN_EMAIL`/`APP_ADMIN_PASS` für die App, dieselben Namen wie in
+  `setup-cloud.sh`), wird nicht mehr gefragt. Gedacht für automatisierte Einrichtungen; am
+  Vereinsrechner ändert sich nichts. Ein zu kurz vorgegebenes Passwort bricht sofort ab, statt
+  erst bei PocketBase aufzulaufen.
+
+### Behoben
+- **Windows-Startdateien der Verteil-Bundles haben jetzt Windows-Zeilenenden.** Die `.bat`-Dateien
+  wurden mit Unix-Zeilenenden ausgeliefert. Für die einfachen Startdateien geht das gut, bei
+  Sprungmarken stolpert `cmd.exe` aber darüber — und aufgefallen wäre es erst beim Doppelklick im
+  Verein. Die Bundles normalisieren `.sh` weiterhin auf LF und `.bat` nun auf CRLF.
+
 ## [1.1.0] – 2026-07-31
 
 ### Hinzugefügt

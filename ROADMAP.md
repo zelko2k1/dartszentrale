@@ -18,8 +18,10 @@
 
 - [x] ⚙️ #1a Literal aus `seed-remote.sh` entfernt (2026-07-30) — das Skript liest Ziel und Konto
       jetzt aus `pocketbase/.env.local`; die Datei war immer gitignored und nie committet
-- [ ] ⚙️ #1b PB-Superuser-Passwort **rotieren** — offen. Betrifft auch die Homelab-Instanz, deren
-      Passwort bis 2026-07-30 im Klartext in `seed-remote.sh` stand
+- [~] ⚙️ #1b PB-Superuser-Passwort **rotieren** — die **Homelab-Instanz ist erledigt** (2026-07-31,
+      über die Konsole `/_/`). Offen bleiben die App-seitigen Konten (App-Admin, Board-Konten);
+      die ändert man in der App selbst: Einstellungen → Passwort bzw. Benutzerverwaltung →
+      Konto bearbeiten. `reset-password.mjs` ist dafür nur der Rettungsanker
 - [ ] ⚙️ #2 Produktiv-Admin manuell mit starkem Passwort; keine Seeds gegen Prod
 - [ ] ⚙️ #3 PB nicht als Klartext-HTTP im Internet (loopback + Firewall, oder bewusst nur LAN)
 - [ ] ⚙️ #5 PB-Admin-Konsole `/_/` abgeschirmt (Caddy IP-Allowlist/basic_auth bzw. Firewall/VPN), Superuser-MFA + Rate-Limit
