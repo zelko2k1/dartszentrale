@@ -45,7 +45,32 @@ if (-not (Test-Path $PB)) {
 }
 
 # ── 2) First run (no DB yet) → create two admin accounts (CLI + REST, no Node) ─────
+# Removes a half-finished pb_data again: this block only runs when pb_data is MISSING, so an
+# aborted setup would otherwise leave an installation nobody can log into — and never ask again.
+function Remove-HalfSetup($proc) {
+  if ($proc -and -not $proc.HasExited) { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue; Start-Sleep -Milliseconds 300 }
+  if (Test-Path $DATA) {
+    Remove-Item -Recurse -Force $DATA -ErrorAction SilentlyContinue
+    if (Test-Path $DATA) {
+      # Windows keeps database files locked for a moment — say so plainly, because a leftover
+      # pb_data would make the next start skip the setup without asking anything.
+      Write-Host "  ! Could not delete '$DATA' (file still in use). Please delete the folder"
+      Write-Host "    manually before starting again - otherwise no accounts will be created."
+    } else {
+      Write-Host "  -> Nothing was kept - the next start asks for the accounts again."
+    }
+  }
+}
+
 if (-not (Test-Path $DATA)) {
+  # The port has to be free BEFORE anything is created (the setup starts PocketBase briefly).
+  $busy = $false
+  try { $c = New-Object Net.Sockets.TcpClient; $c.Connect('127.0.0.1',[int]$PORT); $busy = $c.Connected; $c.Close() } catch { $busy = $false }
+  if ($busy) {
+    Write-Host "x Port $PORT is already taken - is DartsZentrale (or PocketBase) already running?"
+    Write-Host "  Stop the other program, or pick a different port:  `$env:PORT=8091"
+    exit 1
+  }
   Write-Host "-- Initial setup (first run only) --"
   Write-Host "   Two administrator accounts will be created. The passwords are"
   Write-Host "   NOT stored - please note them down safely (password manager)."
@@ -59,15 +84,39 @@ if (-not (Test-Path $DATA)) {
   Write-Host "  2) App administrator (login in DartsZentrale):"
   $adminEmail = Read-NonEmpty '     Email'
   $adminPw    = Read-Pw       '     Password'
-  # Create the superuser (password only as a CLI argument — never stored anywhere).
-  & $PB superuser upsert $suEmail $suPw --dir $DATA | Out-Null
   Write-Host ""
   Write-Host "  * Creating accounts ..."
+  # Create the superuser (password only as a CLI argument — never stored anywhere).
+  # CAREFUL: the PocketBase CLI reports errors on STDOUT and exits with 0 anyway — the exit code
+  # says nothing, so the output has to be inspected. Deliberately WITHOUT '2>&1': with
+  # $ErrorActionPreference='Stop' a redirected stderr stream can turn into a terminating
+  # NativeCommandError — and the error text arrives on stdout regardless.
+  $suOut = (& $PB superuser upsert $suEmail $suPw --dir $DATA | Out-String)
+  if ($suOut -match 'Error') {
+    Write-Host "  x The console account could not be created:"
+    Write-Host "    $($suOut.Trim())"
+    Remove-HalfSetup $null
+    exit 1
+  }
   # Start PB briefly, create the app admin via REST.
   $boot = Start-Process -FilePath $PB -ArgumentList $serveArgs -PassThru -WindowStyle Hidden
-  for ($i=0; $i -lt 40; $i++) { try { Invoke-RestMethod "$LOCAL/api/health" -TimeoutSec 2 | Out-Null; break } catch { Start-Sleep -Milliseconds 500 } }
+  $healthy = $false
+  for ($i=0; $i -lt 60; $i++) { try { Invoke-RestMethod "$LOCAL/api/health" -TimeoutSec 2 | Out-Null; $healthy = $true; break } catch { Start-Sleep -Milliseconds 500 } }
+  if (-not $healthy) {
+    Write-Host "  x PocketBase did not start within 30 seconds - setup aborted."
+    Remove-HalfSetup $boot
+    exit 1
+  }
+  # Login separately from creating the account: a failed login means a broken setup (start over),
+  # a failed creation only means the app admin is missing (can be added in the console).
   try {
     $auth = Invoke-RestMethod -Method Post -Uri "$LOCAL/api/collections/_superusers/auth-with-password" -ContentType 'application/json' -Body (@{identity=$suEmail;password=$suPw} | ConvertTo-Json)
+  } catch {
+    Write-Host "  x Login with the console account failed - setup aborted."
+    Remove-HalfSetup $boot
+    exit 1
+  }
+  try {
     $body = @{ email=$adminEmail; password=$adminPw; passwordConfirm=$adminPw; emailVisibility=$true; verified=$true; name='Administrator'; first='Administrator'; last=''; role='admin'; active=$true } | ConvertTo-Json
     Invoke-RestMethod -Method Post -Uri "$LOCAL/api/collections/users/records" -Headers @{ Authorization = $auth.token } -ContentType 'application/json' -Body $body | Out-Null
     Write-Host "  + App administrator created: $adminEmail"
