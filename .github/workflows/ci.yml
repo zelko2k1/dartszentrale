@@ -174,7 +174,13 @@ jobs:
             [ -n "${!var:-}" ] || { echo "::error::$var ist leer — die Vereins-Prüfungen würden sich überspringen."; exit 1; }
           done
 
+      # VITE_PB_URL ist BUILD-Zeit und muss hier gesetzt sein: oertlich liefert app/.env.local den
+      # Wert, im Runner gibt es die Datei nicht. Ohne ihn faellt die App auf same-origin zurueck
+      # und schickt die Anmeldung an den Vorschau-Server (:4173) statt an PocketBase (:8090) —
+      # alle Vereins-Pruefungen scheitern dann an der Anmeldung.
       - name: E2E (Build + Playwright)
+        env:
+          VITE_PB_URL: http://127.0.0.1:8090
         run: npm run e2e
         working-directory: app
 
@@ -239,7 +245,11 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $script = Join-Path $env:BUNDLE_A 'start-club-lan.ps1'
-          $proc = Start-Process powershell -PassThru `
+          # Ausgabe mitschneiden: das Skript laeuft in einem eigenen Prozess, ohne Umleitung
+          # waere im Fehlerfall nicht zu sehen, woran es lag.
+          $log = Join-Path $env:RUNNER_TEMP 'start-a.log'
+          $err = Join-Path $env:RUNNER_TEMP 'start-a.err'
+          $proc = Start-Process powershell -PassThru -RedirectStandardOutput $log -RedirectStandardError $err `
             -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $script
           try {
             $healthy = $false
@@ -265,6 +275,12 @@ jobs:
             if (Test-Path (Join-Path $env:BUNDLE_B 'pb_data')) { throw 'Trotz Abbruch wurde pb_data angelegt.' }
             Write-Host "+ Belegter Port bricht sauber ab, ohne etwas anzulegen."
           } finally {
+            Write-Host "----- Ausgabe von start-club-lan.ps1 -----"
+            if (Test-Path $log) { Get-Content $log }
+            if ((Test-Path $err) -and (Get-Item $err).Length -gt 0) {
+              Write-Host "----- Fehlerausgabe -----"
+              Get-Content $err
+            }
             if ($proc -and -not $proc.HasExited) { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue }
             Get-Process pocketbase -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
           }
