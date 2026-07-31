@@ -7,6 +7,10 @@
 #   ./start-club-lan.sh                 # binds to the LAN (other boards/tablets can reach it)
 #   HOST=127.0.0.1 ./start-club-lan.sh  # this computer only (special case)
 #   PORT=8090 ./start-club-lan.sh
+#
+# Unattended first run: set PB_SU_EMAIL/PB_SU_PASS (console) and APP_ADMIN_EMAIL/APP_ADMIN_PASS
+# (app) — the same names setup-cloud.sh uses. Whatever is preset is not asked for. Meant for
+# automated setups and the CI smoke test; at the club just start it and answer the questions.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 PB_VERSION="${PB_VERSION:-0.39.5}"
@@ -36,17 +40,21 @@ serve_args=( serve --automigrate=0 --http="${HOST}:${PORT}"
   --dir="$DATA" --migrationsDir="$ROOT/pb_migrations" --hooksDir="$ROOT/pb_hooks" --publicDir="$ROOT/pb_public" )
 
 # ── Input helpers (first run only) ──────────────────────────────────────────
+# A preset value wins over the prompt — that is what makes an unattended first run possible
+# (see the header). Presets are validated up front, not in here: these helpers run inside a
+# command substitution, where an `exit` would only end the subshell and leave the value empty.
 json_escape() { local s=$1; s=${s//\\/\\\\}; s=${s//\"/\\\"}; printf '%s' "$s"; }
-read_nonempty() {  # $1=prompt  $2=default(optional) → value on stdout
+read_nonempty() {  # $1=prompt  $2=preset(optional) → value on stdout
   local v
+  [ -n "${2:-}" ] && { printf '%s' "$2"; return; }
   while :; do
     read -rp "$1" v
-    [ -z "$v" ] && [ -n "${2:-}" ] && { printf '%s' "$2"; return; }
     [ -n "$v" ] && { printf '%s' "$v"; return; }
   done
 }
-read_pw() {  # $1=prompt → password on stdout (prompts/errors on stderr)
+read_pw() {  # $1=prompt  $2=preset(optional) → password on stdout (prompts/errors on stderr)
   local p1 p2
+  [ -n "${2:-}" ] && { printf '%s' "$2"; return; }
   while :; do
     read -rsp "$1 (min. 8): " p1; echo >&2
     read -rsp "     repeat: " p2; echo >&2
@@ -80,6 +88,13 @@ if [ ! -d "$DATA" ]; then
   }
   trap cleanup_setup EXIT
 
+  # Presets from the environment are checked HERE, in the main shell, where an abort really aborts.
+  for var in PB_SU_PASS APP_ADMIN_PASS; do
+    val="${!var:-}"
+    [ -z "$val" ] || [ "${#val}" -ge 8 ] || {
+      echo "✗ $var is shorter than 8 characters — PocketBase would reject it."; exit 1; }
+  done
+
   echo "── Initial setup (first run only) ──"
   echo "   Two administrator accounts will be created. The passwords are"
   echo "   NOT stored – please note them down safely (password manager)."
@@ -87,12 +102,12 @@ if [ ! -d "$DATA" ]; then
   echo "  1) PocketBase console (maintenance/recovery at $LOCAL/_/):"
   # No preset address on purpose: this repo is public, and a built-in admin address
   # both reveals the account name and invites leaving it unchanged.
-  SU_EMAIL="$(read_nonempty "     Email: ")"
-  SU_PW="$(read_pw "     Password")"
+  SU_EMAIL="$(read_nonempty "     Email: " "${PB_SU_EMAIL:-}")"
+  SU_PW="$(read_pw "     Password" "${PB_SU_PASS:-}")"
   echo
   echo "  2) App administrator (login in DartsZentrale):"
-  ADMIN_EMAIL="$(read_nonempty "     Email: ")"
-  ADMIN_PW="$(read_pw "     Password")"
+  ADMIN_EMAIL="$(read_nonempty "     Email: " "${APP_ADMIN_EMAIL:-}")"
+  ADMIN_PW="$(read_pw "     Password" "${APP_ADMIN_PASS:-}")"
   echo; echo "  • Creating accounts …"
   # Create the superuser (password only as a CLI argument — never stored anywhere).
   # CAREFUL: the PocketBase CLI reports errors on STDOUT and still exits with 0 — the exit code
@@ -120,11 +135,16 @@ if [ ! -d "$DATA" ]; then
     echo "  ✗ Login with the console account failed — setup aborted."
     exit 1
   fi
-  if curl -fsS -X POST "$LOCAL/api/collections/users/records" -H "Authorization: $TOKEN" -H 'Content-Type: application/json' \
-       -d "{\"email\":\"$(json_escape "$ADMIN_EMAIL")\",\"password\":\"$(json_escape "$ADMIN_PW")\",\"passwordConfirm\":\"$(json_escape "$ADMIN_PW")\",\"emailVisibility\":true,\"verified\":true,\"name\":\"Administrator\",\"first\":\"Administrator\",\"last\":\"\",\"role\":\"admin\",\"active\":true}" >/dev/null 2>&1; then
+  # Bewusst OHNE '-f': bei einem Fehler soll die Antwort des Servers lesbar bleiben. Ein blankes
+  # "failed" laesst den Betreiber im Verein ratlos zurueck; der Grund steht in der Antwort.
+  ADMIN_OUT="$(curl -sS -o /dev/stdout -w '\n%{http_code}' -X POST "$LOCAL/api/collections/users/records" \
+       -H "Authorization: $TOKEN" -H 'Content-Type: application/json' \
+       -d "{\"email\":\"$(json_escape "$ADMIN_EMAIL")\",\"password\":\"$(json_escape "$ADMIN_PW")\",\"passwordConfirm\":\"$(json_escape "$ADMIN_PW")\",\"emailVisibility\":true,\"verified\":true,\"name\":\"Administrator\",\"first\":\"Administrator\",\"last\":\"\",\"role\":\"admin\",\"active\":true}" 2>&1 || true)"
+  if [ "$(printf '%s' "$ADMIN_OUT" | tail -n1)" = "200" ]; then
     echo "  ✓ App administrator created: $ADMIN_EMAIL"
   else
-    echo "  ⚠ Creating the app admin failed – do it later in the PocketBase console ($LOCAL/_/)."
+    echo "  ⚠ Creating the app admin failed: $(printf '%s' "$ADMIN_OUT" | head -n-1)"
+    echo "    Create it later in the PocketBase console ($LOCAL/_/)."
   fi
   # From here the database is usable (console account exists) → keep it, disarm the cleanup.
   SETUP_OK=1

@@ -49,6 +49,10 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
 
+      - name: Abhängigkeiten installieren
+        run: npm ci
+        working-directory: app
+
       - name: Version hochzählen
         working-directory: app
         run: npm version "${{ inputs.version }}" --no-git-tag-version
@@ -61,7 +65,15 @@ jobs:
           # Versionsüberschrift, die alle bis dahin gesammelten Notizen aufnimmt.
           perl -0pi -e "s/## \\[Unveröffentlicht\\]/## [Unveröffentlicht]\n\n## [$VERSION] – $DATE/" CHANGELOG.md
 
-      - name: Commit + Tag
+      # ⚠ REIHENFOLGE: bauen, BEVOR irgendetwas nach GitHub geht. Vorher lag der Bau nach
+      # Commit und Tag — scheiterte er, blieben Versions-Commit und Tag auf main zurück, ohne
+      # Release, und man musste von Hand aufräumen (Tag löschen, Commit zurücknehmen). Jetzt
+      # existieren Bump und Stempel bis hierher nur in der Arbeitskopie des Runners: bricht der
+      # Bau ab, ist das Repo unberührt und ein neuer Anlauf kostet nichts.
+      - name: Verteil-Bundles bauen (01-single-board, 02-club-lan, 03-club-cloud + Update-Paket)
+        run: bash .claude/skills/copy2share/build.sh copy2share
+
+      - name: Commit + Tag (erst jetzt — die Bundles stehen)
         run: |
           VERSION="${{ inputs.version }}"
           git config user.name  "github-actions[bot]"
@@ -71,13 +83,6 @@ jobs:
           git tag -a "v$VERSION" -m "DartsZentrale $VERSION"
           git push origin HEAD:main
           git push origin "v$VERSION"
-
-      - name: Abhängigkeiten installieren
-        run: npm ci
-        working-directory: app
-
-      - name: Verteil-Bundles bauen (01-single-board, 02-club-lan, 03-club-cloud + Update-Paket)
-        run: bash .claude/skills/copy2share/build.sh copy2share
 
       - name: GitHub-Release mit Assets erstellen
         env:

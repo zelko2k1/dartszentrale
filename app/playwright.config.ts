@@ -40,7 +40,11 @@ export default defineConfig({
       // Lokale PocketBase für die Vereins-Prüfungen (a11y-verein.spec.ts). Läuft gegen das
       // vorhandene pocketbase/pb_data — die Prüfungen sind deshalb strikt LESEND.
       // Läuft schon eine Instanz, wird sie weiterverwendet statt eine zweite zu starten.
-      command: '../pocketbase/pocketbase serve --http=127.0.0.1:8090 --dir ../pocketbase/pb_data',
+      // Schema und Hooks ausdruecklich mitgeben: die Vorgabewerte haengen am Datenverzeichnis,
+      // nicht am Arbeitsverzeichnis. Fehlen sie, startet eine frische Instanz ohne Schema (nur
+      // "users") und ohne Hooks — die Vereins- und Live-Pruefungen scheitern dann reihenweise.
+      command: '../pocketbase/pocketbase serve --http=127.0.0.1:8090 --dir ../pocketbase/pb_data'
+        + ' --migrationsDir ../pocketbase/pb_migrations --hooksDir ../pocketbase/pb_hooks',
       url: 'http://127.0.0.1:8090/api/health',
       reuseExistingServer: true,
       timeout: 60_000,

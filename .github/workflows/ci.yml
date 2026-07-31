@@ -1,6 +1,6 @@
-# CI — runs on every push and pull request: lint, tests, production build.
-# Keeps the green checkmark honest: if this fails, the app would not build or
-# a scoring rule is broken.
+# CI — runs on every push and pull request: lint, tests, production build, browser checks.
+# Keeps the green checkmark honest: if this fails, the app would not build, a scoring rule is
+# broken, or a screen has become unusable.
 name: CI
 
 on:
@@ -37,3 +37,261 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  # ── Changelog gepflegt? ────────────────────────────────────────────────────
+  # Die Abschnitte 1.0.6 bis 1.0.9 sind leer geblieben, und 1.1.0 waere fast leer erschienen:
+  # der Release-Workflow stempelt „Unveroeffentlicht" auf die neue Version, und was dort nicht
+  # steht, erfaehrt kein Verein. Diese Pruefung verlangt bei Aenderungen an ausgeliefertem Code
+  # einen Eintrag. Ausweg fuer Umbauten ohne sichtbare Wirkung: Label `no-changelog` am PR.
+  changelog:
+    name: Changelog gepflegt
+    if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'no-changelog')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Eintrag verlangen, wenn ausgelieferter Code sich aendert
+        run: |
+          set -euo pipefail
+          base="origin/${{ github.base_ref }}"
+          changed="$(git diff --name-only "$base...HEAD")"
+          # Nur was beim Verein ankommt: Oberflaeche, Server-Teil, Betriebsskripte.
+          # Tests, CI und Doku bleiben bewusst aussen vor — sie aendern nichts am Betrieb.
+          code="$(printf '%s\n' "$changed" | grep -E '^(app/src/|pocketbase/pb_hooks/|pocketbase/pb_migrations/|scripts/)' || true)"
+          if [ -z "$code" ]; then
+            echo "Kein ausgeliefertes Verhalten geaendert — kein Eintrag noetig."
+            exit 0
+          fi
+          if printf '%s\n' "$changed" | grep -qx 'CHANGELOG.md'; then
+            echo "Changelog ist gepflegt."
+            exit 0
+          fi
+          echo "::error::Dieser PR aendert ausgelieferten Code, aber nicht CHANGELOG.md."
+          printf '%s\n' "$code" | sed 's/^/  · /'
+          echo "Bitte unter '## [Unveroeffentlicht]' eintragen — oder das Label 'no-changelog' setzen, wenn sich fuer den Verein nichts aendert."
+          exit 1
+
+  # ── Browser-Prüfungen (Playwright) ─────────────────────────────────────────
+  # Liefen bisher NUR von Hand. Folge: die Vereinsmodus-Prüfungen — also genau der Modus, den
+  # Vereine benutzen — übersprangen sich überall selbst, weil nirgends Zugangsdaten gesetzt waren.
+  # Dieser Job zieht eine WEGWERF-PocketBase hoch, richtet sie wie eine echte Installation ein
+  # (Superuser, App-Admin, Board-Konto, Demodaten) und lässt die Suite vollständig laufen.
+  e2e:
+    name: E2E im Browser (inkl. Vereinsmodus)
+    runs-on: ubuntu-latest
+    env:
+      # Gepinnt wie in pocketbase/Dockerfile und scripts/start-club-lan.* — beim Upgrade mitziehen.
+      PB_VERSION: 0.39.5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: app
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        working-directory: app
+
+      # Wegwerf-Zugangsdaten, im Lauf gewürfelt: sie existieren nur für die Dauer dieses Jobs,
+      # deshalb braucht es kein Repo-Secret (und niemand kann vergessen, eins zu hinterlegen).
+      # add-mask hält sie trotzdem aus dem Protokoll.
+      - name: Zugangsdaten für die Wegwerf-Instanz erzeugen
+        run: |
+          set -euo pipefail
+          for var in PB_SU_PASS DZ_E2E_PASS DZ_E2E_BOARD_PASS MEMBER_PW; do
+            value="$(openssl rand -hex 20)"
+            echo "::add-mask::$value"
+            echo "$var=$value" >> "$GITHUB_ENV"
+          done
+          {
+            echo "PB_SU_EMAIL=ci-superuser@dartszentrale.invalid"
+            echo "DZ_E2E_EMAIL=ci-admin@dartszentrale.invalid"
+            echo "DZ_E2E_BOARD_EMAIL=ci-board1@dartszentrale.invalid"
+          } >> "$GITHUB_ENV"
+
+      - name: PocketBase laden
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/pb.zip \
+            "https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip"
+          unzip -o /tmp/pb.zip pocketbase -d pocketbase/
+          chmod +x pocketbase/pocketbase
+
+      # Richtet die Instanz genau so ein, wie start-club-lan.sh es beim Verein tut: Superuser per
+      # CLI, App-Admin per REST, danach Inhalte. Am Ende wird die Instanz wieder gestoppt —
+      # Playwright startet sie selbst (webServer in playwright.config.ts).
+      - name: Wegwerf-Instanz einrichten
+        working-directory: pocketbase
+        run: |
+          set -euo pipefail
+          # Die PocketBase-CLI meldet Fehler auf STDOUT und liefert TROTZDEM Rückgabewert 0 —
+          # deshalb die Ausgabe prüfen, nicht den Code.
+          out="$(./pocketbase superuser upsert "$PB_SU_EMAIL" "$PB_SU_PASS" --dir pb_data 2>&1 || true)"
+          case "$out" in *Error*) echo "::error::Superuser konnte nicht angelegt werden: $out"; exit 1 ;; esac
+
+          # --migrationsDir/--hooksDir MUESSEN mit: die Vorgabewerte haengen am Datenverzeichnis,
+          # nicht am Arbeitsverzeichnis. Ohne sie bleibt die frische Datenbank ohne Schema (nur
+          # "users") und ohne Hooks — nachgemessen, kostet sonst eine Stunde Fehlersuche.
+          ./pocketbase serve --http=127.0.0.1:8090 --dir pb_data \
+            --migrationsDir pb_migrations --hooksDir pb_hooks > /tmp/pb.log 2>&1 &
+          pb_pid=$!
+          for _ in $(seq 1 60); do curl -fsS http://127.0.0.1:8090/api/health >/dev/null 2>&1 && break; sleep 0.5; done
+          curl -fsS http://127.0.0.1:8090/api/health >/dev/null || { echo "::error::PocketBase kam nicht hoch"; cat /tmp/pb.log; exit 1; }
+
+          token="$(curl -fsS -X POST http://127.0.0.1:8090/api/collections/_superusers/auth-with-password \
+                     -H 'Content-Type: application/json' \
+                     -d "{\"identity\":\"$PB_SU_EMAIL\",\"password\":\"$PB_SU_PASS\"}" \
+                   | node -pe "JSON.parse(require('fs').readFileSync(0,'utf8')).token")"
+          [ -n "$token" ] || { echo "::error::Superuser-Anmeldung fehlgeschlagen"; exit 1; }
+
+          curl -fsS -X POST http://127.0.0.1:8090/api/collections/users/records \
+            -H "Authorization: $token" -H 'Content-Type: application/json' \
+            -d "{\"email\":\"$DZ_E2E_EMAIL\",\"password\":\"$DZ_E2E_PASS\",\"passwordConfirm\":\"$DZ_E2E_PASS\",\"emailVisibility\":true,\"verified\":true,\"name\":\"CI Admin\",\"first\":\"CI\",\"last\":\"Admin\",\"role\":\"admin\",\"active\":true}" > /dev/null
+
+          # Reihenfolge zählt: demo-seed leert alle Nicht-Admin-Konten, das Board-Konto muss also
+          # DANACH entstehen, sonst räumt der Seed es gleich wieder weg.
+          node demo-seed.mjs
+          BOARD_EMAIL="$DZ_E2E_BOARD_EMAIL" BOARD_PW="$DZ_E2E_BOARD_PASS" BOARD_NUMBER=1 node add-board-account.mjs
+
+          kill "$pb_pid" 2>/dev/null || true
+          wait "$pb_pid" 2>/dev/null || true
+
+      # Ohne diese Zusicherung wäre der Job auch dann grün, wenn sich die Vereins-Prüfungen wieder
+      # stillschweigend überspringen — also genau in dem Zustand, den dieser Job beheben soll.
+      - name: Zusichern, dass die Vereins-Prüfungen laufen
+        run: |
+          set -euo pipefail
+          for var in DZ_E2E_EMAIL DZ_E2E_PASS DZ_E2E_BOARD_EMAIL DZ_E2E_BOARD_PASS; do
+            [ -n "${!var:-}" ] || { echo "::error::$var ist leer — die Vereins-Prüfungen würden sich überspringen."; exit 1; }
+          done
+
+      # VITE_PB_URL ist BUILD-Zeit und muss hier gesetzt sein: oertlich liefert app/.env.local den
+      # Wert, im Runner gibt es die Datei nicht. Ohne ihn faellt die App auf same-origin zurueck
+      # und schickt die Anmeldung an den Vorschau-Server (:4173) statt an PocketBase (:8090) —
+      # alle Vereins-Pruefungen scheitern dann an der Anmeldung.
+      - name: E2E (Build + Playwright)
+        env:
+          VITE_PB_URL: http://127.0.0.1:8090
+        run: npm run e2e
+        working-directory: app
+
+      - name: Bericht sichern
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            app/playwright-report
+            app/e2e/.artifacts
+          retention-days: 7
+
+  # ── Erststart unter Windows ────────────────────────────────────────────────
+  # start-club-lan.ps1 geht an Endnutzer, wurde aber nie ausgefuehrt: der Handtest stand seit
+  # Wochen offen, waehrend die Datei sich weiter aenderte. Dieser Job spielt den Erststart
+  # tatsaechlich durch — inklusive des Abbruchpfads bei belegtem Port.
+  #
+  # Gestartet wird ueber `powershell` (Windows PowerShell 5.1), nicht `pwsh`: genau so ruft es
+  # start-club-lan.bat auf dem Vereinsrechner auf, und 5.1 verhaelt sich bei nativen Befehlen
+  # und $ErrorActionPreference anders als PowerShell 7.
+  windows-erststart:
+    name: Erststart unter Windows (start-club-lan.ps1)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Testbuendel zusammenstellen
+        shell: pwsh
+        run: |
+          # Wie das Bundle 02-club-lan, nur ohne gebautes Frontend: geprueft wird die
+          # Einrichtung, nicht die Oberflaeche — dafuer genuegt ein Platzhalter in pb_public.
+          foreach ($name in 'a', 'b') {
+            $dir = Join-Path $env:RUNNER_TEMP "club-lan-$name"
+            New-Item -ItemType Directory -Force -Path (Join-Path $dir 'pb_public') | Out-Null
+            Copy-Item scripts/start-club-lan.ps1 $dir
+            Copy-Item -Recurse -Force pocketbase/pb_migrations (Join-Path $dir 'pb_migrations')
+            Copy-Item -Recurse -Force pocketbase/pb_hooks (Join-Path $dir 'pb_hooks')
+            Set-Content (Join-Path $dir 'pb_public/index.html') '<html><body>DZ</body></html>'
+          }
+          "BUNDLE_A=$(Join-Path $env:RUNNER_TEMP 'club-lan-a')" >> $env:GITHUB_ENV
+          "BUNDLE_B=$(Join-Path $env:RUNNER_TEMP 'club-lan-b')" >> $env:GITHUB_ENV
+
+      - name: Zugangsdaten fuer den Testlauf erzeugen
+        shell: pwsh
+        run: |
+          $su = [guid]::NewGuid().ToString('N')
+          $ad = [guid]::NewGuid().ToString('N')
+          Write-Host "::add-mask::$su"
+          Write-Host "::add-mask::$ad"
+          @(
+            "PB_SU_EMAIL=ci-superuser@dartszentrale.invalid"
+            "PB_SU_PASS=$su"
+            "APP_ADMIN_EMAIL=ci-admin@dartszentrale.invalid"
+            "APP_ADMIN_PASS=$ad"
+            "PB_HOST=127.0.0.1"
+            "PORT=8090"
+          ) | ForEach-Object { $_ >> $env:GITHUB_ENV }
+
+      - name: Erststart laeuft unbeaufsichtigt durch und legt beide Konten an
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $script = Join-Path $env:BUNDLE_A 'start-club-lan.ps1'
+          # Ausgabe mitschneiden: das Skript laeuft in einem eigenen Prozess, ohne Umleitung
+          # waere im Fehlerfall nicht zu sehen, woran es lag.
+          $log = Join-Path $env:RUNNER_TEMP 'start-a.log'
+          $err = Join-Path $env:RUNNER_TEMP 'start-a.err'
+          $proc = Start-Process powershell -PassThru -RedirectStandardOutput $log -RedirectStandardError $err `
+            -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $script
+          try {
+            # Auf die ANMELDUNG warten, nicht auf /api/health. Die Einrichtung startet PocketBase
+            # zwischendurch selbst, um das App-Konto per REST anzulegen — health antwortet also
+            # schon, waehrend es das Konto noch gar nicht gibt. Wer hier nur einmal anklopft,
+            # bekommt 400 und haelt den Erststart faelschlich fuer kaputt.
+            $body = @{ identity = $env:APP_ADMIN_EMAIL; password = $env:APP_ADMIN_PASS } | ConvertTo-Json
+            $auth = $null
+            for ($i = 0; $i -lt 180; $i++) {
+              if ($proc.HasExited) { throw "Das Skript hat sich vorzeitig beendet (Code $($proc.ExitCode))." }
+              try {
+                $auth = Invoke-RestMethod -Method Post -ContentType 'application/json' -Body $body -TimeoutSec 5 `
+                  -Uri 'http://127.0.0.1:8090/api/collections/users/auth-with-password'
+                break
+              } catch { Start-Sleep -Milliseconds 500 }
+            }
+            if (-not $auth) { throw 'Der App-Admin konnte sich innerhalb von 90 Sekunden nicht anmelden.' }
+            if (-not (Test-Path (Join-Path $env:BUNDLE_A 'pb_data'))) { throw 'pb_data fehlt.' }
+            if ($auth.record.role -ne 'admin') { throw "Rolle ist '$($auth.record.role)', erwartet 'admin'." }
+            if (-not $auth.record.active) { throw 'Konto ist nicht aktiv (die 403-Falle).' }
+            Write-Host "+ Erststart in Ordnung, App-Admin meldet sich an."
+
+            # Der zweite Lauf braucht den fertigen Server auf dem Port — nach der Einrichtung
+            # tauscht das Skript die Instanz aus, kurz ist der Port frei. Erst warten.
+            for ($i = 0; $i -lt 60; $i++) {
+              try { Invoke-RestMethod 'http://127.0.0.1:8090/api/health' -TimeoutSec 2 | Out-Null; break }
+              catch { Start-Sleep -Milliseconds 500 }
+            }
+
+            # Zweiter Lauf gegen denselben Port: muss VOR jeder Aenderung abbrechen.
+            $zweit = Start-Process powershell -PassThru -Wait `
+              -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $env:BUNDLE_B 'start-club-lan.ps1')
+            if ($zweit.ExitCode -eq 0) { throw 'Belegter Port wurde nicht erkannt.' }
+            if (Test-Path (Join-Path $env:BUNDLE_B 'pb_data')) { throw 'Trotz Abbruch wurde pb_data angelegt.' }
+            Write-Host "+ Belegter Port bricht sauber ab, ohne etwas anzulegen."
+          } finally {
+            Write-Host "----- Ausgabe von start-club-lan.ps1 -----"
+            if (Test-Path $log) { Get-Content $log }
+            if ((Test-Path $err) -and (Get-Item $err).Length -gt 0) {
+              Write-Host "----- Fehlerausgabe -----"
+              Get-Content $err
+            }
+            if ($proc -and -not $proc.HasExited) { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue }
+            Get-Process pocketbase -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+          }

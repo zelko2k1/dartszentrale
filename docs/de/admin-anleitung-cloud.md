@@ -338,6 +338,12 @@ Kein eigener Rechtstext zur Hand? Für Vereine gibt es kostenlose Impressum-/Dat
   Schutz bleibt ein **starkes, einzigartiges Superuser-Passwort**.
 - **Keine `demo-*.mjs` gegen die Produktiv-DB** — den App-Admin legt `setup-cloud.sh` mit
   deinem starken Passwort an; die `demo-*.mjs` sind nur für lokale Tests.
+- **Passwörter sind kurz in der Prozessliste sichtbar.** Während `setup-cloud.sh` läuft, stehen
+  Superuser- und App-Admin-Passwort als Kommandozeilen-Argument (`pocketbase superuser upsert …`,
+  `env PB_SU_PASS=… node provision.mjs`) — jeder andere lokale Nutzer könnte sie in diesen
+  Sekunden per `ps aux` mitlesen. Gespeichert wird nichts. Auf einem Server, auf den auch andere
+  Shell-Zugang haben, die Einrichtung also laufen lassen, wenn niemand sonst angemeldet ist, oder
+  die Passwörter danach wechseln. Bei einem Server mit nur einem Administrator ist das kein Drama.
 - **HTTPS ist Pflicht** — erledigt Caddy automatisch; nie Klartext-HTTP ausliefern.
 
 ➡ Tägliche Bedienung der App: [`handbuch.md`](handbuch.md).

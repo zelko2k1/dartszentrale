@@ -338,6 +338,12 @@ No legal texts of your own at hand? Free imprint/privacy-policy generators exist
   protection remains a **strong, unique superuser password**.
 - **No `demo-*.mjs` against the production DB** — `setup-cloud.sh` creates the app admin with
   your strong password; the `demo-*.mjs` scripts are for local testing only.
+- **Passwords are briefly visible in the process list.** While `setup-cloud.sh` runs, the superuser
+  and app-admin passwords are passed as command-line arguments (`pocketbase superuser upsert …`,
+  `env PB_SU_PASS=… node provision.mjs`), so any other local user could read them via `ps aux`
+  during those seconds. Nothing is *stored* — but on a server that other people have shell access
+  to, run the setup when nobody else is logged in, or rotate the passwords afterwards. On a
+  single-admin server this is not worth losing sleep over.
 - **HTTPS is mandatory** — Caddy handles it automatically; never serve plaintext HTTP.
 
 ➡ Day-to-day use of the app: [`manual.md`](manual.md).
