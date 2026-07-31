@@ -14,6 +14,9 @@ import { useT, dict } from '../i18n';
 import { accentFg } from '../store/selectors';
 
 const msg = (e: unknown) => (e instanceof Error ? e.message : dict().remote.errSend);
+// Bleibt ABSICHTLICH ein Literal, kein Token: der Wert geht unten durch accentFg() und damit durch
+// echte Kontrastrechnung — `var(--…)` kann eine JS-Funktion nicht auflösen. Alle Flächen dieser
+// Konsole folgen den Themes, nur diese eine Rechengröße nicht.
 const ACCENT = '#E0594B';
 // Schrift auf der Akzentfläche: gerechnet, nicht geraten. Weiß stand auf diesem Rot bei
 // 3,68:1 — bei 17 px fett verlangt WCAG 4,5:1 (Großtext beginnt erst bei 18,66 px fett).
@@ -22,25 +25,25 @@ const ACCENT_INK = accentFg(ACCENT);
 
 // Tasten-Optik + Druck-Feedback als CSS (inline styles können kein :active) und Safe-Area fürs iPhone.
 const CSS = `
-.rc-root{position:fixed;inset:0;display:flex;flex-direction:column;background:#0b0d0f;color:#e9edf1;
+.rc-root{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--counter-bg);color:var(--text);
   overflow:hidden;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
   user-select:none;-webkit-user-select:none;overscroll-behavior:none;
   padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
 .rc-root button{font-family:inherit;cursor:pointer;touch-action:manipulation;}
 .rc-key,.rc-quick,.rc-primary,.rc-ghost{display:flex;align-items:center;justify-content:center;
   transition:background .08s,transform .08s;}
-.rc-key{background:#14181c;color:#e9edf1;border:1px solid #2a3138;border-radius:12px;font-weight:800;
+.rc-key{background:var(--surface);color:var(--text);border:1px solid var(--border-2);border-radius:12px;font-weight:800;
   font-family:var(--font-num,ui-monospace,monospace);font-size:clamp(19px,6vw,27px);min-height:0;min-width:0;}
-.rc-key:active{background:#222a31;transform:scale(.96);}
-.rc-quick{background:#12161a;color:#c7ced4;border:1px solid #232a31;border-radius:10px;font-weight:800;
+.rc-key:active{background:var(--btn);transform:scale(.96);}
+.rc-quick{background:var(--surface-2);color:var(--text-2);border:1px solid var(--border);border-radius:10px;font-weight:800;
   font-family:var(--font-num,inherit);font-size:clamp(13px,3.9vw,17px);min-height:0;min-width:0;}
-.rc-quick:active{background:#1c232a;transform:scale(.96);}
+.rc-quick:active{background:var(--btn);transform:scale(.96);}
 .rc-primary{background:${ACCENT};color:${ACCENT_INK};border:none;border-radius:13px;font-weight:800;
   font-size:clamp(15px,4.2vw,18px);min-height:0;}
 .rc-primary:active{filter:brightness(.88);transform:scale(.98);}
-.rc-ghost{background:transparent;color:#9aa4ad;border:1px solid #2a3138;border-radius:12px;font-weight:700;
+.rc-ghost{background:transparent;color:var(--text-3);border:1px solid var(--border-2);border-radius:12px;font-weight:700;
   font-size:clamp(13px,3.8vw,16px);min-height:0;}
-.rc-ghost:active{background:#161b20;transform:scale(.98);}
+.rc-ghost:active{background:var(--btn);transform:scale(.98);}
 .rc-scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .rc-scroll::-webkit-scrollbar{display:none;}
 `;
@@ -134,7 +137,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
   const style = <style>{CSS}</style>;
   const center: React.CSSProperties = { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: 24, textAlign: 'center', overflowY: 'auto' };
   const bigBtn: React.CSSProperties = { padding: '16px 24px', fontSize: 'var(--fs-lead)' };
-  const hint: React.CSSProperties = { fontSize: 'var(--fs-body)', color: '#9aa4ad', maxWidth: 320, lineHeight: 1.5 };
+  const hint: React.CSSProperties = { fontSize: 'var(--fs-body)', color: 'var(--text-3)', maxWidth: 320, lineHeight: 1.5 };
 
   // ── Manuelle Code-Eingabe (Aufruf über #/remote ohne Session-ID) ──
   if (!sessionId) {
@@ -157,7 +160,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
             onKeyDown={(e) => { if (e.key === 'Enter') void pairByCode(); }}
             placeholder={tr.remote.codePlaceholder}
             autoCapitalize="characters" autoCorrect="off" spellCheck={false} autoFocus
-            style={{ width: 220, maxWidth: '80vw', textAlign: 'center', fontFamily: 'var(--font-num,ui-monospace,monospace)', fontSize: 'var(--fs-page)', fontWeight: 800, letterSpacing: '.18em', background: '#12161a', border: '1px solid #2a3138', borderRadius: 'var(--radius-md)', padding: '14px 12px', color: '#e9edf1', outline: 'none' }}
+            style={{ width: 220, maxWidth: '80vw', textAlign: 'center', fontFamily: 'var(--font-num,ui-monospace,monospace)', fontSize: 'var(--fs-page)', fontWeight: 800, letterSpacing: '.18em', background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-md)', padding: '14px 12px', color: 'var(--text)', outline: 'none' }}
           />
           <button className="rc-primary" style={{ ...bigBtn, opacity: busy || manualCode.trim().length < 4 ? 0.5 : 1 }} disabled={busy || manualCode.trim().length < 4} onClick={pairByCode}>{tr.remote.pair}</button>
           {err && <div style={{ color: ACCENT, fontWeight: 700 }}>{err}</div>}
@@ -215,17 +218,17 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
   const quickValues = tight ? [180, 140, 100, 60] : [180, 140, 100, 85, 60, 45, 41, 26];
 
   const header = (
-    <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px', borderBottom: '1px solid #1c2228' }}>
+    <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 14px', borderBottom: '1px solid var(--hairline)' }}>
       <div style={{ fontWeight: 800, fontSize: 'var(--fs-body)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session?.boardName || tr.remote.board}</div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-meta)', color: acked ? '#59c26a' : ACCENT, fontWeight: 700, flexShrink: 0 }}>
-        <span style={{ width: 8, height: 8, borderRadius: '50%', background: acked ? '#59c26a' : ACCENT, display: 'inline-block' }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-meta)', color: acked ? 'var(--success)' : ACCENT, fontWeight: 700, flexShrink: 0 }}>
+        <span style={{ width: 8, height: 8, borderRadius: '50%', background: acked ? 'var(--success)' : ACCENT, display: 'inline-block' }} />
         {acked ? tr.remote.connected : tr.remote.sending}
       </div>
     </div>
   );
 
   const takeoverBar = takeoverIncoming && (
-    <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', background: '#3a2714', borderBottom: '1px solid #7a5a2a', fontSize: 'var(--fs-sub)' }}>
+    <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', background: 'color-mix(in srgb, var(--warn) 22%, transparent)', borderBottom: '1px solid var(--warn)', fontSize: 'var(--fs-sub)' }}>
       <span style={{ flex: 1, minWidth: 0 }}>{tr.remote.incomingTakeover}</span>
       <button className="rc-ghost" style={{ padding: '6px 12px', fontSize: 'var(--fs-sub)', minHeight: 44 }} onClick={() => provider.liveClaimDeny(sessionId)}>{tr.remote.deny}</button>
       <button className="rc-primary" style={{ padding: '6px 12px', fontSize: 'var(--fs-sub)', borderRadius: 'var(--radius-sm)', minHeight: 44 }} onClick={() => provider.liveClaimApprove(sessionId)}>{tr.remote.allow}</button>
@@ -237,10 +240,10 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
   const scorePanel = (
     <div className="rc-scroll" style={{ flex: '0 1 auto', minHeight: 0, maxHeight: tight ? '26vh' : '33vh', padding: tight ? '8px 14px 4px' : '10px 14px 6px', display: 'flex', flexDirection: 'column', gap: many ? 5 : 6 }}>
       {players.map((p, i) => (
-        <div key={i} ref={i === curIdx ? activeRowRef : undefined} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: many ? '5px 11px' : '9px 13px', borderRadius: 'var(--radius-md)', background: i === curIdx ? 'rgba(224,89,75,.14)' : '#12161a', border: i === curIdx ? `1px solid ${ACCENT}` : '1px solid #1c2228' }}>
+        <div key={i} ref={i === curIdx ? activeRowRef : undefined} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: many ? '5px 11px' : '9px 13px', borderRadius: 'var(--radius-md)', background: i === curIdx ? `color-mix(in srgb, ${ACCENT} 14%, transparent)` : 'var(--surface-2)', border: i === curIdx ? `1px solid ${ACCENT}` : '1px solid var(--hairline)' }}>
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: many ? 'row' : 'column', alignItems: many ? 'baseline' : 'stretch', gap: many ? 8 : 0 }}>
             <div style={{ fontWeight: 800, fontSize: many ? 13 : 15, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
-            <div style={{ fontSize: 'var(--fs-badge)', color: '#9aa4ad', flexShrink: 0, whiteSpace: 'nowrap' }}>{many ? `${p.sets}·${p.legs}` : `Sets ${p.sets} · Legs ${p.legs}`}</div>
+            <div style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-3)', flexShrink: 0, whiteSpace: 'nowrap' }}>{many ? `${p.sets}·${p.legs}` : `Sets ${p.sets} · Legs ${p.legs}`}</div>
           </div>
           <div style={{ fontFamily: 'var(--font-num,ui-monospace,monospace)', fontSize: many ? 21 : 30, fontWeight: 800, letterSpacing: '.02em', lineHeight: 1.15, fontVariantNumeric: 'tabular-nums' }}>{p.score}</div>
         </div>
@@ -250,12 +253,12 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
 
   // Eingabepuffer + Checkout in EINER Zeile (spart die Höhe, die vorher zwei Blöcke gefressen haben).
   const inputRow = (
-    <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, background: '#12161a', border: '1px solid #232a31', borderRadius: 'var(--radius-md)', padding: '8px 14px' }}>
-      <span style={{ fontSize: 'var(--fs-meta)', color: '#8b9299', fontWeight: 700, flexShrink: 0 }}>{tr.remote.inputLabel}</span>
-      <span style={{ flex: 1, minWidth: 0, fontSize: 'var(--fs-meta)', fontWeight: 700, color: '#59c26a', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+    <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '8px 14px' }}>
+      <span style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 700, flexShrink: 0 }}>{tr.remote.inputLabel}</span>
+      <span style={{ flex: 1, minWidth: 0, fontSize: 'var(--fs-meta)', fontWeight: 700, color: 'var(--success)', textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {phase === 'playing' && (st?.checkout?.length ?? 0) > 0 ? st?.checkout.join(' ') : ''}
       </span>
-      <span style={{ fontFamily: 'var(--font-num,ui-monospace,monospace)', fontSize: 'var(--fs-page)', fontWeight: 800, letterSpacing: '.06em', minWidth: 62, textAlign: 'right', color: st?.input ? '#e9edf1' : '#3a444c', fontVariantNumeric: 'tabular-nums' }}>{st?.input || '–'}</span>
+      <span style={{ fontFamily: 'var(--font-num,ui-monospace,monospace)', fontSize: 'var(--fs-page)', fontWeight: 800, letterSpacing: '.06em', minWidth: 62, textAlign: 'right', color: st?.input ? 'var(--text)' : 'var(--text-5)', fontVariantNumeric: 'tabular-nums' }}>{st?.input || '–'}</span>
     </div>
   );
 
@@ -274,7 +277,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
       {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => (
         <button key={d} className="rc-key" onClick={() => send('digit', { d })}>{d}</button>
       ))}
-      <button className="rc-key" style={{ fontSize: 'var(--fs-title)', color: '#9aa4ad' }} onClick={() => send('clear')} aria-label={tr.remote.clearInput}>C</button>
+      <button className="rc-key" style={{ fontSize: 'var(--fs-title)', color: 'var(--text-3)' }} onClick={() => send('clear')} aria-label={tr.remote.clearInput}>C</button>
       <button className="rc-key" onClick={() => send('digit', { d: '0' })}>0</button>
       <button className="rc-key" style={{ fontSize: 'var(--fs-heading)' }} onClick={() => send('del')} aria-label={tr.remote.deleteDigit}>⌫</button>
     </div>
@@ -299,8 +302,8 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
   // Finish-Dart-Abfrage: erscheint auch am Handy (nicht mehr nur am Board), sobald der Checkout ohne
   // bekannte Dartzahl fällt. Deckt die Konsole als Modal ab; 1/2/3 unterhalb der Mindestzahl gesperrt.
   const finishOverlay = st?.finish && (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.92)', backdropFilter: 'blur(3px)', zIndex: 50, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18, padding: 24, textAlign: 'center' }}>
-      <div style={{ fontSize: 'var(--fs-title)', fontWeight: 800, color: '#e9edf1' }}>{tr.remote.finishTitle}</div>
+    <div style={{ position: 'fixed', inset: 0, background: 'color-mix(in srgb, var(--bg) 92%, transparent)', backdropFilter: 'blur(3px)', zIndex: 50, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18, padding: 24, textAlign: 'center' }}>
+      <div style={{ fontSize: 'var(--fs-title)', fontWeight: 800, color: 'var(--text)' }}>{tr.remote.finishTitle}</div>
       <div style={{ display: 'flex', gap: 12 }}>
         {[1, 2, 3].map((d) => {
           const off = d < (st.finish?.minDarts ?? 1);
@@ -317,7 +320,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
       {errLine}
       {phase === 'whoBegins' && (
         <>
-          <div style={{ textAlign: 'center', color: '#9aa4ad', fontSize: 'var(--fs-body)' }}>{tr.remote.whoStarts}</div>
+          <div style={{ textAlign: 'center', color: 'var(--text-3)', fontSize: 'var(--fs-body)' }}>{tr.remote.whoStarts}</div>
           {players.map((p, i) => (
             <button key={i} className="rc-primary" style={{ padding: '14px 18px' }} onClick={() => send('starter', { idx: i })}>{tr.remote.starts(p.name)}</button>
           ))}
@@ -350,7 +353,7 @@ export function RemoteConsole({ route }: { route: LiveRoute }) {
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div className="rc-scroll" style={{ flex: '0 1 auto', minHeight: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
               {players.map((p, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 12px', borderRadius: 'var(--radius-md)', background: i === curIdx ? 'rgba(224,89,75,.14)' : '#12161a', border: i === curIdx ? `1px solid ${ACCENT}` : '1px solid #1c2228' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 12px', borderRadius: 'var(--radius-md)', background: i === curIdx ? `color-mix(in srgb, ${ACCENT} 14%, transparent)` : 'var(--surface-2)', border: i === curIdx ? `1px solid ${ACCENT}` : '1px solid var(--hairline)' }}>
                   <div style={{ flex: 1, minWidth: 0, fontWeight: 800, fontSize: 'var(--fs-sub)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
                   <div style={{ fontFamily: 'var(--font-num,ui-monospace,monospace)', fontSize: 'var(--fs-heading)', fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{p.score}</div>
                 </div>
@@ -433,10 +436,10 @@ function StartMenu({ onStart }: { onStart: (sel: RemoteStartSelection) => void }
 
   const start = () => onStart({ p1Id: effP1, p2Id: effP2, startScore: fmt.startScore, outMode: fmt.outMode, doubleIn: fmt.doubleIn, unit: fmt.unit, bestOf: fmt.bestOf, bestOfSets: fmt.bestOfSets });
 
-  const rowStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: '#12161a', border: '1px solid #232a31', borderRadius: 'var(--radius-md)', padding: '13px 15px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' };
-  const rowLabel: React.CSSProperties = { fontSize: 'var(--fs-badge)', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: '#8b9299' };
-  const rowValue: React.CSSProperties = { fontSize: 'var(--fs-lead)', fontWeight: 800, color: '#e9edf1', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' };
-  const chevron = <span style={{ marginLeft: 'auto', color: '#6b747c', fontSize: 'var(--fs-title)', flexShrink: 0 }}>›</span>;
+  const rowStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '13px 15px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' };
+  const rowLabel: React.CSSProperties = { fontSize: 'var(--fs-badge)', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--text-4)' };
+  const rowValue: React.CSSProperties = { fontSize: 'var(--fs-lead)', fontWeight: 800, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' };
+  const chevron = <span style={{ marginLeft: 'auto', color: 'var(--text-5)', fontSize: 'var(--fs-title)', flexShrink: 0 }}>›</span>;
 
   const playerRow = (slot: 'p1' | 'p2', label: string, id: string) => (
     <button style={rowStyle} onClick={() => setPicker(slot)}>
@@ -469,9 +472,9 @@ function StartMenu({ onStart }: { onStart: (sel: RemoteStartSelection) => void }
           {roster.map((p) => {
             const on = (picker === 'p1' ? effP1 : effP2) === p.id;
             return (
-              <button key={p.id} className="rc-key" style={{ justifyContent: 'flex-start', gap: 12, padding: '13px 15px', fontSize: 'var(--fs-lead)', fontFamily: 'inherit', fontWeight: 700, background: on ? 'rgba(224,89,75,.14)' : '#14181c', border: on ? `1px solid ${ACCENT}` : '1px solid #2a3138' }}
+              <button key={p.id} className="rc-key" style={{ justifyContent: 'flex-start', gap: 12, padding: '13px 15px', fontSize: 'var(--fs-lead)', fontFamily: 'inherit', fontWeight: 700, background: on ? `color-mix(in srgb, ${ACCENT} 14%, transparent)` : 'var(--surface)', border: on ? `1px solid ${ACCENT}` : '1px solid var(--border-2)' }}
                 onClick={() => { if (picker === 'p1') setP1Id(p.id); else setP2Id(p.id); setPicker(null); }}>
-                <span style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: '#222a31', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-meta)', fontWeight: 800, color: '#c7ced4', flexShrink: 0 }}>{p.short}</span>
+                <span style={{ width: 30, height: 30, borderRadius: 'var(--radius-sm)', background: 'var(--btn)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-meta)', fontWeight: 800, color: 'var(--text-2)', flexShrink: 0 }}>{p.short}</span>
                 <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
               </button>
             );
@@ -514,8 +517,8 @@ function StartMenu({ onStart }: { onStart: (sel: RemoteStartSelection) => void }
 // Vollflächiges Auswahl-Blatt über der Konsole (scrollt intern, schließt per „×").
 function PickerSheet({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#0b0d0f', zIndex: 40, display: 'flex', flexDirection: 'column', padding: 'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)' }}>
-      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderBottom: '1px solid #1c2228' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'var(--counter-bg)', zIndex: 40, display: 'flex', flexDirection: 'column', padding: 'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)' }}>
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderBottom: '1px solid var(--hairline)' }}>
         <div style={{ flex: 1, fontWeight: 800, fontSize: 'var(--fs-lead)' }}>{title}</div>
         <button onClick={onClose} aria-label={dict().common.close} className="rc-ghost dh-tap" style={{ width: 40, height: 40, borderRadius: 'var(--radius-md)', fontSize: 'var(--fs-heading)' }}>×</button>
       </div>
@@ -529,7 +532,7 @@ function PickerSheet({ title, onClose, children }: { title: string; onClose: () 
 function ModeGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ fontSize: 'var(--fs-badge)', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: '#8b9299' }}>{label}</div>
+      <div style={{ fontSize: 'var(--fs-badge)', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--text-4)' }}>{label}</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>{children}</div>
     </div>
   );
@@ -537,6 +540,6 @@ function ModeGroup({ label, children }: { label: string; children: React.ReactNo
 
 function Seg({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} style={{ flex: '1 0 auto', minWidth: 64, padding: '11px 16px', borderRadius: 'var(--radius-md)', fontWeight: 800, fontSize: 'var(--fs-lead)', cursor: 'pointer', fontFamily: 'var(--font-num,inherit)', background: on ? ACCENT : '#14181c', color: on ? '#fff' : '#c7ced4', border: on ? 'none' : '1px solid #2a3138' }}>{children}</button>
+    <button onClick={onClick} style={{ flex: '1 0 auto', minWidth: 64, padding: '11px 16px', borderRadius: 'var(--radius-md)', fontWeight: 800, fontSize: 'var(--fs-lead)', cursor: 'pointer', fontFamily: 'var(--font-num,inherit)', background: on ? ACCENT : 'var(--surface)', color: on ? 'var(--text)' : 'var(--text-2)', border: on ? 'none' : '1px solid var(--border-2)' }}>{children}</button>
   );
 }

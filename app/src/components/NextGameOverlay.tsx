@@ -62,8 +62,8 @@ export function NextGameOverlay() {
   const oppShort = (a.oppName.match(/\b\p{L}/gu) || []).join('').slice(0, 3).toUpperCase() || '?';
   const ownFirst = game.players.map((p) => p.name.split(' ')[0]).join(' & ');
 
-  const kbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 'var(--fs-badge)', fontWeight: 800, color: 'rgba(255,255,255,.65)', background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.16)', borderRadius: 'var(--radius-xs)', padding: '2px 8px', marginLeft: 8 };
-  const starterBtn: React.CSSProperties = { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.16)', borderRadius: 'var(--radius-lg)', padding: '18px 12px', cursor: 'pointer', fontFamily: 'inherit' };
+  const kbd: React.CSSProperties = { fontFamily: 'var(--font-num)', fontSize: 'var(--fs-badge)', fontWeight: 800, color: 'var(--text-4)', background: 'var(--btn)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-xs)', padding: '2px 8px', marginLeft: 8 };
+  const starterBtn: React.CSSProperties = { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'var(--surface-2)', border: '1px solid var(--border-2)', borderRadius: 'var(--radius-lg)', padding: '18px 12px', cursor: 'pointer', fontFamily: 'inherit' };
 
   return (
     <div
@@ -77,18 +77,18 @@ export function NextGameOverlay() {
         // (dismiss/zurück), daher unkritisch, falls zusätzlich der window-Capture-Handler feuert.
         if (e.key === 'Escape' && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); if (bull) setBullFor(null); else s.dismissNextGame(game.positionId); }
       }}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(8,10,12,.94)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 80, padding: 24, outline: 'none' }}
+      style={{ position: 'fixed', inset: 0, background: 'color-mix(in srgb, var(--bg) 94%, transparent)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 80, padding: 24, outline: 'none' }}
     >
       <div style={{ width: 560, maxWidth: '94vw', textAlign: 'center' }}>
-        <div style={{ fontSize: 'var(--fs-sub)', color: '#F2B829', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 8 }}>
+        <div style={{ fontSize: 'var(--fs-sub)', color: 'var(--gold-text)', fontWeight: 700, letterSpacing: '.14em', textTransform: 'uppercase', marginBottom: 8 }}>
           {tr.nextGame.title}{games.length > 1 ? tr.nextGame.ofCount(gi + 1, games.length) : ''}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
           <span style={{ fontSize: 'var(--fs-meta)', fontWeight: 800, color: 'var(--accent-fg)', background: 'var(--accent)', padding: '3px 10px', borderRadius: 'var(--radius-xs)' }}>{boardName}</span>
-          <span style={{ fontSize: 'var(--fs-lead)', fontWeight: 700, color: '#fff' }}>{a.ownTeamName}</span>
-          <span style={{ fontSize: 'var(--fs-meta)', color: 'rgba(255,255,255,.6)' }}>{tr.nextGame.vsWord}</span>
-          <span style={{ fontSize: 'var(--fs-lead)', fontWeight: 700, color: 'rgba(255,255,255,.85)' }}>{a.oppName}</span>
-          {a.date && <span style={{ fontSize: 'var(--fs-meta)', color: 'rgba(255,255,255,.6)', fontWeight: 600 }}>· {shortLong(a.date)}</span>}
+          <span style={{ fontSize: 'var(--fs-lead)', fontWeight: 700, color: 'var(--text)' }}>{a.ownTeamName}</span>
+          <span style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)' }}>{tr.nextGame.vsWord}</span>
+          <span style={{ fontSize: 'var(--fs-lead)', fontWeight: 700, color: 'var(--text-2)' }}>{a.oppName}</span>
+          {a.date && <span style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 600 }}>· {shortLong(a.date)}</span>}
         </div>
 
         {/* Begegnung groß */}
@@ -97,60 +97,63 @@ export function NextGameOverlay() {
             {game.players.map((pl) => (
               <div key={pl.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
                 <Avatar photo={pl.photo} short={pl.short} avi={pl.avi} size={game.players.length > 1 ? 46 : 64} circle />
-                <div style={{ fontSize: 'var(--fs-lead)', fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>{pl.name}</div>
+                <div style={{ fontSize: 'var(--fs-lead)', fontWeight: 700, color: 'var(--text)', lineHeight: 1.2 }}>{pl.name}</div>
               </div>
             ))}
-            <div style={{ fontSize: 'var(--fs-badge)', fontWeight: 700, color: 'rgba(255,255,255,.6)', textTransform: 'uppercase', letterSpacing: '.05em' }}>{game.label}</div>
+            <div style={{ fontSize: 'var(--fs-badge)', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase', letterSpacing: '.05em' }}>{game.label}</div>
           </div>
-          <div style={{ fontSize: 'var(--fs-heading)', fontWeight: 800, color: 'rgba(255,255,255,.45)', fontFamily: 'var(--font-num)' }}>vs</div>
+          <div style={{ fontSize: 'var(--fs-heading)', fontWeight: 800, color: 'var(--text-5)', fontFamily: 'var(--font-num)' }}>vs</div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
             <Avatar short={oppShort} avi={0} size={64} circle />
-            <div style={{ fontSize: 'var(--fs-lead)', fontWeight: 700, color: 'rgba(255,255,255,.85)', lineHeight: 1.2 }}>{a.oppName}</div>
+            <div style={{ fontSize: 'var(--fs-lead)', fontWeight: 700, color: 'var(--text-2)', lineHeight: 1.2 }}>{a.oppName}</div>
           </div>
         </div>
 
         {!bull ? (
           <>
-            <div style={{ fontSize: 'var(--fs-body)', color: 'rgba(255,255,255,.6)', margin: '20px 0 14px' }}>{tr.counter.whoStarts}</div>
+            <div style={{ fontSize: 'var(--fs-body)', color: 'var(--text-4)', margin: '20px 0 14px' }}>{tr.counter.whoStarts}</div>
             <div style={{ display: 'flex', gap: 12 }}>
               <button className="dh-hover-border" onClick={() => start(0)} style={starterBtn}>
-                <span style={{ fontSize: 'var(--fs-lead)', fontWeight: 800, color: '#fff' }}>{ownFirst}</span>
+                <span style={{ fontSize: 'var(--fs-lead)', fontWeight: 800, color: 'var(--text)' }}>{ownFirst}</span>
                 <kbd style={kbd}>1</kbd>
               </button>
               <button className="dh-hover-border" onClick={() => start(1)} style={starterBtn}>
-                <span style={{ fontSize: 'var(--fs-lead)', fontWeight: 800, color: '#fff' }}>{a.oppName}</span>
+                <span style={{ fontSize: 'var(--fs-lead)', fontWeight: 800, color: 'var(--text)' }}>{a.oppName}</span>
                 <kbd style={kbd}>2</kbd>
               </button>
             </div>
             <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
               <button className="dh-hover-border" onClick={() => setBullFor(game.positionId)} style={{ ...starterBtn, flexDirection: 'row', justifyContent: 'center', gap: 10 }}>
+                {/* Die zwei Hex-Werte bleiben ABSICHTLICH: das ist keine UI-Farbe, sondern das Abbild des
+                    Bulls einer echten Dartscheibe — außenrot, innengrün. Ein Bull ist in jedem Lichtmodus
+                    rot und grün; an Tokens gehängt wäre er im Hellmodus kein Bull mehr. */}
                 <span style={{ width: 22, height: 22, borderRadius: '50%', background: '#E0594B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#19A463' }} /></span>
-                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: '#fff' }}>{tr.counter.bullOff}</span>
+                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text)' }}>{tr.counter.bullOff}</span>
                 <kbd style={kbd}>B</kbd>
               </button>
               <button className="dh-hover-border" onClick={() => s.dismissNextGame(game.positionId)} style={{ ...starterBtn, flexDirection: 'row', justifyContent: 'center', gap: 10 }}>
-                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'rgba(255,255,255,.7)' }}>{tr.nextGame.later}</span>
+                <span style={{ fontSize: 'var(--fs-body)', fontWeight: 700, color: 'var(--text-3)' }}>{tr.nextGame.later}</span>
                 <kbd style={kbd}>Esc</kbd>
               </button>
             </div>
           </>
         ) : (
           <>
-            <div style={{ fontSize: 'var(--fs-heading)', fontWeight: 800, color: '#fff', margin: '20px 0 4px' }}>{tr.counter.bullOff}</div>
-            <div style={{ fontSize: 'var(--fs-body)', color: 'rgba(255,255,255,.6)', lineHeight: 1.5, marginBottom: 18 }}>{tr.counter.bullOffSub}</div>
+            <div style={{ fontSize: 'var(--fs-heading)', fontWeight: 800, color: 'var(--text)', margin: '20px 0 4px' }}>{tr.counter.bullOff}</div>
+            <div style={{ fontSize: 'var(--fs-body)', color: 'var(--text-4)', lineHeight: 1.5, marginBottom: 18 }}>{tr.counter.bullOffSub}</div>
             <div style={{ display: 'flex', gap: 12 }}>
               <button className="dh-hover-border" onClick={() => start(0)} style={starterBtn}>
-                <span style={{ fontSize: 'var(--fs-lead)', fontWeight: 800, color: '#fff' }}>{ownFirst}</span>
-                <span style={{ fontSize: 'var(--fs-badge)', color: 'rgba(255,255,255,.5)' }}>{tr.nextGame.wasCloser}</span>
+                <span style={{ fontSize: 'var(--fs-lead)', fontWeight: 800, color: 'var(--text)' }}>{ownFirst}</span>
+                <span style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-5)' }}>{tr.nextGame.wasCloser}</span>
                 <kbd style={kbd}>1</kbd>
               </button>
               <button className="dh-hover-border" onClick={() => start(1)} style={starterBtn}>
-                <span style={{ fontSize: 'var(--fs-lead)', fontWeight: 800, color: '#fff' }}>{a.oppName}</span>
-                <span style={{ fontSize: 'var(--fs-badge)', color: 'rgba(255,255,255,.5)' }}>{tr.nextGame.wasCloser}</span>
+                <span style={{ fontSize: 'var(--fs-lead)', fontWeight: 800, color: 'var(--text)' }}>{a.oppName}</span>
+                <span style={{ fontSize: 'var(--fs-badge)', color: 'var(--text-5)' }}>{tr.nextGame.wasCloser}</span>
                 <kbd style={kbd}>2</kbd>
               </button>
             </div>
-            <button onClick={() => setBullFor(null)} style={{ marginTop: 16, background: 'transparent', border: 'none', color: 'rgba(255,255,255,.55)', fontSize: 'var(--fs-sub)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: 8 }}>{tr.counter.backArrow} <kbd style={{ ...kbd, marginLeft: 6 }}>Esc</kbd></button>
+            <button onClick={() => setBullFor(null)} style={{ marginTop: 16, background: 'transparent', border: 'none', color: 'var(--text-5)', fontSize: 'var(--fs-sub)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', padding: 8 }}>{tr.counter.backArrow} <kbd style={{ ...kbd, marginLeft: 6 }}>Esc</kbd></button>
           </>
         )}
       </div>

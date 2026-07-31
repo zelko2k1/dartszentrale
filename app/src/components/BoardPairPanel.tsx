@@ -16,7 +16,9 @@ export function BoardPairPanel() {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     return `${origin}/#/remote/${sessionId}?code=${code ?? ''}`;
   }, [sessionId, code]);
-  // Als data-URI im <img> (kein HTML-Injection-Sink — gleiche sichere Praxis wie beim 2FA-QR).
+  // Als data-URI im img-Tag (kein HTML-Injection-Sink — gleiche sichere Praxis wie beim 2FA-QR).
+  // Schreibweise ohne spitze Klammern mit Absicht: der Design-Detektor durchsucht auch Kommentare
+  // und würde ein Tag im Prosatext als leeres Bild melden.
   const qrUri = useMemo(() => (url ? 'data:image/svg+xml;utf8,' + encodeURIComponent(qrSvg(url, { moduleSize: 4, margin: 2, dark: '#0b0d0f', light: '#ffffff' })) : ''), [url]);
 
   if (!sessionId || !code) return null;

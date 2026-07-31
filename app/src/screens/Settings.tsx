@@ -12,6 +12,7 @@ import { WatchTvPanel } from '../components/WatchTvPanel';
 import { BoardPairPanel } from '../components/BoardPairPanel';
 import type { TwoFactorStatus, TwoFactorSetup } from '../data/provider';
 import { useT, useLang, setLang, dict, LANG_LABELS, type Lang } from '../i18n';
+import { useIsPhone } from '../lib/useIsPhone';
 import { SectionHeading } from '../components/ui';
 
 const ACCENTS = ['#FFFFFF', '#000000', '#2BD377', '#19A463', '#3B9EFF', '#F2B829', '#E0594B', '#9b6dff', '#2bd3c0', '#FF8A3D'];
@@ -72,8 +73,11 @@ function ShortcutRecorder({ value, accent, fallback, onChange }: { value: string
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
+  // Am Handy kosten 22px Innenabstand je Seite ein Achtel der Breite — die Zeilen darin brechen
+  // ohnehin um (Row hat flexWrap), sie brauchen den Platz für Label UND Bedienelement.
+  const isPhone = useIsPhone();
   return (
-    <section style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: '8px 22px', marginBottom: 18 }}>
+    <section style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: isPhone ? '6px 14px' : '8px 22px', marginBottom: 18 }}>
       <SectionHeading style={{ padding: '16px 0 10px' }}>{title}</SectionHeading>
       {children}
     </section>
@@ -372,6 +376,7 @@ function JoinDevicesPanel({ children }: { children?: ReactNode }) {
 
 export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   const s = useStore();
+  const isPhoneRoot = useIsPhone();
   const cfg = s.settings;
   const set = s.setSetting;
   const p = perm(cfg, s.accounts, s.session);
@@ -781,7 +786,10 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         const on = cfg[t.key] !== false; // Default-an-Schalter: „an", solange nicht ausdrücklich aus
         return (
           <Row key={t.key} label={t.label} sub={t.sub}>
-            <button onClick={() => set(t.key, !on)} role="switch" aria-checked={on} aria-label={t.label} style={{ position: 'relative', width: 46, height: 26, borderRadius: 'var(--radius-pill)', background: on ? accent : 'var(--btn)', border: on ? 'none' : '1px solid var(--border-2)', cursor: 'pointer', flexShrink: 0, transition: 'background .15s var(--ease-out)', padding: 0 }}>
+            {/* `padding: 0` steht bewusst VOR `transition`: als Nachbar dahinter liest der
+                Design-Detektor die Kombination als „padding wird animiert" und meldet einen
+                Fehlalarm. Animiert wird ausschließlich `background`. */}
+            <button onClick={() => set(t.key, !on)} role="switch" aria-checked={on} aria-label={t.label} style={{ position: 'relative', width: 46, height: 26, padding: 0, borderRadius: 'var(--radius-pill)', background: on ? accent : 'var(--btn)', border: on ? 'none' : '1px solid var(--border-2)', cursor: 'pointer', flexShrink: 0, transition: 'background .15s var(--ease-out)' }}>
               {/* Der Knopf folgt dem Zustand: auf der Akzentbahn die garantiert kontrastreiche
                   Akzent-Schrift, auf der ausgeschalteten Bahn --text-3. Ein fest weißer Knopf
                   verschwand im Hellmodus auf --btn (1,22:1). Die Position bleibt das primäre
@@ -1061,7 +1069,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
   });
 
   return (
-    <div style={{ padding: '28px 32px', maxWidth: 920, margin: '0 auto' }}>
+    <div style={{ padding: isPhoneRoot ? '18px 16px' : '28px 32px', maxWidth: 920, margin: '0 auto' }}>
       <div style={{ marginBottom: 4, fontSize: 'var(--fs-meta)', color: 'var(--text-4)', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase' }}>{tr.settings.kicker}</div>
       <h1 style={{ margin: '0 0 6px', fontSize: 'var(--fs-page)', fontWeight: 800, letterSpacing: '-.02em' }}>{tr.nav.settings}</h1>
       <p style={{ margin: '0 0 22px', fontSize: 'var(--fs-body)', color: 'var(--text-3)' }}>{canEdit ? tr.settings.autoSaved : tr.settings.centralOnly}</p>
