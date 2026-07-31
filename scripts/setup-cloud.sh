@@ -41,12 +41,16 @@ ask() { # <prompt> <varname> [default]
   [ "$IS_TTY" = "1" ] && read -rp "$p" ans || true
   printf -v "$__v" '%s' "${ans:-$def}"
 }
-ask_secret() { # <prompt> <varname>  (hidden, with confirmation)
+ask_secret() { # <prompt> <varname>  (hidden, with confirmation, min. 8 characters)
+  # PocketBase demands at least 8 characters. Asking for that here saves the operator an
+  # installation that only falls over in step 8 — the CLI reports a rejected password on
+  # stdout and STILL exits with 0, so a short password would otherwise go unnoticed for a while.
   local p="$1" __v="$2" a b
   while :; do
     read -rsp "$p" a; echo
     read -rsp "  repeat:               " b; echo
     [ -n "$a" ] || { echo "  ✗ must not be empty."; continue; }
+    [ "${#a}" -ge 8 ] || { echo "  ✗ at least 8 characters (PocketBase rejects shorter ones)."; continue; }
     [ "$a" = "$b" ] || { echo "  ✗ does not match."; continue; }
     break
   done
@@ -269,7 +273,16 @@ EOF
 # ── 6) Create the superuser (offline, BEFORE the service opens the DB) ──────
 if [ "$DO_ACCOUNTS" = "1" ]; then
   echo "• Creating/updating PocketBase superuser …"
-  sudo -u "$RUN_USER" "$PB_BIN" superuser upsert "$SU_EMAIL" "$SU_PASS" --dir "$ROOT/pocketbase/pb_data" >/dev/null
+  # CAREFUL: the PocketBase CLI prints errors on STDOUT and exits with 0 regardless — the exit
+  # code is worthless here, the output has to be inspected. Without this check a rejected
+  # password would only surface in step 8 (provision.mjs), long after services and Caddy are up.
+  SU_OUT="$(sudo -u "$RUN_USER" "$PB_BIN" superuser upsert "$SU_EMAIL" "$SU_PASS" --dir "$ROOT/pocketbase/pb_data" 2>&1 || true)"
+  case "$SU_OUT" in *Error*)
+    echo "✗ ABORT – the superuser could not be created:" >&2
+    echo "  ${SU_OUT}" >&2
+    echo "  Fix the cause and run the script again (it is idempotent)." >&2
+    exit 1 ;;
+  esac
 fi
 
 # ── 7) Enable + start services ──────────────────────────────────────────────

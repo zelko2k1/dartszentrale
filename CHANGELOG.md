@@ -7,6 +7,20 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+### Behoben
+- **Erststart im Vereinsmodus (LAN) bricht nicht mehr stumm ab.** Konnte PocketBase beim
+  Einrichten nicht starten oder die Anmeldung des Konsolenkontos nicht gelingen, endete
+  `start-club-lan` ohne Meldung — der im Hintergrund gestartete Server lief weiter und belegte
+  den Port, und weil `pb_data` bereits angelegt war, übersprang jeder weitere Start die
+  Einrichtung: die Installation blieb ohne App-Admin zurück, ohne je wieder zu fragen. Jetzt
+  wird ein belegter Port **vorher** erkannt, jeder Abbruch räumt den halbfertigen Zustand auf
+  und meldet ihn im Klartext, sodass der nächste Start wieder sauber nach den Konten fragt.
+- **Zu kurzes Superuser-Passwort scheitert bei der Cloud-Einrichtung sofort statt spät.**
+  `setup-cloud.sh` verlangt jetzt schon bei der Eingabe die von PocketBase geforderten
+  8 Zeichen und prüft das Anlegen des Superusers anhand der Ausgabe — die PocketBase-CLI
+  meldet Fehler auf der Standardausgabe und liefert trotzdem den Rückgabewert 0, weshalb ein
+  abgelehntes Passwort bisher erst viel später beim Schema-Schritt aufgefallen wäre.
+
 ## [1.0.9] – 2026-07-28
 
 ## [1.0.8] – 2026-07-26

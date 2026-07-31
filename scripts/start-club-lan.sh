@@ -58,6 +58,28 @@ read_pw() {  # $1=prompt → password on stdout (prompts/errors on stderr)
 
 # ── 2) First run (no DB yet) → create two admin accounts, without Node (CLI + REST) ─────
 if [ ! -d "$DATA" ]; then
+  # The port has to be free BEFORE anything is created. The setup starts PocketBase briefly;
+  # if that fails, pb_data exists all the same — and because this whole block only runs when
+  # pb_data is MISSING, nobody would ever be asked for the accounts again.
+  if (exec 3<>"/dev/tcp/127.0.0.1/${PORT}") 2>/dev/null; then
+    echo "✗ Port ${PORT} is already taken — is DartsZentrale (or PocketBase) already running?"
+    echo "  Stop the other program, or pick a different port:  PORT=8091 ./start-club-lan.sh"
+    exit 1
+  fi
+
+  # Everything created from here on is provisional: on any abort the half-finished pb_data is
+  # removed again and the briefly started PocketBase is stopped — so a retry starts clean and
+  # asks for the accounts once more, instead of silently leaving a login-less installation.
+  SETUP_OK=0; BOOT=""
+  cleanup_setup() {
+    if [ -n "$BOOT" ]; then kill "$BOOT" 2>/dev/null || true; wait "$BOOT" 2>/dev/null || true; fi
+    if [ "$SETUP_OK" != "1" ] && [ -d "$DATA" ]; then
+      rm -rf "$DATA"
+      echo "  → Nothing was kept — the next start asks for the accounts again." >&2
+    fi
+  }
+  trap cleanup_setup EXIT
+
   echo "── Initial setup (first run only) ──"
   echo "   Two administrator accounts will be created. The passwords are"
   echo "   NOT stored – please note them down safely (password manager)."
@@ -71,21 +93,43 @@ if [ ! -d "$DATA" ]; then
   echo "  2) App administrator (login in DartsZentrale):"
   ADMIN_EMAIL="$(read_nonempty "     Email: ")"
   ADMIN_PW="$(read_pw "     Password")"
-  # Create the superuser (password only as a CLI argument — never stored anywhere).
-  "$PB" superuser upsert "$SU_EMAIL" "$SU_PW" --dir "$DATA" >/dev/null
   echo; echo "  • Creating accounts …"
+  # Create the superuser (password only as a CLI argument — never stored anywhere).
+  # CAREFUL: the PocketBase CLI reports errors on STDOUT and still exits with 0 — the exit code
+  # says nothing, so the output has to be inspected.
+  SU_OUT="$("$PB" superuser upsert "$SU_EMAIL" "$SU_PW" --dir "$DATA" 2>&1 || true)"
+  case "$SU_OUT" in *Error*)
+    echo "  ✗ The console account could not be created:"
+    echo "    ${SU_OUT}"
+    exit 1 ;;
+  esac
   # Start PB briefly, create the app admin via REST (migrations build the schema meanwhile).
   "$PB" "${serve_args[@]}" >/dev/null 2>&1 & BOOT=$!
-  for _ in $(seq 1 40); do curl -fsS "$LOCAL/api/health" >/dev/null 2>&1 && break; sleep 0.5; done
+  HEALTHY=0
+  for _ in $(seq 1 60); do curl -fsS "$LOCAL/api/health" >/dev/null 2>&1 && { HEALTHY=1; break; }; sleep 0.5; done
+  if [ "$HEALTHY" != "1" ]; then
+    echo "  ✗ PocketBase did not start within 30 seconds — setup aborted."
+    exit 1
+  fi
+  # No 'set -e' abort here: without '|| true' a failing login would end the script silently,
+  # leaving a half-finished pb_data behind (see the trap above).
   TOKEN="$(curl -fsS -X POST "$LOCAL/api/collections/_superusers/auth-with-password" -H 'Content-Type: application/json' \
-            -d "{\"identity\":\"$(json_escape "$SU_EMAIL")\",\"password\":\"$(json_escape "$SU_PW")\"}" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')"
+            -d "{\"identity\":\"$(json_escape "$SU_EMAIL")\",\"password\":\"$(json_escape "$SU_PW")\"}" 2>/dev/null \
+            | sed -n 's/.*"token":"\([^"]*\)".*/\1/p' || true)"
+  if [ -z "$TOKEN" ]; then
+    echo "  ✗ Login with the console account failed — setup aborted."
+    exit 1
+  fi
   if curl -fsS -X POST "$LOCAL/api/collections/users/records" -H "Authorization: $TOKEN" -H 'Content-Type: application/json' \
        -d "{\"email\":\"$(json_escape "$ADMIN_EMAIL")\",\"password\":\"$(json_escape "$ADMIN_PW")\",\"passwordConfirm\":\"$(json_escape "$ADMIN_PW")\",\"emailVisibility\":true,\"verified\":true,\"name\":\"Administrator\",\"first\":\"Administrator\",\"last\":\"\",\"role\":\"admin\",\"active\":true}" >/dev/null 2>&1; then
     echo "  ✓ App administrator created: $ADMIN_EMAIL"
   else
     echo "  ⚠ Creating the app admin failed – do it later in the PocketBase console ($LOCAL/_/)."
   fi
-  kill "$BOOT" 2>/dev/null; wait "$BOOT" 2>/dev/null || true
+  # From here the database is usable (console account exists) → keep it, disarm the cleanup.
+  SETUP_OK=1
+  kill "$BOOT" 2>/dev/null || true; wait "$BOOT" 2>/dev/null || true
+  trap - EXIT
   echo "── Setup complete ──"; echo
 fi
 
