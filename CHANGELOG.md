@@ -7,6 +7,8 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.1.0] – 2026-07-31
+
 ### Hinzugefügt
 - **Aussagekräftigere Spieler-Statistik.** Neu im Spieler-Detail: eine **Kopf-an-Kopf-Bilanz** je
   Gegner, **Filter** nach Spieltyp (Startpunktzahl) und Wettbewerb (Liga/Frei), eine **umschaltbare
