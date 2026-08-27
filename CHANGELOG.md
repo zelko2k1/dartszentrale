@@ -7,6 +7,8 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+## [1.1.1] – 2026-08-27
+
 ### Hinzugefügt
 - **Unbeaufsichtigter Erststart im Vereinsmodus (LAN).** `start-club-lan` fragt die beiden
   Konten weiterhin ab — stehen sie aber schon in der Umgebung (`PB_SU_EMAIL`/`PB_SU_PASS` für
