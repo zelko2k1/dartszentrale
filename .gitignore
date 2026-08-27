@@ -36,6 +36,25 @@ pocketbase/seed-remote.sh
 # Claude Code local settings
 .claude/settings.local.json
 
+# Assistenz-Skills, die über einen Installer beschafft werden (`npx impeccable install` o. Ä.).
+# Fremde Dateien mit eigener Versionierung, kein Bestandteil dieses Projekts: Eine Kopie im Repo
+# veraltet still, bläht jeden Klon auf und wirft beim Veröffentlichen eine Lizenzfrage auf.
+#
+# Bewusst als Liste einzelner Verzeichnisse und NICHT als `.claude/skills/`: Ein SELBST
+# geschriebenes Skill gehört ins Repo — `.claude/skills/copy2share/` ist genau so eines und
+# bleibt versioniert. Kommt ein weiteres beschafftes dazu, bekommt es hier eine eigene Zeile.
+#
+# `skills-lock.json` bleibt dagegen im Repo: Sie nennt Quelle und Prüfsumme jedes Skills und
+# ist damit das Gegenstück zum Ignorieren der Dateien selbst — wie package-lock.json neben
+# node_modules/.
+.agents/
+.codex/
+.claude/skills/hallmark/
+.claude/skills/impeccable/
+.github/skills/
+.github/hooks/
+.impeccable/
+
 # Generierte PDF-Artefakte (Quelle ist die jeweilige .md)
 docs/*.pdf
 
