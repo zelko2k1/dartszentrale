@@ -2,7 +2,8 @@
 
 > Status: **Umgesetzt** — Phasen 1–5 fertig (2026-07-19): Backend/Provider, Host veröffentlicht,
 > Remote-Handy, login-freier Zuschauer-TV, Härtung (Heartbeat/Cleanup, Security-Audit, Doku).
-> Kern steht & verifiziert; Kür offen (Playwright-Smoke, PIN, In-App-Live für Mitglieder).
+> Kern steht & verifiziert; der **Playwright-Smoke ist seit PR #37 da**
+> (`app/e2e/a11y-live.spec.ts`). Kür offen: PIN, In-App-Live für Mitglieder.
 > Gilt für **`dartszentrale`** (Liga/Verein).
 > Zwei Bausteine in einem: (1) **Remote** — das Smartphone als vollwertige Fernbedienung für ein
 > laufendes Spiel (Notfall bei defekter Maus/Tastatur *und* als bequeme Dauer-Option); (2) **Live** —
@@ -343,6 +344,8 @@ Additiv zum `DataProvider`-Interface (Lokal: no-op/`unsupported`, wie bei 2FA/nu
       code-only, `liveClaimByCode`). Koppel-UI (QR + Code) vom **überlappenden Floating-Badge** in die
       **Einstellungen** verlegt (`components/BoardPairPanel.tsx`, nur im **Kiosk** sichtbar). Beides im
       echten Browser verifiziert (Handy tippt Code → verbunden → 180 → Board rechnet).
+- [x] **Playwright-Smoke** (PR #37) — `app/e2e/a11y-live.spec.ts` prüft drei Wege: Kiosk veröffentlicht
+      eine Session, Fernbedienung koppeln und Konsole bedienen, Zuschauer-TV ohne Anmeldung.
 - [ ] _Optional/offen:_ PIN vor der Watch-Seite; In-App-„Live"-Einstieg für Mitglieder. Kernfeature steht.
 
 ---
