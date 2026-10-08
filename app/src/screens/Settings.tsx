@@ -531,6 +531,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     );
   };
 
+  const boxView = cfg.counterView === 'box';
   const toggles: { key: 'showCheckout' | 'showQuick' | 'showHistory' | 'showStats' | 'shortLegHint' | 'highFinishHint'; label: string; sub: string }[] = [
     { key: 'showCheckout', label: tr.settings.tglCheckout, sub: tr.settings.tglCheckoutSub },
     { key: 'showQuick', label: tr.settings.tglQuick, sub: tr.settings.tglQuickSub },
@@ -739,7 +740,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         </Row>
       )}
       <Row label={tr.settings.counterViewRow} sub={tr.settings.counterViewSub}>
-        {ed('counterView', seg('counterView', [{ label: tr.settings.bigNumber, val: 'big' }, { label: tr.settings.sheet, val: 'sheet' }]))}
+        {ed('counterView', seg('counterView', [{ label: tr.settings.bigNumber, val: 'big' }, { label: tr.settings.sheet, val: 'sheet' }, { label: tr.settings.box, val: 'box' }]))}
       </Row>
       {isClassic && <Row label={tr.settings.accentColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.accentColorSub}>{ed('accent', colorPicker('accent', false))}</Row>}
       {isClassic && <Row label={tr.settings.scoreColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.scoreColorSub}>{ed('scoreColor', colorPicker('scoreColor', true))}</Row>}
@@ -771,7 +772,10 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
           </div>
         ))}
       </Row>
-      <Row label={tr.settings.scoreAreaRow} sub={tr.settings.scoreAreaSub}>{ed('scoreArea', stepper('scoreArea', 35, 80, tr.settings.scoreAreaRow))}</Row>
+      <Row label={tr.settings.scoreAreaRow} sub={boxView ? `${tr.settings.scoreAreaSub} · ${tr.settings.offInBoxView}` : tr.settings.scoreAreaSub}>
+        {/* Höhen-Aufteilung Restscore ↔ Verlauf greift in der Box-Ansicht nicht (kein Verlauf) → ausgegraut. */}
+        <div aria-disabled={boxView || undefined} style={boxView ? { opacity: 0.45, pointerEvents: 'none' } : undefined}>{ed('scoreArea', stepper('scoreArea', 35, 80, tr.settings.scoreAreaRow))}</div>
+      </Row>
       <Row label={tr.settings.scoreScaleRow} sub={tr.settings.scoreScaleSub}>{ed('scoreScale', stepper('scoreScale', 70, 140, tr.settings.scoreScaleRow))}</Row>
       <Row label={tr.settings.statsSizeRow} sub={tr.settings.statsSizeSub}>{ed('statsSize', stepper('statsSize', 70, 150, tr.settings.statsSizeRow))}</Row>
       <Row label={tr.settings.headerSizeRow} sub={tr.settings.headerSizeSub}>{ed('headerSize', stepper('headerSize', 70, 150, tr.settings.headerSizeRow))}</Row>
@@ -784,18 +788,22 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
     <Section title={tr.settings.secHelpers}>
       {toggles.map((t) => {
         const on = cfg[t.key] !== false; // Default-an-Schalter: „an", solange nicht ausdrücklich aus
+        // Box-Ansicht blendet Wurf-Verlauf und Statistik-Box im Counter aus → Schalter gesperrt + ausgegraut.
+        const locked = boxView && (t.key === 'showHistory' || t.key === 'showStats');
         return (
-          <Row key={t.key} label={t.label} sub={t.sub}>
+          <Row key={t.key} label={t.label} sub={locked ? `${t.sub} · ${tr.settings.offInBoxView}` : t.sub}>
+            <div aria-disabled={locked || undefined} style={locked ? { opacity: 0.45, pointerEvents: 'none' } : undefined}>
             {/* `padding: 0` steht bewusst VOR `transition`: als Nachbar dahinter liest der
                 Design-Detektor die Kombination als „padding wird animiert" und meldet einen
                 Fehlalarm. Animiert wird ausschließlich `background`. */}
-            <button onClick={() => set(t.key, !on)} role="switch" aria-checked={on} aria-label={t.label} style={{ position: 'relative', width: 46, height: 26, padding: 0, borderRadius: 'var(--radius-pill)', background: on ? accent : 'var(--btn)', border: on ? 'none' : '1px solid var(--border-2)', cursor: 'pointer', flexShrink: 0, transition: 'background .15s var(--ease-out)' }}>
+            <button onClick={() => set(t.key, !on)} disabled={locked} role="switch" aria-checked={on} aria-label={t.label} style={{ position: 'relative', width: 46, height: 26, padding: 0, borderRadius: 'var(--radius-pill)', background: on ? accent : 'var(--btn)', border: on ? 'none' : '1px solid var(--border-2)', cursor: 'pointer', flexShrink: 0, transition: 'background .15s var(--ease-out)' }}>
               {/* Der Knopf folgt dem Zustand: auf der Akzentbahn die garantiert kontrastreiche
                   Akzent-Schrift, auf der ausgeschalteten Bahn --text-3. Ein fest weißer Knopf
                   verschwand im Hellmodus auf --btn (1,22:1). Die Position bleibt das primäre
                   Signal, der Ton ist der zweite — nicht Farbe allein. */}
               <span style={{ position: 'absolute', top: 2, left: 2, transform: on ? 'translateX(20px)' : 'none', width: 22, height: 22, borderRadius: '50%', background: on ? 'var(--accent-fg)' : 'var(--text-3)', boxShadow: '0 1px 3px rgba(0,0,0,.28)', transition: 'transform .15s var(--ease-out), background .15s var(--ease-out)' }} />
             </button>
+            </div>
           </Row>
         );
       })}

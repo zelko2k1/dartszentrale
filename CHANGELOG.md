@@ -7,6 +7,16 @@ Versionierung nach [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unveröffentlicht]
 
+### Hinzugefügt
+- **Box-Ansicht im Counter.** Neue Counter-Ansicht „Box“ (Einstellungen → Darstellung): Name
+  oben, Restscore groß in der Mitte, die gewonnenen Legs (bei Sets: Sets und Legs) in einer
+  schwarzen Box daneben, unten Leg-Schnitt, Match-Schnitt und letzte Aufnahme. Farben und alle
+  Größen-Einstellungen gelten wie gewohnt. Wurf-Verlauf und Statistik-Box sind in dieser Ansicht
+  ausgeblendet; ihre Schalter sind in den Einstellungen dann ausgegraut.
+- **Box-Darstellung in allen Trainingsspielen.** Jeder Spieler erscheint als Box mit den Werten,
+  die zum jeweiligen Spiel passen — etwa bei Around the Clock das aktuelle Ziel, die geworfenen
+  Darts, Fortschritt und Trefferquote; bei Cricket Punkte, geschlossene Felder und MPR.
+
 ## [1.1.1] – 2026-08-27
 
 ### Hinzugefügt

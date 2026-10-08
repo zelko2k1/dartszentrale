@@ -311,7 +311,9 @@ export interface Settings {
   boardMatchWindow: number;
   // Counter-Darstellung (gerätelokal): 'big' = große Restscore-Zahl (Standard), 'sheet' = voller
   // Aufschrieb im n01-Stil (beide Spieler, Dart-Zähler, Ton-Markierung) unter einer kompakten Score-Leiste.
-  counterView?: 'big' | 'sheet';
+  counterView?: 'big' | 'sheet' | 'box';
+  // 'box' = Spielerkarte als Box (Name oben, Restscore mittig, Legs in schwarzer Box links daneben,
+  // unten Leg-/Match-Schnitt + letzte Aufnahme); Verlauf/Statistik darunter wie bei 'big'.
   // Aufschrieb-Box im Counter auf-/zugeklappt (nur counterView === 'sheet'). Standard: offen (undefined = offen).
   sheetOpen?: boolean;
   // Wurfanzeige-Box im Counter auf-/zugeklappt (nur counterView === 'big'). Standard: offen (undefined = offen).
