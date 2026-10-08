@@ -321,6 +321,7 @@ export const de = {
     bigNumber: 'Restscore',
     sheet: 'Aufschrieb',
     box: 'Box',
+    offInBoxView: 'in der Box-Ansicht ausgeblendet',
     accentColor: (mode: string) => `Akzentfarbe (${mode})`,
     accentColorSub: 'Buttons & Highlights. Wird je Modus (Hell/Dunkel) separat gespeichert.',
     scoreColor: (mode: string) => `Score-Farbe (${mode})`,

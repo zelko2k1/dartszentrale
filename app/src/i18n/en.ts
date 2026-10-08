@@ -297,6 +297,7 @@ export const en: Dict = {
     bigNumber: 'Score left',
     sheet: 'Score sheet',
     box: 'Box',
+    offInBoxView: 'hidden in Box view',
     accentColor: (mode: string) => `Accent colour (${mode})`,
     accentColorSub: 'Buttons & highlights. Saved separately per mode (light/dark).',
     scoreColor: (mode: string) => `Score colour (${mode})`,

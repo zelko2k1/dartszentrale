@@ -121,8 +121,11 @@ export function Counter() {
   // Aufschrieb-Ansicht (n01-Stil): nur auf Desktop/Board/Tablet, nicht am Handy. Die kompakte
   // Score-Leiste bleibt oben (Fernlesbarkeit), der volle Aufschrieb füllt darunter.
   const sheetMode = !isPhone && cfg.counterView === 'sheet';
-  // Box-Ansicht: andere Spielerkarte im Score-Band; Verlauf/Statistik darunter wie bei „Restscore".
+  // Box-Ansicht: andere Spielerkarte im Score-Band; Wurf-Verlauf und Statistik-Box sind hier AUS (die Box
+  // trägt Leg-/Match-Schnitt + letzte Aufnahme selbst) — die Schalter dafür sind in den Einstellungen gesperrt.
   const boxMode = !isPhone && cfg.counterView === 'box';
+  const showHistory = cfg.showHistory && !boxMode;
+  const showStats = cfg.showStats && !boxMode;
   // Aufschrieb-Box klappbar (undefined = offen, damit Bestandsgeräte unverändert starten). Zugeklappt
   // füllt die große-Zahl-Leiste den frei werdenden Platz; die Klappleiste bleibt zum Wieder-Aufklappen.
   const sheetOpen = cfg.sheetOpen !== false;
@@ -184,7 +187,7 @@ export function Counter() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 12, minHeight: 0 }}>
         {/* SCORE band — Board-Gesamtgröße (boardMul) hebt das Flex-Gewicht des Score-Bandes an, während Verlauf/
             Statistik unten per /boardMul zusätzlich weichen → der cq-gemessene Restscore füllt spürbar mehr Fläche. */}
-        <div style={{ flex: sheetMode ? (cfg.showHistory && sheetOpen ? cfg.scoreArea * boardMul : 100) : (cfg.showHistory ? cfg.scoreArea * boardMul : 100), display: 'flex', gap: 12, minHeight: 0 }}>
+        <div style={{ flex: sheetMode ? (showHistory && sheetOpen ? cfg.scoreArea * boardMul : 100) : (showHistory ? cfg.scoreArea * boardMul : 100), display: 'flex', gap: 12, minHeight: 0 }}>
           {s.gamePlayers.map((p, i) => {
             const isActive = i === curIdx && !over;
             const rem = sc[p.id];
@@ -248,21 +251,21 @@ export function Counter() {
 
         {/* Aufschrieb-Ansicht (n01-Stil): ersetzt die Wurf-Liste; die Statistik-Box bleibt darunter
             wie gewohnt über den „Statistik-Box"-Schalter (showStats) an-/abwählbar. */}
-        {sheetMode && (cfg.showHistory || cfg.showStats) && (
-          <div style={{ flex: cfg.showHistory && sheetOpen ? `${(100 - cfg.scoreArea) / boardMul} 1 0` : '0 0 auto', display: 'flex', flexDirection: 'column', minHeight: 0, marginTop: 8, gap: 8 }}>
+        {sheetMode && (showHistory || showStats) && (
+          <div style={{ flex: showHistory && sheetOpen ? `${(100 - cfg.scoreArea) / boardMul} 1 0` : '0 0 auto', display: 'flex', flexDirection: 'column', minHeight: 0, marginTop: 8, gap: 8 }}>
             {/* Aufschrieb-Box (= Wurf-Verlauf): über den „Wurf-Verlauf"-Schalter (showHistory) an-/abwählbar;
                 Klapp-Pfeil ist in die Box integriert (bleibt zugeklappt als schmale Leiste sichtbar). */}
-            {cfg.showHistory && <ScoreSheet open={sheetOpen} onToggle={() => s.setSetting('sheetOpen', !sheetOpen)} />}
-            {cfg.showStats && <SheetStats />}
+            {showHistory && <ScoreSheet open={sheetOpen} onToggle={() => s.setSetting('sheetOpen', !sheetOpen)} />}
+            {showStats && <SheetStats />}
           </div>
         )}
         {/* throws & stats band: die Wurfanzeige ist EINE gemeinsame Box (beide Spieler nebeneinander) mit
             integriertem Klapp-Pfeil; die Statistik-Box bleibt separat über „showStats" schaltbar. */}
-        {!sheetMode && (cfg.showHistory || cfg.showStats) && (
+        {!sheetMode && (showHistory || showStats) && (
           <>
-            <div style={{ flex: cfg.showHistory && historyOpen ? `${(100 - cfg.scoreArea) / boardMul} 1 0` : '0 0 auto', display: 'flex', flexDirection: 'column', gap: 8, minHeight: 0, marginTop: 8 }}>
-              {cfg.showHistory && <HistoryBox open={historyOpen} onToggle={() => s.setSetting('historyOpen', !historyOpen)} />}
-              {cfg.showStats && <SheetStats />}
+            <div style={{ flex: showHistory && historyOpen ? `${(100 - cfg.scoreArea) / boardMul} 1 0` : '0 0 auto', display: 'flex', flexDirection: 'column', gap: 8, minHeight: 0, marginTop: 8 }}>
+              {showHistory && <HistoryBox open={historyOpen} onToggle={() => s.setSetting('historyOpen', !historyOpen)} />}
+              {showStats && <SheetStats />}
             </div>
           </>
         )}
