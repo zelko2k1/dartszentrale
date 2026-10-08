@@ -64,6 +64,12 @@ export function average(s: CounterSlice, pid: string | number) {
   const darts = ts.reduce((a, t) => a + (t.darts || 3), 0);
   return darts ? (points / darts) * 3 : 0;
 }
+// 3-Dart-Schnitt nur im AKTUELLEN Leg (Box-Ansicht „Leg"); gleiche Rechnung wie average().
+export function legAverage(s: CounterSlice, pid: string | number) {
+  const ts = legThrows(s).filter((t) => t.playerId === pid);
+  const darts = ts.reduce((a, t) => a + (t.darts || 3), 0);
+  return darts ? (ts.reduce((a, t) => a + (t.bust ? 0 : t.score), 0) / darts) * 3 : 0;
+}
 export function first9(s: CounterSlice, pid: string | number) {
   // Erste 9 Darts (3 Aufnahmen) des AKTUELLEN Legs – nicht des gesamten Matches.
   const ts = legThrows(s).filter((t) => t.playerId === pid).slice(0, 3);

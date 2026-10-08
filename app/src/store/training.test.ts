@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { newTrainGame, applyTurn, TRAIN_BEST, isBetterBest, applyTrainingResult, TRAIN_LOG_MAX, trainCelebration, ATC_SEQ, type TrainPlayer } from './training';
+import { newTrainGame, applyTurn, TRAIN_BEST, isBetterBest, applyTrainingResult, TRAIN_LOG_MAX, trainCelebration, trainBox, ATC_SEQ, type TrainPlayer } from './training';
 
 function tp(slot: number, pid: string, name = pid): TrainPlayer {
   return { id: `t${slot}_${pid}`, pid, name, short: name.slice(0, 2).toUpperCase(), av: 0 };
@@ -131,5 +131,36 @@ describe('applyTrainingResult — Bestwert + Verlauf', () => {
     for (let i = 0; i < TRAIN_LOG_MAX + 5; i++) best = applyTrainingResult(best, 'max', i, '2026-01-01', false).next;
     expect(best?.log?.length).toBe(TRAIN_LOG_MAX);
     expect(best?.log?.at(-1)?.value).toBe(TRAIN_LOG_MAX + 4); // jüngstes behalten
+  });
+});
+
+describe('trainBox — Angaben der Box-Ansicht', () => {
+  it('ATC: Ziel groß, Darts in der Box, Fortschritt + Hit% unten', () => {
+    let g = newTrainGame('atc', [tp(0, 'p1')]);
+    expect(trainBox(g, g.players[0].id).main).toBe('1');
+    g = applyTurn(g, { kind: 'advance', advance: 2 });
+    const b = trainBox(g, g.players[0].id);
+    expect(b.main).toBe('3');
+    expect(b.badge?.value).toBe('3');
+    expect(b.stats.map((x) => x.value)).toEqual([`2/${ATC_SEQ.length}`, '67%']);
+  });
+  it('Doubles: Ziel als D-Feld, am Ende die Quote', () => {
+    let g = newTrainGame('doubles', [tp(0, 'p1')]);
+    expect(trainBox(g, g.players[0].id).main).toBe('D1');
+    for (let i = 0; i < 21; i++) g = applyTurn(g, { kind: 'hits', hits: i === 0 ? 3 : 0 });
+    expect(g.over).toBe(true);
+    expect(trainBox(g, g.players[0].id).main).toBe('5%');
+  });
+  it('Killer: eigene Zahl groß, Leben in der Box', () => {
+    const g = newTrainGame('killer', [tp(0, 'a'), tp(1, 'b')]);
+    const b = trainBox(g, g.players[1].id);
+    expect(b.main).toBe('19');
+    expect(b.badge?.value).toBe('3');
+  });
+  it('liefert für jeden Modus eine Box', () => {
+    for (const m of ['doubles', 'bobs27', 'checkout121', 'atc', 'baseball', 'halveit', 'cricket', 'elimination', 'killer']) {
+      const g = newTrainGame(m, [tp(0, 'a'), tp(1, 'b')]);
+      expect(trainBox(g, g.players[0].id).main).not.toBe('—');
+    }
   });
 });

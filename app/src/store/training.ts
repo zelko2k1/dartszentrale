@@ -452,3 +452,62 @@ export function trainCelebration(prev: TrainGame, next: TrainGame, input: TurnIn
   }
   return null;
 }
+
+// ── Box-Ansicht ────────────────────────────────────────────────────────────────
+// Je Modus die sinnvollen Angaben für die Spieler-Box: große Kennzahl (main), kleine schwarze Box links
+// daneben (badge) und die Kennzahl-Zeile unten (stats). Rein, damit testbar.
+export interface TrainBox { main: string; badge?: { label: string; value: string }; stats: { label: string; value: string }[]; }
+export function trainBox(g: TrainGame, pid: string): TrainBox {
+  const t = dict().trainingScr;
+  const d = g.data;
+  const pct = (a: number, b: number) => `${b ? Math.round((a / b) * 100) : 0}%`;
+  const seqLabel = (v: number | undefined, dbl: boolean) => (v === undefined ? '✓' : v === 25 ? 'Bull' : `${dbl ? 'D' : ''}${v}`);
+  switch (g.modeId) {
+    case 'doubles': {
+      const hits = d.hits || 0, throws = d.throws || 0;
+      return { main: g.over ? pct(hits, throws) : seqLabel(DOUBLES_SEQ[g.round - 1], true), badge: { label: t.boxHits, value: String(hits) },
+        stats: [{ label: t.boxRate, value: pct(hits, throws) }, { label: t.boxTarget, value: `${Math.min(g.round, DOUBLES_SEQ.length)}/${DOUBLES_SEQ.length}` }, { label: t.boxDarts, value: String(throws) }] };
+    }
+    case 'bobs27':
+      return { main: String(d.score![pid]), badge: { label: t.boxTarget, value: seqLabel(g.over ? undefined : BOBS27_SEQ[g.round - 1], true) },
+        stats: [{ label: t.boxRound, value: `${Math.min(g.round, BOBS27_SEQ.length)}/${BOBS27_SEQ.length}` }] };
+    case 'checkout121': {
+      const made = d.made || 0, att = d.attempts || 0;
+      return { main: g.over ? pct(made, att) : String(CHECKOUT121_SEQ[g.round - 1]), badge: { label: t.boxMade, value: String(made) },
+        stats: [{ label: t.boxRate, value: pct(made, att) }, { label: 'HF', value: d.best ? String(d.best) : '–' }, { label: t.boxRound, value: `${Math.min(g.round, CHECKOUT121_SEQ.length)}/${CHECKOUT121_SEQ.length}` }] };
+    }
+    case 'atc': {
+      const pos = d.pos![pid], darts = d.darts![pid];
+      return { main: seqLabel(ATC_SEQ[pos], false), badge: { label: t.boxDarts, value: String(darts) },
+        stats: [{ label: t.boxProgress, value: `${pos}/${ATC_SEQ.length}` }, { label: t.boxHitRate, value: pct(pos, darts) }] };
+    }
+    case 'baseball': {
+      const inn = d.innings![pid];
+      return { main: String(d.runs![pid]), badge: { label: 'Inning', value: String(Math.min(g.round, BASEBALL_INNINGS)) },
+        stats: [{ label: t.boxLast, value: inn.length ? String(inn[inn.length - 1]) : '–' }, { label: t.boxAvgInning, value: inn.length ? (d.runs![pid] / inn.length).toFixed(1) : '–' }] };
+    }
+    case 'halveit': {
+      const rs = d.rounds![pid];
+      const tg = HALVEIT_TARGETS[g.round - 1];
+      return { main: String(d.score![pid]), badge: { label: t.boxRound, value: String(Math.min(g.round, HALVEIT_TARGETS.length)) },
+        stats: [{ label: t.boxTarget, value: g.over || !tg ? '✓' : tg.label }, { label: t.boxHits, value: `${rs.filter((r) => r.hit).length}/${rs.length}` }] };
+    }
+    case 'cricket': {
+      const closed = CRICKET_TARGETS.filter((num) => d.marks![pid][num] >= 3).length;
+      const cd = d.cdarts?.[pid] ?? 0, cm = d.cmarks?.[pid] ?? 0;
+      return { main: String(d.points![pid]), badge: { label: t.boxClosed, value: `${closed}/${CRICKET_TARGETS.length}` },
+        stats: [{ label: 'MPR', value: cd ? ((3 * cm) / cd).toFixed(2) : '–' }, { label: t.boxMarks, value: String(cm) }] };
+    }
+    case 'elimination': {
+      const sc = d.score![pid];
+      return { main: String(sc), badge: { label: t.boxRest, value: String(ELIM_TARGET - sc) },
+        stats: [{ label: t.boxTarget, value: String(ELIM_TARGET) }, { label: t.boxRound, value: String(g.round) }] };
+    }
+    case 'killer': {
+      const lv = d.lives![pid];
+      return { main: String(d.num![pid]), badge: { label: t.boxLives, value: String(lv) },
+        stats: [{ label: t.boxStatus, value: lv <= 0 ? t.subOut : (d.isKiller![pid] ? t.subKiller : t.subNotArmed) }] };
+    }
+    default: return { main: '—', stats: [] };
+  }
+}

@@ -739,7 +739,7 @@ export function Settings({ kiosk = false }: { kiosk?: boolean } = {}) {
         </Row>
       )}
       <Row label={tr.settings.counterViewRow} sub={tr.settings.counterViewSub}>
-        {ed('counterView', seg('counterView', [{ label: tr.settings.bigNumber, val: 'big' }, { label: tr.settings.sheet, val: 'sheet' }]))}
+        {ed('counterView', seg('counterView', [{ label: tr.settings.bigNumber, val: 'big' }, { label: tr.settings.sheet, val: 'sheet' }, { label: tr.settings.box, val: 'box' }]))}
       </Row>
       {isClassic && <Row label={tr.settings.accentColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.accentColorSub}>{ed('accent', colorPicker('accent', false))}</Row>}
       {isClassic && <Row label={tr.settings.scoreColor(cfg.mode === 'light' ? tr.settings.light : tr.settings.dark)} sub={tr.settings.scoreColorSub}>{ed('scoreColor', colorPicker('scoreColor', true))}</Row>}

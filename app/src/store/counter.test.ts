@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { CounterSlice } from './counter';
-import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner, checkoutCelebration, checkoutAchievement, avgCheckoutDarts, minCheckoutDarts, totalDarts, bestShortLeg, average } from './counter';
+import { canCheckout, checkoutSuggestion, outMode, scores, progress, matchOver, winner, checkoutCelebration, checkoutAchievement, avgCheckoutDarts, minCheckoutDarts, totalDarts, bestShortLeg, average, legAverage } from './counter';
 import type { GamePlayer, Settings, Throw } from '../data/types';
 
 // Minimal settings factory — only the fields the counter logic reads.
@@ -315,5 +315,21 @@ describe('average — echter 3-Dart-Average (Punkte/Darts×3)', () => {
   });
   it('ist 0 ohne Aufnahmen', () => {
     expect(average(slice(), 'a')).toBe(0);
+  });
+});
+
+describe('legAverage — 3-Dart-Schnitt nur im aktuellen Leg (Box-Ansicht)', () => {
+  it('ignoriert abgeschlossene Legs, Match-Schnitt zählt alles', () => {
+    const s = slice({ allThrows: [
+      turn('a', 101, { checkout: true }),           // Leg 1 (vereinfachtes Checkout)
+      turn('b', 60, { leg: 2 }), turn('a', 30, { leg: 2 }),
+    ] });
+    expect(legAverage(s, 'a')).toBe(30);
+    expect(average(s, 'a')).toBe(65.5);
+  });
+  it('Bust zählt mit 0 Punkten, ohne Aufnahme im Leg = 0', () => {
+    const s = slice({ allThrows: [turn('a', 60, { bust: true })] });
+    expect(legAverage(s, 'a')).toBe(0);
+    expect(legAverage(s, 'b')).toBe(0);
   });
 });

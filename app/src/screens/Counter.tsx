@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef, useMemo, Fragment } from 'react';
 import { useStore } from '../store/useStore';
 import { Avatar } from '../components/Avatar';
+import { ScoreBox } from '../components/ScoreBox';
 import { accentFg } from '../store/selectors';
 import {
-  scores, progress, currentIdx, currentLeg, average, first9, lastThrow, scoreList,
+  scores, progress, currentIdx, currentLeg, average, legAverage, first9, lastThrow, scoreList,
   countAtLeast, checkoutSuggestion, canCheckout, finishStats, first9Match, avgCheckoutDarts, bestShortLeg, matchOver, winner, checkoutAchievement, type CounterSlice,
 } from '../store/counter';
 import { IconBack, IconUndo, IconRefresh, IconX } from '../lib/icons';
@@ -120,6 +121,8 @@ export function Counter() {
   // Aufschrieb-Ansicht (n01-Stil): nur auf Desktop/Board/Tablet, nicht am Handy. Die kompakte
   // Score-Leiste bleibt oben (Fernlesbarkeit), der volle Aufschrieb füllt darunter.
   const sheetMode = !isPhone && cfg.counterView === 'sheet';
+  // Box-Ansicht: andere Spielerkarte im Score-Band; Verlauf/Statistik darunter wie bei „Restscore".
+  const boxMode = !isPhone && cfg.counterView === 'box';
   // Aufschrieb-Box klappbar (undefined = offen, damit Bestandsgeräte unverändert starten). Zugeklappt
   // füllt die große-Zahl-Leiste den frei werdenden Platz; die Klappleiste bleibt zum Wieder-Aufklappen.
   const sheetOpen = cfg.sheetOpen !== false;
@@ -188,6 +191,29 @@ export function Counter() {
             const co = checkoutSuggestion(cfg, rem);
             const turnLabel = isActive ? tr.trainingScr.atThrow : '';
             const pips = Array.from({ length: prog.legsToWinSet }, (_, k) => k < (prog.legsSet[p.id] || 0));
+            if (boxMode) {
+              const lt = lastThrow(slice, p.id);
+              const legs = prog.legsSet[p.id] || 0;
+              return (
+                <ScoreBox
+                  key={p.id} fill name={p.name} photo={p.photo} short={p.short} av={p.av}
+                  active={isActive} accent={accent} scoreInk={scoreInk} turnLabel={turnLabel}
+                  main={rem}
+                  mainSize={`min(${Math.round(88 * cfg.scoreScale / 100)}cqh, ${Math.round(44 * cfg.scoreScale / 100)}cqw)`}
+                  badges={cfg.unit === 'sets'
+                    ? [{ label: tr.counter.boxSets, value: prog.setsWon[p.id] || 0 }, { label: tr.counter.boxLegs, value: legs }]
+                    : [{ value: legs }]}
+                  stats={[
+                    { label: tr.counter.boxLeg, value: legAverage(slice, p.id).toFixed(1) },
+                    { label: tr.counter.boxMatch, value: average(slice, p.id).toFixed(1) },
+                    { label: tr.counter.boxLast, value: lt ? (lt.bust ? 'BUST' : lt.raw) : '–' },
+                  ]}
+                  extra={cfg.showCheckout && co ? <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, maxWidth: '100%', background: 'color-mix(in srgb, var(--gold) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--gold) 32%, transparent)', color: coInk, padding: '5px 12px', borderRadius: 'var(--radius-pill)', fontSize: 'var(--fs-sub)', fontWeight: 700, fontFamily: 'var(--font-num)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{co}</div> : undefined}
+                  nameSize={Math.round(17 * cfg.headerSize / 100 * boardMul)} avatarSize={Math.round(40 * boardMul)}
+                  badgeSize={1.6 * cfg.legSize * boardMul} statSize={cfg.statsSize}
+                />
+              );
+            }
             return (
               <div key={p.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRadius: 'var(--radius-lg)', background: isActive ? `color-mix(in srgb, ${accent} 9%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${isActive ? accent : 'var(--border-2)'}`, boxShadow: isActive ? `0 0 0 1px ${accent}, 0 0 46px color-mix(in srgb, ${accent} 12%, transparent)` : 'none', transition: 'border-color .18s var(--ease-out)', minWidth: 0, overflow: 'hidden' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 18px 0', flexShrink: 0 }}>

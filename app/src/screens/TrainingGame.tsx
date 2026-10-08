@@ -2,9 +2,10 @@ import { Fragment, useState, useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { CRICKET_TARGETS } from '../data/constants';
 import { Avatar } from '../components/Avatar';
+import { ScoreBox } from '../components/ScoreBox';
 import { accentFg } from '../store/selectors';
 import {
-  standings, leaderboard, currentTarget, trainModeName, TRAIN_BEST,
+  standings, leaderboard, currentTarget, trainModeName, trainBox, TRAIN_BEST,
   ATC_SEQ, BASEBALL_INNINGS, HALVEIT_TARGETS,
   type TrainGame, type TrainPlayer, type StandRow,
 } from '../store/training';
@@ -75,12 +76,12 @@ export function TrainingGame() {
       {/* scoreboard — scrollt; ohne tabIndex kommt die Tastatur nicht hinein (axe:
           scrollable-region-focusable). Der Name nennt den Bereich beim Anspringen. */}
       <div tabIndex={0} role="region" aria-label={tr.trainingScr.scoreboard} style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 14 }}>
-        {MATRIX_MODES.includes(g.modeId) ? (
-          <GameBoard game={g} accent={accent} activeId={cur.id} />
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${g.players.length > 4 ? 170 : 220}px, 1fr))`, gap: 12, maxWidth: 1100, margin: '0 auto' }}>
-            {rows.map((r) => <PlayerCard key={r.player.id} row={r} active={r.player.id === cur.id && !g.over} accent={accent} />)}
-          </div>
+        {/* Box-Ansicht je Spieler (wie Counter „Box"); Matrix-Spiele behalten ihr Raster darunter. */}
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(${g.players.length > 4 ? 170 : 220}px, 1fr))`, gap: 12, maxWidth: g.players.length === 1 ? 560 : 1100, margin: '0 auto' }}>
+          {rows.map((r) => <TrainScoreBox key={r.player.id} game={g} row={r} active={r.player.id === cur.id && !g.over} accent={accent} />)}
+        </div>
+        {MATRIX_MODES.includes(g.modeId) && (
+          <div style={{ marginTop: 14 }}><GameBoard game={g} accent={accent} activeId={cur.id} /></div>
         )}
       </div>
 
@@ -120,26 +121,23 @@ export function TrainingGame() {
   );
 }
 
-function PlayerCard({ row, active, accent }: { row: StandRow; active: boolean; accent: string }) {
+function TrainScoreBox({ game, row, active, accent }: { game: TrainGame; row: StandRow; active: boolean; accent: string }) {
   const tr = useT();
-  // Board-Gesamtgröße skaliert gezielt Namen + Score-Werte (Distanz-Lesbarkeit); Chrome/Deck bleiben normal.
+  // Board-Gesamtgröße skaliert gezielt Namen + Kennzahl (Distanz-Lesbarkeit); Chrome/Deck bleiben normal.
   const cfg = useStore((s) => s.settings);
   const boardMul = cfg.device === 'desktop' ? Math.max(1, (cfg.boardScale ?? 100) / 100) : 1;
+  const many = game.players.length > 4;
+  const solo = game.players.length === 1;
+  const b = trainBox(game, row.player.id);
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, borderRadius: 'var(--radius-lg)', padding: '14px 16px', background: active ? `color-mix(in srgb, ${accent} 9%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${active ? accent : 'var(--border-2)'}`, boxShadow: active ? `0 0 0 1px ${accent}` : 'none', opacity: row.eliminated ? 0.5 : 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-        <Avatar photo={row.player.photo} short={row.player.short} avi={row.player.av} size={Math.round(36 * boardMul)} />
-        <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ fontSize: Math.round(14 * boardMul), fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.player.name}</div>
-          {active && <div style={{ fontSize: Math.round(10 * boardMul), color: accent, fontWeight: 800, letterSpacing: '.06em' }}>{tr.trainingScr.atThrow}</div>}
-        </div>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-        <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(28 * boardMul), fontWeight: 800, color: active ? accent : 'var(--text)', lineHeight: 1 }}>{row.primary}</div>
-        {row.secondary && <div style={{ fontFamily: 'var(--font-num)', fontSize: Math.round(13 * boardMul), fontWeight: 700, color: 'var(--text-4)' }}>{row.secondary}</div>}
-      </div>
-      {row.sub && <div style={{ fontSize: Math.round(11 * boardMul), color: 'var(--text-4)', fontWeight: 600 }}>{row.sub}</div>}
-    </div>
+    <ScoreBox
+      name={row.player.name} photo={row.player.photo} short={row.player.short} av={row.player.av}
+      active={active} dim={row.eliminated} accent={accent} scoreInk={cfg.scoreColor} turnLabel={tr.trainingScr.atThrow}
+      main={b.main} mainSize={`${Math.round((many ? 44 : solo ? 96 : 64) * cfg.scoreScale / 100 * boardMul)}px`}
+      badges={b.badge ? [b.badge] : undefined} stats={b.stats}
+      nameSize={Math.round(15 * cfg.headerSize / 100 * boardMul)} avatarSize={Math.round(30 * boardMul)}
+      badgeSize={(many ? 70 : solo ? 110 : 85) * cfg.legSize / 100 * boardMul} statSize={(many ? 85 : 95) * cfg.statsSize / 100}
+    />
   );
 }
 
