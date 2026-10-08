@@ -27,6 +27,11 @@ export function ScoreBox({
 }) {
   const ink = active ? (scoreInk || accent) : 'var(--text-4)';
   const badgeFs = Math.round(22 * badgeSize / 100);
+  // fill: Zahl nie breiter als der Platz NEBEN der Leg-Box (sonst überlappt sie bei großer Score-/Leg-Größe).
+  // Reserve = Box (min. 1,6 × Schrift + Innenabstand) + Lücke + Zeilen-Innenabstand; 0,6 ≙ drei Ziffern der
+  // Score-Schrift (≈ 1,55 em breit, gemessen) mit etwas Luft.
+  const reserve = badges && badges.length ? Math.round(badgeFs * 2.5) + 14 + 28 : 28;
+  const mainFs = fill ? `min(${mainSize}, calc((100cqw - ${reserve}px) * 0.6))` : mainSize;
   return (
     <div style={{ flex: fill ? 1 : undefined, display: 'flex', flexDirection: 'column', minWidth: 0, borderRadius: 'var(--radius-lg)', overflow: 'hidden', opacity: dim ? 0.5 : 1, background: active ? `color-mix(in srgb, ${accent} 9%, var(--surface-2))` : 'var(--surface-2)', border: `1px solid ${active ? accent : 'var(--border-2)'}`, boxShadow: active ? `0 0 0 1px ${accent}, 0 0 46px color-mix(in srgb, ${accent} 12%, transparent)` : 'none', transition: 'border-color .18s var(--ease-out)' }}>
       {/* Name oben, mittig */}
@@ -51,7 +56,7 @@ export function ScoreBox({
           </div>
         )}
         <div style={{ minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ fontFamily: 'var(--font-score)', fontWeight: 800, fontSize: mainSize, lineHeight: 1, letterSpacing: '-.03em', color: ink, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', WebkitTextStroke: '1.5px var(--score-stroke)', paintOrder: 'stroke fill' as React.CSSProperties['paintOrder'] }}>{main}</div>
+          <div style={{ fontFamily: 'var(--font-score)', fontWeight: 800, fontSize: mainFs, lineHeight: 1, letterSpacing: '-.03em', color: ink, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', WebkitTextStroke: '1.5px var(--score-stroke)', paintOrder: 'stroke fill' as React.CSSProperties['paintOrder'] }}>{main}</div>
         </div>
       </div>
       {extra && <div style={{ display: 'flex', justifyContent: 'center', padding: '0 12px 4px', flexShrink: 0 }}>{extra}</div>}
