@@ -3,6 +3,11 @@ import { Avatar } from './Avatar';
 // Box-Ansicht (Counter „Box" + alle Trainingsspiele): Name oben, große Kennzahl mittig, links daneben eine
 // kleine schwarze Box (Counter: Legs, Training: Spiel-Kontext), unten eine Kennzahl-Zeile. Die Farben
 // kommen aus denselben Einstellungen wie die übrigen Spielerkarten (Akzent, Score-Farbe, Skin/Theme).
+// Leg-Box bewusst themen-unabhängig schwarz/weiß (Nutzervorgabe) — aus der DESIGN.md-Palette:
+// dunkelste Fläche (Seitenleiste) + warmes Primärweiß, statt reinem #000/#fff. Feste Werte statt
+// var(--…), weil die Variablen im Hellmodus/je Skin umschlagen würden.
+const BADGE_BG = '#0a0c0e';
+const BADGE_FG = '#ECEAE3';
 export interface ScoreBoxBadge { value: string | number; label?: string; }
 export interface ScoreBoxStat { label: string; value: string | number; }
 
@@ -38,7 +43,7 @@ export function ScoreBox({
         {badges && badges.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
             {badges.map((b, i) => (
-              <div key={i} style={{ background: '#000', color: '#fff', borderRadius: 'var(--radius-sm)', padding: `${Math.round(badgeFs * 0.25)}px ${Math.round(badgeFs * 0.45)}px`, minWidth: Math.round(badgeFs * 1.6), textAlign: 'center', lineHeight: 1 }}>
+              <div key={i} style={{ background: BADGE_BG, color: BADGE_FG, borderRadius: 'var(--radius-sm)', padding: `${Math.round(badgeFs * 0.25)}px ${Math.round(badgeFs * 0.45)}px`, minWidth: Math.round(badgeFs * 1.6), textAlign: 'center', lineHeight: 1 }}>
                 {b.label && <div style={{ fontSize: Math.max(9, Math.round(badgeFs * 0.42)), fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', opacity: 0.7, marginBottom: 3 }}>{b.label}</div>}
                 <div style={{ fontFamily: 'var(--font-num)', fontSize: badgeFs, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{b.value}</div>
               </div>
